@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
-
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
       --card:#fbf7f1;
@@ -453,43 +452,6 @@ a{ color:inherit; }
 .btn{ color:var(--text); }
 .input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
 
-
-
-    /* Dark mode – bazı tarayıcılarda siyah kalan metinleri zorla düzelt */
-    html[data-theme="dark"] body{ color: var(--text); }
-    html[data-theme="dark"] button,
-    html[data-theme="dark"] input,
-    html[data-theme="dark"] select,
-    html[data-theme="dark"] textarea,
-    html[data-theme="dark"] option,
-    html[data-theme="dark"] label,
-    html[data-theme="dark"] summary,
-    html[data-theme="dark"] .btn,
-    html[data-theme="dark"] .input,
-    html[data-theme="dark"] .table,
-    html[data-theme="dark"] .table td,
-    html[data-theme="dark"] .table th,
-    html[data-theme="dark"] .modal,
-    html[data-theme="dark"] .drawer{
-      color: var(--text);
-    }
-    html[data-theme="dark"] .subtitle,
-    html[data-theme="dark"] .muted,
-    html[data-theme="dark"] .pill,
-    html[data-theme="dark"] footer{
-      color: var(--muted);
-    }
-    /* Safari/Chrome autofill siyah yazı bug'ı */
-    html[data-theme="dark"] input:-webkit-autofill,
-    html[data-theme="dark"] textarea:-webkit-autofill,
-    html[data-theme="dark"] select:-webkit-autofill{
-      -webkit-text-fill-color: var(--text) !important;
-      transition: background-color 999999s ease-in-out 0s;
-    }
-    /* SVG içinde text (ikon vb.) */
-    html[data-theme="dark"] svg text{ fill: var(--text); }
-
-
 </style>
 </head>
 <body>
@@ -702,8 +664,6 @@ const CONFIG = {
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
-  // Bildirimler için en stabil kaynak: Apps Script'in otomatik oluşturduğu LOG sayfası
-  // (Eğer sende BİLDİRİMLER diye ayrı sayfa varsa, aşağıda fallback var.)
   SHEET_NOTIFS: "LOG",
 
 
@@ -711,7 +671,7 @@ const CONFIG = {
   GID: "1233566992",
 
   // Apps Script'in oluşturduğu LOG sayfasının gid'sini buraya yaz (URL'den kopyala: ...?gid=XXXX)
-  LOG_GID: "",
+  LOG_GID: "576004485",
 
   sheetUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/edit?gid=${gid}`; },
   gvizUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${Date.now()}`; },
@@ -721,6 +681,16 @@ const CONFIG = {
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
+
+// Filtre eşleşmeleri: boşluk / büyük-küçük harf / görünmez karakter farklarını tolere et
+function normKey(s){
+  return String(s||"")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/\s+/g, " ");
+}
+
 function openMobileModal(html){
   if(!isMobile()) return;
   els.mobileContent.innerHTML = html;
@@ -782,16 +752,15 @@ const els = {
   intersectionBox: el("intersectionBox"),
 
   fq: el("fq"),
-  figDownloadAllBtn: el("figDownloadAllBtn"),
-  figDownloadFilteredBtn: el("figDownloadFilteredBtn"),
   fClear: el("fClear"),
   figuranBox: el("figuranBox"),
+  figDownloadAllBtn: el("figDownloadAllBtn"),
+  figDownloadFilteredBtn: el("figDownloadFilteredBtn"),
 
   chartTabRoles: el("chartTabRoles"),
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
-  chartMobileList: el("chartMobileList"),
 
   drawer: el("chartDrawer"),
   drawerTitle: el("drawerTitle"),
@@ -833,7 +802,7 @@ function applyTheme(theme){
 (function initTheme(){
   const saved = localStorage.getItem("idt_theme");
   if(saved === "dark" || saved === "light") applyTheme(saved);
-  else applyTheme("light");
+  else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
@@ -880,32 +849,6 @@ function personTag(name){
 
 function normalizeHeader(h){ return (h||"").trim().toLowerCase().replace(/\s+/g," "); }
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
-/* ---------- chart colors (canlı + kategori sabit renk) ---------- */
-// ---------- Grafik renkleri: her grafikte benzersiz / canlı ----------
-function currentTheme(){
-  return (document.documentElement.getAttribute("data-theme") || "light") === "dark" ? "dark" : "light";
-}
-// Golden-angle ile birbirinden uzak renkler
-function makeUniqueColors(n){
-  const out = [];
-  const N = Math.max(1, n|0);
-  const theme = currentTheme();
-  const L = theme === "dark" ? 62 : 52;
-  for(let i=0;i<N;i++){
-    const hue = (i * 137.508) % 360;
-    out.push(`hsl(${hue} 88% ${L}%)`);
-  }
-  return out;
-}
-function makeChartColorGetter(keys){
-  const uniq = [...new Set((keys||[]).map(k=>String(k)))];
-  const cols = makeUniqueColors(uniq.length);
-  const map = new Map();
-  uniq.forEach((k,i)=> map.set(k, cols[i]));
-  return (key)=> (String(key)==="Diğer" ? "#8e8e93" : (map.get(String(key)) || "#8e8e93"));
-}
-
 
 /* ---------- load from Google ---------- */
 function parseGviz(text){
@@ -1133,11 +1076,12 @@ function computeFiguranFromRaw(){
     if(!selectedPeople.length) continue;
 
     for(const kisi of selectedPeople){
-      if(!map.has(kisi)) map.set(kisi, {games:new Set(), roles:new Set(), cats:new Set()});
+      if(!map.has(kisi)) map.set(kisi, {games:new Set(), roles:new Set(), cats:new Set(), rows:0});
       const obj = map.get(kisi);
       obj.cats.add(isRetiredArtist ? "Kurumdan Emekli Sanatçı" : "Figüran");
       if(oyun) obj.games.add(oyun);
       if(gorevRaw) obj.roles.add(gorevRaw);
+      obj.rows += 1;
     }
   }
 
@@ -1145,7 +1089,9 @@ function computeFiguranFromRaw(){
     person,
     cats:[...obj.cats].sort((a,b)=>a.localeCompare(b,"tr")),
     plays:[...obj.games].sort((a,b)=>a.localeCompare(b,"tr")),
-    roles:[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr"))}));
+    roles:[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr")),
+    rows: obj.rows
+  }));
   out.sort((a,b)=>a.person.localeCompare(b.person,"tr"));
   return out;
 }
@@ -1180,45 +1126,79 @@ function parseLogFromGviz(obj){
 async function loadNotifications(){
   if(!els.notifPanel) return;
 
-  // Bildirimler: önce LOG dene (Apps Script otomatik), yoksa BİLDİRİMLER'e fallback
+  const sheetCandidates = [CONFIG.SHEET_NOTIFS, "BİLDİRİMLER", "LOG"].filter((v,i,a)=>v && a.indexOf(v)===i);
+
+  const norm = (x)=> (x||"").toString().trim();
+  const makeKey = (n)=> `${norm(n.ts).slice(0,120)}|${norm(n.type).slice(0,30)}|${norm(n.title).slice(0,120)}|${norm(n.msg).slice(0,200)}|${norm(n.play).slice(0,120)}|${norm(n.person).slice(0,120)}`;
+
   try{
-    const trySheets = [CONFIG.SHEET_NOTIFS, "BİLDİRİMLER"].filter(Boolean);
     let data = null;
-    for(const sh of trySheets){
+    let usedSheet = null;
+
+    // API (JSONP) ile dene: en hızlısı
+    for(const sh of sheetCandidates){
       try{
         const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(sh)}`;
-        data = await jsonp(url);
-        if(data && data.ok === true && Array.isArray(data.rows)) break;
-      }catch(_e){ /* dene devam */ }
+        const d = await jsonp(url);
+        if(d && d.ok === true && Array.isArray(d.rows)){
+          data = d; usedSheet = sh; break;
+        }
+      }catch(_){}
     }
-    if(!data || data.ok !== true || !Array.isArray(data.rows)){
+
+    if(!data){
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
       els.notifCount.textContent = "";
-    els.notifCount.classList.add("hidden");
+      els.notifCount.classList.add("hidden");
       return;
     }
 
-    // Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
-    const rows = data.rows.map(r=>({
-      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
-      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
-      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
-      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
-      play: String(r["Oyun"] ?? "").trim(),
-      person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
-      read: String(r["Okundu"] ?? "").trim()
-    })).filter(x=>x.ts || x.title || x.msg);
+    // LOG (senin sheet) kolonları:
+    // Tarih/Saat | İşlem | Kişi | Önce Kategori | Sonra Kategori | Önce Görev | Sonra Görev | Önce Oyun | Sonra Oyun
+    const rows = data.rows.map(r=>{
+      const ts = norm(r["Tarih/Saat"] ?? r["Tarih"] ?? r["Tarih Saat"] ?? "");
+      const op = norm(r["İşlem"] ?? r["Islem"] ?? r["Tür"] ?? r["Tur"] ?? "🔔") || "🔔";
+      const person = norm(r["Kişi"] ?? r["Kisi"] ?? "");
+      const playBefore = norm(r["Önce Oyun"] ?? r["Once Oyun"] ?? "");
+      const playAfter  = norm(r["Sonra Oyun"] ?? r["SonraOyun"] ?? "");
+      const play = playAfter || playBefore || norm(r["Oyun"] ?? "");
+      const catB = norm(r["Önce Kategori"] ?? r["Once Kategori"] ?? "");
+      const catA = norm(r["Sonra Kategori"] ?? r["Sonra Kategori"] ?? "");
+      const roleB = norm(r["Önce Görev"] ?? r["Once Gorev"] ?? "");
+      const roleA = norm(r["Sonra Görev"] ?? r["Sonra Gorev"] ?? "");
 
-    // newest first (basit)
+      // Başlık / mesaj üret
+      let title = op;
+      let msgParts = [];
+      if(person) msgParts.push(person);
+      if(playBefore && playAfter && playBefore !== playAfter) msgParts.push(`Oyun: ${playBefore} → ${playAfter}`);
+      else if(play) msgParts.push(`Oyun: ${play}`);
+      if(catB || catA){
+        if(catB && catA && catB !== catA) msgParts.push(`Kategori: ${catB} → ${catA}`);
+        else msgParts.push(`Kategori: ${catA || catB}`);
+      }
+      if(roleB || roleA){
+        if(roleB && roleA && roleB !== roleA) msgParts.push(`Görev: ${roleB} → ${roleA}`);
+        else msgParts.push(`Görev: ${roleA || roleB}`);
+      }
+
+      // işlem ikonları
+      let type = "🔔";
+      const opUp = op.toUpperCase();
+      if(opUp.includes("EKLEND")) type="🟢";
+      else if(opUp.includes("SİL") || opUp.includes("SIL")) type="🔴";
+      else if(opUp.includes("GÜNC") || opUp.includes("GUNC")) type="🟡";
+
+      return { ts, type, title, msg: msgParts.join(" • "), play, person };
+    }).filter(n=> n.ts || n.title || n.msg);
+
+    // newest first
     rows.reverse();
 
-    // local okundu (site tarafı): imza üzerinden
     const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
-    const norm = (x)=> (x||"").toString().slice(0,120);
     rows.forEach(n=>{
-      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
-      n._key = key;
-      n._seen = !!seen[key];
+      n._key = makeKey(n);
+      n._seen = !!seen[n._key];
     });
 
     const unread = rows.filter(n=>!n._seen).length;
@@ -1231,7 +1211,6 @@ async function loadNotifications(){
     }
 
     if(!rows.length){
-
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirim yok.</div>`;
       return;
     }
@@ -1251,7 +1230,6 @@ async function loadNotifications(){
       </div>`;
     }).join("");
 
-    // tıkla → okundu yap
     els.notifList.querySelectorAll(".notif-bubble").forEach(el=>{
       el.addEventListener("click", ()=>{
         const key = el.getAttribute("data-key");
@@ -1260,7 +1238,6 @@ async function loadNotifications(){
         seen2[key]=true;
         localStorage.setItem("idt_seen_notifs", JSON.stringify(seen2));
         el.classList.add("seen");
-        // badge güncelle
         const left = Array.from(els.notifList.querySelectorAll(".notif-bubble")).filter(x=>!x.classList.contains("seen")).length;
         if(left){ els.notifCount.classList.remove("hidden"); els.notifCount.textContent=String(left); } else { els.notifCount.textContent=""; els.notifCount.classList.add("hidden"); }
       });
@@ -1268,8 +1245,8 @@ async function loadNotifications(){
 
   }catch(err){
     console.error(err);
-    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi. (API/JSONP)
-<br><span class="small muted">Not: Apps Script doGet içinde JSONP (callback) açık olmalı.</span></div>`;
+    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi.
+<br><span class="small muted">Kontrol: Sheet sekmesi “LOG” var mı? (şu an LOG üzerinden okuyoruz)</span></div>`;
     els.notifCount.textContent = "";
     els.notifCount.classList.add("hidden");
   }
@@ -1323,7 +1300,8 @@ return list.filter(it=>{
       ? (it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ")).toLowerCase()
       : (it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ")).toLowerCase();
     if(activeMode==="people" && activePlayFilter){
-      if(!((it.plays||[]).includes(activePlayFilter))) return false;
+      const playKey = normKey(activePlayFilter);
+      if(!((it.plays||[]).some(p=>normKey(p)===playKey))) return false;
     }
     if(q && !hay.includes(q)) return false;
     if(cat){
@@ -1376,24 +1354,38 @@ function renderList(){
       renderDetails(it);
 
       if(isMobile() && activeMode==="plays"){
-        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
+        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
         activePlayFilter = it.title;
-        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
+        activeMode="people";
+        els.btnPeople.classList.add("active");
+        els.btnPlays.classList.remove("active");
 
-        // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
-        // Modal içine aynı içeriği basıyoruz
-        openMobileModal(els.details.innerHTML);
+        // Filtreli kişi listesi
+        renderList();
 
-        // Geri tuşu: modal kapansın
-        history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
+        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
+
+        // Geri tuşu ile tekrar Oyunlar'a dönsün
+        history.pushState({mode:"people", play:activePlayFilter}, "");
+        window.scrollTo({top:0, behavior:"smooth"});
       }
 
     });
     els.list.appendChild(div);
   }
 
-  els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
-}
+
+  if(isMobile() && activeMode==="people" && activePlayFilter){
+    els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
+    setTimeout(()=>{
+      const b=document.getElementById("btnBackPlays");
+      if(b) b.onclick=()=>{ activePlayFilter=""; setActiveMode("plays"); render(); };
+    },0);
+  } else {
+    els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
+  }
+
+
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
@@ -1467,6 +1459,24 @@ function toTSVFromSelected(){
   }
 }
 
+
+/* ---------- distinct colors (unique per chart) ---------- */
+function makeDistinctColors(n){
+  const out = [];
+  const N = Math.max(1, n|0);
+  for(let i=0;i<N;i++){
+    const hue = (i * 360 / N);
+    out.push(`hsl(${hue} 85% 55%)`);
+  }
+  return out;
+}
+function makeColorGetter(keys){
+  const uniq = [...new Set((keys||[]).map(k=>String(k)))].sort((a,b)=>a.localeCompare(b,"tr"));
+  const cols = makeDistinctColors(uniq.length);
+  const map = new Map();
+  uniq.forEach((k,i)=>map.set(k, cols[i]));
+  return (key)=> map.get(String(key)) || "hsl(0 0% 60%)";
+}
 /* ---------- charts ---------- */
 function roundRect(ctx, x, y, w, h, r){
   const rr = Math.min(r, w/2, h/2);
@@ -1488,6 +1498,7 @@ function drawBars(canvas, items, topN){
   ctx.setTransform(dpr,0,0,dpr,0,0);
 
   const data = items.slice(0, topN);
+  const getColor = makeColorGetter(data.map(d=>d.k));
 
   const card = cssVar("--card");
   const grid = cssVar("--line");
@@ -1523,8 +1534,8 @@ function drawBars(canvas, items, topN){
     const y = padT + (h-bh);
     const bw = Math.max(barW-12, 14);
 
-    ctx.fillStyle = (window.__chartColorOf ? window.__chartColorOf(d.k) : accent);
-    ctx.globalAlpha = 0.90;
+    ctx.fillStyle = getColor(d.k);
+    ctx.globalAlpha = 0.78;
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -1571,7 +1582,12 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const text = cssVar("--text");
   const muted = cssVar("--muted");
 
-  const colorOf = (label)=> (window.__chartColorOf ? window.__chartColorOf(label) : "#8e8e93");
+  const palette = [
+    cssVar("--accent"), cssVar("--accent2"),
+    "#2E7D32","#1565C0","#6A1B9A","#EF6C00",
+    "#00838F","#C2185B","#5D4037","#455A64",
+    "#9E9D24","#AD1457"
+  ];
 
   chartHits = [];
 
@@ -1596,7 +1612,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, rOuter, start, end);
     ctx.closePath();
-    ctx.fillStyle = colorOf(d.k);
+    ctx.fillStyle = getColor(d.k);
     ctx.globalAlpha = 0.92;
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -1635,7 +1651,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   for(let i=0;i<Math.min(data.length, maxLegend);i++){
     const d=data[i];
     ly += 18;
-    ctx.fillStyle = colorOf(d.k);
+    ctx.fillStyle = getColor(d.k);
     roundRect(ctx, lx, ly-11, 10, 10, 3);
     ctx.fill();
     ctx.fillStyle = muted;
@@ -1653,79 +1669,58 @@ function drawDoughnut(canvas, items, topN, legendTitle){
 }
 
 /* ---------- mobile chart list ---------- */
-function buildPeopleListForKey(key){
-  const map=new Map();
-  for(const r of rows){
-    const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
-    if(match && r.person){
-      if(!map.has(r.person)) map.set(r.person, new Set());
-      map.get(r.person).add(r.play);
-    }
-  }
-  const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
-  items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
-  return items;
-}
-
-function openMobilePeopleModal(title, subtitle, items){
-  const id = "chartMobileSearch";
-  const listId = "chartMobilePeopleList";
-  openMobileModal(`
-    <div class="modalTitle" style="font-weight:900">${escapeHtml(title)}</div>
-    <div class="small" style="margin:4px 0 10px">${escapeHtml(subtitle||"")}</div>
-    <div class="input" style="min-width:unset" title="Ara">🔎 <input id="${id}" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/></div>
-    <div class="miniList" id="${listId}" style="margin-top:10px"></div>
-  `);
-  const render = ()=>{
-    const q = (document.getElementById(id)?.value||"").trim().toLowerCase();
-    const filtered = items.filter(x=>{
-      if(!q) return true;
-      return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
-    });
-    const box = document.getElementById(listId);
-    if(!box) return;
-    box.innerHTML = filtered.length ? filtered.slice(0,250).map(x=>`
-      <div class="miniItem">
-        <b>${escapeHtml(x.person)}</b>
-        <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
-      </div>
-    `).join("") : `<div class="empty">Sonuç yok.</div>`;
-  };
-  // DOM hazır olunca bağla
-  setTimeout(()=>{
-    const inp = document.getElementById(id);
-    if(inp) inp.addEventListener("input", render);
-    render();
-  }, 0);
-}
-
 function renderMobileChartList(items){
-  if(!els.chartMobileList) return;
-  // Tam liste: büyükten küçüğe (mobilde seçilebilir)
-  const rows2 = items.slice().sort((a,b)=>b.v-a.v);
-  els.chartMobileList.innerHTML = rows2.map(d=>{
-    const c = (window.__chartColorOf ? window.__chartColorOf(d.k) : "#8e8e93");
+  const box = document.getElementById("chartMobileList");
+  const wrap = document.querySelector(".mobileChartWrap");
+  if(!box || !wrap) return;
+
+  // sadece mobilde göster
+  if(!isMobile()){ box.innerHTML=""; wrap.style.display="none"; return; }
+  wrap.style.display="block";
+
+  const sorted = items.slice().sort((a,b)=>b.v-a.v);
+  const rows = sorted.slice(0, 24); // mobilde çok uzamasın
+
+  const getColor = makeColorGetter(rows.map(r=>r.k));
+
+  box.innerHTML = rows.map(it=>{
+    const c = getColor(it.k);
+    const rawK = String(it.k||"");
+    const safeK = escapeHtml(rawK);
+    const encK = encodeURIComponent(rawK);
     return `
-      <div class="chipRow" data-key="${escapeHtml(d.k)}" style="background:linear-gradient(135deg, ${c}22, ${c}55)">
+      <div class="chipRow" data-key="${encK}">
         <div class="chipLeft">
           <div class="dot" style="background:${c}"></div>
-          <div class="chipTitle" title="${escapeHtml(d.k)}">${escapeHtml(d.k)}</div>
+          <div class="chipTitle" title="${safeK}">${safeK}</div>
         </div>
-        <div class="chipCount">${Number(d.v||0)}</div>
+        <div class="chipCount">${it.v}</div>
       </div>
     `;
   }).join("");
 
-  els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
-    elm.addEventListener("click", ()=>{
-      const key = elm.getAttribute("data-key");
-      if(!key || key==="Diğer") return;
-      const people = buildPeopleListForKey(key);
-      const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
-      openMobilePeopleModal(title, `${people.length} kişi`, people);
+  // click: drawer aç (chart ile aynı filtre mantığı)
+  box.querySelectorAll(".chipRow").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const key = decodeURIComponent(el.getAttribute("data-key") || "");
+      const map=new Map();
+      for(const r of rowsAll()){ // rows global
+        const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
+        if(match && r.person){
+          if(!map.has(r.person)) map.set(r.person, new Set());
+          map.get(r.person).add(r.play);
+        }
+      }
+      const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
+      items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
+      openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
+      // mobilde drawer açıkken sayfa kaymasın
+      document.body.classList.add("drawerOpen");
     });
   });
 }
+function rowsAll(){ return rows || []; }
+
 function drawChart(){
   if(!rows.length) return;
   if(chartMode==="roles"){
@@ -1736,10 +1731,9 @@ function drawChart(){
       counts.get(k).add((r.person||"").trim());
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
-    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Görevlere Göre Dağılım";
-    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
-    drawDoughnut(els.chartMain, items, 14, "Top Görevler");
+    renderMobileChartList(items);
+    drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Görevler");
   }else{
     const counts=new Map();
     for(const r of rows){
@@ -1748,10 +1742,9 @@ function drawChart(){
       counts.get(k).add((r.person||"").trim());
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
-    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Kategori Dağılımı";
-    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
-    drawDoughnut(els.chartMain, items, 14, "Top Kategoriler");
+    renderMobileChartList(items);
+    drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Kategoriler");
   }
 }
 
@@ -1763,9 +1756,11 @@ function openDrawer(title, subtitle, items){
   els.drawerSearch.value = "";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
+  if(isMobile()) document.body.classList.add("drawerOpen");
 }
 function closeDrawer(){
   els.drawer.classList.add("hidden");
+  document.body.classList.remove("drawerOpen");
   drawerData = [];
   els.drawerList.innerHTML = "";
 }
@@ -1817,7 +1812,6 @@ els.chartMain.addEventListener("click", (evt)=>{
   const h = hitTestChart(evt);
   if(!h) return;
   const key = h.key;
-  if(key === "Diğer") return;
 
   const map=new Map();
   for(const r of rows){
@@ -1906,7 +1900,6 @@ function renderFiguran(){
             <td>${escapeHtml((f.cats||[]).join(", "))}</td>
             <td>${escapeHtml(f.plays.join(" • "))}</td>
             <td>${escapeHtml(f.roles.join(", "))}</td>
-            
           </tr>
         `).join("")}
       </tbody>
@@ -2013,6 +2006,9 @@ els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
   els.notifPanel.classList.toggle("hidden");
   if(!els.notifPanel.classList.contains("hidden")){
     await loadNotifications();
+    // panel açılınca "görüldü" say (sayaç sıfırlansın)
+    localStorage.setItem("idt_log_seen_ts", String(Date.now()));
+    els.notifCount.classList.add("hidden");
   }
 });
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
@@ -2054,53 +2050,87 @@ window.addEventListener("popstate", ()=>{
 els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  await copyText(tsv);
+  try{
+    await navigator.clipboard.writeText(tsv);
+    setStatus("📋 Excel formatında kopyalandı", "ok");
+    setTimeout(()=>setStatus("✅ Hazır", "ok"), 1000);
+  }catch{ alert("Kopyalama engellendi."); }
 });
 
-async function copyText(text){
+
+async async function copyText(text){
   const value = String(text ?? "");
+  // Modern Clipboard API (secure context)
   if(navigator.clipboard && window.isSecureContext){
     try{
       await navigator.clipboard.writeText(value);
       toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
       setStatus("📋 Kopyalandı", "ok");
       return true;
-    }catch(e){}
+    }catch(e){
+      // fall through to legacy
+    }
   }
+  // Legacy fallback
   try{
     const ta = document.createElement("textarea");
     ta.value = value;
-    ta.setAttribute("readonly","");
+    ta.setAttribute("readonly", "");
     ta.style.position="fixed";
-    ta.style.top="-9999px";
-    ta.style.left="-9999px";
+    ta.style.top="-1000px";
+    ta.style.left="-1000px";
     document.body.appendChild(ta);
     ta.select();
     ta.setSelectionRange(0, ta.value.length);
     const ok = document.execCommand("copy");
-    ta.remove();
+    document.body.removeChild(ta);
     if(ok){
       toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
       setStatus("📋 Kopyalandı", "ok");
       return true;
     }
   }catch(e){}
-  alert("Kopyalama engellendi. (Mobilde) uzun bas → Kopyala / (Masaüstü) Ctrl+C deneyebilirsin.");
+  alert("Kopyalama engellendi. Tarayıcı izinlerini kontrol et.");
   return false;
 }
-
-
 function downloadText(filename, text){
-  const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  // Mobil/Safari uyumu için: önce Blob dene, gerekirse data: URI fallback
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const useDataUrl = isIOS; // iOS Safari'de Blob+download sık sık sorun çıkarıyor
+  try{
+    const a = document.createElement("a");
+    a.style.display = "none";
+    if(useDataUrl){
+      a.href = "data:text/tab-separated-values;charset=utf-8," + encodeURIComponent(text);
+    }else{
+      const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
+      a.href = URL.createObjectURL(blob);
+    }
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ try{ if(!useDataUrl) URL.revokeObjectURL(a.href); }catch{} a.remove(); }, 100);
+  }catch(e){
+    // Son çare: yeni sekmede aç
+    try{ window.open("data:text/plain;charset=utf-8," + encodeURIComponent(text), "_blank"); }catch{}
+  }
 }
 function safeFileName(s){
   return String(s||"").trim().replace(/[\\\/:*?"<>|]+/g,"-").slice(0,80) || "liste";
+}
+
+function toFiguranTSV(figList){
+  const out = [["Kişi","Kategori","Görevler","Oyunlar"]];
+  (figList||[]).forEach(f=>{
+    out.push([
+      f.person,
+      (f.cats||[]).join(", "),
+      (f.roles||[]).join(", "),
+      (f.plays||[]).join(" • ")
+    ]);
+  });
+  return out.map(line=>line.map(v=>String(v??"").replace(/\t/g," ")).join("\t")).join("\n");
 }
 function toFiguranTSVFromSelected(){
   if(!selectedItem) return "";
@@ -2135,47 +2165,28 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
   toast("Figüran listesi indiriliyor…");
 });
 
+
+// Figüranlar sekmesinden indirme
+els.figDownloadAllBtn && els.figDownloadAllBtn.addEventListener("click", ()=>{
+  if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
+  const tsv = toFiguranTSV(figuran);
+  copyText(tsv);
+});
+els.figDownloadFilteredBtn && els.figDownloadFilteredBtn.addEventListener("click", ()=>{
+  const q=els.fq.value.trim().toLowerCase();
+  const filtered = (figuran||[]).filter(f=>{
+    if(!q) return true;
+    const hay=(f.person+" "+(f.cats||[]).join(" ")+" "+f.plays.join(" ")+" "+f.roles.join(" ")).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!filtered.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
+  const tsv = toFiguranTSV(filtered);
+  copyText(tsv);
+});
 els.dq.addEventListener("input", renderDistribution);
 els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution(); });
 
 els.fq.addEventListener("input", renderFiguran);
-
-// Figüran sekmesi: Excel’e Kopyala
-if(els.figDownloadAllBtn){
-  els.figDownloadAllBtn.addEventListener("click", async ()=>{
-    if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
-    const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
-    figuran.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
-    const tsv = rows
-      .map(r => r
-        .map(v => String(v ?? "")
-          .replace(/\t/g, " ")
-          .replace(/\r?\n/g, " ")
-        ).join("\t")
-      ).join("\n");
-    await copyText(tsv);
-  });
-}
-if(els.figDownloadFilteredBtn){
-  els.figDownloadFilteredBtn.addEventListener("click", async ()=>{
-    const q = norm(els.fq.value||"");
-    const list = q ? figuran.filter(f=>{
-      const hay = norm([f.kisi,f.kategori,f.oyunlar,f.gorevler].join(" "));
-      return hay.includes(q);
-    }) : figuran.slice();
-    if(!list.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
-    const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
-    list.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
-    const tsv = rows
-      .map(r => r
-        .map(v => String(v ?? "")
-          .replace(/\t/g, " ")
-          .replace(/\r?\n/g, " ")
-        ).join("\t")
-      ).join("\n");
-    await copyText(tsv);
-  });
-}
 els.fClear.addEventListener("click", ()=>{ els.fq.value=""; renderFiguran(); });
 
 els.p1.addEventListener("change", renderIntersection);
@@ -2214,54 +2225,74 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false){
+async function load(isAuto=false, force=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
+
+  const CACHE_KEY = "idt_cache_main_v1";
+  const CACHE_TTL_MS = 10 * 60 * 1000; // 10 dk
+
+  // 1) Hızlı açılış: cache varsa anında çiz
   try{
-    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
-    if(!isAuto){
-      try{
-        const cached = localStorage.getItem("idt_cache_v1");
-        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
-        if(cached){
-          const ageMin = (Date.now()-cachedAt)/60000;
-          rawRows = JSON.parse(cached);
-          rows = expandRowsByPeople(rawRows);
-          plays = groupByPlay(rows);
-          people = groupByPerson(rows);
-          playsList = plays.map(p=>p.title);
-          renderList();
-          renderDetails(null);
-          distribution = computeDistribution();
-          renderDistribution();
-          retiredSet = computeRetiredSetFromRaw();
-          figuran = computeFiguranFromRaw();
-          renderFiguran();
-          renderPlayOptions();
-          renderIntersection();
-          renderKpis();
-          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
-        }
-      }catch(_){/* cache bozuksa görmezden gel */}
-    }
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if(!force && cached && cached.t && Array.isArray(cached.rawRows) && (Date.now()-cached.t) < CACHE_TTL_MS){
+      rawRows = cached.rawRows;
+      rows = expandRowsByPeople(rawRows);
+      plays = groupByPlay(rows);
+      people = groupByPerson(rows);
+      playsList = plays.map(p=>p.title);
 
-    try{ rawRows = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ rawRows = await tryLoadGviz(); }
-      catch(e2){ rawRows = await tryLoadCsv(); }
-    }
+      renderList();
+      renderDetails(null);
 
-    // Cache (bir sonraki açılışta hızlı render için)
-    try{
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
-    }catch(_){/* localStorage doluysa sorun değil */}
+      distribution = computeDistribution();
+      renderDistribution();
+
+      retiredSet = computeRetiredSetFromRaw();
+      figuran = computeFiguranFromRaw();
+      renderFiguran();
+
+      renderPlayOptions();
+      renderIntersection();
+      renderKpis();
+
+      const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+      setStatus(`⚡ Hızlı açıldı • ${when}`, "ok");
+
+      // cache varken arka planda yenile (kullanıcı beklemesin)
+      setTimeout(()=>load(true, true), 50);
+      // bildirimleri de çek
+      loadNotifications();
+      return;
+    }
+  }catch(_){ /* cache bozuksa umursama */ }
+
+  // 2) Cache yoksa: en hızlı kaynaktan ilk geleni kullan
+  try{
+    const withTimeout = (p, ms)=> Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), ms))]);
+    const firstSuccessful = (promises)=> new Promise((resolve, reject)=>{
+      let pending = promises.length, lastErr = null, settled = false;
+      promises.forEach(pr=>{
+        pr.then(v=>{ if(!settled){ settled=true; resolve(v); } })
+          .catch(e=>{ lastErr=e; pending--; if(pending===0 && !settled) reject(lastErr||new Error("failed")); });
+      });
+    });
+
+    const attempts = [
+      withTimeout(tryLoadApiJsonp(), 6000),
+      withTimeout(tryLoadGviz(), 6000),
+      withTimeout(tryLoadCsv(), 8000),
+    ];
+
+    rawRows = await firstSuccessful(attempts);
+
+    // cache'e yaz
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify({t: Date.now(), rawRows})); }catch(_){}
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
     playsList = plays.map(p=>p.title);
-
 
     renderList();
     renderDetails(null);
@@ -2269,7 +2300,6 @@ async function load(isAuto=false){
     distribution = computeDistribution();
     renderDistribution();
 
-    retiredSet = computeRetiredSetFromRaw();
     retiredSet = computeRetiredSetFromRaw();
     figuran = computeFiguranFromRaw();
     renderFiguran();
@@ -2279,17 +2309,15 @@ async function load(isAuto=false){
 
     renderKpis();
 
-    // cache'e yaz
-    try{
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
-    }catch(_){/* storage dolu olabilir */}
-
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
 
-    // Bildirimleri (BİLDİRİMLER) yükle
+    // Bildirimleri yükle + periyodik yenile
     loadNotifications();
+    if(!window.__idt_notif_timer){
+      window.__idt_notif_timer = setInterval(loadNotifications, 60*1000);
+    }
+
   }catch(err){
     console.error(err);
     setStatus("⛔ Veri çekilemedi", "bad");
@@ -2297,7 +2325,7 @@ async function load(isAuto=false){
 <b>Veri çekilemedi.</b>
 
 1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
-2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
+2) Bazı ağlarda Apps Script yavaş olabilir: Yenile butonuna bas.
 
 Hata: ${escapeHtml(err.message || String(err))}
 </div>`;
