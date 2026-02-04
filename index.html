@@ -96,6 +96,55 @@ html[data-theme="dark"]{
       --tabActiveBg: rgba(148,163,184,.12);
       --tabActiveBorder: rgba(148,163,184,.25);
       --tabActiveText: #f1f5f9;
+  /* ===============================
+   DARK MODE: TÜM YAZILAR BEYAZ
+   (sekme/pill/button yazıları dahil)
+================================ */
+
+/* Genel: tüm metinleri beyaza zorla */
+html.dark body,
+html.dark body *{
+  color:#fff !important;
+}
+
+/* Linkler */
+html.dark a,
+html.dark a *{
+  color:#fff !important;
+}
+
+/* Sekme / pill / nav butonları (senin UI) */
+html.dark .tab,
+html.dark .tabs button,
+html.dark .pill,
+html.dark .chip,
+html.dark .btn,
+html.dark button,
+html.dark [role="tab"],
+html.dark [role="button"]{
+  color:#fff !important;
+}
+
+/* Bazı elemanlarda opacity ile soluklaştırma olabiliyor */
+html.dark .muted,
+html.dark .small,
+html.dark .hint,
+html.dark .sub,
+html.dark .subtitle{
+  color:rgba(255,255,255,.88) !important;
+  opacity:1 !important;
+}
+
+/* Input/placeholder */
+html.dark input,
+html.dark textarea,
+html.dark select{
+  color:#fff !important;
+}
+html.dark ::placeholder{
+  color:rgba(255,255,255,.7) !important;
+}
+
     }
 
     *{box-sizing:border-box}
