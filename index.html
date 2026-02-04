@@ -21,7 +21,28 @@
       --radius:18px;
       --radius2:14px;
     }
+/* === FORCE DARK / LIGHT TEXT COLORS === */
+html.dark body,
+html.dark body * {
+  color: #ffffff !important;
+}
 
+html.light body,
+html.light body * {
+  color: #000000 !important;
+}
+
+/* inputs & placeholders */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: #ffffff !important;
+  background-color: #111 !important;
+}
+
+html.dark ::placeholder {
+  color: #cccccc !important;
+}
 html[data-theme="dark"]{
       --bg:#0b1020;
       --card:#0f172a;
