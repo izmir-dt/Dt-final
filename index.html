@@ -2226,11 +2226,16 @@ function renderKpis(){
 
 /* ---------- main load ---------- */
 async function load(isAuto=false, force=false){
+  // UI status
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
 
-  const CACHE_KEY = "idt_cache_main_v1";
+  const CACHE_KEY = "idt_cache_main_v2";
   const CACHE_TTL_MS = 10 * 60 * 1000; // 10 dk
+
+  // --- helpers
+  const sleep = (ms)=> new Promise(r=>setTimeout(r, ms));
+  const nowHm = ()=> new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
 
   // 1) Hızlı açılış: cache varsa anında çiz
   try{
@@ -2256,8 +2261,7 @@ async function load(isAuto=false, force=false){
       renderIntersection();
       renderKpis();
 
-      const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-      setStatus(`⚡ Hızlı açıldı • ${when}`, "ok");
+      setStatus(`⚡ Hızlı açıldı • ${nowHm()}`, "ok");
 
       // cache varken arka planda yenile (kullanıcı beklemesin)
       setTimeout(()=>load(true, true), 50);
@@ -2267,24 +2271,82 @@ async function load(isAuto=false, force=false){
     }
   }catch(_){ /* cache bozuksa umursama */ }
 
-  // 2) Cache yoksa: en hızlı kaynaktan ilk geleni kullan
-  try{
-    const withTimeout = (p, ms)=> Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), ms))]);
-    const firstSuccessful = (promises)=> new Promise((resolve, reject)=>{
-      let pending = promises.length, lastErr = null, settled = false;
-      promises.forEach(pr=>{
-        pr.then(v=>{ if(!settled){ settled=true; resolve(v); } })
-          .catch(e=>{ lastErr=e; pending--; if(pending===0 && !settled) reject(lastErr||new Error("failed")); });
+  // 2) Cache yoksa: retry + watchdog
+  const sources = [
+    {name:"Apps Script", run: ()=> tryLoadApiJsonp(), timeout: 9000},
+    {name:"GViz",       run: ()=> tryLoadGviz(),     timeout: 9000},
+    {name:"CSV",        run: ()=> tryLoadCsv(),      timeout: 12000},
+  ];
+
+  const runSource = async (src)=>{
+    // src.run() bazı durumlarda hiç dönmeyebilir; genel timeout + abort.
+    const p = src.run();
+    const out = await Promise.race([
+      p,
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), src.timeout))
+    ]);
+    return out;
+  };
+
+  const loadOnce = async ()=>{
+    // Hepsini paralel başlat, ilk başarılıyı al (Promise.any)
+    const tasks = sources.map((src, i)=> (async ()=>{
+      // küçük UI ipucu
+      if(!isAuto) setStatus(`⏳ Yükleniyor… (${src.name})`);
+      try{
+        return await runSource(src);
+      }catch(e){
+        // sadece iç log
+        throw new Error(`${src.name}: ${e && e.message ? e.message : e}`);
+      }
+    })());
+
+    // Promise.any: en az bir tanesi çözülürse döner, hepsi fail olursa AggregateError
+    if(Promise.any){
+      return await Promise.any(tasks);
+    }
+    // eski tarayıcı fallback
+    return await new Promise((resolve, reject)=>{
+      let pending = tasks.length, lastErr=null, done=false;
+      tasks.forEach(t=>{
+        t.then(v=>{ if(!done){ done=true; resolve(v); }})
+         .catch(e=>{ lastErr=e; pending--; if(pending===0 && !done) reject(lastErr||new Error("failed")); });
       });
     });
+  };
 
-    const attempts = [
-      withTimeout(tryLoadApiJsonp(), 6000),
-      withTimeout(tryLoadGviz(), 6000),
-      withTimeout(tryLoadCsv(), 8000),
-    ];
+  // Watchdog: 15 sn sonra otomatik tekrar dene / hata göster
+  let watchdog;
+  const startWatchdog = ()=>{
+    clearTimeout(watchdog);
+    watchdog = setTimeout(()=>{
+      // kullanıcıya rehber + yenile butonu zaten var
+      setStatus("⏳ Hâlâ yükleniyor… (ağ yavaş) • Yenile’ye basabilirsin", "warn");
+    }, 15000);
+  };
 
-    rawRows = await firstSuccessful(attempts);
+  try{
+    startWatchdog();
+
+    let lastErr = null;
+    for(let attempt=1; attempt<=3; attempt++){
+      try{
+        if(!isAuto) setStatus(`⏳ Yükleniyor… (deneme ${attempt}/3)`);
+        rawRows = await loadOnce();
+        lastErr = null;
+        break;
+      }catch(e){
+        lastErr = e;
+        if(!isAuto) setStatus(`⏳ Tekrar deniyorum… (${attempt}/3)`, "warn");
+        await sleep(500 + attempt*600);
+      }
+    }
+
+    clearTimeout(watchdog);
+
+    if(lastErr || !Array.isArray(rawRows) || rawRows.length===0){
+      throw lastErr || new Error("Boş veri döndü");
+    }
 
     // cache'e yaz
     try{ localStorage.setItem(CACHE_KEY, JSON.stringify({t: Date.now(), rawRows})); }catch(_){}
@@ -2306,11 +2368,9 @@ async function load(isAuto=false, force=false){
 
     renderPlayOptions();
     renderIntersection();
-
     renderKpis();
 
-    const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-    setStatus(`✅ Hazır • ${when}`, "ok");
+    setStatus(`✅ Hazır • ${nowHm()}`, "ok");
 
     // Bildirimleri yükle + periyodik yenile
     loadNotifications();
@@ -2319,15 +2379,18 @@ async function load(isAuto=false, force=false){
     }
 
   }catch(err){
+    clearTimeout(watchdog);
     console.error(err);
     setStatus("⛔ Veri çekilemedi", "bad");
     els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
 <b>Veri çekilemedi.</b>
 
+<b>Kontrol listesi</b>
 1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
-2) Bazı ağlarda Apps Script yavaş olabilir: Yenile butonuna bas.
+2) (Öneri) Sheet: Dosya → Paylaş → Web’de yayınla (Publish to web) → “BÜTÜN OYUNLAR” sayfasını yayınla
+3) Kurumsal ağ/VPN Apps Script’i yavaşlatabilir: farklı ağda dene
 
-Hata: ${escapeHtml(err.message || String(err))}
+<b>Hata</b>: ${escapeHtml(err.message || String(err))}
 </div>`;
     els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
     els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
@@ -2336,7 +2399,7 @@ Hata: ${escapeHtml(err.message || String(err))}
   }
 }
 
-load(false);
+document.addEventListener("DOMContentLoaded", ()=>load(false));
 </script>
 
   <!-- Mobile detail modal -->
