@@ -741,9 +741,10 @@ function toTSVFromSelected(){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const lines=[["Kategori","Görev","Kişi"].join("\t")];
+    const playTitle = selectedItem.title || "";
+    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
     for(const r of rowsSorted){
-      lines.push([r.category||"", r.role||"", r.person||""].join("\t"));
+      lines.push([playTitle, r.category||"", r.role||"", r.person||""].join("\t"));
     }
     return lines.join("\n");
   } else {
@@ -761,20 +762,23 @@ function toTSVFromSelected(){
 }
 
 
-/* ---------- vivid colors (stable per key) ---------- */
-const VIVID_PALETTE = [
-  "#ff3b30","#ff9500","#ffcc00","#34c759","#00c7be",
-  "#0a84ff","#5856d6","#af52de","#ff2d55","#8e8e93",
-  "#2c7be5","#00b894","#fd79a8","#6c5ce7","#e17055",
-  "#0984e3","#00cec9","#d63031","#e84393","#6d6875"
-];
-function colorForKey(key){
-  const s = String(key||"").trim().toUpperCase();
-  let h = 0;
-  for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
-  return VIVID_PALETTE[h % VIVID_PALETTE.length];
+/* ---------- distinct colors (unique per chart) ---------- */
+function makeDistinctColors(n){
+  const out = [];
+  const N = Math.max(1, n|0);
+  for(let i=0;i<N;i++){
+    const hue = (i * 360 / N);
+    out.push(`hsl(${hue} 85% 55%)`);
+  }
+  return out;
 }
-
+function makeColorGetter(keys){
+  const uniq = [...new Set((keys||[]).map(k=>String(k)))].sort((a,b)=>a.localeCompare(b,"tr"));
+  const cols = makeDistinctColors(uniq.length);
+  const map = new Map();
+  uniq.forEach((k,i)=>map.set(k, cols[i]));
+  return (key)=> map.get(String(key)) || "hsl(0 0% 60%)";
+}
 /* ---------- charts ---------- */
 function roundRect(ctx, x, y, w, h, r){
   const rr = Math.min(r, w/2, h/2);
@@ -796,6 +800,7 @@ function drawBars(canvas, items, topN){
   ctx.setTransform(dpr,0,0,dpr,0,0);
 
   const data = items.slice(0, topN);
+  const getColor = makeColorGetter(data.map(d=>d.k));
 
   const card = cssVar("--card");
   const grid = cssVar("--line");
@@ -831,7 +836,7 @@ function drawBars(canvas, items, topN){
     const y = padT + (h-bh);
     const bw = Math.max(barW-12, 14);
 
-    ctx.fillStyle = colorForKey(d.k);
+    ctx.fillStyle = getColor(d.k);
     ctx.globalAlpha = 0.78;
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
@@ -909,7 +914,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, rOuter, start, end);
     ctx.closePath();
-    ctx.fillStyle = colorForKey(d.k);
+    ctx.fillStyle = getColor(d.k);
     ctx.globalAlpha = 0.92;
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -948,7 +953,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   for(let i=0;i<Math.min(data.length, maxLegend);i++){
     const d=data[i];
     ly += 18;
-    ctx.fillStyle = colorForKey(d.k);
+    ctx.fillStyle = getColor(d.k);
     roundRect(ctx, lx, ly-11, 10, 10, 3);
     ctx.fill();
     ctx.fillStyle = muted;
@@ -978,8 +983,10 @@ function renderMobileChartList(items){
   const sorted = items.slice().sort((a,b)=>b.v-a.v);
   const rows = sorted.slice(0, 24); // mobilde çok uzamasın
 
+  const getColor = makeColorGetter(rows.map(r=>r.k));
+
   box.innerHTML = rows.map(it=>{
-    const c = colorForKey(it.k);
+    const c = getColor(it.k);
     const rawK = String(it.k||"");
     const safeK = escapeHtml(rawK);
     const encK = encodeURIComponent(rawK);
@@ -1186,7 +1193,7 @@ function renderFiguran(){
 
   els.figuranBox.innerHTML = `
     <table class="table">
-      <thead><tr><th>#</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
@@ -1353,18 +1360,41 @@ els.copyBtn.addEventListener("click", async ()=>{
 });
 
 
-async function copyText(text){
-  try{
-    await navigator.clipboard.writeText(text);
-    toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
-    setStatus("📋 Kopyalandı", "ok");
-    return true;
-  }catch(e){
-    alert("Kopyalama engellendi. Tarayıcı izinlerini kontrol et.");
-    return false;
+async async function copyText(text){
+  const value = String(text ?? "");
+  // Modern Clipboard API (secure context)
+  if(navigator.clipboard && window.isSecureContext){
+    try{
+      await navigator.clipboard.writeText(value);
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }catch(e){
+      // fall through to legacy
+    }
   }
+  // Legacy fallback
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = value;
+    ta.setAttribute("readonly", "");
+    ta.style.position="fixed";
+    ta.style.top="-1000px";
+    ta.style.left="-1000px";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    if(ok){
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }
+  }catch(e){}
+  alert("Kopyalama engellendi. Tarayıcı izinlerini kontrol et.");
+  return false;
 }
-
 function downloadText(filename, text){
   // Mobil/Safari uyumu için: önce Blob dene, gerekirse data: URI fallback
   const ua = navigator.userAgent || "";
