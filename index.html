@@ -230,8 +230,9 @@ html[data-theme="dark"]{
       padding:10px 12px;border-radius:12px;
       border:1px solid var(--line);
       background:var(--card);
-      min-width: 240px;
-      flex:1 1 240px;
+      min-width: 190px;
+      max-width: 640px;
+      flex:1 1 260px;
     }
     .input input, .input select{
       width:100%;background:transparent;border:0;outline:0;
@@ -490,6 +491,9 @@ a{ color:inherit; }
     html[data-theme="dark"] svg text{ fill: var(--text); }
 
 
+
+    #distributionBox th:nth-child(2){white-space:nowrap; width:110px}
+
 </style>
 </head>
 <body>
@@ -498,7 +502,7 @@ a{ color:inherit; }
     <div class="brand">
       <div class="logo">IDT</div>
       <div>
-        <h1>T.C. KÜLTÜR VE TURİZM BAKANLIĞI<br>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi</h1>
+        <h1>T.C. KÜLTÜR VE TURİZM BAKANLIĞI<br>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</h1>
         <div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div>
       </div>
     </div>
@@ -682,7 +686,7 @@ a{ color:inherit; }
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
-          <button class="btn" id="drawerClose">✕</button>
+          <div style="display:flex;gap:8px;align-items:center"><button class="btn" id="drawerBack" title="Geri" style="display:none">←</button><button class="btn" id="drawerClose">✕</button></div>
         </div>
         <div class="bd">
           <div class="input" style="min-width:unset" title="Ara">
@@ -795,6 +799,7 @@ const els = {
   drawerTitle: el("drawerTitle"),
   drawerSub: el("drawerSub"),
   drawerClose: el("drawerClose"),
+  drawerBack: el("drawerBack"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
@@ -822,6 +827,8 @@ let activePlayFilter = null; // mobilde: oyundan kişilere geçince filtre
 let chartMode = "roles"; // roles | cats
 let chartHits = []; // clickable regions
 let drawerData = [];
+let drawerStack = []; // for drill-down navigation
+let drawerMode = "items"; // 'items' or 'labels'
 
 /* ---------- Theme toggle ---------- */
 function applyTheme(theme){
@@ -1539,6 +1546,10 @@ function drawBars(canvas, items, topN){
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
     ctx.globalAlpha = 1;
+    // slice separator
+    ctx.strokeStyle = card;
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
     ctx.fillStyle = text;
     ctx.font = "12px system-ui";
@@ -1595,7 +1606,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const isM = isMobile();
   const cx = isM ? cssW*0.50 : cssW*0.34;
   const cy = cssH*0.52;
-  const rOuter = Math.min(cssW, cssH)*(isM ? 0.30 : 0.36);
+  const rOuter = Math.min(cssW, cssH)*(isM ? 0.34 : 0.40);
   const rInner = rOuter*0.60;
 
   let start = -Math.PI/2;
@@ -1768,20 +1779,33 @@ function drawChart(){
 }
 
 /* ---------- chart drawer ---------- */
-function openDrawer(title, subtitle, items){
+function openDrawer(title, subtitle, items, opts={}){
   els.drawerTitle.textContent = title;
   els.drawerSub.textContent = subtitle;
   drawerData = items.slice();
+  drawerMode = opts.mode || ((drawerData[0] && ("label" in (drawerData[0]||{}))) ? "labels" : "items");
   els.drawerSearch.value = "";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
+  // back button
+  els.drawerBack.style.display = drawerStack.length ? "inline-flex" : "none";
 }
 function closeDrawer(){
   els.drawer.classList.add("hidden");
   drawerData = [];
+  drawerStack = [];
+  els.drawerBack.style.display = "none";
   els.drawerList.innerHTML = "";
 }
 els.drawerClose.addEventListener("click", closeDrawer);
+els.drawerBack.addEventListener("click", ()=>{
+  const prev = drawerStack.pop();
+  if(!prev){
+    els.drawerBack.style.display = "none";
+    return;
+  }
+  openDrawer(prev.title, prev.subtitle, prev.items, {mode: prev.mode});
+});
 els.drawerSearch.addEventListener("input", renderDrawerList);
 
 function renderDrawerList(){
@@ -1803,7 +1827,7 @@ function renderDrawerList(){
 
   if(labelMode){
     els.drawerList.innerHTML = filtered.slice(0,400).map(x=>`
-      <div class="miniItem">
+      <div class="miniItem" role="button" tabindex="0" data-label="${escapeHtml(String(x.label||""))}">
         <b>${escapeHtml(String(x.label||""))}</b>
         <div class="small">${escapeHtml(String(x.value ?? ""))} kişi</div>
       </div>
@@ -1818,6 +1842,37 @@ function renderDrawerList(){
     </div>
   `).join("");
 }
+
+
+// Drill-down: when drawer shows label list (e.g., "Diğer"), clicking a label opens the people list
+els.drawerList.addEventListener("click", (ev)=>{
+  const item = ev.target.closest(".miniItem[data-label]");
+  if(!item) return;
+  const label = item.getAttribute("data-label") || "";
+  if(!label) return;
+
+  // Save current state for back navigation
+  drawerStack.push({
+    title: els.drawerTitle.textContent,
+    subtitle: els.drawerSub.textContent,
+    items: drawerData.slice(),
+    mode: "labels"
+  });
+
+  // Build person list for this label
+  const map=new Map();
+  for(const r of rows){
+    const match = (chartMode==="roles") ? ((r.role||"").trim()===label) : ((r.category||"").trim()===label);
+    if(match && r.person){
+      if(!map.has(r.person)) map.set(r.person, new Set());
+      map.get(r.person).add(r.play);
+    }
+  }
+  const people=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}))
+    .sort((a,b)=>a.person.localeCompare(b.person,"tr"));
+  const sub = (chartMode==="roles") ? "Görev → Kişiler" : "Kategori → Kişiler";
+  openDrawer(label, sub, people, {mode:"items"});
+});
 
 
 function hitTestChart(evt){
@@ -2107,7 +2162,7 @@ function showManualCopy(text){
       <div class="overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:9999;">
         <div class="card" style="max-width:720px;width:min(92vw,720px);padding:14px 14px 12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
-            <div><b>📋 Kopyala</b><div class="small">Ctrl+C / Kopyala → Excel’de Ctrl+V</div></div>
+            <div><div class="small" style="line-height:1.25;margin-bottom:6px">İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</div><b>📋 Kopyala</b><div class="small">Ctrl+C / Kopyala → Excel’de Ctrl+V</div></div>
             <button class="btn" id="copyModalClose">✕</button>
           </div>
           <textarea id="copyModalTa" style="width:100%;height:260px;font:12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--text)"></textarea>
