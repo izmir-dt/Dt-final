@@ -494,6 +494,14 @@ a{ color:inherit; }
 
     #distributionBox th:nth-child(2){white-space:nowrap; width:110px}
 
+
+/* UX: tıklanabilir liste öğeleri */
+.miniItem, .miniRow{
+  cursor:pointer;
+}
+.miniItem:hover, .miniRow:hover{
+  filter: brightness(1.04);
+}
 </style>
 </head>
 <body>
@@ -1891,64 +1899,43 @@ function closeStatsDrawer(){
 
 let _statsChartInstance = null;
 function drawStats(){
-  if(!els.statsChart) return;
+  const canvas = document.getElementById("statsChart");
+  if(!canvas) return;
 
-  // Oyun -> kişi set'i
-  const playMap = new Map();
-  for(const r of rows){
-    const play = (r.play||"").trim() || "—";
-    const person = (r.person||"").trim() || "—";
-    if(!playMap.has(play)) playMap.set(play, new Set());
-    playMap.get(play).add(person);
+  // Build: top 10 games by unique people count
+  const plays = Array.from(playMap.keys());
+  const items = plays.map(play=>{
+    const peopleSet = new Set();
+    (playMap.get(play)||[]).forEach(r=> peopleSet.add(r.person));
+    return { play, count: peopleSet.size, people: Array.from(peopleSet).sort((a,b)=>a.localeCompare(b,'tr')) };
+  }).sort((a,b)=> b.count-a.count || a.play.localeCompare(b.play,'tr'));
+
+  const top = items.slice(0,10);
+
+  // If no data yet, clear + placeholder
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width  = canvas.clientWidth  * (window.devicePixelRatio||1);
+  const H = canvas.height = canvas.clientHeight * (window.devicePixelRatio||1);
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  if(!top.length){
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--muted") || "#667";
+    ctx.font = `${14*(window.devicePixelRatio||1)}px var(--font)`;
+    ctx.fillText("Veri yok / henüz yüklenmedi.", 16*(window.devicePixelRatio||1), 28*(window.devicePixelRatio||1));
+    return;
   }
 
-  const items = [...playMap.entries()]
-    .map(([play,set])=>({play, count:set.size, people:[...set].sort((a,b)=>a.localeCompare(b,"tr"))}))
-    .sort((a,b)=>b.count-a.count || a.play.localeCompare(b.play,"tr"))
-    .slice(0,10);
+  // Draw bars using shared helper (clickable)
+  drawBars(canvas, top.map((it,idx)=>({
+    key: it.play,
+    label: it.play,
+    value: it.count,
+    color: `hsl(${(idx*37)%360} 70% 55%)`
+  })));
 
-  const labels = items.map(x=>x.play);
-  const data = items.map(x=>x.count);
-
-  const ctx = els.statsChart.getContext("2d");
-  if(_statsChartInstance){ try{ _statsChartInstance.destroy(); }catch(e){} }
-
-  _statsChartInstance = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Kişi",
-        data
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: true }
-      },
-      scales: {
-        x: {
-          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue("--text") }
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue("--text") }
-        }
-      },
-      onClick: (evt, elements) => {
-        if(!elements || !elements.length) return;
-        const idx = elements[0].index;
-        const it = items[idx];
-        openStatsDrawer(it);
-      }
-    }
-  });
-
-  // CSS height fix (canvas inside card)
-  els.statsChart.style.height = "320px";
+  // Store for click -> drawer
+  window.__statsIndex = new Map(top.map(it=>[it.play, it]));
 }
 
 function openStatsDrawer(it){
