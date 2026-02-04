@@ -57,7 +57,7 @@ html[data-theme="dark"]{
     }
     .wrap{max-width:1220px;margin:0 auto;padding:16px}
     .top{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;
       padding:12px 16px;
     }
     .brand{display:flex;align-items:center;gap:12px}
@@ -98,7 +98,7 @@ html[data-theme="dark"]{
     .notifHd{
       padding:12px;
       border-bottom:1px solid var(--line);
-      display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+      display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
     .notifBd{max-height:60vh;overflow:auto;padding:12px}
@@ -187,7 +187,7 @@ html[data-theme="dark"]{
     .card .hd{
       padding:12px 12px 10px;
       border-bottom:1px solid var(--line);
-      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      display:flex;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:wrap;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
     .card .hd h2{margin:0;font-size:14px}
@@ -208,7 +208,7 @@ html[data-theme="dark"]{
       background:var(--card);
       box-shadow:var(--shadow);
       padding:14px 14px 12px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      display:flex;align-items:center;justify-content:flex-start;gap:10px;
     }
     .kpi .label{color:var(--muted);font-size:12px}
     .kpi .value{font-size:22px;font-weight:900;letter-spacing:.2px}
@@ -224,9 +224,9 @@ html[data-theme="dark"]{
     .kpi.soft3{background:linear-gradient(135deg,var(--soft3), var(--card));}
     .kpi.soft4{background:linear-gradient(135deg,var(--soft4), var(--card));}
 
-    .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center;margin-left:auto;margin-right:auto}
     .input{
-      display:flex;align-items:center;gap:8px;
+      display:flex;align-items:center;gap:8px;min-width:260px;max-width:560px;flex:0 1 560px;
       padding:10px 12px;border-radius:12px;
       border:1px solid var(--line);
       background:var(--card);
@@ -274,7 +274,7 @@ html[data-theme="dark"]{
       cursor:pointer;
     }
     .item:hover{border-color:color-mix(in srgb, var(--line) 60%, var(--accent) 40%)}
-    .item .t{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .item .t{display:flex;align-items:flex-start;justify-content:flex-start;gap:10px}
     .name{font-weight:850; letter-spacing:.2px}
     .meta{margin-top:4px;color:var(--muted);font-size:12px}
     .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
@@ -329,7 +329,7 @@ html[data-theme="dark"]{
       height: fit-content;
       min-height: 140px;
     }
-    .drawer .hd{padding:12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .drawer .hd{padding:12px;border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;gap:10px;align-items:center}
     .drawer .bd{padding:12px}
     .drawer.hidden{display:none}
     .drawerTitle{font-weight:900}
@@ -353,7 +353,7 @@ html[data-theme="dark"]{
     .modal{ position:fixed; left:50%; transform:translateX(-50%); bottom:12px; width:min(980px, calc(100% - 24px));
             max-height:80vh; background:var(--card); border:1px solid var(--border); border-radius:16px; z-index:60;
             box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow:hidden; }
-    .modalHead{ display:flex; align-items:center; justify-content:space-between; padding:12px 12px; border-bottom:1px solid var(--border); }
+    .modalHead{ display:flex; align-items:center; justify-content:flex-start; padding:12px 12px; border-bottom:1px solid var(--border); }
     .modalTitle{ font-weight:800; }
     .modalBody{ padding:12px; overflow:auto; max-height:calc(80vh - 54px); }
     .hidden{ display:none !important; }
@@ -389,7 +389,7 @@ html[data-theme="dark"]{
 /* ---- Mobil Grafik Listesi (Canvas alternatifi) ---- */
 .mobileChartWrap{ display:none; }
 .mobileChartList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
-.chipRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 12px; border-radius:14px; cursor:pointer; user-select:none;
+.chipRow{ display:flex; align-items:center; justify-content:flex-start; gap:10px; padding:12px 12px; border-radius:14px; cursor:pointer; user-select:none;
   border:1px solid rgba(0,0,0,.08); box-shadow: 0 6px 20px rgba(0,0,0,.06); }
 .chipLeft{ display:flex; align-items:center; gap:10px; min-width:0; }
 .dot{ width:14px; height:14px; border-radius:999px; flex:0 0 14px; box-shadow:0 0 0 4px rgba(255,255,255,.35) inset; }
@@ -408,7 +408,7 @@ html[data-theme="dark"]{
 .notif-bubble{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:10px 0;border-radius:14px;background:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 18px rgba(0,0,0,.06);cursor:pointer}
 .notif-bubble:hover{transform:translateY(-1px)}
 .notif-bubble.seen{opacity:.62}
-.notif-type{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(0,0,0,.04);font-size:16px;flex:0 0 34px}
+.notif-type{width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;border-radius:10px;background:rgba(0,0,0,.04);font-size:16px;flex:0 0 34px}
 .notif-title{font-weight:700;margin-bottom:2px}
 .notif-msg{margin:2px 0 6px 0}
 .notif-meta{font-size:12px;opacity:.8}
@@ -856,6 +856,7 @@ els.sheetBtn.href = CONFIG.sheetUrl();
 
 let rawRows = [];
 let rows = [];
+let ACTIVE_TAB = 'Panel';
 let plays = [];
 let people = [];
 let playsList = [];
@@ -1898,44 +1899,158 @@ function closeStatsDrawer(){
 }
 
 let _statsChartInstance = null;
+
 function drawStats(){
-  const canvas = document.getElementById("statsChart");
+  const canvas = $("#statsCanvas");
   if(!canvas) return;
-
-  // Build: top 10 games by unique people count
-  const plays = Array.from(playMap.keys());
-  const items = plays.map(play=>{
-    const peopleSet = new Set();
-    (playMap.get(play)||[]).forEach(r=> peopleSet.add(r.person));
-    return { play, count: peopleSet.size, people: Array.from(peopleSet).sort((a,b)=>a.localeCompare(b,'tr')) };
-  }).sort((a,b)=> b.count-a.count || a.play.localeCompare(b.play,'tr'));
-
-  const top = items.slice(0,10);
-
-  // If no data yet, clear + placeholder
   const ctx = canvas.getContext("2d");
-  const W = canvas.width  = canvas.clientWidth  * (window.devicePixelRatio||1);
-  const H = canvas.height = canvas.clientHeight * (window.devicePixelRatio||1);
-  ctx.setTransform(1,0,0,1,0,0);
-  ctx.clearRect(0,0,W,H);
+
+  // Compute top 10 plays by UNIQUE person count (from normalized rows)
+  const map = new Map(); // play -> {set:Set, people:Set}
+  for(const r of rows){
+    const play = (r.play||"").trim();
+    const person = (r.person||"").trim();
+    if(!play) continue;
+    if(!map.has(play)) map.set(play, {set:new Set(), people:new Set()});
+    if(person) map.get(play).set.add(person);
+  }
+  const top = [...map.entries()]
+    .map(([play,obj])=>({play, count: obj.set.size, people: [...obj.set].sort((a,b)=>a.localeCompare(b,'tr'))}))
+    .sort((a,b)=> b.count - a.count || a.play.localeCompare(b.play,'tr'))
+    .slice(0,10);
+
+  // If no data yet, show placeholder
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(10, Math.floor(rect.width));
+  const h = Math.max(260, Math.floor(rect.height || 340));
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+
+  const theme = document.documentElement.dataset.theme || "light";
+  const fg = theme==="dark" ? "rgba(255,255,255,.88)" : "rgba(20,20,20,.9)";
+  const muted = theme==="dark" ? "rgba(255,255,255,.55)" : "rgba(20,20,20,.55)";
+  const grid = theme==="dark" ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)";
 
   if(!top.length){
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--muted") || "#667";
-    ctx.font = `${14*(window.devicePixelRatio||1)}px var(--font)`;
-    ctx.fillText("Veri yok / henüz yüklenmedi.", 16*(window.devicePixelRatio||1), 28*(window.devicePixelRatio||1));
+    ctx.fillStyle = muted;
+    ctx.font = "14px var(--font)";
+    ctx.fillText("Veri yüklenince grafik burada görünecek.", 16, 28);
+    canvas._bars = [];
     return;
   }
 
-  // Draw bars using shared helper (clickable)
-  drawBars(canvas, top.map((it,idx)=>({
-    key: it.play,
-    label: it.play,
-    value: it.count,
-    color: `hsl(${(idx*37)%360} 70% 55%)`
-  })));
+  // Layout (leave room for labels)
+  const padL = 220;
+  const padR = 18;
+  const padT = 18;
+  const padB = 18;
+  const barH = 22;
+  const gap = 10;
 
-  // Store for click -> drawer
-  window.__statsIndex = new Map(top.map(it=>[it.play, it]));
+  const max = Math.max(...top.map(d=>d.count)) || 1;
+  const plotW = Math.max(10, w - padL - padR);
+  const plotH = top.length * (barH + gap) - gap;
+  const startY = padT + Math.max(0, (h - padT - padB - plotH) * 0.25);
+
+  // background grid lines
+  ctx.strokeStyle = grid;
+  ctx.lineWidth = 1;
+  const ticks = 4;
+  for(let i=0;i<=ticks;i++){
+    const x = padL + (plotW * i / ticks);
+    ctx.beginPath();
+    ctx.moveTo(x, padT);
+    ctx.lineTo(x, h - padB);
+    ctx.stroke();
+  }
+
+  // Bars
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#7a1e2c";
+  canvas._bars = [];
+  ctx.textBaseline = "middle";
+
+  for(let i=0;i<top.length;i++){
+    const d = top[i];
+    const y = startY + i*(barH+gap);
+    const bw = Math.round((d.count / max) * plotW);
+
+    // label
+    ctx.fillStyle = fg;
+    ctx.font = "600 13px var(--font)";
+    const label = d.play.length > 34 ? d.play.slice(0,33)+"…" : d.play;
+    ctx.fillText(label, 16, y + barH/2);
+
+    // value
+    ctx.fillStyle = muted;
+    ctx.font = "12px var(--font)";
+    ctx.fillText(String(d.count), padL - 12, y + barH/2);
+
+    // bar
+    ctx.fillStyle = accent;
+    roundRect(ctx, padL, y, Math.max(2,bw), barH, 8, true, false);
+
+    // hit box
+    canvas._bars.push({x:padL, y, w:plotW, h:barH, data:d});
+  }
+
+  // cursor + click
+  canvas.onmousemove = (e)=>{
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    const hit = (canvas._bars||[]).some(b => x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h);
+    canvas.style.cursor = hit ? "pointer" : "default";
+  };
+  canvas.onclick = (e)=>{
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    const bar = (canvas._bars||[]).find(b => x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h);
+    if(!bar) return;
+    openStatsDrawer(bar.data);
+  };
+}
+
+function openStatsDrawer(item){
+  const drawer = $("#statsDrawer");
+  const title = $("#statsDrawerTitle");
+  const sub = $("#statsDrawerSub");
+  const list = $("#statsDrawerList");
+  const q = $("#statsDrawerSearch");
+  if(!drawer || !list) return;
+
+  title.textContent = item.play;
+  sub.textContent = item.count + " kişi";
+
+  const render = ()=>{
+    const needle = (q?.value||"").trim().toLocaleUpperCase('tr');
+    list.innerHTML = "";
+    const people = item.people.filter(p => !needle || p.toLocaleUpperCase('tr').includes(needle));
+    for(const name of people){
+      const el = document.createElement("div");
+      el.className = "drawerItem";
+      el.innerHTML = `<div class="t">${escapeHtml(name)}</div>`;
+      list.appendChild(el);
+    }
+    if(!people.length){
+      const el = document.createElement("div");
+      el.className="muted";
+      el.style.padding="12px 10px";
+      el.textContent="Sonuç yok";
+      list.appendChild(el);
+    }
+  };
+  if(q){
+    q.oninput = render;
+    q.value = "";
+  }
+  render();
+
+  drawer.classList.remove("hidden");
+  drawer.setAttribute("aria-hidden","false");
 }
 
 function openStatsDrawer(it){
@@ -2273,9 +2388,9 @@ function showManualCopy(text){
     modal = document.createElement("div");
     modal.id = "copyModal";
     modal.innerHTML = `
-      <div class="overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:9999;">
+      <div class="overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;z-index:9999;">
         <div class="card" style="max-width:720px;width:min(92vw,720px);padding:14px 14px 12px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:8px">
             <div><div class="small" style="line-height:1.25;margin-bottom:6px">İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</div><b>📋 Kopyala</b><div class="small">Ctrl+C / Kopyala → Excel’de Ctrl+V</div></div>
             <button class="btn" id="copyModalClose">✕</button>
           </div>
@@ -2513,6 +2628,8 @@ async function load(isAuto=false){
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
+      if(ACTIVE_TAB==='Stats') requestAnimationFrame(drawStats);
+
 
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
