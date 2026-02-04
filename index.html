@@ -21,28 +21,7 @@
       --radius:18px;
       --radius2:14px;
     }
-/* === FORCE DARK / LIGHT TEXT COLORS === */
-html.dark body,
-html.dark body * {
-  color: #ffffff !important;
-}
 
-html.light body,
-html.light body * {
-  color: #000000 !important;
-}
-
-/* inputs & placeholders */
-html.dark input,
-html.dark textarea,
-html.dark select {
-  color: #ffffff !important;
-  background-color: #111 !important;
-}
-
-html.dark ::placeholder {
-  color: #cccccc !important;
-}
 html[data-theme="dark"]{
       --bg:#0b1020;
       --card:#0f172a;
@@ -472,44 +451,6 @@ a{ color:inherit; }
 .table th, .table td{ color:var(--text); }
 .btn{ color:var(--text); }
 .input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
-
-
-/* --- Dark theme: force all text to be white (user request) --- */
-html[data-theme="dark"]{
-  --text:#ffffff;
-  --muted:#e5e7eb;
-  color-scheme: dark; /* only for form controls inside our theme */
-}
-html:not([data-theme="dark"]){
-  color-scheme: light;
-}
-html[data-theme="dark"] body,
-html[data-theme="dark"] header,
-html[data-theme="dark"] main,
-html[data-theme="dark"] .card,
-html[data-theme="dark"] .list,
-html[data-theme="dark"] .row,
-html[data-theme="dark"] .small,
-html[data-theme="dark"] .muted,
-html[data-theme="dark"] .btn,
-html[data-theme="dark"] .tab,
-html[data-theme="dark"] .badge,
-html[data-theme="dark"] .pill,
-html[data-theme="dark"] .drawer,
-html[data-theme="dark"] .notif-bubble,
-html[data-theme="dark"] .chipRow,
-html[data-theme="dark"] table,
-html[data-theme="dark"] th,
-html[data-theme="dark"] td,
-html[data-theme="dark"] label,
-html[data-theme="dark"] input,
-html[data-theme="dark"] textarea,
-html[data-theme="dark"] select,
-html[data-theme="dark"] option{
-  color: var(--text) !important;
-}
-html[data-theme="dark"] ::placeholder{ color: rgba(255,255,255,.72) !important; }
-html[data-theme="dark"] a{ color: var(--text) !important; }
 
 </style>
 </head>
@@ -1219,58 +1160,16 @@ async function loadNotifications(){
       return;
     }
 
-    // LOG/BİLDİRİMLER kolonları ortamdan ortama değişebiliyor.
-// Bu yüzden olabildiğince toleranslı okuyalım.
-const pick = (r, keys)=> {
-  for(const k of keys){
-    if(r && Object.prototype.hasOwnProperty.call(r, k) && String(r[k]??"").trim()!=="") return r[k];
-  }
-  return "";
-};
-
-const normalize = (r)=>{
-  const ts = String(pick(r, ["Tarih","Tarih/Saat","Tarih Saat","Timestamp","Time","Date","Datetime","Zaman","Created","Oluşturma Tarihi"]) ?? "").trim();
-  const type = String(pick(r, ["Tür","Tur","Type","Action","İşlem","Islem","Event"]) ?? "🔔").trim() || "🔔";
-  const title = String(pick(r, ["Başlık","Baslik","Title","Konu","Subject","Sayfa","Sheet"]) ?? "").trim();
-  const msg = String(pick(r, ["Mesaj","Açıklama","Aciklama","Message","Detail","Details","Detay","Aksiyon","İçerik","Icerik"]) ?? "").trim();
-
-  const play = String(pick(r, ["Oyun","Game","Play"]) ?? "").trim();
-  const person = String(pick(r, ["Kişi","Kisi","Person","Name","Ad Soyad"]) ?? "").trim();
-
-  // Eğer hala boşsa, satırı düz metin yap (hiç değilse göster)
-  let fallback = "";
-  if(!ts && !title && !msg){
-    try{
-      const pairs = Object.keys(r||{}).slice(0,10).map(k=>`${k}: ${String(r[k]??"").slice(0,80)}`);
-      fallback = pairs.join(" • ");
-    }catch{}
-  }
-
-  return { ts, type, title, msg: msg || fallback, play, person };
-};
-};
-
-
-const toObj = (arr)=>{
-  const h = Array.isArray(data.headers) ? data.headers : null;
-  if(!h) return null;
-  const o = {};
-  for(let i=0;i<h.length;i++) o[String(h[i])] = arr[i];
-  return o;
-};
-
-// data.rows bazen array/obj karışık gelebiliyor; sadece obje olanları işle.
-const rows = (data.rows || [])
-  .map(r => {
-    if(r && typeof r === "object" && !Array.isArray(r)) return normalize(r);
-    if(Array.isArray(r)){
-      const o = toObj(r);
-      if(o) return normalize(o);
-    }
-    return null;
-  })
-  .filter(Boolean)
-  .filter(x=>x.ts || x.title || x.msg);
+    // Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
+    const rows = data.rows.map(r=>({
+      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
+      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
+      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
+      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
+      play: String(r["Oyun"] ?? "").trim(),
+      person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
+      read: String(r["Okundu"] ?? "").trim()
+    })).filter(x=>x.ts || x.title || x.msg);
 
     // newest first (basit)
     rows.reverse();
