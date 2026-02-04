@@ -3,16 +3,9 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="color-scheme" content="light dark"/>
-  <meta name="supported-color-schemes" content="light dark"/>
-  <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
+    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
-html{ color-scheme: light dark; }
-
-
-
-
-    :root{
+:root{
       --bg:#e9ded1;            /* premium warm ivory */
       --card:#fbf7f1;
       --text:#16161a;
@@ -450,6 +443,14 @@ html[data-theme="dark"]{
 
 body.drawerOpen{ overflow:hidden; }
 
+
+
+/* Enforce theme text colors */
+body{ background:var(--bg); color:var(--text); }
+a{ color:inherit; }
+.table th, .table td{ color:var(--text); }
+.btn{ color:var(--text); }
+.input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
 
 </style>
 </head>
