@@ -1,11 +1,11 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
-<style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
+  <style>
+
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
       --card:#fbf7f1;
@@ -21,6 +21,13 @@
       --shadow:0 10px 30px rgba(24,16,8,.12);
       --radius:18px;
       --radius2:14px;
+      --r: var(--radius);
+      --r2: var(--radius2);
+      --border: var(--line);
+      --primary: var(--accent);
+      --good: var(--ok);
+      --ink: var(--text);
+
     }
 
 html[data-theme="dark"]{
@@ -455,231 +462,247 @@ a{ color:inherit; }
 
 
 
-/* ---- v11 overrides: cleaner header + readable tables + minimalist logo ---- */
-.logo{display:grid;place-items:center}
-.logo svg{width:28px;height:28px}
-.brand h1{font-size:20px;line-height:1.15;letter-spacing:.2px}
-@media (max-width:720px){
-  .brand h1{font-size:18px}
-  .logo{width:42px;height:42px}
-}
-.table th{
-  color: color-mix(in srgb, var(--text) 70%, var(--muted) 30%);
-  border-bottom:2px solid color-mix(in srgb, var(--line) 70%, var(--text) 10%);
-}
-.table td{
-  line-height:1.25;
-}
-table{border:1px solid color-mix(in srgb, var(--line) 85%, var(--text) 8%)}
-.table tr:hover td{background:color-mix(in srgb, var(--card) 88%, var(--bg) 12%)}
-/* keep dark mode text always readable in all controls */
-html[data-theme="dark"] *{text-shadow:none}
-html[data-theme="dark"] input,html[data-theme="dark"] textarea,html[data-theme="dark"] select,html[data-theme="dark"] option{
-  color:var(--text) !important;
-}
-/* stronger section headers */
-.sectionTitle{font-weight:800}
+    /* Dark mode – bazı tarayıcılarda siyah kalan metinleri zorla düzelt */
+    html[data-theme="dark"] body{ color: var(--text); }
+    html[data-theme="dark"] button,
+    html[data-theme="dark"] input,
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] option,
+    html[data-theme="dark"] label,
+    html[data-theme="dark"] summary,
+    html[data-theme="dark"] .btn,
+    html[data-theme="dark"] .input,
+    html[data-theme="dark"] .table,
+    html[data-theme="dark"] .table td,
+    html[data-theme="dark"] .table th,
+    html[data-theme="dark"] .modal,
+    html[data-theme="dark"] .drawer{
+      color: var(--text);
+    }
+    html[data-theme="dark"] .subtitle,
+    html[data-theme="dark"] .muted,
+    html[data-theme="dark"] .pill,
+    html[data-theme="dark"] footer{
+      color: var(--muted);
+    }
+    /* Safari/Chrome autofill siyah yazı bug'ı */
+    html[data-theme="dark"] input:-webkit-autofill,
+    html[data-theme="dark"] textarea:-webkit-autofill,
+    html[data-theme="dark"] select:-webkit-autofill{
+      -webkit-text-fill-color: var(--text) !important;
+      transition: background-color 999999s ease-in-out 0s;
+    }
+    /* SVG içinde text (ikon vb.) */
+    html[data-theme="dark"] svg text{ fill: var(--text); }
+
+
 </style>
 </head>
 <body>
 <header>
-<div class="top">
-<div class="brand">
-<div class="logo"><svg aria-hidden="true" viewbox="0 0 64 64">
-<path d="M14 18c6-8 30-8 36 0v18c0 10-8 18-18 18S14 46 14 36V18z" fill="currentColor" opacity=".18"></path>
-<path d="M20 28c4-3 9-4 12-4s8 1 12 4" fill="none" opacity=".8" stroke="currentColor" stroke-linecap="round" stroke-width="3"></path>
-<path d="M22 40c4 4 8 6 10 6s6-2 10-6" fill="none" opacity=".8" stroke="currentColor" stroke-linecap="round" stroke-width="3"></path>
-<circle cx="26" cy="32" fill="currentColor" r="2.5"></circle>
-<circle cx="38" cy="32" fill="currentColor" r="2.5"></circle>
-</svg></div>
-<div>
-<h1>İzmir Devlet Tiyatrosu Müdürlüğü<br/>Repertuvar Kişi Takip Sistemi</h1>
-<div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div>
-</div>
-</div>
-<div class="actions">
-<button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
-<span class="pill" id="status">⏳ Yükleniyor…</span>
-<button class="btn" id="reloadBtn">↻ Yenile</button>
-<div class="notif">
-<button class="btn" id="notifBtn" title="Bildirimler (LOG)">
+  <div class="top">
+    <div class="brand">
+      <div class="logo">IDT</div>
+      <div>
+        <h1>T.C. KÜLTÜR VE TURİZM BAKANLIĞI<br>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi</h1>
+        <div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
+      <span id="status" class="pill">⏳ Yükleniyor…</span>
+      <button class="btn" id="reloadBtn">↻ Yenile</button>
+      <div class="notif">
+        <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
           🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
-</button>
-<div aria-label="Bildirimler" class="notifPanel hidden" id="notifPanel" role="dialog">
-<div class="notifHd">
-<div>
-<b>Bildirimler</b>
-<div class="small">Kaynak: LOG sayfası (Apps Script)</div>
-</div>
-<div class="row" style="gap:8px">
-<button class="btn" id="notifRefresh">↻</button>
-<button class="btn" id="notifClose">✕</button>
-</div>
-</div>
-<div class="notifBd" id="notifList">
-<div class="empty">LOG okunuyor…</div>
-</div>
-</div>
-</div>
-<a class="btn primary" href="#" id="sheetBtn" rel="noreferrer" target="_blank">📄 Google Sheet’i Aç</a>
-</div>
-</div>
-<div class="nav">
-<button class="tab active" id="tabPanel">Panel</button>
-<button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
-<button class="tab" id="tabIntersection">Kesişim Analizi</button>
-<button class="tab" id="tabFiguran">Figüranlar</button>
-<button class="tab" id="tabCharts">Grafikler</button>
-</div>
+        </button>
+        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
+          <div class="notifHd">
+            <div>
+              <b>Bildirimler</b>
+              <div class="small">Kaynak: LOG sayfası (Apps Script)</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <button class="btn" id="notifRefresh">↻</button>
+              <button class="btn" id="notifClose">✕</button>
+            </div>
+          </div>
+          <div class="notifBd" id="notifList">
+            <div class="empty">LOG okunuyor…</div>
+          </div>
+        </div>
+      </div>
+      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="tab active" id="tabPanel">Panel</button>
+    <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
+    <button class="tab" id="tabIntersection">Kesişim Analizi</button>
+    <button class="tab" id="tabFiguran">Figüranlar</button>
+    <button class="tab" id="tabCharts">Grafikler</button>
+  </div>
 </header>
+
 <div class="wrap">
-<div class="kpis" id="kpis">
-<div class="kpi soft1"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
-<div class="kpi soft2"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
-<div class="kpi soft3"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
-<div class="kpi soft4"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
-</div>
-<!-- PANEL -->
-<section id="viewPanel">
-<div class="card">
-<div class="hd">
-<h2>Liste</h2>
-<div class="filters">
-<div class="input" title="Ara">
-            🔎 <input autocomplete="off" id="q" placeholder="Oyun / kişi / görev ara…" type="search"/>
-</div>
+  <div class="kpis" id="kpis">
+    <div class="kpi soft1"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
+    <div class="kpi soft2"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
+    <div class="kpi soft3"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
+    <div class="kpi soft4"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+  </div>
+
+  <!-- PANEL -->
+  <section id="viewPanel">
+    <div class="card">
+      <div class="hd">
+        <h2>Liste</h2>
+        <div class="filters">
+          <div class="input" title="Ara">
+            🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
+          </div>
 <div class="seg" title="Görünüm">
-<button class="active" id="btnPlays">🎭 Oyunlar</button>
-<button id="btnPeople">👥 Kişiler</button>
+            <button id="btnPlays" class="active">🎭 Oyunlar</button>
+            <button id="btnPeople">👥 Kişiler</button>
+          </div>
+
+          <button class="btn" id="clearBtn">Temizle</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid">
+          <div>
+            <div class="list" id="list"></div>
+            <div class="small" id="hint" style="margin-top:10px"></div>
+          </div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd">
+              <h2>Detay</h2>
+              <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
 </div>
-<button class="btn" id="clearBtn">Temizle</button>
-</div>
-</div>
-<div class="bd">
-<div class="grid">
-<div>
-<div class="list" id="list"></div>
-<div class="small" id="hint" style="margin-top:10px"></div>
-</div>
-<div class="card" style="box-shadow:none">
-<div class="hd">
-<h2>Detay</h2>
-<button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
-</div>
-<div class="bd" id="details">
-<div class="empty">Soldan bir oyun veya kişi seç.</div>
-</div>
-<footer>
-<div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
-<div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
-</footer>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
-<section id="viewDistribution" style="display:none">
-<div class="card">
-<div class="hd">
-<h2>Oyunlara Göre Personel Dağılımı</h2>
-<div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
-</div>
-<div class="bd">
-<div class="filters" style="margin-bottom:10px">
-<div class="input" title="Ara">
-            🔎 <input autocomplete="off" id="dq" placeholder="Kişi veya oyun ara…" type="search"/>
-</div>
-<button class="btn" id="dClear">Temizle</button>
-</div>
-<div id="distributionBox"></div>
-</div>
-</div>
-</section>
-<!-- KESİŞİM -->
-<section id="viewIntersection" style="display:none">
-<div class="card">
-<div class="hd">
-<h2>Kesişim Analizi</h2>
-<div class="small">İki oyunu seç — ortak personeli ve görevlerini gösterir.</div>
-</div>
-<div class="bd">
-<div class="filters" style="margin-bottom:10px">
-<div class="input" title="1. Oyun">
+            <div class="bd" id="details">
+              <div class="empty">Soldan bir oyun veya kişi seç.</div>
+            </div>
+            <footer>
+              <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
+              <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
+  <section id="viewDistribution" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Oyunlara Göre Personel Dağılımı</h2>
+        <div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="Ara">
+            🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/>
+          </div>
+          <button class="btn" id="dClear">Temizle</button>
+        </div>
+        <div id="distributionBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KESİŞİM -->
+  <section id="viewIntersection" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Kesişim Analizi</h2>
+        <div class="small">İki oyunu seç — ortak personeli ve görevlerini gösterir.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="1. Oyun">
             1️⃣
             <select id="p1"></select>
-</div>
-<div class="input" title="2. Oyun">
+          </div>
+          <div class="input" title="2. Oyun">
             2️⃣
             <select id="p2"></select>
-</div>
-<button class="btn" id="swapBtn">⇄ Değiştir</button>
-</div>
-<div id="intersectionBox"></div>
-</div>
-<footer>
+          </div>
+          <button class="btn" id="swapBtn">⇄ Değiştir</button>
+        </div>
+        <div id="intersectionBox"></div>
+      </div>
+      <footer>
         Not: Kesişim için kişi hücresindeki “virgül / ve / / / satır sonu” ayrımları otomatik yapılır.
       </footer>
+    </div>
+  </section>
+
+  <!-- FİGÜRAN -->
+  <section id="viewFiguran" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Figüranlar</h2>
+        <div class="small">Apps Script mantığıyla: çoklu kişi varsa sadece <code>(Figüran)</code> etiketi olanlar alınır.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="Ara">
+            🔎 <input id="fq" type="search" placeholder="Figüran / oyun ara…" autocomplete="off"/>
+          </div>
+          <button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
+          <button class="btn" id="figDownloadFilteredBtn">📋 Excel’e Kopyala (Filtreli)</button>
+          <button class="btn" id="fClear">Temizle</button>
+        </div>
+        <div id="figuranBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAFİKLER -->
+  <section id="viewCharts" style="display:none">
+    <div class="chartsNav">
+      <button class="tab active" id="chartTabRoles">Görevlere Göre Dağılım</button>
+      <button class="tab" id="chartTabCats">Kategori Dağılımı</button>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1.1fr .9fr">
+      <div class="card">
+        <div class="hd">
+          <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
+          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div>
+        </div>
+        <div class="bd">
+          <canvas id="chartMain" width="900" height="340"></canvas>
+          <div class="mobileChartWrap">
+            <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
+            <div class="mobileChartList" id="chartMobileList"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="drawer hidden" id="chartDrawer">
+        <div class="hd">
+          <div>
+            <div class="drawerTitle" id="drawerTitle">Seçim</div>
+            <div class="drawerSub" id="drawerSub">—</div>
+          </div>
+          <button class="btn" id="drawerClose">✕</button>
+        </div>
+        <div class="bd">
+          <div class="input" style="min-width:unset" title="Ara">
+            🔎 <input id="drawerSearch" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/>
+          </div>
+          <div class="miniList" id="drawerList"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
 </div>
-</section>
-<!-- FİGÜRAN -->
-<section id="viewFiguran" style="display:none">
-<div class="card">
-<div class="hd">
-<h2>Figüranlar</h2>
-<div class="small">Apps Script mantığıyla: çoklu kişi varsa sadece <code>(Figüran)</code> etiketi olanlar alınır.</div>
-</div>
-<div class="bd">
-<div class="filters" style="margin-bottom:10px">
-<div class="input" title="Ara">
-            🔎 <input autocomplete="off" id="fq" placeholder="Figüran / oyun ara…" type="search"/>
-</div>
-<button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
-<button class="btn" id="figDownloadFilteredBtn">📋 Excel’e Kopyala (Filtreli)</button>
-<button class="btn" id="fClear">Temizle</button>
-</div>
-<div id="figuranBox"></div>
-</div>
-</div>
-</section>
-<!-- GRAFİKLER -->
-<section id="viewCharts" style="display:none">
-<div class="chartsNav">
-<button class="tab active" id="chartTabRoles">Görevlere Göre Dağılım</button>
-<button class="tab" id="chartTabCats">Kategori Dağılımı</button>
-</div>
-<div class="grid" style="grid-template-columns: 1.1fr .9fr">
-<div class="card">
-<div class="hd">
-<h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-<div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div>
-</div>
-<div class="bd">
-<canvas height="340" id="chartMain" width="900"></canvas>
-<div class="mobileChartWrap">
-<div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
-<div class="mobileChartList" id="chartMobileList"></div>
-</div>
-</div>
-</div>
-<aside class="drawer hidden" id="chartDrawer">
-<div class="hd">
-<div>
-<div class="drawerTitle" id="drawerTitle">Seçim</div>
-<div class="drawerSub" id="drawerSub">—</div>
-</div>
-<button class="btn" id="drawerClose">✕</button>
-</div>
-<div class="bd">
-<div class="input" style="min-width:unset" title="Ara">
-            🔎 <input autocomplete="off" id="drawerSearch" placeholder="İsim / oyun ara…" type="search"/>
-</div>
-<div class="miniList" id="drawerList"></div>
-</div>
-</aside>
-</div>
-</section>
-</div>
+
 <script>
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
@@ -2202,31 +2225,8 @@ async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
   try{
-    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
-    if(!isAuto){
-      try{
-        const cached = localStorage.getItem("idt_cache_v1");
-        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
-        if(cached){
-          const ageMin = (Date.now()-cachedAt)/60000;
-          rawRows = JSON.parse(cached);
-          rows = expandRowsByPeople(rawRows);
-          plays = groupByPlay(rows);
-          people = groupByPerson(rows);
-          playsList = plays.map(p=>p.title);
-          renderList();
-          renderDetails(null);
-          distribution = computeDistribution();
-          renderDistribution();
-          retiredSet = computeRetiredSetFromRaw();
-          figuran = computeFiguranFromRaw();
-          renderFiguran();
-          renderPlayOptions();
-          renderIntersection();
-          renderKpis();
-          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
-        }
-      }catch(_){/* cache bozuksa görmezden gel */}
+    // 
+
     }
 
     try{ rawRows = await tryLoadApiJsonp(); }
@@ -2235,11 +2235,8 @@ async function load(isAuto=false){
       catch(e2){ rawRows = await tryLoadCsv(); }
     }
 
-    // Cache (bir sonraki açılışta hızlı render için)
-    try{
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
-    }catch(_){/* localStorage doluysa sorun değil */}
+    // 
+
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
@@ -2265,8 +2262,8 @@ async function load(isAuto=false){
 
     // cache'e yaz
     try{
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
+      // localStorage cache disabled
+      // localStorage cache disabled
     }catch(_){/* storage dolu olabilir */}
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
@@ -2294,14 +2291,16 @@ Hata: ${escapeHtml(err.message || String(err))}
 
 load(false);
 </script>
-<!-- Mobile detail modal -->
-<div aria-hidden="true" class="overlay hidden" id="mobileOverlay"></div>
-<div aria-label="Detay" aria-modal="true" class="modal hidden" id="mobileModal" role="dialog">
-<div class="modalHead">
-<div class="modalTitle">Detay</div>
-<button class="btn sm" id="modalClose">Kapat</button>
-</div>
-<div class="modalBody" id="mobileContent"></div>
-</div>
+
+  <!-- Mobile detail modal -->
+  <div id="mobileOverlay" class="overlay hidden" aria-hidden="true"></div>
+  <div id="mobileModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detay">
+    <div class="modalHead">
+      <div class="modalTitle">Detay</div>
+      <button id="modalClose" class="btn sm">Kapat</button>
+    </div>
+    <div id="mobileContent" class="modalBody"></div>
+  </div>
+
 </body>
 </html>
