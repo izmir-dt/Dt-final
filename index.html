@@ -2106,10 +2106,13 @@ if(els.figDownloadAllBtn){
     if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
     const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
     figuran.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
-    const tsv = rows.map(r=>r.map(v=>String(v??"").replace(/	/g," ").replace(/
-?
-/g," ")).join("	")).join("
-");
+    const tsv = rows
+      .map(r => r
+        .map(v => String(v ?? "")
+          .replace(/\t/g, " ")
+          .replace(/\r?\n/g, " ")
+        ).join("\t")
+      ).join("\n");
     await copyText(tsv);
   });
 }
@@ -2123,10 +2126,13 @@ if(els.figDownloadFilteredBtn){
     if(!list.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
     const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
     list.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
-    const tsv = rows.map(r=>r.map(v=>String(v??"").replace(/	/g," ").replace(/
-?
-/g," ")).join("	")).join("
-");
+    const tsv = rows
+      .map(r => r
+        .map(v => String(v ?? "")
+          .replace(/\t/g, " ")
+          .replace(/\r?\n/g, " ")
+        ).join("\t")
+      ).join("\n");
     await copyText(tsv);
   });
 }
