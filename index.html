@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
+
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
       --card:#fbf7f1;
@@ -20,59 +21,6 @@
       --shadow:0 10px 30px rgba(24,16,8,.12);
       --radius:18px;
       --radius2:14px;
-  /* ===============================
-   FORCE DARK MODE TEXT COLORS
-   (STABIL SÜRÜM İÇİN)
-================================ */
-
-/* Genel metinler */
-html.dark,
-html.dark body,
-html.dark body * {
-  color: #ffffff !important;
-}
-
-/* Kartlar, paneller, drawer, tablolar */
-html.dark .card,
-html.dark .panel,
-html.dark .drawer,
-html.dark table,
-html.dark th,
-html.dark td,
-html.dark .small,
-html.dark .hint,
-html.dark .subtitle {
-  color: #ffffff !important;
-}
-
-/* Butonlar */
-html.dark button,
-html.dark .btn {
-  color: #ffffff !important;
-}
-
-/* Input / search / select */
-html.dark input,
-html.dark textarea,
-html.dark select {
-  color: #ffffff !important;
-  background-color: #111111 !important;
-  border-color: #444 !important;
-}
-
-/* Placeholder yazıları */
-html.dark ::placeholder {
-  color: #cccccc !important;
-}
-
-/* Grafik altı açıklamalar / başlıklar */
-html.dark .chartTitle,
-html.dark .chartHint,
-html.dark .drawerTitle,
-html.dark .drawerSub {
-  color: #ffffff !important;
-}
-
     }
 
 html[data-theme="dark"]{
@@ -96,55 +44,6 @@ html[data-theme="dark"]{
       --tabActiveBg: rgba(148,163,184,.12);
       --tabActiveBorder: rgba(148,163,184,.25);
       --tabActiveText: #f1f5f9;
-  /* ===============================
-   DARK MODE: TÜM YAZILAR BEYAZ
-   (sekme/pill/button yazıları dahil)
-================================ */
-
-/* Genel: tüm metinleri beyaza zorla */
-html.dark body,
-html.dark body *{
-  color:#fff !important;
-}
-
-/* Linkler */
-html.dark a,
-html.dark a *{
-  color:#fff !important;
-}
-
-/* Sekme / pill / nav butonları (senin UI) */
-html.dark .tab,
-html.dark .tabs button,
-html.dark .pill,
-html.dark .chip,
-html.dark .btn,
-html.dark button,
-html.dark [role="tab"],
-html.dark [role="button"]{
-  color:#fff !important;
-}
-
-/* Bazı elemanlarda opacity ile soluklaştırma olabiliyor */
-html.dark .muted,
-html.dark .small,
-html.dark .hint,
-html.dark .sub,
-html.dark .subtitle{
-  color:rgba(255,255,255,.88) !important;
-  opacity:1 !important;
-}
-
-/* Input/placeholder */
-html.dark input,
-html.dark textarea,
-html.dark select{
-  color:#fff !important;
-}
-html.dark ::placeholder{
-  color:rgba(255,255,255,.7) !important;
-}
-
     }
 
     *{box-sizing:border-box}
@@ -553,6 +452,43 @@ a{ color:inherit; }
 .table th, .table td{ color:var(--text); }
 .btn{ color:var(--text); }
 .input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
+
+
+
+    /* Dark mode – bazı tarayıcılarda siyah kalan metinleri zorla düzelt */
+    html[data-theme="dark"] body{ color: var(--text); }
+    html[data-theme="dark"] button,
+    html[data-theme="dark"] input,
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] option,
+    html[data-theme="dark"] label,
+    html[data-theme="dark"] summary,
+    html[data-theme="dark"] .btn,
+    html[data-theme="dark"] .input,
+    html[data-theme="dark"] .table,
+    html[data-theme="dark"] .table td,
+    html[data-theme="dark"] .table th,
+    html[data-theme="dark"] .modal,
+    html[data-theme="dark"] .drawer{
+      color: var(--text);
+    }
+    html[data-theme="dark"] .subtitle,
+    html[data-theme="dark"] .muted,
+    html[data-theme="dark"] .pill,
+    html[data-theme="dark"] footer{
+      color: var(--muted);
+    }
+    /* Safari/Chrome autofill siyah yazı bug'ı */
+    html[data-theme="dark"] input:-webkit-autofill,
+    html[data-theme="dark"] textarea:-webkit-autofill,
+    html[data-theme="dark"] select:-webkit-autofill{
+      -webkit-text-fill-color: var(--text) !important;
+      transition: background-color 999999s ease-in-out 0s;
+    }
+    /* SVG içinde text (ikon vb.) */
+    html[data-theme="dark"] svg text{ fill: var(--text); }
+
 
 </style>
 </head>
