@@ -1989,7 +1989,7 @@ function drawStats(){
     ctx.fillText(String(d.count), padL - 12, y + barH/2);
 
     // bar
-    ctx.fillStyle = accent;
+    ctx.fillStyle = pickColor(i);
     roundRect(ctx, padL, y, Math.max(2,bw), barH, 8, true, false);
 
     // hit box
