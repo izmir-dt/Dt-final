@@ -502,9 +502,8 @@ a{ color:inherit; }
     <div class="brand">
       <div class="logo">IDT</div>
       <div>
-        <h1>T.C. KÜLTÜR VE TURİZM BAKANLIĞI<br>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</h1>
-        <div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div>
-      </div>
+        <h1>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</h1>
+        </div>
     </div>
     <div class="actions">
       <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
@@ -540,6 +539,7 @@ a{ color:inherit; }
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
     <button class="tab" id="tabCharts">Grafikler</button>
+    <button class="tab" id="tabStats">İstatistikler</button>
   </div>
 </header>
 
@@ -697,6 +697,34 @@ a{ color:inherit; }
       </aside>
     </div>
   </section>
+  <!-- İSTATİSTİKLER -->
+  <section id="viewStats" style="display:none">
+    <div class="grid" style="grid-template-columns: 1.1fr .9fr">
+      <div class="card">
+        <div class="hd">
+          <h2>İstatistikler</h2>
+          <div class="small">En çok personel bulunan oyunlar (ilk 10) • grafiğe tıkla → sağda liste açılır.</div>
+        </div>
+        <div class="bd">
+          <canvas id="statsChart" width="900" height="360"></canvas>
+        </div>
+      </div>
+
+      <aside class="drawer hidden" id="statsDrawer">
+        <div class="hd">
+          <div>
+            <div class="drawerTitle" id="statsDrawerTitle">—</div>
+            <div class="drawerSub" id="statsDrawerSub">—</div>
+          </div>
+          <div><button class="btn" id="statsDrawerClose">✕</button></div>
+        </div>
+        <div class="bd">
+          <div class="miniList" id="statsDrawerList"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
 </div>
 
 <script>
@@ -757,6 +785,7 @@ const els = {
   tabIntersection: el("tabIntersection"),
   tabFiguran: el("tabFiguran"),
   tabCharts: el("tabCharts"),
+  tabStats: el("tabStats"),
 
   viewPanel: el("viewPanel"),
   viewDistribution: el("viewDistribution"),
@@ -802,6 +831,13 @@ const els = {
   drawerBack: el("drawerBack"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
+
+  statsChart: el("statsChart"),
+  statsDrawer: el("statsDrawer"),
+  statsDrawerClose: el("statsDrawerClose"),
+  statsDrawerTitle: el("statsDrawerTitle"),
+  statsDrawerSub: el("statsDrawerSub"),
+  statsDrawerList: el("statsDrawerList"),
 
   kpiPlays: el("kpiPlays"),
   kpiPeople: el("kpiPeople"),
@@ -1798,6 +1834,7 @@ function closeDrawer(){
   els.drawerList.innerHTML = "";
 }
 els.drawerClose.addEventListener("click", closeDrawer);
+els.statsDrawerClose.addEventListener("click", closeStatsDrawer);
 els.drawerBack.addEventListener("click", ()=>{
   const prev = drawerStack.pop();
   if(!prev){
@@ -1839,6 +1876,91 @@ function renderDrawerList(){
     <div class="miniItem">
       <b>${escapeHtml(x.person)}</b>
       <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
+    </div>
+  `).join("");
+}
+
+
+function closeStatsDrawer(){
+  if(!els.statsDrawer) return;
+  els.statsDrawer.classList.add("hidden");
+  els.statsDrawerTitle.textContent="—";
+  els.statsDrawerSub.textContent="—";
+  els.statsDrawerList.innerHTML="";
+}
+
+let _statsChartInstance = null;
+function drawStats(){
+  if(!els.statsChart) return;
+
+  // Oyun -> kişi set'i
+  const playMap = new Map();
+  for(const r of rows){
+    const play = (r.play||"").trim() || "—";
+    const person = (r.person||"").trim() || "—";
+    if(!playMap.has(play)) playMap.set(play, new Set());
+    playMap.get(play).add(person);
+  }
+
+  const items = [...playMap.entries()]
+    .map(([play,set])=>({play, count:set.size, people:[...set].sort((a,b)=>a.localeCompare(b,"tr"))}))
+    .sort((a,b)=>b.count-a.count || a.play.localeCompare(b.play,"tr"))
+    .slice(0,10);
+
+  const labels = items.map(x=>x.play);
+  const data = items.map(x=>x.count);
+
+  const ctx = els.statsChart.getContext("2d");
+  if(_statsChartInstance){ try{ _statsChartInstance.destroy(); }catch(e){} }
+
+  _statsChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Kişi",
+        data
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        x: {
+          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue("--text") }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue("--text") }
+        }
+      },
+      onClick: (evt, elements) => {
+        if(!elements || !elements.length) return;
+        const idx = elements[0].index;
+        const it = items[idx];
+        openStatsDrawer(it);
+      }
+    }
+  });
+
+  // CSS height fix (canvas inside card)
+  els.statsChart.style.height = "320px";
+}
+
+function openStatsDrawer(it){
+  els.statsDrawer.classList.remove("hidden");
+  els.statsDrawerTitle.textContent = it.play;
+  els.statsDrawerSub.textContent = it.count + " kişi";
+
+  const q = ""; // no search for now
+  els.statsDrawerList.innerHTML = it.people.map(name => `
+    <div class="miniRow">
+      <div class="miniTitle">${escapeHtml(name)}</div>
+      <div class="miniSub"></div>
     </div>
   `).join("");
 }
@@ -2081,7 +2203,7 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabStats","viewStats"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
     el(v).style.display="none";
@@ -2092,6 +2214,10 @@ function setActiveTab(which){
     closeDrawer();
     drawChart();
   }
+  if(which==="Stats" && rows.length){
+    closeStatsDrawer();
+    drawStats();
+  }
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
@@ -2099,6 +2225,7 @@ els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabStats.addEventListener("click", ()=>setActiveTab("Stats"));
 
 /* ---------- events ---------- */
 els.reloadBtn.addEventListener("click", ()=>load(false));
@@ -2277,7 +2404,7 @@ if(els.figDownloadAllBtn){
   els.figDownloadAllBtn.addEventListener("click", async ()=>{
     if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
     const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
-    figuran.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
+    figuran.forEach((f,i)=>rows.push([i+1, f.person, (f.cats||[]).join(", "), (f.plays||[]).join(" • "), (f.roles||[]).join(", ")]));
     const tsv = rows
       .map(r => r
         .map(v => String(v ?? "")
