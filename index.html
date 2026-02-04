@@ -21,13 +21,6 @@
       --shadow:0 10px 30px rgba(24,16,8,.12);
       --radius:18px;
       --radius2:14px;
-      --r: var(--radius);
-      --r2: var(--radius2);
-      --border: var(--line);
-      --primary: var(--accent);
-      --good: var(--ok);
-      --ink: var(--text);
-
     }
 
 html[data-theme="dark"]{
@@ -2225,8 +2218,31 @@ async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
   try{
-    // 
-
+    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
+    if(!isAuto){
+      try{
+        const cached = localStorage.getItem("idt_cache_v1");
+        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
+        if(cached){
+          const ageMin = (Date.now()-cachedAt)/60000;
+          rawRows = JSON.parse(cached);
+          rows = expandRowsByPeople(rawRows);
+          plays = groupByPlay(rows);
+          people = groupByPerson(rows);
+          playsList = plays.map(p=>p.title);
+          renderList();
+          renderDetails(null);
+          distribution = computeDistribution();
+          renderDistribution();
+          retiredSet = computeRetiredSetFromRaw();
+          figuran = computeFiguranFromRaw();
+          renderFiguran();
+          renderPlayOptions();
+          renderIntersection();
+          renderKpis();
+          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
+        }
+      }catch(_){/* cache bozuksa görmezden gel */}
     }
 
     try{ rawRows = await tryLoadApiJsonp(); }
@@ -2235,8 +2251,11 @@ async function load(isAuto=false){
       catch(e2){ rawRows = await tryLoadCsv(); }
     }
 
-    // 
-
+    // Cache (bir sonraki açılışta hızlı render için)
+    try{
+      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
+      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
+    }catch(_){/* localStorage doluysa sorun değil */}
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
@@ -2262,8 +2281,8 @@ async function load(isAuto=false){
 
     // cache'e yaz
     try{
-      // localStorage cache disabled
-      // localStorage cache disabled
+      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
+      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
     }catch(_){/* storage dolu olabilir */}
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
