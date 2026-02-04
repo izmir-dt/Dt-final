@@ -62,13 +62,9 @@ html[data-theme="dark"]{
     .brand{display:flex;align-items:center;gap:12px}
     .logo{
       width:44px;height:44px;border-radius:14px;
-      background:var(--card);
-      border:1px solid var(--line);
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
       box-shadow:var(--shadow);
-      display:grid;place-items:center;
-      overflow:hidden;
-    }
-    .logo img{width:30px;height:30px;display:block;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18));}color:#fff;font-weight:900;
+      display:grid;place-items:center;color:#fff;font-weight:900;
       letter-spacing:.6px;
     }
     .brand h1{margin:0;font-size:14px;line-height:1.25}
@@ -183,7 +179,7 @@ html[data-theme="dark"]{
     .card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:26px;
+      border-radius:var(--r);
       box-shadow:var(--shadow);
       overflow:hidden;
     }
@@ -213,21 +209,7 @@ html[data-theme="dark"]{
       padding:14px 14px 12px;
       display:flex;align-items:center;justify-content:space-between;gap:10px;
     }
-    
-    /* KPI kartları: oval + arkaplana uyumlu ama farklı ton */
-    .kpi{position:relative;overflow:hidden}
-    .kpi:before{
-      content:"";
-      position:absolute;inset:-40% -20% auto -20%;
-      height:120%;
-      background:radial-gradient(circle at 30% 20%, rgba(122,30,44,.10), transparent 60%);
-      pointer-events:none;
-    }
-    .kpi:nth-child(2):before{background:radial-gradient(circle at 30% 20%, rgba(192,122,42,.12), transparent 60%);}
-    .kpi:nth-child(3):before{background:radial-gradient(circle at 30% 20%, rgba(24,121,78,.10), transparent 60%);}
-    .kpi:nth-child(4):before{background:radial-gradient(circle at 30% 20%, rgba(56,114,203,.10), transparent 60%);}
-    html[data-theme="dark"] .kpi:before{opacity:.55}
-.kpi .label{color:var(--muted);font-size:12px}
+    .kpi .label{color:var(--muted);font-size:12px}
     .kpi .value{font-size:22px;font-weight:900;letter-spacing:.2px}
     .kpi .icon{
       width:40px;height:40px;border-radius:14px;
@@ -514,15 +496,31 @@ html[data-theme="dark"] select:-webkit-autofill{
   transition: background-color 99999s ease-out 0s;
 }
 
+
+/* v8 UI polish (stabil veri çekme korunur) */
+:root{ --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif; }
+body{ font-family: var(--font); letter-spacing: .1px; }
+header .brand h1{ font-size: 20px; line-height: 1.15; font-weight: 800; margin: 0; }
+header .brand .sub{ font-size: 13px; opacity: .85; margin-top: 4px; }
+@media (max-width: 720px){
+  header .brand h1{ font-size: 18px; }
+}
+.logo{ width: 40px; height: 40px; border-radius: 12px; display:flex; align-items:center; justify-content:center; }
+.logoText{ font-weight: 900; font-size: 14px; letter-spacing: .8px; }
+.container{ max-width: 1240px; margin: 0 auto; padding-left: 18px; padding-right: 18px; }
+.grid{ align-items: stretch; }
+.card, .panel, .box{ border-radius: 18px; }
+.kpi{ border-radius: 22px; }
+.kpi .value{ font-weight: 900; }
+.table-wrap table{ border-collapse: separate; border-spacing: 0; }
+
 </style>
 </head>
 <body>
 <header>
   <div class="top">
     <div class="brand">
-      <div class="logo" aria-label="İzmir Devlet Tiyatrosu Logosu" title="İzmir Devlet Tiyatrosu">
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVwAAAEuBAMAAAAw0rfVAAAAMFBMVEXOzpqYmGWZmcxnZ5kAAADu7u7///9mZgHNzf/+/syqqnQsLCmrq+JWVlaMjKPFxcVGe2tPAAAejklEQVR42tSc32tb5xnHVRgMvBsLygwKvTnOSqCnvrDU3tgOxDrOQk/kwBYLQ7KOZTm6CbZXMAiWOw+DYO7+hujK4FJo19NszHEKxx0YcmxWrHgQ2w1Yjm/mtjAc34zRvb9/H1l65TVHLyXEViN9/Pj7/HwfKVPBJ5jCJ+VfZs7/SaeCnsI9PO0t3MlKL+G+7u0EPYTb8PzToJdwPSSHHsENPc97GvQMLqBFcughXCiHXsIF0aE3cAOM65/2Bu4cxgVy6Clcb6cncGcprl/+P+CSb5RpOdX1l7+luN545XyfGXx5/rgz0LA0OvQG7rWQyCH9uPcg7h+xeW9UegN3GpvXOwpSjlu+C3FrH2LcUiXtuDcB5ee1WgPzfhH0BO4iMa9Hc3FacU9guVurLRYwbrE3cGu/lHNxWnEPAeI7AHfxkPCWU4/7AuDWfuHR4Jtm3AbFXSS5wns37biXaug0aPBNMS7MZxuIdvEPxLyfnx/uude7EBcbl3vbm0Fqy3OP49Zuh7QR6glcltt2gpTiwkbYrzHeAm2E0ow7zXhv0+AbpBN3TsZlcjhKJy5shEscl0WHYm/gsuiwk0pc2LcXRVxamp3L2OHccWEjPCnhLj4Rp1Apw72n4damSTR7mlLc8Zp8qHyP0ocLG+HrCu7in/gQNYW41wDi0obI+yHjTRnuTYK74FwyuFvptJKqCSTqLDGu49b0bMGG6ukoz0Vcx9nQw4N/9ApxAw33EA9xahHEFQ08TVoh7/krw50rn4HrOLHO+7j8inBnJtSBc7lApiIOOwz4NuX1X7wS3PJdbeCMGmEZlwMzXmjg4IfHPQFlt4Ib4iHOkiOfGHrdIvU3YODnGPgHxQXWOjXgvtBxodvFgJnxev53MJB28rrgq+5wUVcj40KSn5E4ZjjxiCcA03/Z3gQjaBx1hYtu/E6lR1EjfCkZ14m/8QTg5x28buXQu9oV7gwqY+X5uIeHOJGTyDsYCsDe45dtvm7lP16XuDelphE9OkfGDMm4ThyNiLyeP1wW5ZnwuhXYlEx0hXso3VVLuE6roxjY89a+e4kLmsTXxXe33eGSF/2p8OiddnCBgcc85fhff88dT3vdymzYNS7ZXGA9OXwIGWHaFMeUoKYDAyNffml+3cr72DIT3dS77LIa742hR3+DpyJn4YIT5XdDz4D89fdTzMi0gvovebAbXHThRy/76KMzGHfhbNzBfD4/ZgIGT7B/8JILo/I+y91Xu8E9Yc//MBBxSypuHMdapHCbeXR2vYSzun3wcmrq1//+RviRusLlz4MqnSnaCAPcSJLpUL55EMcKb56esVWvreMDs3SBiz2tisf5gYBbFHHjrZEQe77MO5QXzn7YBi6I1jtd4GJPq84z89JGeHK6xk3Lc27RVaUrEZ9l488KXeFiT/OrVTK/NeIONYQXLMYtcKEqdlsYuZQHuEdd4KKc9vMqNi8sJGlevs6zxIi/Cg6leMw14ubNJwnZz+dhtdoFLnrev1S5eeFDJwh3Sahx4aFJd9Tgaeq5DISxu6rTXu4OF++LAVpmXop7TcsSboRFUYqNnmZCzue393d34e9mdW0ffRP8yGV73BmGi807GdCq5xoKu7GcdHEb8Wcqh/V8W6fZhP/hA2wcWOOiNQsoXWbeIxlXsXCM7Ou7yZ521gG/nC5wGxz3Pi8k4Xf/CsOuqxZlUSia1wq3aI8bcC1UqyEzbwNNRQDTJRXXXRfN2znuGNSbNe6siHufFZIhwnUMuI77NvyfHuEvmh3jjsDoY13v3uVaYObdCVB0e1pD0zytqkHuVopahd0WB/zjq/aN+6GEO08KSdS3J+Fi+Y5aWhfgPrTHDQUt0FgGzAv/fAcGBdy7wxwRMW53E15cRC2zROJpwKs5W9w5T8bF5vUR7guGOwSM2DxwWfHogt+Jb497ZI17T9ICM+8XaIiDJ+cLiA5X2m7M5XBsp120QmeLe0ILBtm8noALbPyEfW/bjagcHtlZFzyJ/YwMSXcAYP4uI8YydP7OcNeFAvAY8xa8ycjSur41LpJuqQ4wH2ReE2MZGjNEeMoP/hSqQR/zruNQ1rTIEiVrXCTdK3Vg3kwmo6oBJzWEWxALbJd4W2ST1UZQlrfERT70LJutfgBwl0Vng7gOta4gXlhURNjbjm1wwQ8+YY2Lfrv1bA5IN5P5sWxef9rB1o0k8dIM4b61Z4l71XZ6Pou1kM0u92eYGqoirotxXamVKWLzDtvgwixhi4sKhr9ls9lcRsANFVwYIC5K5j1m+XhLmDL4q9tn44InP7LFRbVuDuAi41I1kFhWus1xnU0J95HWq5FO2V9rJ0tY4gY4jAHcByIuUUOR4sJcbFKDgNsQh0xnZgnLHch7shYyfXJdBnGdGg4NihpcGbehTPLOCLuWCwInshaYeIl5YwHX2ZKI9qSxyIg2TVhrGXYtcUNZC5nMgORsexR3wVEyBakeKa5p/rGWGMduWOKiMPYe1wJLFEQNSKEbdElAMm8pEgYNwpXg6v7+9vb+/i4c+BhF3IC9hB3uTVULzNewGlBFe4mqwX0rQbxjgo/REqIJx06ra9vm4twOt0G1QGlplUPNO0pxI/WikovXJdM+32TLMVNgOLLDvaNpgYUGEnrHSUlGhk/x0JhBvJEo1cvfDn17Vhwr2+HepVp4wHBZaMDOVqK4dGck3hpRIy/WyGeI1XFddHuVXFaOoeLcClfXgoA7z5JtjZsXAtMhJMNFTwNYDxxhjOokx7GSHe4c1UK/gDsg92yP2NoQ74LJ1Sqdma6jkY7ruoYLoYQ4ZoVr0gKLZEQNRVKgi9eXbixOcZwv4d+jhAushGrXBpdqIZcx4s7TXzlZchIGkfFWSGt0rAU38cLNUI89tMKdpfWCaFweeIka9qh4JV4oCJIoItZdtMWLB4YWuDRHSMYVcedpvKI7b+KVYPwv4mubcjmZcOUmDxlscGm90C/hvsZx78uhTOV9G9v5olSs4+GUXrvLcazzHcjyDNVCJgm3KocyRQ+Oy6TrR3xfoLm/vz8cJ8qhACfnFptO6HbKVx1NSGtUDY+kDUjtAt4VMgYIGTgmr7lJcijAUbQF7hztKbmjPZDzBFGDEMrk+Muj7nU5IEsXQ4NagTNhgYvvT55pxhUjGVGDK6qhpq4+PWHVjrsltBTsYsjR45jF2htyNL+uRDF46qoa9uR9WCAI8RaeeZq7FRpb5UEtjlngIkf7tK46GpKEYt5JRQ2SIFCLgYcOcrvGQvGQGhjKFri0Ye9XYFey/WpsQH5fS+CFgQHni4LS+xyb1DACB92d487Shl2FBUdTw6iqBqGAcGk23lRbNVZgDsqBoWiBSwd52LgP4OnrQ7DgDCixYTySt88lf2OBQWstRw24DbyA0CHurMccbaWeVU9dUUPJoAZq3i0aGNyCtrcQ6eIlgaFD3EMadHVWeFQ1HDuas1H1rjMzPtHMuxdp4oV3Sh3j4nvKXDbh5FQ1XHcS1bDJqsdIX7RwVdwxvN3RIe4hm4wlHEUNbNyg4z5hFQO9HPK0XCF5mh90iov3F55l28Kdp4lNUcMSw6UhYEsf5BzruKWOcRvU0eSzwv+6rKiBDZ803C95QjCYF/0kQ5Kn3Qg6exd2+RZ6pvcU3Fx996vE2DAZaeYluBdZgWM076iM66HOp6O3KJFPasqppg1LAruAG9LE5hpwYcnAWgl5KMUqs0G18+kEl2wWX5GNu/KG54s/gKqGUUd1tgVm3VFl7UX1tkExBXvljnCJnymOtnIBNBb1FrFhXFMDDwe8FFeKMnQOXDkwdPh+NfyEOIoRe+YgLftO3aQGnKF06cJcFqlrL6IYhsXA0GD74u3i4p141KNxpV7QtbxsSGyCeZd4/ViKtLUXNpAeBl2m7GkTHeGSjxjzV2TdalrWYgP2J729bIiXKmhgsuvxXQLlEpYFhnZxiS98KsDlPmaBImeODbwc3FCbNdBYjqu76Gj6yDc1pGLXe7MT3FueFsVy9VDhx+pV1IAzrVtTVv0jane+R4K3JSPDpKGAZwxt494htFe4o+Vyr0OYXKtEPM+r1w2ldd+UMt5S1HLu1KCfpdImbkMzbn/fx6o4oJrhMYUysoshNZauFJHjFmOnkH2yTlu4tyTjZtEwLxcqxq2DuFaHC87/NIUyR/M0X208ZeB1udi92j4u++BBCpfLZPoucOPWSRCuY9/+ylCVQfOKuFv61ESRRFP2tHfbxg2oFD7pw79xNFQIFc+jsCDvmaoyYN4lWQvjhsZoybhGX+CfCtUGLn1vhM/nS5nMR7I4VlbeYGn02YChKmMbkXDdKV6X5796a+Q25bbSD9p9F/avKMYn4vxONm6uLtQoz5YNVRlkQ3/uDpPFblfvi7iCh5QBzo1232vJPuCzJM4VfiJ1QSt1sULJZU15GJgXYYNky+4uTLjTC6pxx5CntYnLzPYPEbch1Q8SLcAdqP5+WRAvrWsjsTjYMzTJzN0GlVEp8LT2cNmbeq5Is1ypfliRq1U4HmH3VsrGBXsnYCkyNMkswTXzmqe1hTvDIKSB449ER8t9JNd+4NsfsKsKUbzCpDzvOop1l+L/0XY+r3FdVxx/AwHznjGMQCD6QjaeUgIV3thdNQTZuk5Br2NvrPkHrHlQjKUsBF5k51UWWUyW4xJ4DwQiEww2nRoa0RSUTRemSFg2VI5rqIU2DV0E1ZtC6bz37o9z7jn3vjeSZxZJEHb00dH3nnPuOefe62qkjMtktwmuFi5aZ1ILKlEf4dQ6qXADEofR+Sp0Wr/IFl1ngeRKa4KrPS5eZ0EL7YgfWom1bLKco+K1Px/ybQDSXC1iWgNcs6HG5dHzSAvzGPeqxI1c4gXR4nPuwOsb0pQotpX1uP/VCCuINkR+Iba2WSuqP7jgFC/EvV/XARxXMa0OFyyzxCo9owQit3ZZhwr3nEe88sMoocO0/7r1R/J764ZgD9N+ZaQ7Ybb8gmltR/XipVLoMHMBZfbox+1tmN/xY8u4WLpbgjgG2WZZqBXvXz+v7QVfkfs0L25vw7j+rt3j2UIhjVlpaHLPJ94Pv/CuMiXd4xrcnnFhkxTcbvEgr2s7hvLHgH3MTTyoiXHv18BWg2bMdRLwnoReHxTgD0kDDWdj81S6queGG67c534NbCndG9w9kD/9p6/zXVDBfDxCyYJ2DCpIxAdUC3NoZkB45ha+8MNW0r3eJ5ckFVo9VrhHMEYR40a4yjtPjUtxuy7PW3eOcayaEhj3QJiCL6SNiXKrEFzmujnRrtwZo+mnsXAOsSjcN77hsaopgXDvVOdfVi3dTna6mQeXWPexzCkRru4PX1x82nz0xkg36RPcysn2Jl8FHkwkh3lsC1dGCbNNU2Fi59V+rDJgNPCiOoJPn176uCgpUV288U3Hy186xL2jLyH+H8wADnPaqA6CCxj3YTFz+6qsiOhtcUDEuzzZob2Ux+zdZ91ZLTwh95FJi77+CR3m389Jo1pbF3SrJkYdWS1MPEFS/qI6wJP/Y/HpRXd+a23TpAcAuBvsqecJbczQIu3muPFj4wbW2Rpz9QmUxPdeLSSpjXuHpR2hEYsIO7LfeHqB4KdcsE5amYLz4m6DlXYgqgkcjHvkoGWNa/xuXI+77cJVx5X8uOX9EQR3zNPOBfzH2xhGI9NgrVHej3brcH9tpAtwqXST/RzPj2bw32OY4nCiyKzhMsdVFj/W4ZarM7Vx75L/UZzPuaSg9j5Xc5dt4W8lcqw1NITV8WnhRt/GXWNpmXgG813Sd48Z6cK4xnxkY73jc2PXCe4ta9FWtG3GKYCiSCneWBWiUTM7a4or93AdjxtT0gW42DHIuM9IIQsGJk7gDltRMi0p7UnObesQJjcl1PFoQdDb3q6gRWZlKegzMJ4Mq8EpHI9r0LuMjkcLN8gVT8EBEYLr+w/BdgK5Mhqso0a41zyHLksrfkJxx8C0Ofn2EHxYmXfe7lo5XbT0ZM7rWBIPbvmXjntO3D/rBJAVboE7NDt3PDbS9uI615pwH7qszoWkFNc2rdPjKtwv6ayA86/U4BZq6Li1YF17p3EnsDRdJXocDgcmruFIkZ0Ot+vEHVcXW/G4KyPWUJFt3aEJFEKMGqjhnteTlZu4jlsLb1cduMaBBg7hFvF3WC22C6oEEpu0wfG3FvyuoRBvx6mFpF+D69Sgwh2apMzjejNrZlrfz0U+v3XgqnuM/LhZLe7AuLIa12tv1y4W28rilBe8tGl5l8WthtFfcHeYjg0uY9wQxLMCtzTv7wVdbD7cTRVxd6uhBXB/G497oLbmXlwmOpXd05390uxfD7Eail5V7vcNBhdWcsC9lR+x+3ahksfmuMX3f9/sL6RrqHi36CRRzDqTljU3gg9XldW+jmOhlffz9dicgbduBKNnkgHclqBzWmiNRTSs4XrI0+/HcjTeUdWtqk0U98jgZkxpVBVpXrUl7lBvKXBkYxcbKPmTK5OqG/Z2XQttmb/3/MQsmjbdNpSscTAYDNRaK53DebrYYtuNFSkw6Ff9yPMuuhbaEzduwuC2lAraIfRkUg5j6sssw1a/LYNL+j/VbN4PjoVWvctGcdfMt20zxn0c4jCMzQsnILGU5PbU4P5A66XlHUSOheZ4nKLCPaS4ksfOGrB5k9yRlkXS4KaVzVT8i3GBZYdxnzhw7xqXFNv9KItWqQGY99D4htg2bvHze3EvLv6ruNOPM65wvFQSrIO9AVgs87R3bcw70Obt8mqIlMEXtCe7xt7DeyB4L3bT9SLCBvil2l4sc+AOjXlj1pWpHwLisg2Kv43/wHkxNYrFvDdBmyDKLyyxWY7iPbCH0WPbuHMLMiXbdLZ/Fn+5zBk3cT+PAYpeGZYuuwHScmiRxWZ+WPWVn23jHIfiXn7GGfe6G/fIpJBtVKtZcSSR0rxhlUfumcXWBj63+ny6rcMa3626xIYI/Rgmg3sCwj8q3LUDj3mHSt/dFlFDpL/wqZka4TvDHVa51/pu3DXQ8YcrLXHthzVuy1pssbXQJl85p+MEj8u6BXHsedoFHo6BQWLFvadQzqxsUy3ltnjnOFy2F3iJNW439eBugNw1AyX9R4Gft9hlFJpJWpYra4FEAuBe/idzOTdrXM9Td4G8LrOL6qRfcU6XiW0PyskiCzcH9V6Ie/nji1gQu2/YgNb1vjfRO6DivWBJN38Fg4DBLRMho4ZYLbSHyvGC+bdn5bUcvvaqMOmCB/eEBorzKEa0qky6bfGqcAJ8g9LC1iE+SKFwK+Ddqn39hndiSc1rHmvCeN5Mu9093FfFYzkaNyxAAlQdKcccDvHk/Ka69aS8++bfkzV2yVG5kbmYB/cuFe97IKRFgg4XhloNRTz5E9wPR+V02SE+R4FwPcMLOv56cDcEEe97IBmb52a0NG6xKJdaALdVTpd9S3GXay+fA4muB1c2AqHn3TKGvAAKhkxFp7B99wFwDdXYwLf48HA9rpJCUvsSTe/nwk4btkwEBsYFqy+CBbMkMLhRNUOyUslZnW79rBZ3jIzrxV0j4t1K7B0mSX8VbrnWco2bV4ORao8McLtNpNBt8M7POhn8mV/CbTRmLjYEriGL9HEVORh51ToRVoOr73x60QC3L+w4vLWHd5jGL0R27b/wlnuRHvKXEy/KugA3aSCF2mfJA/UMlvoWpRrexztMo4UQmlenmnsBbGcX409qD5c3wtW9veNGuLcEl0TqEUKghXAYYdzyTzwKYO20mIXTW84muFoKN/uN3qi6DUtemT0oBP1CKJtrus9WavcRysJyweKKWikkb5s9qdUXthqoF6tcW7HAdK9ioMSNcR9Oiat/g3+sf2ErAO8LdW01RLBiivsTxX8/MLgR0MI8nNYB52l8UyFqnTV7KHJNsNt3OEy8YoJvBnrarSo4R1i6eoMc37NTMkeRSe4nm+GuC8Hth2GTZs+kYoPMmitrww3PSDC4m05cI4UpnuEcc2p4D+LamS78M1mFm5uTFIkc6qxNya4IFM8a4p5ANWS0fK5O/YCNhNFLAreT1Ti6tu6CH9dcYXg8De5dGNjaNESo3HFombf0Yytwsx7jexxqcAWSQmPcvqBqENS4oY0bqB/FHA0cu3CXPcLtTvmE7BFRQ7RDsxuCW+xB91Ep5KFojnsFeYVpcO8waojUEcp9pr4rpZscVj1NNcQpD4Q1wjWXhT7vT4m7gfrSZlpohLrwRAsj2YA1YW2exeUSXrPMbqTTviespnhjO28ITRYWUemSGmmMmxaxB1c7nm5v6uePlRqu5p5JgWE9bm5O08SWdRMHrfhFf/rXmjeE4Mv+fO2c9CfxMLoWgzM/PwDCPcXj0jJH53pWNu3wgT2zpeOEOplg4xLrGqfwl/Q0b2H3/GqIAC2Malb3RB2346wrWKdwIz3dW9h94VhslmlL3ijixZuLRriGtm7r637x9oRxvRyrkm8UZJEt3m+ENajD4hraaV/yBri3WdfL08pPCHbGLXioxosLDjzU7iU97wmPHYvNjYu8RA5OirK4z8jF98fpGZ4/XnMtNh/uMKKNb4kbW7hlSgafsnyenuW15g3XYst8uAP7zAoazIC4yTP8KOTz9GyPSx/BKYU4CJrpgUx6o7m/e/dck3qv0zO+hX0beaGM7//5cLUslzjrMrRne7r7wB3ZMqeFGemqm0g81n2dnv1h9DsuX+YzMVf0+XtQY93X6erZcVNRlzgwyIx0J/uh3Gvd59O9s+zCvYUWNj92rFL3MBgErsmzTGWUOYv7q/Td4GJf1mYyL8/nS1iViNxiSI7Td4SrEgefeZ0TyVuwoBY5rVvlCe8Gd52at6mFI7xzdlm320vPgOu4ZkhF4qhIvILqHzWfeVyWcFj3u15/6ke3V92XJK3bkVg32CM/rV265q37Ou2vvktcFYmleYe/8+4heNqy68JZt/v2VE+a+3Cxeb9Gewg3Lb7Bpc17hu966TvHxeadYwLCALeAJl+IrPfCA9Yz3Dztg/FeXMv32rli/kExm7+zPyrBC+zcfty8G7DWvT4TXOUcZOYAM5sMdq5EsrPzcmeHOTC1BOokAPeT2eBuoMwhRmq4IBp8YAV19riWeTOohvCbBrigggrF8GRGuH1ziUBh3hAttvla2qugCAWvJnsxI1x1maK8dCzDi23cRAsRk+8ezwpX7eHV9RsIt1XDm8Bq+ja46uvtzHDvImcWo2pe2PLjPoKDhXk80mLozQw3vYJXW4hChdc9dEG5Ny5yjm1l3XR2uOtotc2hQdgg9PG2QflUn1Pa1FNBZ8R1ZZYnaLXFAYpsoVu/ewNt3MzcKlEequqf6lnoNG1yfVofr7bMLp2/dHsFudAycOByU18HMCNcvdrkwF0W4jwyZHIFkbQHWrkZPLM2BhcFzQZXZWZdde6d9n0GwQc76EA/KPxn6LzlWN9eMDPcDXz3URwwafpgEMy9qmSzs6828jmqWJkYvDpTXH1RsJq/DPjGzyBU5KaOnjGnQ1/MGFeVzNQFoO2gyS4owNVLg3s8a9x1LIeJzZx9NdxTsZ/h+0zffTVLXCMHzOs1r3UFhkkZejPH1XKI/9/cues0DENhmDlTK4ZKlngGxMIToC4VMCBnhAHFY1kqMfASPEK6Zq5YEOIZIqFuhQExIcrEhCrIxfY5vuRSNXGSoUo6fbJ+nzjH5/yWr6mq4fW05A/0sgbt4wo5iGhGUKVxoRYGVtxTB7hSDkK+Oe996UQL92zeOGcOcKm0fAL5ilrYWloA56FzF7hguAk+KV65dIkdd+wCl/rXJ+p0K/cZ0KULDnUPtAnc6oXmrzndaoexHHeG9lNbWZ4rj6L24KkGr447Ur/UXOCKpa+0TiRijyKsxIV8HnOFC8cMoHBWHMcGRhzbprCtAVzwwo8NY6JQvdFwQbrnDnHBsN3kzUDDgtEF6Y4d4gZyusnXxaCOGLyRlO6xS1xkeByX8mrtzWDj47vExXbScVTCi8/I9vJq40wLp4FTXGzWLeJZVI4759ld3hLhFpeyC4OXmLvF4rOSnx8ptbCkjnEphDPpC0esnz4DfjJnjjvjPiyucSnbIOPjAh+7LCOipEvznojAPS7mlS6BoQVXloqMxOCOu8DFvImAbYLwsIllWr17Ijx5msHdbt2JeSfcfY+EZqWpHN2Z9GGh1MXyXHvEvNYBVg/fu4Mmv05wcXxAjoGRFXd+u6hurG4Xl7JLxfN0qAF7GHdRo7G6ZVzKpgvVpJXbHOY+poBLopc6jdVt46r26ClwzM25SYTUAMdsLbvFTeLKp5Y1z6zPka0tSaLGQpZrd4ybPG6MPP9TZoEuLtgIEAXQneLqguAVA6tVPIyHByu0B7BkfcA1BFFwPbOe4LLpSx1avy+4LNhU0b4x2h9cn92UKmLywWiPcNO7q69C2lef0X7hpjE4eLduEL/+sAb2/bbPQFYnTZIhftSC8LfMv++2wN1teV7wmP78rfdX6XW0PvwRfzaO+w90IijtUoA+AwAAAABJRU5ErkJggg==" alt="Tiyatro Logosu" />
-</div>
+      <div class="logo" aria-label="İzmir Devlet Tiyatrosu Logosu" title="İzmir Devlet Tiyatrosu"><span class="logoText">IDT</span></div>
       <div>
         <h1>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi</h1>
         <div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div>
@@ -673,6 +671,7 @@ html[data-theme="dark"] select:-webkit-autofill{
             🔎 <input id="fq" type="search" placeholder="Figüran / oyun ara…" autocomplete="off"/>
           </div>
           <button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
+          <button class="btn" id="figDownloadFilteredBtn">📋 Excel’e Kopyala (Filtreli)</button>
           <button class="btn" id="fClear">Temizle</button>
         </div>
         <div id="figuranBox"></div>
@@ -929,7 +928,7 @@ function makeChartColorGetter(keys){
   const cols = makeUniqueColors(uniq.length);
   const map = new Map();
   uniq.forEach((k,i)=> map.set(k, cols[i]));
-  return (key)=> (map.get(String(key)) || "#8e8e93");
+  return (key)=> (String(key)==="Diğer" ? "#8e8e93" : (map.get(String(key)) || "#8e8e93"));
 }
 
 
@@ -1745,8 +1744,7 @@ function renderMobileChartList(items){
   els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
     elm.addEventListener("click", ()=>{
       const key = elm.getAttribute("data-key");
-      if(!key) return;
-      if(key==="Diğer"){ openOtherBreakdownModal(); return; }
+      if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
       const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
@@ -2184,6 +2182,8 @@ if(els.figDownloadAllBtn){
   });
 }
 if(els.figDownloadFilteredBtn){
+  els.figDownloadFilteredBtn.addEventListener("click", async ()=>{
+    const q = norm(els.fq.value||"");
     const list = q ? figuran.filter(f=>{
       const hay = norm([f.kisi,f.kategori,f.oyunlar,f.gorevler].join(" "));
       return hay.includes(q);
@@ -2248,9 +2248,9 @@ async function load(isAuto=false){
       try{
         const cached = localStorage.getItem("idt_cache_v1");
         const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
-        if(cached){
+        if{
           const ageMin = (Date.now()-cachedAt)/60000;
-          rawRows = JSON.parse(cached);
+          rawRows = JSON.parse;
           rows = expandRowsByPeople(rawRows);
           plays = groupByPlay(rows);
           people = groupByPerson(rows);
@@ -2265,7 +2265,7 @@ async function load(isAuto=false){
           renderPlayOptions();
           renderIntersection();
           renderKpis();
-          setStatus("⏳ Güncelleniyor…");
+          setStatus(`⏳ Güncelleniyor… }dk`:""})`);
         }
       }catch(_){/* cache bozuksa görmezden gel */}
     }
@@ -2303,6 +2303,12 @@ async function load(isAuto=false){
     renderIntersection();
 
     renderKpis();
+
+    // cache'e yaz
+    try{
+      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
+      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
+    }catch(_){/* storage dolu olabilir */}
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
@@ -2374,34 +2380,6 @@ function normKey(s){
     .replace(/\s+/g, " ");
 }
 
-
-function openOtherBreakdownModal(){
-  const canvas = els.chartCanvas;
-  const bd = (canvas && canvas.__otherBreakdown) ? canvas.__otherBreakdown.slice() : [];
-  bd.sort((a,b)=> (b.v||0)-(a.v||0));
-  const total = bd.reduce((s,x)=>s+(x.v||0),0);
-  const title = 'Diğer (top dışı kalanlar)';
-  const subtitle = bd.length ? `${bd.length} başlık • toplam ${total}` : 'Detay bulunamadı.';
-  let htmlList = '';
-  if(bd.length){
-    htmlList = '<div class="miniList" style="margin-top:10px">';
-    bd.forEach(x=>{
-      htmlList += `<div class="row" style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)">
-        <div style="font-weight:700">${escapeHtml(String(x.k||''))}</div>
-        <div class="small" style="color:var(--muted)">${escapeHtml(String(x.v||0))}</div>
-      </div>`;
-    });
-    htmlList += '</div>';
-  }else{
-    htmlList = '<div class="small" style="margin-top:10px;color:var(--muted)">“Diğer”, grafikte Top listede yer almayan tüm küçük başlıkların toplamıdır. Detay için veriyi tazele veya Top sayısını artır.</div>';
-  }
-  openMobileModal(`
-    <div class="modalTitle" style="font-weight:900">${escapeHtml(title)}</div>
-    <div class="small" style="margin:4px 0 10px">${escapeHtml(subtitle)}</div>
-    <div class="small" style="color:var(--muted)">Not: Bu liste, grafikte “Diğer” dilimine giren başlıkların dağılımıdır.</div>
-    ${htmlList}
-  `);
-}
 function openMobileModal(html){
   if(!isMobile()) return;
   els.mobileContent.innerHTML = html;
@@ -3908,6 +3886,17 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
 els.figDownloadAllBtn && els.figDownloadAllBtn.addEventListener("click", ()=>{
   if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
   const tsv = toFiguranTSV(figuran);
+  copyText(tsv);
+});
+els.figDownloadFilteredBtn && els.figDownloadFilteredBtn.addEventListener("click", ()=>{
+  const q=els.fq.value.trim().toLowerCase();
+  const filtered = (figuran||[]).filter(f=>{
+    if(!q) return true;
+    const hay=(f.person+" "+(f.cats||[]).join(" ")+" "+f.plays.join(" ")+" "+f.roles.join(" ")).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!filtered.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
+  const tsv = toFiguranTSV(filtered);
   copyText(tsv);
 });
 els.dq.addEventListener("input", renderDistribution);
