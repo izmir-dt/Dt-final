@@ -452,6 +452,50 @@ a{ color:inherit; }
 .btn{ color:var(--text); }
 .input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
 
+
+/* === Dark mode legibility hard-fix === */
+html[data-theme="dark"], html[data-theme="dark"] body{
+  color: var(--text) !important;
+}
+html[data-theme="dark"] *{
+  color: inherit;
+}
+html[data-theme="dark"] .muted, html[data-theme="dark"] .sub, html[data-theme="dark"] small{
+  color: var(--muted) !important;
+}
+html[data-theme="dark"] input, 
+html[data-theme="dark"] textarea, 
+html[data-theme="dark"] select{
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+  background: rgba(255,255,255,.06) !important;
+}
+html[data-theme="dark"] option{
+  color: #fff !important;
+  background: #0b1020 !important;
+}
+html[data-theme="dark"] table, 
+html[data-theme="dark"] th, 
+html[data-theme="dark"] td{
+  color: var(--text) !important;
+}
+html[data-theme="dark"] .card, 
+html[data-theme="dark"] .panel, 
+html[data-theme="dark"] .modal, 
+html[data-theme="dark"] .drawer{
+  color: var(--text) !important;
+}
+html[data-theme="dark"] a{ color: var(--text) !important; }
+html[data-theme="dark"] ::placeholder{ color: rgba(255,255,255,.55) !important; }
+/* Chrome autofill */
+html[data-theme="dark"] input:-webkit-autofill,
+html[data-theme="dark"] textarea:-webkit-autofill,
+html[data-theme="dark"] select:-webkit-autofill{
+  -webkit-text-fill-color: var(--text) !important;
+  box-shadow: 0 0 0px 1000px rgba(255,255,255,.06) inset !important;
+  transition: background-color 99999s ease-out 0s;
+}
+
 </style>
 </head>
 <body>
@@ -461,7 +505,7 @@ a{ color:inherit; }
       <div class="logo">IDT</div>
       <div>
         <h1>T.C. KÜLTÜR VE TURİZM BAKANLIĞI<br>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi</h1>
-        <div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div>
+        <div class="sub">Oyunlar • Kişiler • Figüranlar • Bildirimler</div><div class="notif-sub">Kaynak: <span id="notifSource">LOG</span></div>
       </div>
     </div>
     <div class="actions">
@@ -708,6 +752,7 @@ const els = {
   notifPanel: el("notifPanel"),
   notifCount: el("notifCount"),
   notifList: el("notifList"),
+  notifSource: el("notifSource"),
   notifRefresh: el("notifRefresh"),
   notifClose: el("notifClose"),
 
@@ -2283,9 +2328,6 @@ load(false);
     <div id="mobileContent" class="modalBody"></div>
   </div>
 
-</body>
-</html>
-
 <script>
 
 const CONFIG = {
@@ -2307,26 +2349,6 @@ const CONFIG = {
   csvUrl(gid=this.GID){  return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/export?format=csv&gid=${gid}&_=${Date.now()}`; },
 };
 
-
-/* ---------- local cache (speed) ---------- */
-const CACHE = {
-  keyMain: "idt_cache_main_v1",
-  keyNotifs: "idt_cache_notifs_v1",
-  ttlMs: 10 * 60 * 1000, // 10 dk
-};
-function cacheGet(key){
-  try{
-    const raw = localStorage.getItem(key);
-    if(!raw) return null;
-    const obj = JSON.parse(raw);
-    if(!obj || !obj.t || !obj.v) return null;
-    if(Date.now() - obj.t > CACHE.ttlMs) return null;
-    return obj.v;
-  }catch{ return null; }
-}
-function cacheSet(key, value){
-  try{ localStorage.setItem(key, JSON.stringify({t: Date.now(), v: value})); }catch{}
-}
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
@@ -2365,6 +2387,7 @@ const els = {
   notifPanel: el("notifPanel"),
   notifCount: el("notifCount"),
   notifList: el("notifList"),
+  notifSource: el("notifSource"),
   notifRefresh: el("notifRefresh"),
   notifClose: el("notifClose"),
 
@@ -2773,150 +2796,159 @@ function parseLogFromGviz(obj){
 
 
 
-async function loadNotifications(fromCache=false){
+// Google GViz JSONP (CORS-free) helper
+function gvizJsonp(gid, tq="select *"){
+  return new Promise((resolve, reject)=>{
+    const cb = "__idt_gviz_cb_" + Math.random().toString(36).slice(2);
+    const timeout = setTimeout(()=>{
+      cleanup();
+      reject(new Error("GViz timeout"));
+    }, 15000);
+
+    function cleanup(){
+      clearTimeout(timeout);
+      try{ delete window[cb]; }catch(_){}
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cb] = (resp)=>{
+      cleanup();
+      resolve(resp);
+    };
+
+    const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?gid=${encodeURIComponent(gid)}&tq=${encodeURIComponent(tq)}&tqx=${encodeURIComponent("out:json;responseHandler:"+cb)}`;
+    const script = document.createElement("script");
+    script.src = url;
+    script.onerror = ()=>{ cleanup(); reject(new Error("GViz load error")); };
+    document.head.appendChild(script);
+  });
+}
+
+function gvizTableToObjects(resp){
+  const table = resp && resp.table;
+  if(!table || !Array.isArray(table.cols) || !Array.isArray(table.rows)) return [];
+  const headers = table.cols.map(c => (c.label || c.id || "").toString().trim());
+  return table.rows.map(r=>{
+    const o = {};
+    (r.c||[]).forEach((cell,i)=>{
+      const key = headers[i] || ("col"+i);
+      const v = cell ? (cell.f ?? cell.v ?? "") : "";
+      o[key] = (v===null || v===undefined) ? "" : String(v);
+    });
+    return o;
+  });
+}
+
+async function loadNotifications(){
   if(!els.notifPanel) return;
 
-  // 0) Cache'ten hızlı bas (isteğe bağlı)
-  if(fromCache){
-    const cached = cacheGet(CACHE.keyNotifs);
-    if(cached && Array.isArray(cached)){
-      renderNotifications(cached);
-      // cache'ten bastıktan sonra da arka planda güncellenecek (load() içinden)
-      return;
-    }
-  }
-
-  // 1) Önce Apps Script JSONP (en stabil)
+  // Önce Apps Script (hızlı/standard), olmazsa GViz (CORS-free) yedek
+  let data = null;
+  let source = "";
   try{
     const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
-    const data = await jsonp(url);
-    if(data && data.ok === true && Array.isArray(data.rows)){
-      const items = mapLogRowsToNotifs(data.rows);
-      cacheSet(CACHE.keyNotifs, items);
-      renderNotifications(items);
+    data = await jsonp(url);
+    source = "Apps Script";
+  }catch(e){
+    data = null;
+  }
+
+  if(!data || data.ok !== true || !Array.isArray(data.rows)){
+    // GViz fallback (LOG gid)
+    try{
+      const gid = CONFIG.LOG_GID || "";
+      if(gid){
+        const resp = await gvizJsonp(gid);
+        const rows = gvizTableToObjects(resp);
+        data = { ok: true, rows };
+        source = "GViz";
+      }
+    }catch(e){
+      // ignore, handled below
+    }
+  }
+
+  // UI kaynak bilgisi
+  if(els.notifSource){
+    els.notifSource.textContent = `${CONFIG.SHEET_NOTIFS} (${source || "—"})`;
+  }
+
+  if(!data || data.ok !== true || !Array.isArray(data.rows)){
+    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
+    els.notifCount.textContent = "";
+    els.notifCount.classList.add("hidden");
+    return;
+  }
+
+// Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
+    const rows = data.rows.map(r=>({
+      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
+      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
+      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
+      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
+      play: String(r["Oyun"] ?? "").trim(),
+      person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
+      read: String(r["Okundu"] ?? "").trim()
+    })).filter(x=>x.ts || x.title || x.msg);
+
+    // newest first (basit)
+    rows.reverse();
+
+    // local okundu (site tarafı): imza üzerinden
+    const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
+    const norm = (x)=> (x||"").toString().slice(0,120);
+    rows.forEach(n=>{
+      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
+      n._key = key;
+      n._seen = !!seen[key];
+    });
+
+    const unread = rows.filter(n=>!n._seen).length;
+    if(unread){
+      els.notifCount.classList.remove("hidden");
+      els.notifCount.textContent = String(unread);
+    } else {
+      els.notifCount.textContent = "";
+      els.notifCount.classList.add("hidden");
+    }
+
+    if(!rows.length){
+
+      els.notifList.innerHTML = `<div class="empty">🔔 Bildirim yok.</div>`;
       return;
     }
-  }catch(e){
-    console.warn("notif jsonp fail", e);
-  }
 
-  // 2) Fallback: LOG gid ile GViz
-  try{
-    if(!CONFIG.LOG_GID) throw new Error("LOG_GID tanımlı değil");
-    const res = await fetch(CONFIG.gvizUrl(CONFIG.LOG_GID), {cache:"no-store"});
-    if(!res.ok) throw new Error(`GViz indirilemedi (${res.status})`);
-    const txt = await res.text();
-    const obj = parseGviz(txt);
-    const logItems = parseLogFromGviz(obj);
-    const items = logItems.map(li=>logItemToNotif(li));
-    cacheSet(CACHE.keyNotifs, items);
-    renderNotifications(items);
-    return;
-  }catch(err){
-    console.error(err);
-    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi.</div>`;
-    els.notifCount.textContent = "";
-    els.notifCount.classList.add("hidden");
-  }
-}
+    els.notifList.innerHTML = rows.map(n=>{
+      const meta = [n.play, n.person].filter(Boolean).join(" • ");
+      const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
+      const title = n.title ? `<div class="notif-title">${escapeHtml(n.title)}</div>` : "";
+      const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
+      const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
+      const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
+      return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
+        <div class="notif-type">${escapeHtml(n.type)}</div>
+        <div class="notif-body">
+          ${title}${msg}${who}${ts}
+        </div>
+      </div>`;
+    }).join("");
 
-function mapLogRowsToNotifs(apiRows){
-  // API rows: header->value map
-  const out = [];
-  for(const r of apiRows){
-    // LOG kolonu isimleri (Apps Script log): Tarih/Saat, İşlem, Kişi, Önce Kategori, Sonra Kategori, Önce Görev, Sonra Görev, Önce Oyun, Sonra Oyun
-    const when = String(r["Tarih/Saat"] ?? r["Tarih"] ?? r["Tarih Saat"] ?? "").trim();
-    const action = String(r["İşlem"] ?? r["Islem"] ?? "").trim();
-    const person = String(r["Kişi"] ?? r["Kisi"] ?? "").trim();
-    const beforeCat = String(r["Önce Kategori"] ?? r["Once Kategori"] ?? "").trim();
-    const afterCat  = String(r["Sonra Kategori"] ?? "").trim();
-    const beforeRole= String(r["Önce Görev"] ?? r["Once Gorev"] ?? "").trim();
-    const afterRole = String(r["Sonra Görev"] ?? "").trim();
-    const beforePlay= String(r["Önce Oyun"] ?? "").trim();
-    const afterPlay = String(r["Sonra Oyun"] ?? "").trim();
-    if(!when && !action && !person) continue;
-    out.push(logItemToNotif({when, action, person, beforeCat, afterCat, beforeRole, afterRole, beforePlay, afterPlay}));
-  }
-  // yeni->eski
-  return out.reverse();
-}
-
-function logItemToNotif(li){
-  const a = (li.action||"").toUpperCase();
-  const type = a.includes("SİL") || a.includes("SIL") ? "🗑️" : (a.includes("GÜNC") || a.includes("GUNC") ? "✏️" : "➕");
-  const title = li.person ? `${li.person}` : "Değişiklik";
-  const parts = [];
-  const play = li.afterPlay || li.beforePlay;
-  if(play) parts.push(`🎭 ${play}`);
-  if(li.afterCat || li.beforeCat){
-    parts.push(`🏷️ ${li.beforeCat||"-"} → ${li.afterCat||"-"}`);
-  }
-  if(li.afterRole || li.beforeRole){
-    parts.push(`🧩 ${li.beforeRole||"-"} → ${li.afterRole||"-"}`);
-  }
-  const msg = parts.join(" • ");
-  return {
-    ts: li.when || "",
-    type,
-    title: `${type} ${a || "İŞLEM"}`.trim(),
-    msg,
-    play: play || "",
-    person: li.person || ""
-  };
-}
-
-function renderNotifications(items){
-  const rows = (items||[]).slice(); // newest first already
-  const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
-  const norm = (x)=> (x||"").toString().slice(0,120);
-  rows.forEach(n=>{
-    const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
-    n._key = key;
-    n._seen = !!seen[key];
-  });
-
-  const unread = rows.filter(n=>!n._seen).length;
-  if(unread){
-    els.notifCount.classList.remove("hidden");
-    els.notifCount.textContent = String(unread);
-  } else {
-    els.notifCount.textContent = "";
-    els.notifCount.classList.add("hidden");
-  }
-
-  if(!rows.length){
-    els.notifList.innerHTML = `<div class="empty">🔔 Bildirim yok.</div>`;
-    return;
-  }
-
-  els.notifList.innerHTML = rows.map(n=>{
-    const meta = [n.play, n.person].filter(Boolean).join(" • ");
-    const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
-    const title = n.title ? `<div class="notif-title">${escapeHtml(n.title)}</div>` : "";
-    const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
-    const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
-    const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
-    return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
-      <div class="notif-type">${escapeHtml(n.type)}</div>
-      <div class="notif-body">
-        ${title}${msg}${who}${ts}
-      </div>
-    </div>`;
-  }).join("");
-
-  els.notifList.querySelectorAll(".notif-bubble").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      const key = el.getAttribute("data-key");
-      if(!key) return;
-      const seen2 = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
-      seen2[key]=true;
-      localStorage.setItem("idt_seen_notifs", JSON.stringify(seen2));
-      el.classList.add("seen");
-      const left = Array.from(els.notifList.querySelectorAll(".notif-bubble")).filter(x=>!x.classList.contains("seen")).length;
-      if(left){ els.notifCount.classList.remove("hidden"); els.notifCount.textContent=String(left); } else { els.notifCount.textContent=""; els.notifCount.classList.add("hidden"); }
+    // tıkla → okundu yap
+    els.notifList.querySelectorAll(".notif-bubble").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const key = el.getAttribute("data-key");
+        if(!key) return;
+        const seen2 = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
+        seen2[key]=true;
+        localStorage.setItem("idt_seen_notifs", JSON.stringify(seen2));
+        el.classList.add("seen");
+        // badge güncelle
+        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble")).filter(x=>!x.classList.contains("seen")).length;
+        if(left){ els.notifCount.classList.remove("hidden"); els.notifCount.textContent=String(left); } else { els.notifCount.textContent=""; els.notifCount.classList.add("hidden"); }
+      });
     });
-  });
 }
+
 
 /* ---------- transforms ---------- */
 function groupByPlay(data){
@@ -3891,64 +3923,21 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-
 async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
-
-  // 1) Hızlı açılış: önbellek varsa hemen bas
-  const cached = cacheGet(CACHE.keyMain);
-  if(cached && Array.isArray(cached) && cached.length){
-    try{
-      rawRows = cached;
-      rows = expandRowsByPeople(rawRows);
-      plays = groupByPlay(rows);
-      people = groupByPerson(rows);
-      playsList = plays.map(p=>p.title);
-
-      renderList();
-      renderDetails(null);
-
-      distribution = computeDistribution();
-      renderDistribution();
-
-      retiredSet = computeRetiredSetFromRaw();
-      figuran = computeFiguranFromRaw();
-      renderFiguran();
-
-      renderPlayOptions();
-      renderIntersection();
-      renderKpis();
-
-      const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-      setStatus(`⚡ Önbellekten açıldı • ${when}`, "ok");
-      // Bildirimleri de önbellekten bas, sonra yenile
-      loadNotifications(true);
-
-      // arka planda güncelle (sessiz)
-      setTimeout(()=>load(true), 50);
-      return;
-    }catch(e){
-      // cache bozuksa normal akışa düş
-      console.warn("cache parse fail", e);
-    }
-  }
-
-  // 2) Normal yükleme
   try{
-    // En hızlı: Apps Script JSONP
     try{ rawRows = await tryLoadApiJsonp(); }
     catch(e1){
       try{ rawRows = await tryLoadGviz(); }
       catch(e2){ rawRows = await tryLoadCsv(); }
     }
 
-    cacheSet(CACHE.keyMain, rawRows);
-
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
     playsList = plays.map(p=>p.title);
+
 
     renderList();
     renderDetails(null);
@@ -3956,6 +3945,7 @@ async function load(isAuto=false){
     distribution = computeDistribution();
     renderDistribution();
 
+    retiredSet = computeRetiredSetFromRaw();
     retiredSet = computeRetiredSetFromRaw();
     figuran = computeFiguranFromRaw();
     renderFiguran();
@@ -3968,8 +3958,8 @@ async function load(isAuto=false){
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
 
-    // Bildirimleri yükle
-    loadNotifications(false);
+    // Bildirimleri (BİLDİRİMLER) yükle
+    loadNotifications();
   }catch(err){
     console.error(err);
     setStatus("⛔ Veri çekilemedi", "bad");
@@ -3977,8 +3967,7 @@ async function load(isAuto=false){
 <b>Veri çekilemedi.</b>
 
 1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
-2) Apps Script (API_BASE) erişilebilir olmalı.
-3) Alternatif: Sheet → Dosya → Paylaş → Web'de yayınla (publish).
+2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
 
 Hata: ${escapeHtml(err.message || String(err))}
 </div>`;
@@ -3989,8 +3978,8 @@ Hata: ${escapeHtml(err.message || String(err))}
   }
 }
 
-document.addEventListener("DOMContentLoaded", ()=>load(false));
-
+load(false);
 
 </script>
+</body>
 </html>
