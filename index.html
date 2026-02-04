@@ -793,7 +793,7 @@ function applyTheme(theme){
 (function initTheme(){
   const saved = localStorage.getItem("idt_theme");
   if(saved === "dark" || saved === "light") applyTheme(saved);
-  else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  else applyTheme("light");
 })();
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
@@ -842,19 +842,30 @@ function normalizeHeader(h){ return (h||"").trim().toLowerCase().replace(/\s+/g,
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
 /* ---------- chart colors (canlı + kategori sabit renk) ---------- */
-const VIVID_PALETTE = [
-  "#ff3b30","#ff9500","#ffcc00","#34c759","#00c7be",
-  "#0a84ff","#5856d6","#af52de","#ff2d55","#8e8e93",
-  "#1d1d1f","#2c7be5","#00b894","#fd79a8","#6c5ce7",
-  "#e17055","#0984e3","#00cec9","#d63031","#e84393"
-];
-
-function hashColor(name){
-  const s = String(name || "").trim().toUpperCase();
-  let h = 0;
-  for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
-  return VIVID_PALETTE[h % VIVID_PALETTE.length];
+// ---------- Grafik renkleri: her grafikte benzersiz / canlı ----------
+function currentTheme(){
+  return (document.documentElement.getAttribute("data-theme") || "light") === "dark" ? "dark" : "light";
 }
+// Golden-angle ile birbirinden uzak renkler
+function makeUniqueColors(n){
+  const out = [];
+  const N = Math.max(1, n|0);
+  const theme = currentTheme();
+  const L = theme === "dark" ? 62 : 52;
+  for(let i=0;i<N;i++){
+    const hue = (i * 137.508) % 360;
+    out.push(`hsl(${hue} 88% ${L}%)`);
+  }
+  return out;
+}
+function makeChartColorGetter(keys){
+  const uniq = [...new Set((keys||[]).map(k=>String(k)))];
+  const cols = makeUniqueColors(uniq.length);
+  const map = new Map();
+  uniq.forEach((k,i)=> map.set(k, cols[i]));
+  return (key)=> (String(key)==="Diğer" ? "#8e8e93" : (map.get(String(key)) || "#8e8e93"));
+}
+
 
 /* ---------- load from Google ---------- */
 function parseGviz(text){
@@ -1396,9 +1407,10 @@ function toTSVFromSelected(){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const lines=[["Kategori","Görev","Kişi"].join("\t")];
+    const playTitle = selectedItem.title || "";
+    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
     for(const r of rowsSorted){
-      lines.push([r.category||"", r.role||"", r.person||""].join("\t"));
+      lines.push([playTitle, r.category||"", r.role||"", r.person||""].join("\t"));
     }
     return lines.join("\n");
   } else {
@@ -1471,8 +1483,8 @@ function drawBars(canvas, items, topN){
     const y = padT + (h-bh);
     const bw = Math.max(barW-12, 14);
 
-    ctx.fillStyle = accent;
-    ctx.globalAlpha = 0.78;
+    ctx.fillStyle = (window.__chartColorOf ? window.__chartColorOf(d.k) : accent);
+    ctx.globalAlpha = 0.90;
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -1519,7 +1531,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const text = cssVar("--text");
   const muted = cssVar("--muted");
 
-  const colorOf = (label)=> (label === "Diğer" ? "#8e8e93" : hashColor(label));
+  const colorOf = (label)=> (window.__chartColorOf ? window.__chartColorOf(label) : "#8e8e93");
 
   chartHits = [];
 
@@ -1652,7 +1664,7 @@ function renderMobileChartList(items){
   // Tam liste: büyükten küçüğe (mobilde seçilebilir)
   const rows2 = items.slice().sort((a,b)=>b.v-a.v);
   els.chartMobileList.innerHTML = rows2.map(d=>{
-    const c = (d.k === "Diğer") ? "#8e8e93" : hashColor(d.k);
+    const c = (window.__chartColorOf ? window.__chartColorOf(d.k) : "#8e8e93");
     return `
       <div class="chipRow" data-key="${escapeHtml(d.k)}" style="background:linear-gradient(135deg, ${c}22, ${c}55)">
         <div class="chipLeft">
@@ -1684,6 +1696,7 @@ function drawChart(){
       counts.get(k).add((r.person||"").trim());
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
+    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Görevlere Göre Dağılım";
     if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
     drawDoughnut(els.chartMain, items, 14, "Top Görevler");
@@ -1695,6 +1708,7 @@ function drawChart(){
       counts.get(k).add((r.person||"").trim());
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
+    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Kategori Dağılımı";
     if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
     drawDoughnut(els.chartMain, items, 14, "Top Kategoriler");
@@ -1843,7 +1857,7 @@ function renderFiguran(){
 
   els.figuranBox.innerHTML = `
     <table class="table">
-      <thead><tr><th>#</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
@@ -2000,12 +2014,41 @@ window.addEventListener("popstate", ()=>{
 els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  try{
-    await navigator.clipboard.writeText(tsv);
-    setStatus("📋 Excel formatında kopyalandı", "ok");
-    setTimeout(()=>setStatus("✅ Hazır", "ok"), 1000);
-  }catch{ alert("Kopyalama engellendi."); }
+  await copyText(tsv);
 });
+
+async function copyText(text){
+  const value = String(text ?? "");
+  if(navigator.clipboard && window.isSecureContext){
+    try{
+      await navigator.clipboard.writeText(value);
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }catch(e){}
+  }
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = value;
+    ta.setAttribute("readonly","");
+    ta.style.position="fixed";
+    ta.style.top="-9999px";
+    ta.style.left="-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    ta.remove();
+    if(ok){
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }
+  }catch(e){}
+  alert("Kopyalama engellendi. (Mobilde) uzun bas → Kopyala / (Masaüstü) Ctrl+C deneyebilirsin.");
+  return false;
+}
+
 
 function downloadText(filename, text){
   const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
@@ -2057,28 +2100,34 @@ els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution()
 
 els.fq.addEventListener("input", renderFiguran);
 
-// Figüran sekmesi indirme butonları (TSV)
+// Figüran sekmesi: Excel’e Kopyala
 if(els.figDownloadAllBtn){
-  els.figDownloadAllBtn.addEventListener("click", ()=>{
-    const rows = [["Kişi","Kategori","Oyunlar","Görevler"]];
-    figuran.forEach(f=>rows.push([f.kisi,f.kategori,f.oyunlar,f.gorevler]));
-    const tsv = rows.map(r=>r.map(v=>String(v??"").replace(/\t/g," ").replace(/\r?\n/g," ")).join("\t")).join("\n");
-    downloadText(`figuran_listesi_${todayYMD()}.tsv`, "text/tab-separated-values;charset=utf-8", tsv);
-    toast("Figüran listesi indirildi (TSV).");
+  els.figDownloadAllBtn.addEventListener("click", async ()=>{
+    if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
+    const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
+    figuran.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
+    const tsv = rows.map(r=>r.map(v=>String(v??"").replace(/	/g," ").replace(/
+?
+/g," ")).join("	")).join("
+");
+    await copyText(tsv);
   });
 }
 if(els.figDownloadFilteredBtn){
-  els.figDownloadFilteredBtn.addEventListener("click", ()=>{
+  els.figDownloadFilteredBtn.addEventListener("click", async ()=>{
     const q = norm(els.fq.value||"");
     const list = q ? figuran.filter(f=>{
       const hay = norm([f.kisi,f.kategori,f.oyunlar,f.gorevler].join(" "));
       return hay.includes(q);
     }) : figuran.slice();
-    const rows = [["Kişi","Kategori","Oyunlar","Görevler"]];
-    list.forEach(f=>rows.push([f.kisi,f.kategori,f.oyunlar,f.gorevler]));
-    const tsv = rows.map(r=>r.map(v=>String(v??"").replace(/\t/g," ").replace(/\r?\n/g," ")).join("\t")).join("\n");
-    downloadText(`figuran_filtreli_${todayYMD()}.tsv`, "text/tab-separated-values;charset=utf-8", tsv);
-    toast("Filtreli figüran listesi indirildi (TSV).");
+    if(!list.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
+    const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
+    list.forEach((f,i)=>rows.push([i+1, f.kisi, f.kategori, f.oyunlar, f.gorevler]));
+    const tsv = rows.map(r=>r.map(v=>String(v??"").replace(/	/g," ").replace(/
+?
+/g," ")).join("	")).join("
+");
+    await copyText(tsv);
   });
 }
 els.fClear.addEventListener("click", ()=>{ els.fq.value=""; renderFiguran(); });
