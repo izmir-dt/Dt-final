@@ -760,6 +760,21 @@ function toTSVFromSelected(){
   }
 }
 
+
+/* ---------- vivid colors (stable per key) ---------- */
+const VIVID_PALETTE = [
+  "#ff3b30","#ff9500","#ffcc00","#34c759","#00c7be",
+  "#0a84ff","#5856d6","#af52de","#ff2d55","#8e8e93",
+  "#2c7be5","#00b894","#fd79a8","#6c5ce7","#e17055",
+  "#0984e3","#00cec9","#d63031","#e84393","#6d6875"
+];
+function colorForKey(key){
+  const s = String(key||"").trim().toUpperCase();
+  let h = 0;
+  for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
+  return VIVID_PALETTE[h % VIVID_PALETTE.length];
+}
+
 /* ---------- charts ---------- */
 function roundRect(ctx, x, y, w, h, r){
   const rr = Math.min(r, w/2, h/2);
@@ -816,7 +831,7 @@ function drawBars(canvas, items, topN){
     const y = padT + (h-bh);
     const bw = Math.max(barW-12, 14);
 
-    ctx.fillStyle = accent;
+    ctx.fillStyle = colorForKey(d.k);
     ctx.globalAlpha = 0.78;
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
@@ -894,7 +909,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, rOuter, start, end);
     ctx.closePath();
-    ctx.fillStyle = colorFor(label);
+    ctx.fillStyle = colorForKey(d.k);
     ctx.globalAlpha = 0.92;
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -933,7 +948,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   for(let i=0;i<Math.min(data.length, maxLegend);i++){
     const d=data[i];
     ly += 18;
-    ctx.fillStyle = colorFor(label);
+    ctx.fillStyle = colorForKey(d.k);
     roundRect(ctx, lx, ly-11, 10, 10, 3);
     ctx.fill();
     ctx.fillStyle = muted;
@@ -949,6 +964,58 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   ctx.strokeStyle = line;
   ctx.strokeRect(0.5,0.5,cssW-1,cssH-1);
 }
+
+/* ---------- mobile chart list ---------- */
+function renderMobileChartList(items){
+  const box = document.getElementById("chartMobileList");
+  const wrap = document.querySelector(".mobileChartWrap");
+  if(!box || !wrap) return;
+
+  // sadece mobilde göster
+  if(!isMobile()){ box.innerHTML=""; wrap.style.display="none"; return; }
+  wrap.style.display="block";
+
+  const sorted = items.slice().sort((a,b)=>b.v-a.v);
+  const rows = sorted.slice(0, 24); // mobilde çok uzamasın
+
+  box.innerHTML = rows.map(it=>{
+    const c = colorForKey(it.k);
+    const rawK = String(it.k||"");
+    const safeK = escapeHtml(rawK);
+    const encK = encodeURIComponent(rawK);
+    return `
+      <div class="chipRow" data-key="${encK}">
+        <div class="chipLeft">
+          <div class="dot" style="background:${c}"></div>
+          <div class="chipTitle" title="${safeK}">${safeK}</div>
+        </div>
+        <div class="chipCount">${it.v}</div>
+      </div>
+    `;
+  }).join("");
+
+  // click: drawer aç (chart ile aynı filtre mantığı)
+  box.querySelectorAll(".chipRow").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const key = decodeURIComponent(el.getAttribute("data-key") || "");
+      const map=new Map();
+      for(const r of rowsAll()){ // rows global
+        const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
+        if(match && r.person){
+          if(!map.has(r.person)) map.set(r.person, new Set());
+          map.get(r.person).add(r.play);
+        }
+      }
+      const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
+      items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
+      openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
+      // mobilde drawer açıkken sayfa kaymasın
+      document.body.classList.add("drawerOpen");
+    });
+  });
+}
+function rowsAll(){ return rows || []; }
+
 function drawChart(){
   if(!rows.length) return;
   if(chartMode==="roles"){
@@ -960,6 +1027,7 @@ function drawChart(){
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
     els.chartTitle.textContent = "Görevlere Göre Dağılım";
+    renderMobileChartList(items);
     drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Görevler");
   }else{
     const counts=new Map();
@@ -970,6 +1038,7 @@ function drawChart(){
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
     els.chartTitle.textContent = "Kategori Dağılımı";
+    renderMobileChartList(items);
     drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Kategoriler");
   }
 }
@@ -982,9 +1051,11 @@ function openDrawer(title, subtitle, items){
   els.drawerSearch.value = "";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
+  if(isMobile()) document.body.classList.add("drawerOpen");
 }
 function closeDrawer(){
   els.drawer.classList.add("hidden");
+  document.body.classList.remove("drawerOpen");
   drawerData = [];
   els.drawerList.innerHTML = "";
 }
@@ -1281,6 +1352,19 @@ els.copyBtn.addEventListener("click", async ()=>{
   }catch{ alert("Kopyalama engellendi."); }
 });
 
+
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+    setStatus("📋 Kopyalandı", "ok");
+    return true;
+  }catch(e){
+    alert("Kopyalama engellendi. Tarayıcı izinlerini kontrol et.");
+    return false;
+  }
+}
+
 function downloadText(filename, text){
   // Mobil/Safari uyumu için: önce Blob dene, gerekirse data: URI fallback
   const ua = navigator.userAgent || "";
@@ -1358,8 +1442,7 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
 els.figDownloadAllBtn && els.figDownloadAllBtn.addEventListener("click", ()=>{
   if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
   const tsv = toFiguranTSV(figuran);
-  downloadText("figuran-listesi.tsv", tsv);
-  toast("Figüran listesi indiriliyor…");
+  copyText(tsv);
 });
 els.figDownloadFilteredBtn && els.figDownloadFilteredBtn.addEventListener("click", ()=>{
   const q=els.fq.value.trim().toLowerCase();
@@ -1370,8 +1453,7 @@ els.figDownloadFilteredBtn && els.figDownloadFilteredBtn.addEventListener("click
   });
   if(!filtered.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
   const tsv = toFiguranTSV(filtered);
-  downloadText("figuran-listesi-filtreli.tsv", tsv);
-  toast("Filtreli figüran listesi indiriliyor…");
+  copyText(tsv);
 });
 els.dq.addEventListener("input", renderDistribution);
 els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution(); });
