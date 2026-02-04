@@ -1020,7 +1020,7 @@ function jsonp(url, timeoutMs=20000){
   });
 }
 
-async async function tryLoadApiJsonp(){
+async function tryLoadApiJsonp(){
   if(!CONFIG.API_BASE) throw new Error("API_BASE tanımlı değil");
   const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`;
   const data = await jsonp(url);
@@ -2145,7 +2145,7 @@ els.copyBtn.addEventListener("click", async ()=>{
 });
 
 
-async async function copyText(text){
+async function copyText(text){
   const value = String(text ?? "");
   // Modern Clipboard API (secure context)
   if(navigator.clipboard && window.isSecureContext){
