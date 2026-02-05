@@ -5,6 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
+    <style>
+  /* tüm mevcut CSS */
+
+  /* =========================
+     NOTIF BUBBLES THEME FIX (FINAL)
+     ========================= */
+  #notifPanel .notif-bubble{
+    background:#ffffff !important;
+    color:#0f172a !important;
+  }
+  #notifPanel .notif-title,
+  #notifPanel .notif-msg{
+    color:#0f172a !important;
+    font-weight:700;
+  }
+
+  html[data-theme="dark"] #notifPanel .notif-bubble{
+    background:#1e293b !important;
+    color:#f8fafc !important;
+  }
+  html[data-theme="dark"] #notifPanel .notif-title,
+  html[data-theme="dark"] #notifPanel .notif-msg{
+    color:#f8fafc !important;
+  }
+</style>
+
 
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
@@ -3124,55 +3150,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 </body>
 </html>
-/* === NOTIFICATION FINAL OVERRIDE (NO OPACITY BUG) === */
-#notifPanel,
-#notifPanel *{
-  opacity: 1 !important;
-}
-
-#notifPanel .notif-bubble{
-  background: #ffffff !important;
-  color: #0f172a !important;
-}
-
-#notifPanel .notif-title,
-#notifPanel .notif-msg{
-  color:#0f172a !important;
-  font-weight:800 !important;
-}
-
-#notifPanel .notif-meta{
-  color:#334155 !important;
-  opacity:1 !important;
-}
-
-#notifPanel .notif-ts{
-  color:#64748b !important;
-  opacity:1 !important;
-}
-
-/* Seen state: ASLA yazıyı soldurmasın */
-#notifPanel .notif-bubble.seen{
-  opacity:1 !important;
-  background:#f8fafc !important;
-}
-
-/* DARK MODE */
-html[data-theme="dark"] #notifPanel .notif-bubble{
-  background: rgba(30,41,59,.95) !important;
-  color:#f8fafc !important;
-}
-
-html[data-theme="dark"] #notifPanel .notif-title,
-html[data-theme="dark"] #notifPanel .notif-msg{
-  color:#f8fafc !important;
-}
-
-html[data-theme="dark"] #notifPanel .notif-meta{
-  color:#cbd5e1 !important;
-}
-
-html[data-theme="dark"] #notifPanel .notif-ts{
-  color:#94a3b8 !important;
-}
-
