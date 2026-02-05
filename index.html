@@ -800,69 +800,63 @@ html[data-theme="dark"] #notifPanel{
 }
 
 /* =========================
-   NOTIFICATIONS: STRONG READABILITY OVERRIDES (v29)
-   Fixes grey-on-grey / opacity issues in both themes
+   NOTIF BUBBLES THEME FIX (v30)
+   Fix: dark theme had white text on light bubble background.
    ========================= */
-#notifPanel, #notifPanel *{ text-shadow:none !important; }
-#notifPanel{
-  color: var(--text) !important;
-  background: var(--card) !important;
-}
-#notifPanel .notifItem,
-#notifPanel .notifRow,
-#notifPanel .notifCard,
-#notifPanel .notification,
-#notifPanel .notif{
+
+/* Base (light) */
+#notifPanel .notif-bubble{
   background: #ffffff !important;
-  color: #111827 !important;
-  border: 1px solid rgba(0,0,0,.10) !important;
-  opacity: 1 !important;
-  filter: none !important;
+  color: #0f172a !important;
 }
-#notifPanel .notifItem b,
-#notifPanel b{
-  color:#111827 !important;
+#notifPanel .notif-title,
+#notifPanel .notif-msg,
+#notifPanel .notif-meta,
+#notifPanel .notif-ts{
+  color:#0f172a !important;
 }
-#notifPanel .muted,
-#notifPanel .sub,
-#notifPanel small,
-#notifPanel .date,
-#notifPanel .time{
-  color:#6b7280 !important;
+#notifPanel .notif-meta{ color:#334155 !important; opacity:1 !important; }
+#notifPanel .notif-ts{ color:#64748b !important; opacity:1 !important; }
+#notifPanel .notif-type{
+  background: rgba(15,23,42,.06) !important;
+}
+
+/* Seen state: don't fade text; just soften bg */
+#notifPanel .notif-bubble.seen{
   opacity:1 !important;
+  background: #f8fafc !important;
+  border-color: rgba(15,23,42,.08) !important;
 }
 
 /* Dark theme */
 html[data-theme="dark"] #notifPanel{
-  background: rgba(13, 18, 32, .96) !important;
-  border-color: rgba(148,163,184,.18) !important;
+  background: rgba(11,16,32,.96) !important;
   color:#f8fafc !important;
 }
-html[data-theme="dark"] #notifPanel .notifItem,
-html[data-theme="dark"] #notifPanel .notifRow,
-html[data-theme="dark"] #notifPanel .notifCard,
-html[data-theme="dark"] #notifPanel .notification,
-html[data-theme="dark"] #notifPanel .notif{
+html[data-theme="dark"] #notifPanel .notif-bubble{
   background: rgba(30,41,59,.92) !important;
   border-color: rgba(148,163,184,.18) !important;
   color:#f8fafc !important;
 }
-html[data-theme="dark"] #notifPanel .notifItem b,
-html[data-theme="dark"] #notifPanel b{
+html[data-theme="dark"] #notifPanel .notif-title,
+html[data-theme="dark"] #notifPanel .notif-msg{
   color:#f8fafc !important;
 }
-html[data-theme="dark"] #notifPanel .muted,
-html[data-theme="dark"] #notifPanel .sub,
-html[data-theme="dark"] #notifPanel small,
-html[data-theme="dark"] #notifPanel .date,
-html[data-theme="dark"] #notifPanel .time{
+html[data-theme="dark"] #notifPanel .notif-meta{
   color:#cbd5e1 !important;
+  opacity:1 !important;
 }
-
-/* Ensure scrollbar visible inside panel */
-#notifPanel::-webkit-scrollbar{ width: 10px; }
-#notifPanel::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.18); border-radius: 999px; }
-html[data-theme="dark"] #notifPanel::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.18); }
+html[data-theme="dark"] #notifPanel .notif-ts{
+  color:#94a3b8 !important;
+  opacity:1 !important;
+}
+html[data-theme="dark"] #notifPanel .notif-type{
+  background: rgba(255,255,255,.08) !important;
+}
+html[data-theme="dark"] #notifPanel .notif-bubble.seen{
+  opacity:1 !important;
+  background: rgba(30,41,59,.72) !important;
+}
 </style>
 </head>
 <body>
