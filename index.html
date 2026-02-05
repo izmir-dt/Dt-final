@@ -465,15 +465,7 @@ width:48px;
     /* --- Responsive: mobilde canvas gizle, renkli liste göster --- */
     @media (max-width: 820px){
   .mobileChartWrap{ display:block !important; }
-  .drawer{
-    position:fixed !important;
-    inset:0 !important;
-    top:0 !important;
-    border-radius:0 !important;
-    z-index:60 !important;
-    height:auto !important;
-    max-height:none !important;
-  }
+  .drawer{position:relative; inset:auto;}
   .miniList{ max-height: calc(100vh - 180px) !important; }
   .miniItem{ padding:14px !important; }
   .miniItem b{ font-size:16px; }
@@ -481,7 +473,7 @@ width:48px;
 
 
 
-body.drawerOpen{ overflow:hidden; }
+body.drawerOpen{ overflow:auto; }
 
 
 
@@ -627,14 +619,7 @@ a{ color:inherit; }
 
 /* Drawer: fixed right panel on desktop (modern) */
 @media (min-width: 981px){
-  #chartDrawer.drawer{
-    position:fixed;
-    top:92px;
-    right:16px;
-    width: min(420px, 92vw);
-    max-height: calc(100vh - 110px);
-    z-index:70;
-  }
+  #chartDrawer.drawer{position:relative; inset:auto;}
 }
 
 @media (max-width: 820px){
@@ -850,7 +835,7 @@ a{ color:inherit; }
           <div class="small">Hızlı seçim • Excel’e kopyala</div>
         </div>
         <div class="bd">
-          <div class="small" style="margin:0 0 8px;color:var(--muted)">Listeyi kullanmak mobilde de daha rahat.</div>
+          <div class="small" style="margin:0 0 8px;color:var(--muted)"></div>
           <div class="mobileChartList" id="chartMobileList"></div>
         </div>
       </div>
