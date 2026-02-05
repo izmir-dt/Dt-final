@@ -1836,8 +1836,7 @@ function drawerItemsToTSV(items, labelForRole=""){
     const role = (it.role || it.gorev || fixedRole || "");
     lines.push([it.person || "", role, plays].join("	"));
   }
-  return lines.join("
-");
+  return lines.join("\n");
 }
 els.drawerClose.addEventListener("click", closeDrawer);
 els.drawerCopyAll.addEventListener("click", ()=>{
