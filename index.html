@@ -705,7 +705,9 @@ a{ color:inherit; }
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Tümü)" style="display:none">Excel’e Kopyala (Tümü)</button>
+            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
+            <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
+            <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
             <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
             <button class="btn" id="drawerClose">✕</button>
           </div>
@@ -826,6 +828,8 @@ const els = {
   drawerClose: el("drawerClose"),
   drawerBack: el("drawerBack"),
   drawerCopyAll: el("drawerCopyAll"),
+  drawerCopyVisible: el("drawerCopyVisible"),
+  drawerCopyExpanded: el("drawerCopyExpanded"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
@@ -1908,8 +1912,11 @@ function openDrawer(title, subtitle, items, opts={}){
   drawerData = items.slice();
   drawerMode = opts.mode || ((drawerData[0] && ("label" in (drawerData[0]||{}))) ? "labels" : "items");
   els.drawerSearch.value = "";
-  // copy button only makes sense in item-list mode
-  els.drawerCopyAll.style.display = (drawerMode === "items" && drawerData.length) ? "inline-flex" : "none";
+  // copy buttons only make sense in item-list mode
+  const showCopy = (drawerMode === "items" && drawerData.length);
+  els.drawerCopyAll.style.display = showCopy ? "inline-flex" : "none";
+  els.drawerCopyVisible.style.display = showCopy ? "inline-flex" : "none";
+  els.drawerCopyExpanded.style.display = showCopy ? "inline-flex" : "none";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
   // back button
@@ -1921,23 +1928,61 @@ function closeDrawer(){
   drawerStack = [];
   els.drawerBack.style.display = "none";
   els.drawerCopyAll.style.display = "none";
+  els.drawerCopyVisible.style.display = "none";
+  els.drawerCopyExpanded.style.display = "none";
   els.drawerList.innerHTML = "";
 }
-function drawerItemsToTSV(items, labelForRole=""){
+function getDrawerFilteredItems(){
+  const q = els.drawerSearch.value.trim().toLowerCase();
+  const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
+  if(labelMode) return drawerData.slice(); // copy only for items anyway
+  if(!q) return drawerData.slice();
+  return drawerData.filter(x=>{
+    const hay = (String(x.person||"") + " " + (Array.isArray(x.plays)?x.plays.join(" "):String(x.plays||""))).toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+function drawerItemsToTSVSummary(items, labelForRole=""){
   const lines = [];
-  lines.push(["Kişi","Görev","Oyunlar"].join("	"));
+  lines.push(["Kişi","Görev","Oyunlar"].join("\t"));
   const fixedRole = (labelForRole||"").toString().trim();
   for(const it of items){
     const plays = Array.isArray(it.plays) ? it.plays.join(" • ") : (it.plays || "");
     const role = (it.role || it.gorev || fixedRole || "");
-    lines.push([it.person || "", role, plays].join("	"));
+    lines.push([it.person || "", role, plays].join("\t"));
+  }
+  return lines.join("\n");
+}
+
+function drawerItemsToTSVExpanded(items, labelForRole=""){
+  const lines = [];
+  lines.push(["Kişi","Görev","Oyun"].join("\t"));
+  const fixedRole = (labelForRole||"").toString().trim();
+  for(const it of items){
+    const role = (it.role || it.gorev || fixedRole || "");
+    const playsArr = Array.isArray(it.plays) ? it.plays : (it.plays ? [String(it.plays)] : [""]);
+    for(const p of playsArr){
+      lines.push([it.person || "", role, p || ""].join("\t"));
+    }
   }
   return lines.join("\n");
 }
 els.drawerClose.addEventListener("click", closeDrawer);
 els.drawerCopyAll.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
-  copyText(drawerItemsToTSV(drawerData, els.drawerTitle.textContent));
+  const items = getDrawerFilteredItems();
+  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
+});
+els.drawerCopyVisible.addEventListener("click", ()=>{
+  if(drawerMode !== "items" || !drawerData.length) return;
+  const items = getDrawerFilteredItems();
+  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
+});
+els.drawerCopyExpanded.addEventListener("click", ()=>{
+  if(drawerMode !== "items" || !drawerData.length) return;
+  const items = getDrawerFilteredItems();
+  copyText(drawerItemsToTSVExpanded(items, els.drawerTitle.textContent));
 });
 els.drawerBack.addEventListener("click", ()=>{
   const prev = drawerStack.pop();
