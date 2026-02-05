@@ -685,57 +685,17 @@ select.q-scope{
 #tabDistribution{order:3;}
 #tabIntersection{order:4;}
 #tabFiguran{order:5;}
-/* --- Başlık modernleştirme --- */
-.brand{gap:12px}
-.logoMark{display:grid;place-items:center;color:var(--accent)}
-.logoTxt{
-  font-weight:900;
-  letter-spacing:.08em;
-  font-size:12px;
-  padding:6px 10px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  background:color-mix(in srgb, var(--card) 82%, var(--bg) 18%);
-  color:var(--text);
-}
-.brand h1{margin:0;line-height:1.15}
-.brand h1 .t1{display:block;font-size:14px;font-weight:900}
-.brand h1 .t2{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-top:2px}
-.brand h1 .t3{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-top:2px}
+#advBtn{order:6;}
 
-/* --- Kapsam seçici daha geniş + dropdown hizalı --- */
-.qScopeBox{min-width:150px}
-select.q-scope{width:100%;min-width:100%}
-
-/* Nav: Ek Araçlar kaldırıldı, order son güncelleme */
-#tabCharts{order:1;}
-#tabPanel{order:2;}
-#tabDistribution{order:3;}
-#tabIntersection{order:4;}
-#tabFiguran{order:5;}
 </style>
 </head>
 <body>
 <header>
   <div class="top">
     <div class="brand">
-      <div class="logoMark" aria-hidden="true">
-  <svg viewBox="0 0 64 64" width="34" height="34">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="currentColor" stop-opacity=".95"/>
-        <stop offset="1" stop-color="currentColor" stop-opacity=".55"/>
-      </linearGradient>
-    </defs>
-    <path d="M12 50c10-18 30-18 40 0" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round"/>
-    <path d="M18 48c6-12 22-12 28 0" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" opacity=".75"/>
-    <path d="M26 46c2-5 10-5 12 0" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" opacity=".55"/>
-    <circle cx="32" cy="22" r="9" fill="none" stroke="currentColor" stroke-width="4" opacity=".9"/>
-    <path d="M32 13v18" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".65"/>
-  </svg>
-</div><div class="logoTxt">İDT</div>
+      <div class="logo">IDT</div>
       <div>
-        <h1><span class="t1">İzmir Devlet Tiyatrosu Müdürlüğü</span><span class="t2">Repertuvar Kişi Takip Sistemi</span><span class="t3">Sanat Teknik Bürosu</span></h1>
+        <h1>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</h1>
         </div>
     </div>
     <div class="actions">
@@ -744,7 +704,8 @@ select.q-scope{width:100%;min-width:100%}
       <button class="btn" id="reloadBtn">↻ Yenile</button>
 
       <div class="menu">
-<div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
+        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
+        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
           <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
           <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
         </div>
@@ -2841,7 +2802,32 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }catch(e){ console.error(e); }
 });
 
-}catch(e){ console.error(e); }
+/* --- Nav polish: Ek Araçlar sekmeye taşınır + ikonlar --- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    const nav = document.querySelector(".nav");
+    const advBtn = document.getElementById("advBtn");
+    if(nav && advBtn){
+      advBtn.classList.add("tab");
+      advBtn.classList.remove("btn");
+      nav.appendChild(advBtn);
+    }
+    const iconMap = [
+      ["tabPanel","🏠 "],
+      ["tabDistribution","🎭 "],
+      ["tabIntersection","🔁 "],
+      ["tabFiguran","👥 "],
+      ["tabCharts","📊 "],
+      ["advBtn","🧰 "],
+    ];
+    iconMap.forEach(([id,ico])=>{
+      const el = document.getElementById(id);
+      if(el && !el.dataset.iconed){
+        el.dataset.iconed="1";
+        el.textContent = ico + el.textContent.replace(/^(🧰|📊|👥|🔁|🎭|🏠)\s+/,"");
+      }
+    });
+  }catch(e){ console.error(e); }
 });
 
 </script>
