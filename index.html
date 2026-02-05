@@ -630,12 +630,6 @@ a{ color:inherit; }
   border-radius:12px;
   background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
 }
-.qScopeLabel{
-  font-size:12px;
-  font-weight:900;
-  color:var(--muted);
-  white-space:nowrap;
-}
 select.q-scope{
   border:0;
   background:transparent;
@@ -652,9 +646,47 @@ select.q-scope{
 .filters .input input{ flex:1 1 220px; min-width:220px; }
 
 /* Sadece mobilde Ek Araçlar butonunu kaldır */
-@media (max-width: 760px){
-  #advBtn{ display:none !important; }
+
+/* --- Kapsam seçici: label kalktı, ok eklendi --- */
+.qScopeBox{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
 }
+.qScopeBox::after{
+  content:"▾";
+  font-weight:900;
+  color:var(--muted);
+  margin-left:2px;
+}
+select.q-scope{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  border:0;
+  background:transparent;
+  padding:6px 0;
+  font-weight:900;
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+  cursor:pointer;
+}
+
+
+/* --- Masaüstü sekme sırası: Grafikler 1, Panel 2 --- */
+.nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#tabCharts{order:1;}
+#tabPanel{order:2;}
+#tabDistribution{order:3;}
+#tabIntersection{order:4;}
+#tabFiguran{order:5;}
+#advBtn{order:6;}
+
 </style>
 </head>
 <body>
@@ -728,7 +760,7 @@ select.q-scope{
         <div class="filters">
           <div class="input" title="Ara">
             🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-            <div class="qScopeBox"><span class="qScopeLabel">Kapsam</span><select id="qScope" class="q-scope" title="Arama kapsamı">
+            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
               <option value="all">Tümü</option>
               <option value="play">Oyun</option>
               <option value="person">Kişi</option>
@@ -2769,6 +2801,35 @@ document.addEventListener("DOMContentLoaded", ()=>{
     else if(typeof init === "function") init();
   }catch(e){ console.error(e); }
 });
+
+/* --- Nav polish: Ek Araçlar sekmeye taşınır + ikonlar --- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    const nav = document.querySelector(".nav");
+    const advBtn = document.getElementById("advBtn");
+    if(nav && advBtn){
+      advBtn.classList.add("tab");
+      advBtn.classList.remove("btn");
+      nav.appendChild(advBtn);
+    }
+    const iconMap = [
+      ["tabPanel","🏠 "],
+      ["tabDistribution","🎭 "],
+      ["tabIntersection","🔁 "],
+      ["tabFiguran","👥 "],
+      ["tabCharts","📊 "],
+      ["advBtn","🧰 "],
+    ];
+    iconMap.forEach(([id,ico])=>{
+      const el = document.getElementById(id);
+      if(el && !el.dataset.iconed){
+        el.dataset.iconed="1";
+        el.textContent = ico + el.textContent.replace(/^(🧰|📊|👥|🔁|🎭|🏠)\s+/,"");
+      }
+    });
+  }catch(e){ console.error(e); }
+});
+
 </script>
 
   <!-- Mobile detail modal -->
