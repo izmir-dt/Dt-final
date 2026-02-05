@@ -766,7 +766,7 @@ select.q-scope{
           <div class="notifHd">
             <div>
               <b>Bildirimler</b>
-              <div class="small">Kaynak: LOG sayfası (Apps Script)</div>
+              <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
             </div>
             <div class="row" style="gap:8px">
               <button class="btn" id="notifRefresh">↻</button>
@@ -974,7 +974,9 @@ const CONFIG = {
   SHEET_NOTIFS: "LOG",
 
 
-  // Ana veri (genelde: "BÜTÜN OYUNLAR")
+    NOTIF_SHEET_NAME: "BİLDİRİMLER",
+  NOTIF_GVIZ_URL: "", // boş bırak (aşağıda otomatik oluşturulacak)
+// Ana veri (genelde: "BÜTÜN OYUNLAR")
   GID: "1233566992",
 
   // Apps Script'in oluşturduğu LOG sayfasının gid'sini buraya yaz (URL'den kopyala: ...?gid=XXXX)
@@ -1498,43 +1500,51 @@ function parseLogFromGviz(obj){
 async function loadNotifications(){
   if(!els.notifPanel) return;
 
-  // Bildirimler: önce LOG dene (Apps Script otomatik), yoksa BİLDİRİMLER'e fallback
   try{
-    const trySheets = [CONFIG.SHEET_NOTIFS, "BİLDİRİMLER"].filter(Boolean);
-    let data = null;
-    for(const sh of trySheets){
-      try{
-        const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(sh)}`;
-        data = await jsonp(url);
-        if(data && data.ok === true && Array.isArray(data.rows)) break;
-      }catch(_e){ /* dene devam */ }
-    }
-    if(!data || data.ok !== true || !Array.isArray(data.rows)){
-      els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
-      els.notifCount.textContent = "";
-    els.notifCount.classList.add("hidden");
-      return;
-    }
+    // GVIZ (no JSONP) → BİLDİRİMLER sayfasını okur
+    const sheetName = CONFIG.NOTIF_SHEET_NAME || "BİLDİRİMLER";
+    const gvizUrl = CONFIG.NOTIF_GVIZ_URL && CONFIG.NOTIF_GVIZ_URL.trim()
+      ? CONFIG.NOTIF_GVIZ_URL.trim()
+      : `https://docs.google.com/spreadsheets/d/${encodeURIComponent(CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
 
-    // Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
-    const rows = data.rows.map(r=>({
-      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
-      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
-      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
-      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
-      play: String(r["Oyun"] ?? "").trim(),
-      person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
-      read: String(r["Okundu"] ?? "").trim()
-    })).filter(x=>x.ts || x.title || x.msg);
+    const res = await fetch(gvizUrl, { cache: "no-store" });
+    const txt = await res.text();
 
-    // newest first (basit)
+    // gviz response: google.visualization.Query.setResponse({...});
+    const match = txt.match(/setResponse\((.*)\);\s*$/s);
+    if(!match) throw new Error("GVIZ parse failed");
+    const obj = JSON.parse(match[1]);
+
+    const table = obj?.table;
+    const cols = (table?.cols||[]).map(c=>(c.label||"").trim());
+    const rawRows = (table?.rows||[]);
+
+    const rows = rawRows.map(r=>{
+      const c = r.c || [];
+      const get = (name)=>{
+        const idx = cols.indexOf(name);
+        if(idx === -1) return "";
+        const cell = c[idx];
+        return cell ? (cell.f ?? cell.v ?? "") : "";
+      };
+      return {
+        ts: String(get("Tarih") || get("Tarih/Saat") || "").trim(),
+        action: String(get("İşlem") || get("Islem") || "").trim(),
+        play: String(get("Oyun") || "").trim(),
+        person: String(get("Kişi") || get("Kisi") || "").trim(),
+        role: String(get("Görev") || get("Gorev") || "").trim(),
+        msg: String(get("Açıklama") || get("Aciklama") || "").trim()
+      };
+    }).filter(x=>x.ts || x.action || x.msg || x.play || x.person);
+
+    // newest first
     rows.reverse();
 
     // local okundu (site tarafı): imza üzerinden
     const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
-    const norm = (x)=> (x||"").toString().slice(0,120);
+    const norm = (x)=> (x||"").toString().slice(0,140);
     rows.forEach(n=>{
-      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
+      const key = `${norm(n.ts)}|${norm(n.action)}|${norm(n.play)}|${norm(n.person)}|${norm(n.role)}|${norm(n.msg)}`;
       n._key = key;
       n._seen = !!seen[key];
     });
@@ -1549,20 +1559,30 @@ async function loadNotifications(){
     }
 
     if(!rows.length){
-
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirim yok.</div>`;
       return;
     }
 
-    els.notifList.innerHTML = rows.map(n=>{
-      const meta = [n.play, n.person].filter(Boolean).join(" • ");
+    const iconBy = (a)=>{
+      const s = (a||"").toString().toLowerCase();
+      if(s.includes("ekl")) return "✅";
+      if(s.includes("çıkar") || s.includes("cikar") || s.includes("sil")) return "🗑️";
+      if(s.includes("güncel") || s.includes("guncel")) return "✏️";
+      return "🔔";
+    };
+
+    const show = rows.slice(0, 60);
+
+    els.notifList.innerHTML = show.map(n=>{
+      const meta = [n.play, n.person, n.role].filter(Boolean).join(" • ");
       const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
-      const title = n.title ? `<div class="notif-title">${escapeHtml(n.title)}</div>` : "";
       const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
       const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
+      const title = n.action ? `<div class="notif-title">${escapeHtml(n.action)}</div>` : "";
       const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
+      const type = iconBy(n.action);
       return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
-        <div class="notif-type">${escapeHtml(n.type)}</div>
+        <div class="notif-type">${escapeHtml(type)}</div>
         <div class="notif-body">
           ${title}${msg}${who}${ts}
         </div>
@@ -1578,22 +1598,28 @@ async function loadNotifications(){
         seen2[key]=true;
         localStorage.setItem("idt_seen_notifs", JSON.stringify(seen2));
         el.classList.add("seen");
-        // badge güncelle
-        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble")).filter(x=>!x.classList.contains("seen")).length;
-        if(left){ els.notifCount.classList.remove("hidden"); els.notifCount.textContent=String(left); } else { els.notifCount.textContent=""; els.notifCount.classList.add("hidden"); }
+        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble"))
+          .filter(x=>!x.classList.contains("seen")).length;
+        if(left){
+          els.notifCount.classList.remove("hidden");
+          els.notifCount.textContent=String(left);
+        } else {
+          els.notifCount.textContent="";
+          els.notifCount.classList.add("hidden");
+        }
       });
     });
 
   }catch(err){
     console.error(err);
-    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi. (API/JSONP)
-<br><span class="small muted">Not: Apps Script doGet içinde JSONP (callback) açık olmalı.</span></div>`;
+    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.<br><span class="small muted">Kontrol: Sheet "Bağlantıya sahip herkes görüntüleyebilir" olmalı.</span></div>`;
     els.notifCount.textContent = "";
     els.notifCount.classList.add("hidden");
   }
 }
 
 /* ---------- transforms ---------- */
+
 function groupByPlay(data){
   const map=new Map();
   for(const r of data){ if(!map.has(r.play)) map.set(r.play,[]); map.get(r.play).push(r); }
