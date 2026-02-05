@@ -836,6 +836,16 @@ const els = {
 };
 els.sheetBtn.href = CONFIG.sheetUrl();
 
+// --- Chart canvas interactions (desktop) ---
+if(els.chartMain){
+  els.chartMain.addEventListener('click', onChartCanvasClick);
+  els.chartMain.addEventListener('mousemove', (ev)=>{
+    const hit = chartHitKeyFromEvent(ev);
+    els.chartMain.style.cursor = hit ? 'pointer' : 'default';
+  });
+}
+
+
 let rawRows = [];
 let rows = [];
 let ACTIVE_TAB = 'Panel';
@@ -1702,6 +1712,92 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   ctx.strokeRect(0.5,0.5,cssW-1,cssH-1);
 }
 
+// --- Chart hit test (desktop) ---
+function chartHitKeyFromEvent(ev){
+  if(!chartHits || !chartHits.length) return null;
+  const canvas = ev.currentTarget || els.chartMain;
+  const rect = canvas.getBoundingClientRect();
+  const x = ev.clientX - rect.left;
+  const y = ev.clientY - rect.top;
+
+  for(const h of chartHits){
+    if(h.type !== 'wedge') continue;
+    const dx = x - h.cx;
+    const dy = y - h.cy;
+    const r = Math.sqrt(dx*dx + dy*dy);
+    if(r < h.rInner || r > h.rOuter) continue;
+
+    // angle in [-PI, PI] -> normalize to [0, 2PI)
+    let a = Math.atan2(dy, dx);
+    if(a < -Math.PI/2) a += Math.PI*2;
+
+    // wedge angles are drawn starting at -PI/2 and increasing
+    // Normalize wedge start/end into [0, 2PI) relative to -PI/2
+    const norm = (t)=>{
+      let v = t;
+      while(v < -Math.PI/2) v += Math.PI*2;
+      while(v >= -Math.PI/2 + Math.PI*2) v -= Math.PI*2;
+      return v;
+    };
+    const s = norm(h.start);
+    const e = norm(h.end);
+    const aa = norm(a);
+
+    const inside = (s <= e) ? (aa >= s && aa <= e) : (aa >= s || aa <= e);
+    if(inside) return h.key;
+  }
+  return null;
+}
+
+function buildDrawerItemsForKey(key){
+  // returns [{person, role/roles, plays:[...]}]
+  const map = new Map();
+
+  for(const r of rows){
+    const rk = (chartMode === 'roles') ? ((r.role||'').trim() || 'Bilinmiyor') : ((r.category||'').trim() || 'Bilinmiyor');
+    if(rk !== key) continue;
+    const p = (r.person||'').trim();
+    if(!p) continue;
+    if(!map.has(p)) map.set(p, {plays:new Set(), roles:new Set()});
+    map.get(p).plays.add((r.play||'').trim());
+    if(r.role) map.get(p).roles.add((r.role||'').trim());
+  }
+
+  const out = [];
+  for(const [person, v] of map.entries()){
+    const plays = [...v.plays].filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    const roles = [...v.roles].filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    out.push({ person, plays, role: (chartMode==='roles' ? key : roles.join(' / ')) });
+  }
+  out.sort((a,b)=>a.person.localeCompare(b.person,'tr'));
+  return out;
+}
+
+function onChartCanvasClick(ev){
+  const key = chartHitKeyFromEvent(ev);
+  if(!key) return;
+
+  // "Diğer" -> drill-down into labels
+  if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
+    drawerStack.push({
+      title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
+      subtitle: els.drawerSub.textContent || '',
+      items: drawerData.slice(),
+      mode: drawerMode
+    });
+    const labels = window.__chartOtherItems
+      .slice()
+      .sort((a,b)=>b.v-a.v)
+      .map(x=>({label:x.k, value:x.v}));
+    openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
+    return;
+  }
+
+  const items = buildDrawerItemsForKey(String(key));
+  const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
+  openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
+}
+
 /* ---------- mobile chart list ---------- */
 function buildPeopleListForKey(key){
   const map=new Map();
@@ -1852,6 +1948,31 @@ els.drawerBack.addEventListener("click", ()=>{
   openDrawer(prev.title, prev.subtitle, prev.items, {mode: prev.mode});
 });
 els.drawerSearch.addEventListener("input", renderDrawerList);
+// label list tıkla -> ilgili label için kişi listesi aç (drill-down)
+els.drawerList.addEventListener("click", (e)=>{
+  const item = e.target.closest(".miniItem[data-label]");
+  if(!item) return;
+  const label = item.getAttribute("data-label");
+  if(!label) return;
+
+  // mevcut state'i stack'e it
+  drawerStack.push({
+    title: els.drawerTitle.textContent,
+    subtitle: els.drawerSub.textContent,
+    items: drawerData.slice(),
+    mode: drawerMode
+  });
+
+  // label -> kişiler
+  const key = String(label);
+  const items = (key === "Diğer" && Array.isArray(window.__chartOtherItems))
+    ? []
+    : buildDrawerItemsForKey(key);
+
+  const title = `${chartMode === "roles" ? "Görev" : "Kategori"}: ${key}`;
+  openDrawer(title, `${items.length} kişi`, items, {mode:"items"});
+});
+
 
 function renderDrawerList(){
   const q = els.drawerSearch.value.trim().toLowerCase();
@@ -1883,6 +2004,7 @@ function renderDrawerList(){
   els.drawerList.innerHTML = filtered.slice(0,250).map(x=>`
     <div class="miniItem">
       <b>${escapeHtml(x.person)}</b>
+      ${x.role ? `<div class="small muted">Görev: ${escapeHtml(String(x.role))}</div>` : ""}
       <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
     </div>
   `).join("");
