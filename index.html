@@ -900,6 +900,7 @@ els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
+  if(rows.length && els.viewStats && els.viewStats.style.display!=="none"){ drawStats(); }
 });
 
 /* ---------- helpers ---------- */
@@ -1919,7 +1920,9 @@ function drawStats(){
   // Canvas size (crisp on HiDPI)
   const cssW = canvas.clientWidth || 920;
   const cssH = Math.max(380, Math.floor((canvas.clientHeight||380)));
-  const dpr = window.devicePixelRatio || 1;
+  
+  window.__statsHit = [];
+const dpr = window.devicePixelRatio || 1;
   canvas.width = Math.floor(cssW * dpr);
   canvas.height = Math.floor(cssH * dpr);
   canvas.style.width = cssW + "px";
@@ -2022,7 +2025,7 @@ function drawStats(){
     ctx.strokeRect(bx+.5, by+.5, innerW-7, bh-1);
 
     // hit zone includes label+bar row
-    window.__statsHit.push({ play: d.play, x: 0, y: y, w: cssW, h: rowH });
+    window.__statsHit.push({ play: d.play, count: d.count, people: d.people, x: 0, y: y, w: cssW, h: rowH });
   }
 
   // Interactivity (attach once)
@@ -2045,7 +2048,7 @@ function drawStats(){
     canvas.addEventListener("click", (ev)=>{
       const h = hitAt(ev);
       if(!h) return;
-      showStatsDrawer(h.play);
+      openStatsDrawer(h);
     });
   }
 }
@@ -2579,6 +2582,7 @@ els.chartTabCats.addEventListener("click", ()=>{
 
 window.addEventListener("resize", ()=>{
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
+  if(rows.length && els.viewStats && els.viewStats.style.display!=="none"){ drawStats(); }
 });
 
 /* ---------- KPIs ---------- */
