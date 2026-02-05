@@ -649,6 +649,19 @@ a{ color:inherit; }
     z-index:70;
   }
 }
+
+/* --- Charts responsive (v8): Desktop = grafik + sağ panel, Mobil = liste --- */
+#chartListCard{ display:none; margin-top:12px; }
+@media (max-width: 900px){
+  #chartsGrid{ grid-template-columns: 1fr !important; }
+  #chartMain{ display:none !important; }
+  #chartDrawer{ display:none !important; }
+  #chartListCard{ display:block !important; }
+}
+@media (min-width: 901px){
+  #chartListCard{ display:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -836,29 +849,17 @@ a{ color:inherit; }
     </div>
 
     <div class="grid" id="chartsGrid" style="grid-template-columns: 1.15fr .85fr">
-      <div class="card">
+      <div class="card" id="chartCard">
         <div class="hd">
           <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">Kategoriye tıkla/dokun → detay listesi açılır.</div>
+          <div class="small" id="chartHint">İpucu: masaüstünde grafiğe tıkla → sağda liste açılır. Mobilde listeden seç.</div>
         </div>
         <div class="bd">
           <canvas id="chartMain" width="900" height="340"></canvas>
         </div>
       </div>
 
-      <div class="card" id="chartListCard">
-        <div class="hd">
-          <h2>Kart + Liste</h2>
-          <div class="small">Hızlı seçim • Excel’e kopyala</div>
-        </div>
-        <div class="bd">
-          <div class="small" style="margin:0 0 8px;color:var(--muted)">Listeyi kullanmak mobilde de daha rahat.</div>
-          <div class="mobileChartList" id="chartMobileList"></div>
-        </div>
-      </div>
-    </div>
-
-    <aside class="drawer hidden" id="chartDrawer">
+      <aside class="drawer hidden" id="chartDrawer">
         <div class="hd">
           <div>
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
@@ -879,6 +880,18 @@ a{ color:inherit; }
           <div class="miniList" id="drawerList"></div>
         </div>
       </aside>
+    </div>
+
+    <!-- Mobil: Grafik yerine liste (daha rahat) -->
+    <div class="card" id="chartListCard">
+      <div class="hd">
+        <h2>Liste</h2>
+        <div class="small">Dokun → detay açılır • Excel’e kopyala</div>
+      </div>
+      <div class="bd">
+        <div class="mobileChartList" id="chartMobileList"></div>
+      </div>
+    </div>
   </section>
 
 <!-- İSTATİSTİKLER -->
@@ -1628,10 +1641,15 @@ function renderList(){
       renderList();
       renderDetails(it);
 
-      if(isMobile() && activeMode==="plays"){
-        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
-        activePlayFilter = it.title;
-        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
+      if(isMobile()){
+        // Mobil: seçimi direkt modalda göster
+        if(activeMode==="plays"){
+          activePlayFilter = it.title;
+          setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
+        } else {
+          activePlayFilter = null;
+          setStatus(`👤 Kişi: ${it.title}`, "ok");
+        }
 
         // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
         // Modal içine aynı içeriği basıyoruz
@@ -2064,7 +2082,52 @@ function renderMobileChartList(items){
   els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
     elm.addEventListener("click", ()=>{
       const key = elm.getAttribute("data-key");
-      if(!key || key==="Diğer") return;
+      if(!key) return;
+
+      // Mobilde "Diğer" seçilirse: alt kategorileri listele
+      if(key === "Diğer"){
+        const others = Array.isArray(window.__chartOtherItems) ? window.__chartOtherItems.slice().sort((a,b)=>b.v-a.v) : [];
+        const modeLabel = (chartMode==="roles" ? "Görev" : "Kategori");
+        const html = `
+          <div class="modalTitle">${modeLabel}: Diğer</div>
+          <div class="small muted" style="margin-top:6px">${others.length} kategori</div>
+          <div class="input" style="margin-top:12px;min-width:unset">
+            🔎 <input id="mobOtherQ" type="search" placeholder="Kategori ara…" autocomplete="off"/>
+          </div>
+          <div class="miniList" id="mobOtherList" style="margin-top:10px"></div>
+        `;
+        openMobileModal(html);
+
+        const render = ()=>{
+          const q = (document.getElementById("mobOtherQ")?.value||"").trim().toLowerCase();
+          const list = document.getElementById("mobOtherList");
+          if(!list) return;
+          const filtered = others.filter(x=> String(x.k||"").toLowerCase().includes(q));
+          list.innerHTML = filtered.map(x=>`
+            <div class="miniItem" data-key="${escapeHtml(x.k)}">
+              <b>${escapeHtml(x.k)}</b>
+              <div class="small muted">${Number(x.v||0)} kişi</div>
+            </div>
+          `).join("") || `<div class="empty">Sonuç yok.</div>`;
+          list.querySelectorAll(".miniItem[data-key]").forEach(it=>{
+            it.addEventListener("click", ()=>{
+              const k = it.getAttribute("data-key");
+              const people = buildPeopleListForKey(k);
+              const title = `${modeLabel}: ${k}`;
+              openMobilePeopleModal(title, `${people.length} kişi`, people);
+            });
+          });
+        };
+
+        setTimeout(()=>{
+          const inp = document.getElementById("mobOtherQ");
+          if(inp) inp.addEventListener("input", render);
+          render();
+        },0);
+
+        return;
+      }
+
       const people = buildPeopleListForKey(key);
       const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
