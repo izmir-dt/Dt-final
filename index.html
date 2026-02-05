@@ -705,7 +705,11 @@ a{ color:inherit; }
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center"><button class="btn" id="drawerBack" title="Geri" style="display:none">←</button><button class="btn" id="drawerClose">✕</button></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Tümü)" style="display:none">Excel’e Kopyala (Tümü)</button>
+            <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
+            <button class="btn" id="drawerClose">✕</button>
+          </div>
         </div>
         <div class="bd">
           <div class="input" style="min-width:unset" title="Ara">
@@ -848,6 +852,7 @@ const els = {
   drawerSub: el("drawerSub"),
   drawerClose: el("drawerClose"),
   drawerBack: el("drawerBack"),
+  drawerCopyAll: el("drawerCopyAll"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
@@ -1842,6 +1847,8 @@ function openDrawer(title, subtitle, items, opts={}){
   drawerData = items.slice();
   drawerMode = opts.mode || ((drawerData[0] && ("label" in (drawerData[0]||{}))) ? "labels" : "items");
   els.drawerSearch.value = "";
+  // copy button only makes sense in item-list mode
+  els.drawerCopyAll.style.display = (drawerMode === "items" && drawerData.length) ? "inline-flex" : "none";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
   // back button
@@ -1852,10 +1859,24 @@ function closeDrawer(){
   drawerData = [];
   drawerStack = [];
   els.drawerBack.style.display = "none";
+  els.drawerCopyAll.style.display = "none";
   els.drawerList.innerHTML = "";
+}
+function drawerItemsToTSV(items){
+  const lines = [];
+  lines.push(["Kişi","Oyunlar"].join("\t"));
+  for(const it of items){
+    const plays = Array.isArray(it.plays) ? it.plays.join(" • ") : (it.plays || "");
+    lines.push([it.person || "", plays].join("\t"));
+  }
+  return lines.join("\n");
 }
 els.drawerClose.addEventListener("click", closeDrawer);
 els.statsDrawerClose.addEventListener("click", closeStatsDrawer);
+els.drawerCopyAll.addEventListener("click", ()=>{
+  if(drawerMode !== "items" || !drawerData.length) return;
+  copyText(drawerItemsToTSV(drawerData));
+});
 els.drawerBack.addEventListener("click", ()=>{
   const prev = drawerStack.pop();
   if(!prev){
@@ -1939,7 +1960,11 @@ const dpr = window.devicePixelRatio || 1;
     byPlay.get(play).add(person);
   }
   const top = Array.from(byPlay.entries())
-    .map(([play,set]) => ({ play, count: set.size }))
+    .map(([play,set]) => ({
+      play,
+      count: set.size,
+      people: Array.from(set).sort((a,b)=>a.localeCompare(b,'tr'))
+    }))
     .sort((a,b)=> b.count-a.count)
     .slice(0,10);
 
@@ -1994,13 +2019,13 @@ const dpr = window.devicePixelRatio || 1;
     const y = startY + i*rowH;
 
     // Label (bold)
-    ctx.fillStyle = "rgba(255,255,255,.82)";
+    ctx.fillStyle = getVar('--text');
     ctx.font = "700 12.5px system-ui, -apple-system, Segoe UI, Roboto, Arial";
     const label = ellipsis(d.play, padL - 40);
     ctx.fillText(label, 18, y+21);
 
     // Value
-    ctx.fillStyle = "rgba(255,255,255,.62)";
+    ctx.fillStyle = getVar('--muted');
     ctx.font = "600 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
     ctx.textAlign = "right";
     ctx.fillText(String(d.count), padL - 14, y+21);
