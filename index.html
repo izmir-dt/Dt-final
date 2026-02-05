@@ -620,6 +620,41 @@ a{ color:inherit; }
   .table{ display:table; overflow:visible; }
   .table th,.table td{ white-space:normal; }
 }
+/* --- Arama kapsamı: görünür kutucuk --- */
+.qScopeBox{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
+}
+.qScopeLabel{
+  font-size:12px;
+  font-weight:900;
+  color:var(--muted);
+  white-space:nowrap;
+}
+select.q-scope{
+  border:0;
+  background:transparent;
+  padding:6px 6px;
+  font-weight:900;
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+  cursor:pointer;
+}
+
+/* input satırında düzgün hizalama */
+.filters .input{ gap:10px; flex-wrap:wrap; }
+.filters .input input{ flex:1 1 220px; min-width:220px; }
+
+/* Sadece mobilde Ek Araçlar butonunu kaldır */
+@media (max-width: 760px){
+  #advBtn{ display:none !important; }
+}
 </style>
 </head>
 <body>
@@ -693,12 +728,12 @@ a{ color:inherit; }
         <div class="filters">
           <div class="input" title="Ara">
             🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-            <select id="qScope" class="q-scope" title="Arama kapsamı">
+            <div class="qScopeBox"><span class="qScopeLabel">Kapsam</span><select id="qScope" class="q-scope" title="Arama kapsamı">
               <option value="all">Tümü</option>
               <option value="play">Oyun</option>
               <option value="person">Kişi</option>
               <option value="role">Görev</option>
-            </select>
+            </select></div>
             <button class="q-clear" id="qClear" title="Temizle">✕</button>
           </div>
 <div class="seg" title="Görünüm">
