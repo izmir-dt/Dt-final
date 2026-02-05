@@ -734,6 +734,70 @@ select.q-scope{
   color: var(--accent);
   flex:0 0 auto;
 }
+
+/* =========================
+   NOTIFICATIONS: CONTRAST FIX (v28)
+   ========================= */
+#notifBell{ position:relative; }
+#notifBtn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+#notifBadge{
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:12px;
+  line-height:20px;
+  color: var(--card);
+  background: var(--bad);
+}
+#notifPanel{
+  position:absolute;
+  right:0;
+  top:calc(100% + 10px);
+  width:min(420px, calc(100vw - 24px));
+  max-height:420px;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  padding:10px;
+  z-index:999;
+}
+.notifItem{
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
+  border-radius:12px;
+  padding:10px 12px;
+  margin:8px 0;
+  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+  color: var(--text);
+}
+.notifTop{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+}
+.notifTop b{ color: var(--text); }
+.notifTop .muted,
+.notifItem .muted{
+  color: var(--muted) !important;
+  opacity:1 !important;
+}
+.notifItem div{ color: var(--text); }
+
+/* dark theme: ensure panel stays dark but text stays light */
+html[data-theme="dark"] #notifPanel{
+  background: color-mix(in srgb, var(--card) 92%, #000 8%);
+  border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
+}
 </style>
 </head>
 <body>
