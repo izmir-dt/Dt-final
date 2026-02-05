@@ -478,19 +478,6 @@ width:48px;
   .miniItem{ padding:14px !important; }
   .miniItem b{ font-size:16px; }
 }
-      .drawer{
-        position:fixed !important;
-        inset:0 !important;
-        top:0 !important;
-        border-radius:0 !important;
-        z-index:60 !important;
-        height:auto !important;
-        max-height:none !important;
-      }
-      .miniList{ max-height: calc(100vh - 180px) !important; }
-      .miniItem{ padding:14px !important; }
-      .miniItem b{ font-size:16px; }
-    }
 
 
 
@@ -655,6 +642,11 @@ a{ color:inherit; }
   #chartDrawer{ display:none !important; }
 }
 
+
+/* v10 fix: mobilde chart drawer görünmesin (modal kullanılıyor) */
+@media (max-width: 980px){
+  #chartDrawer{ display:none !important; }
+}
 </style>
 </head>
 <body>
