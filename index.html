@@ -513,22 +513,6 @@ a{ color:inherit; }
 }
 
 @media (max-width: 720px){.actions{flex-wrap:wrap;margin-left:0} .top{flex-wrap:wrap;justify-content:flex-start}}
-
-    /* Mobile detail modal */
-    .mOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none}
-    .mModal{position:fixed;left:0;right:0;bottom:0;top:0;z-index:90;display:none;
-      background:var(--card);border-left:1px solid var(--line);
-    }
-    .mModalHd{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;
-      padding:12px 14px;border-bottom:1px solid var(--line);
-      background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
-    }
-    .mModalHd .ttl{font-weight:900}
-    .mModalBd{padding:12px;overflow:auto;height:calc(100vh - 56px)}
-    @media (min-width: 981px){
-      .mOverlay,.mModal{display:none !important}
-    }
-    
 </style>
 </head>
 <body>
@@ -720,15 +704,11 @@ a{ color:inherit; }
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
-          
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-            <button class="btn" id="drawerCopySummary" title="Kişi | Görev | Oyunlar">Excel’e Kopyala (Özet)</button>
-            <button class="btn" id="drawerCopyVisible" title="Arama filtresine göre kopyalar">Excel’e Kopyala (Görünen)</button>
-            <button class="btn" id="drawerCopyRows" title="Kişi | Görev | Oyun (satır satır)">Excel’e Kopyala (Satır Satır)</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Tümü)" style="display:none">Excel’e Kopyala (Tümü)</button>
             <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
             <button class="btn" id="drawerClose">✕</button>
           </div>
-
         </div>
         <div class="bd">
           <div class="input" style="min-width:unset" title="Ara">
@@ -1449,12 +1429,7 @@ function renderList(){
       renderList();
       renderDetails(it);
 
-      
-      if(isMobile()){
-        openMobileModal(it.title, els.details.innerHTML);
-        history.pushState({m:"detail"}, "");
-      }
-if(isMobile() && activeMode==="plays"){
+      if(isMobile() && activeMode==="plays"){
         // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
         activePlayFilter = it.title;
         setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
@@ -1959,43 +1934,6 @@ function drawerItemsToTSV(items, labelForRole=""){
   }
   return lines.join("\n");
 }
-
-function drawerFilteredData(){
-  const q = (els.drawerSearch?.value || "").trim().toLowerCase();
-  if(!q) return drawerData.slice();
-  return drawerData.filter(r=>{
-    const hay = `${r.person||""} ${r.role||""} ${r.play||""}`.toLowerCase();
-    return hay.includes(q);
-  });
-}
-function tsv(lines){ return lines.map(r=>r.join("\t")).join("\n"); }
-
-function copySummaryToExcel(data){
-  // Kişi | Görev | Oyunlar (tek satır)
-  const map = new Map(); // key: person|role -> set plays
-  for(const r of data){
-    const key = `${r.person||""}||${r.role||""}`;
-    if(!map.has(key)) map.set(key, new Set());
-    if(r.play) map.get(key).add(r.play);
-  }
-  const out = [["Kişi","Görev","Oyunlar"]];
-  for(const [key, setPlays] of map.entries()){
-    const [person, role] = key.split("||");
-    const plays = [...setPlays].sort((a,b)=>a.localeCompare(b,"tr")).join(" • ");
-    out.push([person, role, plays]);
-  }
-  navigator.clipboard.writeText(tsv(out)).then(()=>setStatus("📋 Excel’e kopyalandı", "ok"));
-}
-
-function copyRowsToExcel(data){
-  // Kişi | Görev | Oyun (satır satır)
-  const out = [["Kişi","Görev","Oyun"]];
-  for(const r of data){
-    out.push([r.person||"", r.role||"", r.play||""]);
-  }
-  navigator.clipboard.writeText(tsv(out)).then(()=>setStatus("📋 Excel’e kopyalandı", "ok"));
-}
-
 els.drawerClose.addEventListener("click", closeDrawer);
 els.drawerCopyAll.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
@@ -2016,11 +1954,6 @@ els.drawerList.addEventListener("click", (e)=>{
   if(!item) return;
   const label = item.getAttribute("data-label");
   if(!label) return;
-
-if(els.drawerCopySummary) els.drawerCopySummary.onclick = ()=> copySummaryToExcel(drawerFilteredData());
-if(els.drawerCopyVisible) els.drawerCopyVisible.onclick = ()=> copySummaryToExcel(drawerFilteredData());
-if(els.drawerCopyRows) els.drawerCopyRows.onclick = ()=> copyRowsToExcel(drawerFilteredData());
-
 
   // mevcut state'i stack'e it
   drawerStack.push({
@@ -2581,17 +2514,6 @@ load(false);
     </div>
     <div id="mobileContent" class="modalBody"></div>
   </div>
-
-
-<div class="mOverlay" id="mOverlay" aria-hidden="true"></div>
-<div class="mModal" id="mModal" role="dialog" aria-label="Detay">
-  <div class="mModalHd">
-    <button class="btn" id="mBack" title="Geri">← Geri</button>
-    <div class="ttl" id="mTitle">Detay</div>
-    <button class="btn" id="mClose" title="Kapat">✕</button>
-  </div>
-  <div class="mModalBd" id="mBody"></div>
-</div>
 
 </body>
 </html>
