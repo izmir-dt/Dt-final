@@ -571,6 +571,30 @@ a{ color:inherit; }
   .modalHead{ position:sticky; top:0; background:var(--card); z-index:2; }
 }
 
+
+/* --- Mobile polishing (layout fixes) --- */
+@media (max-width: 760px){
+  .top{flex-direction:column; align-items:flex-start; gap:10px; padding:10px 12px;}
+  .brand h1{font-size:13px; line-height:1.25;}
+  .actions{width:100%; flex-wrap:wrap; justify-content:flex-start; gap:8px; margin-left:0;}
+  .pill{max-width:100%; width:100%;}
+  .btn{padding:9px 10px; border-radius:12px;}
+  .wrap{padding:12px;}
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .kpi{padding:14px 14px;}
+}
+/* Tabs: yatay kaydırma (mobil) */
+@media (max-width: 980px){
+  .nav{overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; gap:8px; padding-bottom:10px;}
+  .nav::-webkit-scrollbar{display:none;}
+  .tab{white-space:nowrap;}
+}
+/* Mobile chart list visuals */
+@media (max-width: 900px){
+  .chipRow{border:1px solid color-mix(in srgb, var(--line) 75%, transparent); }
+  .chipTitle{max-width:58vw;}
+}
+
 </style>
 </head>
 <body>
@@ -588,8 +612,8 @@ a{ color:inherit; }
       <button class="btn" id="reloadBtn">↻ Yenile</button>
 
       <div class="menu">
-        <button class="btn" id="advBtn" title="Gelişmiş">⚙️ Gelişmiş</button>
-        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Gelişmiş">
+        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
+        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
           <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
           <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
         </div>
@@ -2328,7 +2352,8 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
   if(which==="Charts" && rows.length){
     closeDrawer();
-    drawChart();
+    // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
+    setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
   }
 }
 
