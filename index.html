@@ -798,6 +798,71 @@ html[data-theme="dark"] #notifPanel{
   background: color-mix(in srgb, var(--card) 92%, #000 8%);
   border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
 }
+
+/* =========================
+   NOTIFICATIONS: STRONG READABILITY OVERRIDES (v29)
+   Fixes grey-on-grey / opacity issues in both themes
+   ========================= */
+#notifPanel, #notifPanel *{ text-shadow:none !important; }
+#notifPanel{
+  color: var(--text) !important;
+  background: var(--card) !important;
+}
+#notifPanel .notifItem,
+#notifPanel .notifRow,
+#notifPanel .notifCard,
+#notifPanel .notification,
+#notifPanel .notif{
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+#notifPanel .notifItem b,
+#notifPanel b{
+  color:#111827 !important;
+}
+#notifPanel .muted,
+#notifPanel .sub,
+#notifPanel small,
+#notifPanel .date,
+#notifPanel .time{
+  color:#6b7280 !important;
+  opacity:1 !important;
+}
+
+/* Dark theme */
+html[data-theme="dark"] #notifPanel{
+  background: rgba(13, 18, 32, .96) !important;
+  border-color: rgba(148,163,184,.18) !important;
+  color:#f8fafc !important;
+}
+html[data-theme="dark"] #notifPanel .notifItem,
+html[data-theme="dark"] #notifPanel .notifRow,
+html[data-theme="dark"] #notifPanel .notifCard,
+html[data-theme="dark"] #notifPanel .notification,
+html[data-theme="dark"] #notifPanel .notif{
+  background: rgba(30,41,59,.92) !important;
+  border-color: rgba(148,163,184,.18) !important;
+  color:#f8fafc !important;
+}
+html[data-theme="dark"] #notifPanel .notifItem b,
+html[data-theme="dark"] #notifPanel b{
+  color:#f8fafc !important;
+}
+html[data-theme="dark"] #notifPanel .muted,
+html[data-theme="dark"] #notifPanel .sub,
+html[data-theme="dark"] #notifPanel small,
+html[data-theme="dark"] #notifPanel .date,
+html[data-theme="dark"] #notifPanel .time{
+  color:#cbd5e1 !important;
+}
+
+/* Ensure scrollbar visible inside panel */
+#notifPanel::-webkit-scrollbar{ width: 10px; }
+#notifPanel::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.18); border-radius: 999px; }
+html[data-theme="dark"] #notifPanel::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.18); }
 </style>
 </head>
 <body>
