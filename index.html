@@ -857,62 +857,6 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
-
-/* =========================
-   NOTIFICATIONS HARD OVERRIDE (v31)
-   - stop fading (opacity)
-   - force readable colors in both themes
-   ========================= */
-#notifPanel, #notifPanel *{ text-shadow:none !important; }
-#notifPanel .notif-bubble{ opacity:1 !important; }
-#notifPanel .notif-bubble.seen{ opacity:1 !important; filter:none !important; }
-#notifPanel .notif-title,
-#notifPanel .notif-msg,
-#notifPanel .notif-meta,
-#notifPanel .notif-ts{ opacity:1 !important; }
-
-:root{
-  --notifBubbleBgLight:#ffffff;
-  --notifBubbleBorderLight:rgba(15,23,42,.10);
-  --notifTextLight:#0f172a;
-  --notifMetaLight:#334155;
-  --notifTsLight:#64748b;
-
-  --notifBubbleBgDark:rgba(30,41,59,.92);
-  --notifBubbleBorderDark:rgba(148,163,184,.18);
-  --notifTextDark:#f8fafc;
-  --notifMetaDark:#cbd5e1;
-  --notifTsDark:#94a3b8;
-}
-
-#notifPanel .notif-bubble{
-  background: var(--notifBubbleBgLight) !important;
-  border:1px solid var(--notifBubbleBorderLight) !important;
-  color: var(--notifTextLight) !important;
-}
-#notifPanel .notif-title,
-#notifPanel .notif-msg{ color: var(--notifTextLight) !important; }
-#notifPanel .notif-meta{ color: var(--notifMetaLight) !important; }
-#notifPanel .notif-ts{ color: var(--notifTsLight) !important; }
-
-#notifPanel .notif-bubble.seen{
-  background:#f1f5f9 !important;
-}
-
-html[data-theme="dark"] #notifPanel .notif-bubble{
-  background: var(--notifBubbleBgDark) !important;
-  border-color: var(--notifBubbleBorderDark) !important;
-  color: var(--notifTextDark) !important;
-}
-html[data-theme="dark"] #notifPanel .notif-title,
-html[data-theme="dark"] #notifPanel .notif-msg{ color: var(--notifTextDark) !important; }
-html[data-theme="dark"] #notifPanel .notif-meta{ color: var(--notifMetaDark) !important; }
-html[data-theme="dark"] #notifPanel .notif-ts{ color: var(--notifTsDark) !important; }
-
-html[data-theme="dark"] #notifPanel .notif-bubble.seen{
-  background: rgba(30,41,59,.72) !important;
-}
-
 </style>
 </head>
 <body>
@@ -945,7 +889,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
           <div class="notifHd">
             <div>
               <b>Bildirimler</b>
-              <div class="small">Kaynak: <span id="notifSource">LOG</span> (Google Sheets)</div>
+              <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
             </div>
             <div class="row" style="gap:8px">
               <button class="btn" id="notifRefresh">↻</button>
@@ -1153,7 +1097,7 @@ const CONFIG = {
   SHEET_NOTIFS: "LOG",
 
 
-    NOTIF_SHEET_NAME: "LOG",
+    NOTIF_SHEET_NAME: "BİLDİRİMLER",
   NOTIF_GVIZ_URL: "", // boş bırak (aşağıda otomatik oluşturulacak)
 // Ana veri (genelde: "BÜTÜN OYUNLAR")
   GID: "1233566992",
@@ -1682,28 +1626,12 @@ async function loadNotifications(){
   try{
     // GVIZ (no JSONP) → BİLDİRİMLER sayfasını okur
     const sheetName = CONFIG.NOTIF_SHEET_NAME || "BİLDİRİMLER";
-    // UI: kaynak etiketi
-    try{ const ns=document.getElementById("notifSource"); if(ns) ns.textContent = sheetName; }catch(_e){}
     const gvizUrl = CONFIG.NOTIF_GVIZ_URL && CONFIG.NOTIF_GVIZ_URL.trim()
       ? CONFIG.NOTIF_GVIZ_URL.trim()
       : `https://docs.google.com/spreadsheets/d/${encodeURIComponent(CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
 
-    let txt = "";
-    try{
-      const res = await fetch(gvizUrl, { cache: "no-store" });
-      txt = await res.text();
-      if(!res.ok) throw new Error("GVIZ HTTP " + res.status);
-    }catch(_err){
-      // Fallback: bazı dosyalarda silme logları LOG sayfasında olur, bazıları BİLDİRİMLER'de.
-      const fallbackName = (sheetName === "LOG") ? "BİLDİRİMLER" : "LOG";
-      try{
-        const ns=document.getElementById("notifSource"); if(ns) ns.textContent = fallbackName;
-      }catch(_e){}
-      const fallbackUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(fallbackName)}&tqx=out:json`;
-      const res2 = await fetch(fallbackUrl, { cache: "no-store" });
-      txt = await res2.text();
-      if(!res2.ok) throw new Error("GVIZ HTTP " + res2.status);
-    }
+    const res = await fetch(gvizUrl, { cache: "no-store" });
+    const txt = await res.text();
 
     // gviz response: google.visualization.Query.setResponse({...});
     const match = txt.match(/setResponse\((.*)\);\s*$/s);
