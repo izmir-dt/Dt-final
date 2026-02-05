@@ -620,48 +620,35 @@ a{ color:inherit; }
   .table{ display:table; overflow:visible; }
   .table th,.table td{ white-space:normal; }
 }
-/* --- Arama kapsamı: görünür kutucuk --- */
-.qScopeBox{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
-}
-select.q-scope{
-  border:0;
-  background:transparent;
-  padding:6px 6px;
-  font-weight:900;
-  font-size:13px;
-  color:var(--text);
-  outline:none;
-  cursor:pointer;
-}
-
 /* input satırında düzgün hizalama */
 .filters .input{ gap:10px; flex-wrap:wrap; }
 .filters .input input{ flex:1 1 220px; min-width:220px; }
 
 /* Sadece mobilde Ek Araçlar butonunu kaldır */
 
-/* --- Kapsam seçici: label kalktı, ok eklendi --- */
+
+/* --- Arama kapsamı: kutucuk + hizalı ok + açılan liste okunur --- */
 .qScopeBox{
+  position:relative;
   display:inline-flex;
   align-items:center;
-  gap:8px;
-  padding:6px 12px;
+  justify-content:center;
+  height:36px;
+  padding:0 10px;
   border:1px solid var(--line);
   border-radius:12px;
-  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
+  background: color-mix(in srgb, var(--card) 90%, var(--bg) 10%);
+  min-width:140px;
 }
 .qScopeBox::after{
   content:"▾";
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
   font-weight:900;
   color:var(--muted);
-  margin-left:2px;
 }
 select.q-scope{
   appearance:none;
@@ -669,24 +656,41 @@ select.q-scope{
   -moz-appearance:none;
   border:0;
   background:transparent;
-  padding:6px 0;
+  height:34px;
+  line-height:34px;
+  padding:0 22px 0 6px;
   font-weight:900;
   font-size:13px;
   color:var(--text);
   outline:none;
   cursor:pointer;
+  width:100%;
 }
-
-
-/* --- Masaüstü sekme sırası: Grafikler 1, Panel 2 --- */
-.nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-#tabCharts{order:1;}
-#tabPanel{order:2;}
-#tabDistribution{order:3;}
-#tabIntersection{order:4;}
-#tabFiguran{order:5;}
-#advBtn{order:6;}
-
+/* dropdown options readability */
+select.q-scope option{
+  background: var(--card);
+  color: var(--text);
+}
+html[data-theme="dark"] select.q-scope option{
+  background:#0f172a;
+  color:#e5e7eb;
+}
+/* --- Simetri: Panel başlık satırı --- */
+#viewPanel .card > .hd{
+  justify-content:space-between;
+  align-items:center;
+}
+.filters{
+  justify-content:flex-end;
+  margin-left:auto;
+  margin-right:0;
+}
+#viewPanel .hd h2{margin-right:12px}
+@media (min-width: 981px){
+  .filters{flex-wrap:nowrap}
+  .input{flex:0 1 720px; max-width:720px}
+  .seg{flex:0 0 auto}
+}
 </style>
 </head>
 <body>
@@ -2802,32 +2806,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }catch(e){ console.error(e); }
 });
 
-/* --- Nav polish: Ek Araçlar sekmeye taşınır + ikonlar --- */
-document.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    const nav = document.querySelector(".nav");
-    const advBtn = document.getElementById("advBtn");
-    if(nav && advBtn){
-      advBtn.classList.add("tab");
-      advBtn.classList.remove("btn");
-      nav.appendChild(advBtn);
-    }
-    const iconMap = [
-      ["tabPanel","🏠 "],
-      ["tabDistribution","🎭 "],
-      ["tabIntersection","🔁 "],
-      ["tabFiguran","👥 "],
-      ["tabCharts","📊 "],
-      ["advBtn","🧰 "],
-    ];
-    iconMap.forEach(([id,ico])=>{
-      const el = document.getElementById(id);
-      if(el && !el.dataset.iconed){
-        el.dataset.iconed="1";
-        el.textContent = ico + el.textContent.replace(/^(🧰|📊|👥|🔁|🎭|🏠)\s+/,"");
-      }
-    });
-  }catch(e){ console.error(e); }
+}catch(e){ console.error(e); }
 });
 
 </script>
