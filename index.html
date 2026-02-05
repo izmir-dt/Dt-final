@@ -326,7 +326,7 @@ width:48px;
     /* Charts */
     .chartsNav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
     .chartsNav .tab{border-radius:999px}
-    canvas{width:100%;height:340px;display:block;border-radius:14px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+    canvas{width:100%;height:340px;display:block;border-radius:14px;border:1px solid var(--line);background:var(--card)}
 
     .drawer{
       border:1px solid var(--line);
@@ -514,87 +514,58 @@ a{ color:inherit; }
 
 @media (max-width: 720px){.actions{flex-wrap:wrap;margin-left:0} .top{flex-wrap:wrap;justify-content:flex-start}}
 
-/* --- Polishing: arama scope + temizle --- */
-.input{position:relative}
-.q-scope{
+    /* Mobile detail modal */
+    .mOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none}
+    .mModal{position:fixed;left:0;right:0;bottom:0;top:0;z-index:90;display:none;
+      background:var(--card);border-left:1px solid var(--line);
+    }
+    .mModalHd{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;
+      padding:12px 14px;border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
+    }
+    .mModalHd .ttl{font-weight:900}
+    .mModalBd{padding:12px;overflow:auto;height:calc(100vh - 56px)}
+    @media (min-width: 981px){
+      .mOverlay,.mModal{display:none !important}
+    }
+    
+/* --- Arama kapsamı (seçilebilir kutu) --- */
+.scopeSelect{
   border:1px solid var(--line);
-  background: color-mix(in srgb, var(--card) 90%, var(--bg) 10%);
-  color:var(--text);
-  border-radius:10px;
+  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+  color: var(--text);
+  border-radius:12px;
   padding:8px 10px;
-  font-size:12px;
-  font-weight:700;
-  max-width:140px;
-}
-.q-clear{
-  border:0;
-  background:transparent;
-  color:var(--muted);
+  font-weight:800;
+  font-size:13px;
   cursor:pointer;
-  font-size:16px;
-  line-height:1;
-  padding:6px 8px;
-  border-radius:10px;
+  max-width:160px;
 }
-.q-clear:hover{ background: color-mix(in srgb, var(--card) 75%, var(--bg) 25%); color:var(--text); }
+/* input satırında taşma olmasın */
+.input{flex-wrap:wrap;}
+.input input{flex:1 1 220px; min-width:220px;}
+.scopeSelect{flex:0 0 auto;}
 
-/* --- Polishing: Gelişmiş menüsü --- */
-.menu{ position:relative; }
-.menuPanel{
-  position:absolute;
-  right:0;
-  top:46px;
-  width:min(280px, 92vw);
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
-  z-index:90;
+/* --- Metin taşması engeli (tüm sayfa) --- */
+*{ overflow-wrap:anywhere; }
+.name,.meta,.drawerTitle,.drawerSub,.miniItem b,.miniItem div,
+.table td,.table th,.chip,.pill,.btn,.tab{
+  word-break:break-word;
 }
-.menuPanel .mi{
-  padding:10px 12px;
-  cursor:pointer;
-  border-bottom:1px solid var(--line);
-  display:flex; align-items:center; justify-content:space-between;
-  font-weight:700;
-}
-.menuPanel .mi:last-child{border-bottom:0}
-.menuPanel .mi:hover{ background: color-mix(in srgb, var(--card) 78%, var(--bg) 22%); }
-.menuPanel .mi small{ color:var(--muted); font-weight:600; }
+.chip{ max-width:100%; white-space:normal; }
+.item .t{min-width:0}
+.item .t > div{min-width:0}
 
-/* Üst tabları sadeleştir: Dağılım/Kesişim menüye taşındı */
-#tabDistribution, #tabIntersection{ display:none !important; }
+/* Figüranlar: uzun oyun adları görünür kalsın */
+#figuranBox, #intersectionBox, #distributionBox{ overflow-x:auto; }
+#figuranBox .table, #intersectionBox .table, #distributionBox .table{ min-width: 720px; }
 
-/* Mobil: modal head sticky */
-@media (max-width: 980px){
-  .modalHead{ position:sticky; top:0; background:var(--card); z-index:2; }
-}
-
-
-/* --- Mobile polishing (layout fixes) --- */
-@media (max-width: 760px){
-  .top{flex-direction:column; align-items:flex-start; gap:10px; padding:10px 12px;}
-  .brand h1{font-size:13px; line-height:1.25;}
-  .actions{width:100%; flex-wrap:wrap; justify-content:flex-start; gap:8px; margin-left:0;}
-  .pill{max-width:100%; width:100%;}
-  .btn{padding:9px 10px; border-radius:12px;}
-  .wrap{padding:12px;}
-  .kpis{grid-template-columns:repeat(2,1fr);}
-  .kpi{padding:14px 14px;}
-}
-/* Tabs: yatay kaydırma (mobil) */
-@media (max-width: 980px){
-  .nav{overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; gap:8px; padding-bottom:10px;}
-  .nav::-webkit-scrollbar{display:none;}
-  .tab{white-space:nowrap;}
-}
-/* Mobile chart list visuals */
+/* Mobil: taşmaları kırpma, içerik tam görünsün */
 @media (max-width: 900px){
-  .chipRow{border:1px solid color-mix(in srgb, var(--line) 75%, transparent); }
-  .chipTitle{max-width:58vw;}
+  .chip{ white-space:normal !important; text-overflow:clip !important; }
+  .pill{ white-space:normal !important; max-width:100% !important; }
+  .scopeSelect{ width:100%; max-width:none; }
 }
-
 </style>
 </head>
 <body>
@@ -610,15 +581,6 @@ a{ color:inherit; }
       <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
       <span id="status" class="pill">⏳ Yükleniyor…</span>
       <button class="btn" id="reloadBtn">↻ Yenile</button>
-
-      <div class="menu">
-        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
-        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
-          <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
-          <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
-        </div>
-      </div>
-
       <div class="notif">
         <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
           🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
@@ -668,13 +630,12 @@ a{ color:inherit; }
         <div class="filters">
           <div class="input" title="Ara">
             🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-            <select id="qScope" class="q-scope" title="Arama kapsamı">
+            <select id="qScope" class="scopeSelect" title="Arama kapsamı">
               <option value="all">Tümü</option>
               <option value="play">Oyun</option>
               <option value="person">Kişi</option>
               <option value="role">Görev</option>
             </select>
-            <button class="q-clear" id="qClear" title="Temizle">✕</button>
           </div>
 <div class="seg" title="Görünüm">
             <button id="btnPlays" class="active">🎭 Oyunlar</button>
@@ -802,13 +763,15 @@ a{ color:inherit; }
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
-            <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
-            <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
+          
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+            <button class="btn" id="drawerCopySummary" title="Kişi | Görev | Oyunlar">Excel’e Kopyala (Özet)</button>
+            <button class="btn" id="drawerCopyVisible" title="Arama filtresine göre kopyalar">Excel’e Kopyala (Görünen)</button>
+            <button class="btn" id="drawerCopyRows" title="Kişi | Görev | Oyun (satır satır)">Excel’e Kopyala (Satır Satır)</button>
             <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
             <button class="btn" id="drawerClose">✕</button>
           </div>
+
         </div>
         <div class="bd">
           <div class="input" style="min-width:unset" title="Ara">
@@ -870,10 +833,6 @@ const els = {
   status: el("status"),
   sheetBtn: el("sheetBtn"),
   reloadBtn: el("reloadBtn"),
-  advBtn: el("advBtn"),
-  advMenu: el("advMenu"),
-  advDist: el("advDist"),
-  advInter: el("advInter"),
   notifBtn: el("notifBtn"),
   notifPanel: el("notifPanel"),
   notifCount: el("notifCount"),
@@ -895,7 +854,6 @@ const els = {
 
   q: el("q"),
   qScope: el("qScope"),
-  qClear: el("qClear"),
   category: el("category"),
   clearBtn: el("clearBtn"),
   list: el("list"),
@@ -932,8 +890,6 @@ const els = {
   drawerClose: el("drawerClose"),
   drawerBack: el("drawerBack"),
   drawerCopyAll: el("drawerCopyAll"),
-  drawerCopyVisible: el("drawerCopyVisible"),
-  drawerCopyExpanded: el("drawerCopyExpanded"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
@@ -985,23 +941,6 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme("light");
 })();
-/* ---------- UI state (search/mode) ---------- */
-(function initUiState(){
-  try{
-    const savedQ = localStorage.getItem("idt_q") || "";
-    const savedScope = localStorage.getItem("idt_qscope") || "all";
-    const savedMode = localStorage.getItem("idt_mode") || "plays";
-    if(els.q) els.q.value = savedQ;
-    if(els.qScope) els.qScope.value = savedScope;
-    if(savedMode==="people" || savedMode==="plays"){
-      activeMode = savedMode;
-      if(activeMode==="plays"){ els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active"); }
-      else { els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active"); }
-    }
-  }catch(_e){}
-})();
-
-
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
@@ -1495,24 +1434,22 @@ function chipTone(cat){
   return "";
 }
 function applyFilters(list){
-  const q=(els.q.value||"").trim().toLowerCase();
+  const q=els.q.value.trim().toLowerCase();
   const scope = (els.qScope && els.qScope.value) ? els.qScope.value : "all";
   const cat="";
-  return list.filter(it=>{
+return list.filter(it=>{
     let hay = "";
-    if(activeMode==="plays"){
-      if(scope==="play") hay = it.title;
-      else if(scope==="person") hay = it.rows.map(r=>r.person).join(" ");
-      else if(scope==="role") hay = it.rows.map(r=>r.role).join(" ");
-      else hay = it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ");
-    }else{
-      if(scope==="play") hay = (it.plays||[]).join(" ");
-      else if(scope==="person") hay = it.title;
-      else if(scope==="role") hay = (it.roles||[]).join(" ");
-      else hay = it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ");
-    }
-    hay = (hay||"").toLowerCase();
-
+if(activeMode==="plays"){
+  if(scope==="play") hay = (it.title||"").toLowerCase();
+  else if(scope==="person") hay = (it.rows||[]).map(r=>r.person||"").join(" ").toLowerCase();
+  else if(scope==="role") hay = (it.rows||[]).map(r=>r.role||"").join(" ").toLowerCase();
+  else hay = (it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ")).toLowerCase();
+}else{
+  if(scope==="person") hay = (it.title||"").toLowerCase();
+  else if(scope==="play") hay = ((it.plays||[]).join(" ")).toLowerCase();
+  else if(scope==="role") hay = ((it.roles||[]).join(" ")).toLowerCase();
+  else hay = (it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ")).toLowerCase();
+}
     if(activeMode==="people" && activePlayFilter){
       if(!((it.plays||[]).includes(activePlayFilter))) return false;
     }
@@ -1566,7 +1503,12 @@ function renderList(){
       renderList();
       renderDetails(it);
 
-      if(isMobile() && activeMode==="plays"){
+      
+      if(isMobile()){
+        openMobileModal(it.title, els.details.innerHTML);
+        history.pushState({m:"detail"}, "");
+      }
+if(isMobile() && activeMode==="plays"){
         // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
         activePlayFilter = it.title;
         setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
@@ -2045,11 +1987,8 @@ function openDrawer(title, subtitle, items, opts={}){
   drawerData = items.slice();
   drawerMode = opts.mode || ((drawerData[0] && ("label" in (drawerData[0]||{}))) ? "labels" : "items");
   els.drawerSearch.value = "";
-  // copy buttons only make sense in item-list mode
-  const showCopy = (drawerMode === "items" && drawerData.length);
-  els.drawerCopyAll.style.display = showCopy ? "inline-flex" : "none";
-  els.drawerCopyVisible.style.display = showCopy ? "inline-flex" : "none";
-  els.drawerCopyExpanded.style.display = showCopy ? "inline-flex" : "none";
+  // copy button only makes sense in item-list mode
+  els.drawerCopyAll.style.display = (drawerMode === "items" && drawerData.length) ? "inline-flex" : "none";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
   // back button
@@ -2061,61 +2000,60 @@ function closeDrawer(){
   drawerStack = [];
   els.drawerBack.style.display = "none";
   els.drawerCopyAll.style.display = "none";
-  els.drawerCopyVisible.style.display = "none";
-  els.drawerCopyExpanded.style.display = "none";
   els.drawerList.innerHTML = "";
 }
-function getDrawerFilteredItems(){
-  const q = els.drawerSearch.value.trim().toLowerCase();
-  const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
-  if(labelMode) return drawerData.slice(); // copy only for items anyway
-  if(!q) return drawerData.slice();
-  return drawerData.filter(x=>{
-    const hay = (String(x.person||"") + " " + (Array.isArray(x.plays)?x.plays.join(" "):String(x.plays||""))).toLowerCase();
-    return hay.includes(q);
-  });
-}
-
-function drawerItemsToTSVSummary(items, labelForRole=""){
+function drawerItemsToTSV(items, labelForRole=""){
   const lines = [];
-  lines.push(["Kişi","Görev","Oyunlar"].join("\t"));
+  lines.push(["Kişi","Görev","Oyunlar"].join("	"));
   const fixedRole = (labelForRole||"").toString().trim();
   for(const it of items){
     const plays = Array.isArray(it.plays) ? it.plays.join(" • ") : (it.plays || "");
     const role = (it.role || it.gorev || fixedRole || "");
-    lines.push([it.person || "", role, plays].join("\t"));
+    lines.push([it.person || "", role, plays].join("	"));
   }
   return lines.join("\n");
 }
 
-function drawerItemsToTSVExpanded(items, labelForRole=""){
-  const lines = [];
-  lines.push(["Kişi","Görev","Oyun"].join("\t"));
-  const fixedRole = (labelForRole||"").toString().trim();
-  for(const it of items){
-    const role = (it.role || it.gorev || fixedRole || "");
-    const playsArr = Array.isArray(it.plays) ? it.plays : (it.plays ? [String(it.plays)] : [""]);
-    for(const p of playsArr){
-      lines.push([it.person || "", role, p || ""].join("\t"));
-    }
-  }
-  return lines.join("\n");
+function drawerFilteredData(){
+  const q = (els.drawerSearch?.value || "").trim().toLowerCase();
+  if(!q) return drawerData.slice();
+  return drawerData.filter(r=>{
+    const hay = `${r.person||""} ${r.role||""} ${r.play||""}`.toLowerCase();
+    return hay.includes(q);
+  });
 }
+function tsv(lines){ return lines.map(r=>r.join("\t")).join("\n"); }
+
+function copySummaryToExcel(data){
+  // Kişi | Görev | Oyunlar (tek satır)
+  const map = new Map(); // key: person|role -> set plays
+  for(const r of data){
+    const key = `${r.person||""}||${r.role||""}`;
+    if(!map.has(key)) map.set(key, new Set());
+    if(r.play) map.get(key).add(r.play);
+  }
+  const out = [["Kişi","Görev","Oyunlar"]];
+  for(const [key, setPlays] of map.entries()){
+    const [person, role] = key.split("||");
+    const plays = [...setPlays].sort((a,b)=>a.localeCompare(b,"tr")).join(" • ");
+    out.push([person, role, plays]);
+  }
+  navigator.clipboard.writeText(tsv(out)).then(()=>setStatus("📋 Excel’e kopyalandı", "ok"));
+}
+
+function copyRowsToExcel(data){
+  // Kişi | Görev | Oyun (satır satır)
+  const out = [["Kişi","Görev","Oyun"]];
+  for(const r of data){
+    out.push([r.person||"", r.role||"", r.play||""]);
+  }
+  navigator.clipboard.writeText(tsv(out)).then(()=>setStatus("📋 Excel’e kopyalandı", "ok"));
+}
+
 els.drawerClose.addEventListener("click", closeDrawer);
 els.drawerCopyAll.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
-  const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
-});
-els.drawerCopyVisible.addEventListener("click", ()=>{
-  if(drawerMode !== "items" || !drawerData.length) return;
-  const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
-});
-els.drawerCopyExpanded.addEventListener("click", ()=>{
-  if(drawerMode !== "items" || !drawerData.length) return;
-  const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVExpanded(items, els.drawerTitle.textContent));
+  copyText(drawerItemsToTSV(drawerData, els.drawerTitle.textContent));
 });
 els.drawerBack.addEventListener("click", ()=>{
   const prev = drawerStack.pop();
@@ -2132,6 +2070,11 @@ els.drawerList.addEventListener("click", (e)=>{
   if(!item) return;
   const label = item.getAttribute("data-label");
   if(!label) return;
+
+if(els.drawerCopySummary) els.drawerCopySummary.onclick = ()=> copySummaryToExcel(drawerFilteredData());
+if(els.drawerCopyVisible) els.drawerCopyVisible.onclick = ()=> copySummaryToExcel(drawerFilteredData());
+if(els.drawerCopyRows) els.drawerCopyRows.onclick = ()=> copyRowsToExcel(drawerFilteredData());
+
 
   // mevcut state'i stack'e it
   drawerStack.push({
@@ -2352,8 +2295,7 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
   if(which==="Charts" && rows.length){
     closeDrawer();
-    // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
-    setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
+    drawChart();
   }
 }
 
@@ -2364,20 +2306,6 @@ els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 /* ---------- events ---------- */
 els.reloadBtn.addEventListener("click", ()=>load(false));
-// Gelişmiş menü (Dağılım / Kesişim)
-if(els.advBtn && els.advMenu){
-  els.advBtn.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    els.advMenu.classList.toggle("hidden");
-  });
-  const closeAdv = ()=> els.advMenu.classList.add("hidden");
-  document.addEventListener("click", closeAdv);
-  els.advMenu.addEventListener("click", (e)=> e.stopPropagation());
-
-  els.advDist && els.advDist.addEventListener("click", ()=>{ closeAdv(); setActiveTab("Distribution"); });
-  els.advInter && els.advInter.addEventListener("click", ()=>{ closeAdv(); setActiveTab("Intersection"); });
-}
-
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -2389,14 +2317,12 @@ els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
-els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
-els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
-els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
+els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
+renderList(); });
+
+els.q.addEventListener("input", ()=>renderList());
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
-  try{ localStorage.setItem("idt_mode","plays"); }catch(_e){}
-
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
@@ -2404,8 +2330,6 @@ els.btnPlays.addEventListener("click", ()=>{
 });
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
-  try{ localStorage.setItem("idt_mode","people"); }catch(_e){}
-
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
   activeId=null; selectedItem=null;
@@ -2711,6 +2635,17 @@ load(false);
     </div>
     <div id="mobileContent" class="modalBody"></div>
   </div>
+
+
+<div class="mOverlay" id="mOverlay" aria-hidden="true"></div>
+<div class="mModal" id="mModal" role="dialog" aria-label="Detay">
+  <div class="mModalHd">
+    <button class="btn" id="mBack" title="Geri">← Geri</button>
+    <div class="ttl" id="mTitle">Detay</div>
+    <button class="btn" id="mClose" title="Kapat">✕</button>
+  </div>
+  <div class="mModalBd" id="mBody"></div>
+</div>
 
 </body>
 </html>
