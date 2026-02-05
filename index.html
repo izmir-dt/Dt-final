@@ -211,7 +211,7 @@ html[data-theme="dark"]{
     .kpi .label{color:var(--muted);font-size:12px}
     .kpi .value{font-size:22px;font-weight:900;letter-spacing:.2px}
     .kpi .icon{
-      width:40px;height:40px;border-radius:14px;
+      width:46px;height:46px;border-radius:16px;font-size:20px;
       display:grid;place-items:center;
       border:1px solid var(--line);
       background:color-mix(in srgb, var(--card) 75%, var(--bg) 25%);
@@ -1104,7 +1104,7 @@ function jsonp(url, timeoutMs=20000){
 
 async function tryLoadApiJsonp(){
   if(!CONFIG.API_BASE) throw new Error("API_BASE tanımlı değil");
-  const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`;
+  const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}&_=${Date.now()}`;
   const data = await jsonp(url);
   if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("API veri formatı beklenmedik");
   // API -> ham satırlar
@@ -1376,18 +1376,15 @@ function groupByPlay(data){
 
 
 function buildStatsTop10(){
-  try{
-    // plays: [{name, count, rows, peopleMap}] created by groupByPlay
-    const arr = (Array.isArray(plays) ? plays : [])
-      .map(p => ({ name: p.name, count: Number(p.count||0), play: p }))
-      .sort((a,b)=> (b.count - a.count) || String(a.name).localeCompare(String(b.name),"tr"))
-      .slice(0,10);
-    statsTop10 = arr;
-  }catch(e){
-    // fail silently; stats will just be empty
-    statsTop10 = [];
-  }
-}
+      // En çok personel bulunan oyunlar (ilk 10)
+      // Not: STATE.plays her oyun için benzersiz kişi setiyle üretiliyor.
+      const src = Array.isArray(STATE.plays) ? STATE.plays : [];
+      statsTop10 = src
+        .map(p => ({ name: p.title || p.name || "", count: Number(p.count||0), play: p }))
+        .filter(x => x.name && isFinite(x.count))
+        .sort((a,b)=> b.count - a.count)
+        .slice(0,10);
+    }
 
 
 function ellipsizeTo(ctx, text, maxW){
@@ -2201,8 +2198,8 @@ els.chartMain.addEventListener("click", (evt)=>{
 if(els.statsChart){
   const toCanvasXY = (e, canvas)=>{
     const r = canvas.getBoundingClientRect();
-    const x = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
-    const y = (e.clientY - r.top)  * (canvas.height/ r.height) / (window.devicePixelRatio||1);
+    const x = (e.clientX - r.left) * (canvas.width / r.width) ;
+    const y = (e.clientY - r.top)  * (canvas.height/ r.height) ;
     return {x, y};
   };
   const hitStats = (x,y)=>{
@@ -2389,11 +2386,12 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
   if(which==="Charts" && rows.length){
     closeDrawer();
-    drawChart();
+    // Tab yeni açıldığında canvas/ölçüler 0 gelebiliyor; 2x RAF ile garanti alıyoruz.
+    requestAnimationFrame(()=>requestAnimationFrame(drawChart));
   }
   if(which==="Stats" && rows.length){
     closeStatsDrawer();
-    drawStats();
+    requestAnimationFrame(()=>requestAnimationFrame(drawStats));
   }
 }
 
