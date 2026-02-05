@@ -513,9 +513,6 @@ a{ color:inherit; }
 }
 
 @media (max-width: 720px){.actions{flex-wrap:wrap;margin-left:0} .top{flex-wrap:wrap;justify-content:flex-start}}
-
-.copyContext{margin:6px 0 10px;font-size:12px;opacity:.85;}
-.btn.small{padding:8px 10px;font-size:12px;border-radius:10px;gap:8px;}
 </style>
 </head>
 <body>
@@ -862,7 +859,6 @@ const els = {
   statsChart: el("statsChart"),
   statsDrawer: el("statsDrawer"),
   statsDrawerClose: el("statsDrawerClose"),
-  statsDrawerCopyAll: el("statsDrawerCopyAll"),
   statsDrawerTitle: el("statsDrawerTitle"),
   statsDrawerSub: el("statsDrawerSub"),
   statsDrawerList: el("statsDrawerList"),
@@ -1957,8 +1953,8 @@ const dpr = window.devicePixelRatio || 1;
   // Build TOP10 from loaded rows
   const byPlay = new Map(); // play -> Set(person)
   for(const r of (rows||[])){
-    const play = (r.play||r.Oyun||r.oyun||r["Oyun Adı"]||"").toString().trim();
-    const person = (r.person||r.Kişi||r.Kisi||r["Kişi"]||"").toString().trim();
+    const play = (r.play||"").trim();
+    const person = (r.person||"").trim();
     if(!play || !person) continue;
     if(!byPlay.has(play)) byPlay.set(play, new Set());
     byPlay.get(play).add(person);
@@ -2083,7 +2079,6 @@ const dpr = window.devicePixelRatio || 1;
 }
 
 function openStatsDrawer(item){
-  currentStatsItem = item;
   const drawer = $("#statsDrawer");
   const title = $("#statsDrawerTitle");
   const sub = $("#statsDrawerSub");
@@ -2447,11 +2442,10 @@ window.addEventListener("popstate", ()=>{
 els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  await copyText(tsv, els.drawerTitle ? els.drawerTitle.textContent : '');
+  await copyText(tsv);
 });
 
-function showManualCopy(text, contextLabel){
-  if(els.copyContext) els.copyContext.textContent = contextLabel ? contextLabel : "";
+function showManualCopy(text){
   // Minimal modal with textarea (manual copy)
   let modal = document.getElementById("copyModal");
   if(!modal){
@@ -2478,7 +2472,7 @@ function showManualCopy(text, contextLabel){
   ta.setSelectionRange(0, ta.value.length);
 }
 
-function copyText(value, contextLabel){
+function copyText(text){
   const value = String(text ?? "");
   // 1) Synchronous execCommand first (keeps user gesture; works more reliably)
   try{
@@ -2508,15 +2502,15 @@ function copyText(value, contextLabel){
       setStatus("📋 Kopyalandı", "ok");
       return true;
     }).catch(()=>{
-      showManualCopy(value, contextLabel);
-
+      showManualCopy(value);
+      setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
       return false;
     });
   }
 
   // 3) Manual fallback
-  showManualCopy(value, contextLabel);
-
+  showManualCopy(value);
+  setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
   return Promise.resolve(false);
 }
 
@@ -2584,7 +2578,7 @@ if(els.figDownloadAllBtn){
           .replace(/\r?\n/g, " ")
         ).join("\t")
       ).join("\n");
-    await copyText(tsv, els.drawerTitle ? els.drawerTitle.textContent : '');
+    await copyText(tsv);
   });
 }
 els.fClear.addEventListener("click", ()=>{ els.fq.value=""; renderFiguran(); });
