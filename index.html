@@ -558,7 +558,6 @@ a{ color:inherit; }
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
     <button class="tab" id="tabCharts">Grafikler</button>
-    <button class="tab" id="tabStats">İstatistikler</button>
   </div>
 </header>
 
@@ -721,32 +720,7 @@ a{ color:inherit; }
     </div>
   </section>
   <!-- İSTATİSTİKLER -->
-  <section id="viewStats" style="display:none">
-    <div class="grid" style="grid-template-columns: 1.1fr .9fr">
-      <div class="card">
-        <div class="hd">
-          <h2>İstatistikler</h2>
-          <div class="small">En çok personel bulunan oyunlar (ilk 10) • grafiğe tıkla → sağda liste açılır.</div>
-        </div>
-        <div class="bd">
-          <canvas id="statsChart" width="900" height="360"></canvas>
-        </div>
-      </div>
-
-      <aside class="drawer hidden" id="statsDrawer">
-        <div class="hd">
-          <div>
-            <div class="drawerTitle" id="statsDrawerTitle">—</div>
-            <div class="drawerSub" id="statsDrawerSub">—</div>
-          </div>
-          <div><button class="btn" id="statsDrawerClose">✕</button></div>
-        </div>
-        <div class="bd">
-          <div class="miniList" id="statsDrawerList"></div>
-        </div>
-      </aside>
-    </div>
-  </section>
+  
 
 </div>
 
@@ -808,7 +782,6 @@ const els = {
   tabIntersection: el("tabIntersection"),
   tabFiguran: el("tabFiguran"),
   tabCharts: el("tabCharts"),
-  tabStats: el("tabStats"),
 
   viewPanel: el("viewPanel"),
   viewDistribution: el("viewDistribution"),
@@ -856,13 +829,6 @@ const els = {
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
-  statsChart: el("statsChart"),
-  statsDrawer: el("statsDrawer"),
-  statsDrawerClose: el("statsDrawerClose"),
-  statsDrawerTitle: el("statsDrawerTitle"),
-  statsDrawerSub: el("statsDrawerSub"),
-  statsDrawerList: el("statsDrawerList"),
-
   kpiPlays: el("kpiPlays"),
   kpiPeople: el("kpiPeople"),
   kpiRows: el("kpiRows"),
@@ -905,7 +871,6 @@ els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
-  if(rows.length && els.viewStats && els.viewStats.style.display!=="none"){ drawStats(); }
 });
 
 /* ---------- helpers ---------- */
@@ -1862,20 +1827,22 @@ function closeDrawer(){
   els.drawerCopyAll.style.display = "none";
   els.drawerList.innerHTML = "";
 }
-function drawerItemsToTSV(items){
+function drawerItemsToTSV(items, labelForRole=""){
   const lines = [];
-  lines.push(["Kişi","Oyunlar"].join("\t"));
+  lines.push(["Kişi","Görev","Oyunlar"].join("	"));
+  const fixedRole = (labelForRole||"").toString().trim();
   for(const it of items){
     const plays = Array.isArray(it.plays) ? it.plays.join(" • ") : (it.plays || "");
-    lines.push([it.person || "", plays].join("\t"));
+    const role = (it.role || it.gorev || fixedRole || "");
+    lines.push([it.person || "", role, plays].join("	"));
   }
-  return lines.join("\n");
+  return lines.join("
+");
 }
 els.drawerClose.addEventListener("click", closeDrawer);
-els.statsDrawerClose.addEventListener("click", closeStatsDrawer);
 els.drawerCopyAll.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
-  copyText(drawerItemsToTSV(drawerData));
+  copyText(drawerItemsToTSV(drawerData, els.drawerTitle.textContent));
 });
 els.drawerBack.addEventListener("click", ()=>{
   const prev = drawerStack.pop();
@@ -1922,298 +1889,6 @@ function renderDrawerList(){
   `).join("");
 }
 
-
-function closeStatsDrawer(){
-  if(!els.statsDrawer) return;
-  els.statsDrawer.classList.add("hidden");
-  els.statsDrawerTitle.textContent="—";
-  els.statsDrawerSub.textContent="—";
-  els.statsDrawerList.innerHTML="";
-}
-
-let _statsChartInstance = null;
-
-function drawStats(){
-  const canvas = document.getElementById("statsChart");
-  if(!canvas) return;
-  const ctx = canvas.getContext("2d");
-
-  // Canvas size (crisp on HiDPI)
-  const cssW = canvas.clientWidth || 920;
-  const cssH = Math.max(380, Math.floor((canvas.clientHeight||380)));
-  
-  window.__statsHit = [];
-const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.floor(cssW * dpr);
-  canvas.height = Math.floor(cssH * dpr);
-  canvas.style.width = cssW + "px";
-  canvas.style.height = cssH + "px";
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-
-  // Build TOP10 from loaded rows
-  const byPlay = new Map(); // play -> Set(person)
-  for(const r of (rows||[])){
-    const play = (r.play||"").trim();
-    const person = (r.person||"").trim();
-    if(!play || !person) continue;
-    if(!byPlay.has(play)) byPlay.set(play, new Set());
-    byPlay.get(play).add(person);
-  }
-  const top = Array.from(byPlay.entries())
-    .map(([play,set]) => ({
-      play,
-      count: set.size,
-      people: Array.from(set).sort((a,b)=>a.localeCompare(b,'tr'))
-    }))
-    .sort((a,b)=> b.count-a.count)
-    .slice(0,10);
-
-  // Background
-  ctx.clearRect(0,0,cssW,cssH);
-  const bg = getComputedStyle(document.documentElement).getPropertyValue("--card").trim() || "#0f172a";
-  ctx.fillStyle = bg;
-  ctx.fillRect(0,0,cssW,cssH);
-
-  const padT = 22, padR = 24, padB = 20, padL = 260;
-  const innerW = cssW - padL - padR;
-  const rowH = 32;
-  const startY = padT + 8;
-
-  // Grid
-  ctx.strokeStyle = "rgba(255,255,255,.07)";
-  ctx.lineWidth = 1;
-  const gridN = 5;
-  for(let i=0;i<=gridN;i++){
-    const x = padL + (innerW*(i/gridN));
-    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, cssH-padB); ctx.stroke();
-  }
-
-  // No data
-  if(!top.length){
-    ctx.fillStyle = "rgba(255,255,255,.55)";
-    ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("Veri yok (Sheet yüklenmedi veya satırlar boş).", 18, 26);
-    window.__statsHit = [];
-    return;
-  }
-
-  const max = Math.max(...top.map(d=>d.count)) || 1;
-
-  // Helpers
-  const ellipsis = (s, maxPx)=>{
-    if(ctx.measureText(s).width <= maxPx) return s;
-    let out = s;
-    while(out.length>3 && ctx.measureText(out+"…").width>maxPx) out = out.slice(0,-1);
-    return out.slice(0, Math.max(0,out.length)) + "…";
-  };
-  const colorFor = (i,n)=>{
-    // evenly spaced hues to avoid similar colors
-    const hue = (i * (360 / Math.max(1,n))) % 360;
-    return `hsl(${hue} 75% 55%)`;
-  };
-
-  // Draw rows + bars and build hit zones
-  window.__statsHit = [];
-  for(let i=0;i<top.length;i++){
-    const d = top[i];
-    const y = startY + i*rowH;
-
-    // Label (bold)
-    ctx.fillStyle = getVar('--text');
-    ctx.font = "700 12.5px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    const label = ellipsis(d.play, padL - 40);
-    ctx.fillText(label, 18, y+21);
-
-    // Value
-    ctx.fillStyle = getVar('--muted');
-    ctx.font = "600 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.textAlign = "right";
-    ctx.fillText(String(d.count), padL - 14, y+21);
-    ctx.textAlign = "left";
-
-    // Bar
-    const bw = Math.max(2, (d.count/max) * (innerW - 6));
-    const bx = padL + 3;
-    const by = y + 7;
-    const bh = 18;
-
-    // bar background
-    ctx.fillStyle = "rgba(255,255,255,.06)";
-    ctx.fillRect(bx, by, innerW-6, bh);
-
-    // bar fill
-    ctx.fillStyle = colorFor(i, top.length);
-    ctx.fillRect(bx, by, bw, bh);
-
-    // subtle outline
-    ctx.strokeStyle = "rgba(0,0,0,.18)";
-    ctx.strokeRect(bx+.5, by+.5, innerW-7, bh-1);
-
-    // hit zone includes label+bar row
-    window.__statsHit.push({ play: d.play, count: d.count, people: d.people, x: 0, y: y, w: cssW, h: rowH });
-  }
-
-  // Interactivity (attach once)
-  if(!window.__statsBound){
-    window.__statsBound = true;
-
-    const hitAt = (ev)=>{
-      const rect = canvas.getBoundingClientRect();
-      const x = ev.clientX - rect.left;
-      const y = ev.clientY - rect.top;
-      const hits = window.__statsHit || [];
-      return hits.find(h => x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h);
-    };
-
-    canvas.addEventListener("mousemove", (ev)=>{
-      const h = hitAt(ev);
-      canvas.style.cursor = h ? "pointer" : "default";
-    });
-
-    canvas.addEventListener("click", (ev)=>{
-      const h = hitAt(ev);
-      if(!h) return;
-      openStatsDrawer(h);
-    });
-  }
-}
-
-function openStatsDrawer(item){
-  const drawer = $("#statsDrawer");
-  const title = $("#statsDrawerTitle");
-  const sub = $("#statsDrawerSub");
-  const list = $("#statsDrawerList");
-  const q = $("#statsDrawerSearch");
-  if(!drawer || !list) return;
-
-  title.textContent = item.play;
-  sub.textContent = item.count + " kişi";
-
-  const render = ()=>{
-    const needle = (q?.value||"").trim().toLocaleUpperCase('tr');
-    list.innerHTML = "";
-    const people = item.people.filter(p => !needle || p.toLocaleUpperCase('tr').includes(needle));
-    for(const name of people){
-      const el = document.createElement("div");
-      el.className = "drawerItem";
-      el.innerHTML = `<div class="t">${escapeHtml(name)}</div>`;
-      list.appendChild(el);
-    }
-    if(!people.length){
-      const el = document.createElement("div");
-      el.className="muted";
-      el.style.padding="12px 10px";
-      el.textContent="Sonuç yok";
-      list.appendChild(el);
-    }
-  };
-  if(q){
-    q.oninput = render;
-    q.value = "";
-  }
-  render();
-
-  drawer.classList.remove("hidden");
-  drawer.setAttribute("aria-hidden","false");
-}
-
-function openStatsDrawer_legacy(it){
-  els.statsDrawer.classList.remove("hidden");
-  els.statsDrawerTitle.textContent = it.play;
-  els.statsDrawerSub.textContent = it.count + " kişi";
-
-  const q = ""; // no search for now
-  els.statsDrawerList.innerHTML = it.people.map(name => `
-    <div class="miniRow">
-      <div class="miniTitle">${escapeHtml(name)}</div>
-      <div class="miniSub"></div>
-    </div>
-  `).join("");
-}
-
-
-// Drill-down: when drawer shows label list (e.g., "Diğer"), clicking a label opens the people list
-els.drawerList.addEventListener("click", (ev)=>{
-  const item = ev.target.closest(".miniItem[data-label]");
-  if(!item) return;
-  const label = item.getAttribute("data-label") || "";
-  if(!label) return;
-
-  // Save current state for back navigation
-  drawerStack.push({
-    title: els.drawerTitle.textContent,
-    subtitle: els.drawerSub.textContent,
-    items: drawerData.slice(),
-    mode: "labels"
-  });
-
-  // Build person list for this label
-  const map=new Map();
-  for(const r of rows){
-    const match = (chartMode==="roles") ? ((r.role||"").trim()===label) : ((r.category||"").trim()===label);
-    if(match && r.person){
-      if(!map.has(r.person)) map.set(r.person, new Set());
-      map.get(r.person).add(r.play);
-    }
-  }
-  const people=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}))
-    .sort((a,b)=>a.person.localeCompare(b.person,"tr"));
-  const sub = (chartMode==="roles") ? "Görev → Kişiler" : "Kategori → Kişiler";
-  openDrawer(label, sub, people, {mode:"items"});
-});
-
-
-function hitTestChart(evt){
-  const rect = els.chartMain.getBoundingClientRect();
-  const x = evt.clientX - rect.left;
-  const y = evt.clientY - rect.top;
-
-  for(const h of chartHits){
-    if(h.type==="bar"){
-      if(x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h) return h;
-    }else if(h.type==="wedge"){
-      const dx=x-h.cx, dy=y-h.cy;
-      const rr=Math.sqrt(dx*dx+dy*dy);
-      if(rr < h.rInner || rr > h.rOuter) continue;
-      let ang=Math.atan2(dy,dx);
-      if(ang< -Math.PI/2) ang += Math.PI*2;
-      let s=h.start, e=h.end;
-      while(ang < s) ang += Math.PI*2;
-      if(ang >= s && ang <= e) return h;
-    }
-  }
-  return null;
-}
-
-els.chartMain.addEventListener("click", (evt)=>{
-  const h = hitTestChart(evt);
-  if(!h) return;
-  const key = h.key;
-  if(key === "Diğer"){
-    const rest = (window.__chartOtherItems || []).slice().sort((a,b)=>b.v-a.v);
-    if(!rest.length){
-      toast("Diğer: Top listeye girmeyen tüm kalemlerin toplamıdır.");
-      return;
-    }
-    const subtitle = (chartMode==="roles")
-      ? "Top görevler dışındaki görevler (tam liste)"
-      : "Top kategoriler dışındaki kategoriler (tam liste)";
-    openDrawer("Diğer", subtitle, rest.map(x=>({label:x.k, value:x.v})));
-    return;
-  }
-
-  const map=new Map();
-  for(const r of rows){
-    const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
-    if(match && r.person){
-      if(!map.has(r.person)) map.set(r.person, new Set());
-      map.get(r.person).add(r.play);
-    }
-  }
-  const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
-  items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
-  openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
-});
 
 /* ---------- distribution ---------- */
 function computeDistribution(){
@@ -2369,7 +2044,7 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabStats","viewStats"]];
+  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
     el(v).style.display="none";
@@ -2380,10 +2055,6 @@ function setActiveTab(which){
     closeDrawer();
     drawChart();
   }
-  if(which==="Stats" && rows.length){
-    closeStatsDrawer();
-    drawStats();
-  }
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
@@ -2391,8 +2062,6 @@ els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
-els.tabStats.addEventListener("click", ()=>setActiveTab("Stats"));
-
 /* ---------- events ---------- */
 els.reloadBtn.addEventListener("click", ()=>load(false));
 
@@ -2607,7 +2276,6 @@ els.chartTabCats.addEventListener("click", ()=>{
 
 window.addEventListener("resize", ()=>{
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
-  if(rows.length && els.viewStats && els.viewStats.style.display!=="none"){ drawStats(); }
 });
 
 /* ---------- KPIs ---------- */
@@ -2693,9 +2361,6 @@ async function load(isAuto=false){
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
-      if(ACTIVE_TAB==='Stats') requestAnimationFrame(drawStats);
-
-
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
   }catch(err){
