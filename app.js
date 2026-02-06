@@ -477,24 +477,36 @@ async function loadNotifications(){
       return;
     }
 
-    
-    // Beklenen kolonlar (Sheets): Tarih/Saat | Tür | Kişi | Görev | Oyun | Mesaj
-    // (Eski sürümlerle uyum için alternatif başlıkları da kabul ediyoruz.)
-    const rows = data.rows.map(r=>({
-      ts: String(r["Tarih/Saat"] ?? r["Tarih"] ?? r["Tarih Saat"] ?? r["Timestamp"] ?? "").trim(),
-      type: String(r["Tür"] ?? r["Tur"] ?? r["Tip"] ?? "🔔").trim() || "🔔",
+    // Beklenen kolonlar: Tarih/Saat, Tür, Kişi, Görev, Oyun, Mesaj
+    // (bazı eski sürümlerde Başlık/Okundu gibi kolonlar da olabiliyor)
+    let rows = data.rows.map(r=>({
+      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
+      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
+      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
+      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
+      play: String(r["Oyun"] ?? "").trim(),
       person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
       role: String(r["Görev"] ?? r["Gorev"] ?? "").trim(),
-      play: String(r["Oyun"] ?? r["Oyun Adı"] ?? r["Oyun Adi"] ?? "").trim(),
-      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
-    })).filter(x=>x.ts || x.type || x.person || x.role || x.play || x.msg);
-rows.reverse();
+      read: String(r["Okundu"] ?? "").trim()
+    })).filter(x=>x.ts || x.title || x.msg);
+
+    // "Toplu düzenleme" gibi alakasız sistem loglarını gösterme
+    rows = rows.filter(n=>{
+      const t = (n.type||"").toString().toUpperCase();
+      const m = (n.msg||"").toString().toLowerCase();
+      if(t.includes("TOPLU")) return false;
+      if(m.includes("aralığı düzenlendi") || m.includes("araligi duzenlendi")) return false;
+      return true;
+    });
+
+    // newest first (basit)
+    rows.reverse();
 
     // local okundu (site tarafı): imza üzerinden
     const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
     const norm = (x)=> (x||"").toString().slice(0,120);
     rows.forEach(n=>{
-      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}|${norm(n.role)}`;
+      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}|${norm(n.role)}`;
       n._key = key;
       n._seen = !!seen[key];
     });
@@ -525,13 +537,28 @@ rows.reverse();
       if(tt.includes("DÜZEN") || tt.includes("DUZEN")) return {icon:"🔔", label:"DÜZENLENDİ"};
       return {icon:"🔔", label:(t||"").toString().trim() || "BİLDİRİM"};
     };
-els.notifList.innerHTML = rows.map(n=>{
+    els.notifList.innerHTML = rows.map(n=>{
       const info = typeInfo(n.type);
-      const meta = [n.person, n.role, n.play].filter(Boolean).join(" • ");
-      const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
-      const titleText = info.label;
+      // Tarihin hemen üstünde: Kişi + Görev (+ Oyun)
+      const metaTop = [n.person, n.role].filter(Boolean).join(" • ");
+      const metaBot = n.play ? n.play : "";
+      const who = (metaTop || metaBot)
+        ? `<div class="notif-meta">${escapeHtml(metaTop)}${metaBot ? ` • ${escapeHtml(metaBot)}` : ""}</div>`
+        : "";
+      const titleText = n.title || info.label;
       const title = titleText ? `<div class="notif-title">${escapeHtml(titleText)}</div>` : "";
-      const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
+      // Mesaj boşsa, otomatik mesaj üret
+      const fallbackMsg = (()=>{
+        const p = n.person ? n.person : "";
+        const o = n.play ? ` ${n.play} oyunu` : "";
+        const r = n.role ? ` (${n.role})` : "";
+        const tt = (n.type||"").toString().toUpperCase();
+        if(tt.includes("EKLEND")) return `${p}${o}${r} görev listesine eklendi`;
+        if(tt.includes("SİL") || tt.includes("SIL")) return `${p}${o}${r} görev listesinden çıkarıldı`;
+        if(tt.includes("GÜNC") || tt.includes("GUNC")) return `${p}${o}${r} güncellendi`;
+        return n.msg || "";
+      })();
+      const msg = (n.msg || fallbackMsg) ? `<div class="notif-msg">${escapeHtml(n.msg || fallbackMsg)}</div>` : "";
       const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
       const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
       return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
