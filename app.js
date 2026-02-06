@@ -515,15 +515,28 @@ async function loadNotifications(){
       return;
     }
 
-    els.notifList.innerHTML = rows.map(n=>{
+    
+    const typeInfo = (t)=>{
+      const tt = (t||"").toString().trim().toUpperCase();
+      if(tt.includes("EKLEND")) return {icon:"✅", label:"EKLENDİ"};
+      if(tt.includes("SİL") || tt.includes("CIKAR")) return {icon:"❌", label:"SİLİNDİ"};
+      if(tt.includes("GÜNC") || tt.includes("GUNC")) return {icon:"✏️", label:"GÜNCELLENDİ"};
+      if(tt.includes("TOPLU")) return {icon:"🧹", label:"TOPLU"};
+      if(tt.includes("DEĞİŞ") || tt.includes("DEGIS")) return {icon:"🔔", label:"DEĞİŞİKLİK"};
+      if(tt.includes("DÜZEN") || tt.includes("DUZEN")) return {icon:"🔔", label:"DÜZENLENDİ"};
+      return {icon:"🔔", label:(t||"").toString().trim() || "BİLDİRİM"};
+    };
+els.notifList.innerHTML = rows.map(n=>{
+      const info = typeInfo(n.type);
       const meta = [n.play, n.person].filter(Boolean).join(" • ");
       const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
-      const title = n.title ? `<div class="notif-title">${escapeHtml(n.title)}</div>` : "";
+      const titleText = n.title || info.label;
+      const title = titleText ? `<div class="notif-title">${escapeHtml(titleText)}</div>` : "";
       const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
       const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
       const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
       return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
-        <div class="notif-type">${escapeHtml(n.type)}</div>
+        <div class="notif-type">${escapeHtml(info.icon)}</div>
         <div class="notif-body">
           ${title}${msg}${who}${ts}
         </div>
