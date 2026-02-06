@@ -18,6 +18,30 @@ const CONFIG = {
   csvUrl(gid=this.GID){  return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/export?format=csv&gid=${gid}&_=${Date.now()}`; },
 };
 
+// -------- Bildirim Modal (üst bar) --------
+function openNotifModal(){
+  if(!els.notifPanel) return;
+  els.notifPanel.classList.remove('hidden');
+  if(els.notifBackdrop) els.notifBackdrop.classList.remove('hidden');
+}
+function closeNotifModal(){
+  if(!els.notifPanel) return;
+  els.notifPanel.classList.add('hidden');
+  if(els.notifBackdrop) els.notifBackdrop.classList.add('hidden');
+}
+function toggleNotifModal(){
+  if(!els.notifPanel) return;
+  const isHidden = els.notifPanel.classList.contains('hidden');
+  if(isHidden) openNotifModal(); else closeNotifModal();
+}
+
+(function wireNotifModal(){
+  if(els.notifBtn) els.notifBtn.addEventListener('click', (e)=>{ e.preventDefault?.(); toggleNotifModal(); });
+  if(els.notifClose) els.notifClose.addEventListener('click', (e)=>{ e.preventDefault?.(); closeNotifModal(); });
+  if(els.notifBackdrop) els.notifBackdrop.addEventListener('click', ()=> closeNotifModal());
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeNotifModal(); });
+})();
+
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
@@ -118,7 +142,6 @@ const els = {
 // ✅ Fail-safe: Google Sheet'i Aç linki her durumda çalışsın
 try{ if(els.sheetBtn) els.sheetBtn.href = CONFIG.sheetUrl(); }catch(e){}
 
-els.sheetBtn.href = CONFIG.sheetUrl();
 
 let rawRows = [];
 let rows = [];
