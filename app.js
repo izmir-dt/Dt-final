@@ -477,25 +477,24 @@ async function loadNotifications(){
       return;
     }
 
-    // Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
+    
+    // Beklenen kolonlar (Sheets): Tarih/Saat | Tür | Kişi | Görev | Oyun | Mesaj
+    // (Eski sürümlerle uyum için alternatif başlıkları da kabul ediyoruz.)
     const rows = data.rows.map(r=>({
-      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
-      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
-      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
-      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
-      play: String(r["Oyun"] ?? "").trim(),
+      ts: String(r["Tarih/Saat"] ?? r["Tarih"] ?? r["Tarih Saat"] ?? r["Timestamp"] ?? "").trim(),
+      type: String(r["Tür"] ?? r["Tur"] ?? r["Tip"] ?? "🔔").trim() || "🔔",
       person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
-      read: String(r["Okundu"] ?? "").trim()
-    })).filter(x=>x.ts || x.title || x.msg);
-
-    // newest first (basit)
-    rows.reverse();
+      role: String(r["Görev"] ?? r["Gorev"] ?? "").trim(),
+      play: String(r["Oyun"] ?? r["Oyun Adı"] ?? r["Oyun Adi"] ?? "").trim(),
+      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
+    })).filter(x=>x.ts || x.type || x.person || x.role || x.play || x.msg);
+rows.reverse();
 
     // local okundu (site tarafı): imza üzerinden
     const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
     const norm = (x)=> (x||"").toString().slice(0,120);
     rows.forEach(n=>{
-      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
+      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}|${norm(n.role)}`;
       n._key = key;
       n._seen = !!seen[key];
     });
@@ -528,9 +527,9 @@ async function loadNotifications(){
     };
 els.notifList.innerHTML = rows.map(n=>{
       const info = typeInfo(n.type);
-      const meta = [n.play, n.person].filter(Boolean).join(" • ");
+      const meta = [n.person, n.role, n.play].filter(Boolean).join(" • ");
       const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
-      const titleText = n.title || info.label;
+      const titleText = info.label;
       const title = titleText ? `<div class="notif-title">${escapeHtml(titleText)}</div>` : "";
       const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
       const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
