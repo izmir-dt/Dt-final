@@ -2,6 +2,8 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8"/>
+  <meta name="description" content="İzmir Devlet Tiyatrosu • Repertuvar Kişi Takip Sistemi (İç Panel)"/>
+  <meta name="robots" content="noindex,nofollow"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
@@ -877,14 +879,13 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
         <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
           🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
         </button>
-        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
+          <div id="notifBackdrop" class="notifBackdrop hidden" aria-hidden="true"></div>
+<div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
           <div class="notifHd">
             <div>
               <b>Bildirimler</b>
               <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
-  <div id="notifBackdrop" class="notifBackdrop hidden" aria-hidden="true"></div>
-
-            </div>
+</div>
             <div class="row" style="gap:8px">
               <button class="btn" id="notifRefresh">↻</button>
               <button class="btn" id="notifClose">✕</button>
@@ -3083,5 +3084,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
     <div id="mobileContent" class="modalBody"></div>
   </div>
 
+
+<!-- build stamp -->
+<div id="buildStamp" style="position:fixed;bottom:8px;right:10px;font-size:11px;opacity:.55;pointer-events:none">build:2026-02-06T23:25Z</div>
 </body>
 </html>
