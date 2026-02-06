@@ -101,7 +101,7 @@ html[data-theme="dark"]{
       position:absolute;
       right:0;
       top:46px;
-      width:min(520px, 92vw);
+      width:min(420px, 92vw);
       background:var(--card);
       border:1px solid var(--line);
       border-radius:16px;
@@ -115,7 +115,7 @@ html[data-theme="dark"]{
       display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
-    .notifBd{max-height:60vh;overflow:auto;padding:12px}
+    .notifBd{max-height:52vh;overflow:auto;padding:10px}
 
     /* Mobilde bildirim paneli viewport dışına taşmasın */
     @media (max-width: 760px){
@@ -430,12 +430,30 @@ width:48px;
 
 
 /* --- Notifications (chat bubble) --- */
-.notif-bubble{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:10px 0;border-radius:14px;background:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 18px rgba(0,0,0,.06);cursor:pointer}
+.notif-bubble{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:8px 10px;
+  margin:8px 0;
+  border-radius:14px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+  cursor:pointer
+}
 .notif-bubble:hover{transform:translateY(-1px)}
 .notif-bubble.seen{opacity:.62}
-.notif-type{width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;border-radius:10px;background:rgba(0,0,0,.04);font-size:16px;flex:0 0 34px}
-.notif-title{font-weight:700;margin-bottom:2px}
-.notif-msg{margin:2px 0 6px 0}
+.notif-type{
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;
+  background:rgba(0,0,0,.05);
+  font-size:15px;
+  flex:0 0 28px
+}
+.notif-title{font-weight:800;margin-bottom:2px;font-size:13px;letter-spacing:.2px}
+.notif-msg{margin:2px 0 6px 0;font-size:13px;line-height:1.35}
 .notif-meta{font-size:12px;opacity:.8}
 .notif-ts{font-size:11px;opacity:.65;margin-top:6px}
 
@@ -857,111 +875,6 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
-
-
-
-/* =========================
-   NOTIFICATIONS FINAL OVERRIDE v2 (ESTETİK + OKUNURLUK)
-   ========================= */
-.notifPanel{
-  width:min(620px, 94vw) !important;
-  border-radius:18px !important;
-}
-.notifHd{
-  padding:14px 14px !important;
-}
-.notifHd b{ font-size:15px !important; letter-spacing:.2px; }
-.notifHd .small{ font-size:12px !important; color:var(--muted) !important; }
-.notifBd{ padding:12px !important; }
-
-#notifList .notif-bubble{
-  position:relative;
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-  padding:12px 12px 11px 14px;
-  margin:10px 0;
-  border-radius:14px;
-  border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
-  background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
-  box-shadow: 0 10px 22px rgba(0,0,0,.06);
-  cursor:pointer;
-  transform:none !important;
-  text-align:left !important;
-}
-#notifList .notif-bubble::before{
-  content:"";
-  position:absolute;
-  left:10px; top:10px; bottom:10px;
-  width:4px;
-  border-radius:10px;
-  background: var(--accent);
-  opacity:.9;
-}
-#notifList .notif-type{
-  width:34px;height:34px;
-  border-radius:10px;
-  display:grid;place-items:center;
-  background: color-mix(in srgb, var(--card) 72%, var(--bg) 28%);
-  border:1px solid color-mix(in srgb, var(--line) 65%, transparent 35%);
-  flex:0 0 34px;
-  margin-left:10px;
-  font-size:16px;
-}
-#notifList .notif-body{ flex:1; min-width:0; }
-#notifList .notif-title{
-  font-weight:950;
-  font-size:13px;
-  margin:0 0 2px 0;
-  line-height:1.2;
-}
-#notifList .notif-msg{
-  margin:0;
-  font-size:12px;
-  line-height:1.35;
-  color: var(--muted);
-  word-break: break-word;
-}
-#notifList .notif-meta{
-  margin-top:6px;
-  font-size:11px;
-  color: color-mix(in srgb, var(--muted) 85%, var(--text) 15%);
-  display:flex; gap:8px; flex-wrap:wrap;
-  word-break: break-word;
-}
-#notifList .notif-ts{
-  margin-top:5px;
-  font-size:11px;
-  color: color-mix(in srgb, var(--muted) 80%, var(--text) 20%);
-}
-
-/* Seen state: yazıyı soldurma yok */
-#notifList .notif-bubble.seen{
-  opacity:1 !important;
-  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%) !important;
-}
-
-/* Mobilde paneli daha ferah yap */
-@media (max-width: 760px){
-  .notifPanel{
-    top:72px !important;
-    left:10px !important;
-    right:10px !important;
-    border-radius:18px !important;
-  }
-  .notifBd{ max-height:72vh !important; }
-}
-
-/* Dark mode */
-html[data-theme="dark"] #notifList .notif-bubble{
-  background: rgba(30,41,59,.92) !important;
-  border-color: rgba(148,163,184,.18) !important;
-}
-html[data-theme="dark"] #notifList .notif-title{ color:#f8fafc !important; }
-html[data-theme="dark"] #notifList .notif-msg{ color:#cbd5e1 !important; }
-html[data-theme="dark"] #notifList .notif-meta{ color:#cbd5e1 !important; }
-html[data-theme="dark"] #notifList .notif-ts{ color:#94a3b8 !important; }
-
 </style>
 </head>
 <body>
