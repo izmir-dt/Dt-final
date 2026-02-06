@@ -114,6 +114,10 @@ const els = {
   kpiRows: el("kpiRows"),
   kpiFiguran: el("kpiFiguran"),
 };
+
+// ✅ Fail-safe: Google Sheet'i Aç linki her durumda çalışsın
+try{ if(els.sheetBtn) els.sheetBtn.href = CONFIG.sheetUrl(); }catch(e){}
+
 els.sheetBtn.href = CONFIG.sheetUrl();
 
 let rawRows = [];
