@@ -857,6 +857,109 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
+
+
+/* =========================
+   NOTIFICATIONS FINAL UI
+   ========================= */
+#notifPanel{
+  width:min(92vw, 560px);
+  max-width:560px;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 18px 45px rgba(0,0,0,.12);
+}
+
+#notifPanel .notifHd{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+}
+
+#notifPanel .notifHd b{ font-size:15px; font-weight:900; letter-spacing:.2px; }
+#notifPanel .notifHd .small{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+#notifPanel .notifBd{
+  padding:12px;
+  background: var(--bg);
+}
+
+#notifPanel .notif-bubble{
+  position:relative;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px 12px 11px 14px;
+  margin:10px 0;
+  border-radius:14px;
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
+  background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+  cursor:pointer;
+}
+
+#notifPanel .notif-bubble::before{
+  content:"";
+  position:absolute;
+  left:10px; top:10px; bottom:10px;
+  width:4px;
+  border-radius:10px;
+  background: var(--accent);
+  opacity:.9;
+}
+
+#notifPanel .notif-type{
+  width:34px; height:34px;
+  border-radius:10px;
+  display:grid; place-items:center;
+  background: color-mix(in srgb, var(--card) 72%, var(--bg) 28%);
+  border:1px solid color-mix(in srgb, var(--line) 65%, transparent 35%);
+  flex:0 0 34px;
+  margin-left:10px; /* şeritle çakışmasın */
+  font-size:16px;
+}
+
+#notifPanel .notif-title{
+  font-weight:900;
+  font-size:13px;
+  margin:0 0 2px 0;
+  line-height:1.2;
+}
+
+#notifPanel .notif-msg{
+  margin:0;
+  font-size:12px;
+  line-height:1.35;
+  color:var(--muted);
+}
+
+#notifPanel .notif-meta{
+  margin-top:6px;
+  font-size:11px;
+  color: color-mix(in srgb, var(--muted) 85%, var(--text) 15%);
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+
+#notifPanel .notif-ts{
+  margin-top:5px;
+  font-size:11px;
+  color: color-mix(in srgb, var(--muted) 80%, var(--text) 20%);
+}
+
+#notifPanel .notif-bubble.seen{
+  opacity:1 !important;
+  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
+  border-color: color-mix(in srgb, var(--line) 60%, transparent 40%);
+}
+
+html[data-theme="dark"] #notifPanel .notif-bubble{
+  background: rgba(30,41,59,.92);
+  border-color: rgba(148,163,184,.18);
+}
 </style>
 </head>
 <body>
