@@ -859,36 +859,22 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
 }
 
 
+
 /* =========================
-   NOTIFICATIONS FINAL UI
+   NOTIFICATIONS FINAL OVERRIDE v2 (ESTETİK + OKUNURLUK)
    ========================= */
-#notifPanel{
-  width:min(92vw, 560px);
-  max-width:560px;
-  border-radius:18px;
-  overflow:hidden;
-  box-shadow:0 18px 45px rgba(0,0,0,.12);
+.notifPanel{
+  width:min(620px, 94vw) !important;
+  border-radius:18px !important;
 }
-
-#notifPanel .notifHd{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:14px 16px;
-  border-bottom:1px solid var(--line);
-  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+.notifHd{
+  padding:14px 14px !important;
 }
+.notifHd b{ font-size:15px !important; letter-spacing:.2px; }
+.notifHd .small{ font-size:12px !important; color:var(--muted) !important; }
+.notifBd{ padding:12px !important; }
 
-#notifPanel .notifHd b{ font-size:15px; font-weight:900; letter-spacing:.2px; }
-#notifPanel .notifHd .small{ font-size:12px; color:var(--muted); margin-top:2px; }
-
-#notifPanel .notifBd{
-  padding:12px;
-  background: var(--bg);
-}
-
-#notifPanel .notif-bubble{
+#notifList .notif-bubble{
   position:relative;
   display:flex;
   gap:12px;
@@ -898,11 +884,12 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   border-radius:14px;
   border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
   background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
-  box-shadow:0 10px 22px rgba(0,0,0,.06);
+  box-shadow: 0 10px 22px rgba(0,0,0,.06);
   cursor:pointer;
+  transform:none !important;
+  text-align:left !important;
 }
-
-#notifPanel .notif-bubble::before{
+#notifList .notif-bubble::before{
   content:"";
   position:absolute;
   left:10px; top:10px; bottom:10px;
@@ -911,55 +898,70 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   background: var(--accent);
   opacity:.9;
 }
-
-#notifPanel .notif-type{
-  width:34px; height:34px;
+#notifList .notif-type{
+  width:34px;height:34px;
   border-radius:10px;
-  display:grid; place-items:center;
+  display:grid;place-items:center;
   background: color-mix(in srgb, var(--card) 72%, var(--bg) 28%);
   border:1px solid color-mix(in srgb, var(--line) 65%, transparent 35%);
   flex:0 0 34px;
-  margin-left:10px; /* şeritle çakışmasın */
+  margin-left:10px;
   font-size:16px;
 }
-
-#notifPanel .notif-title{
-  font-weight:900;
+#notifList .notif-body{ flex:1; min-width:0; }
+#notifList .notif-title{
+  font-weight:950;
   font-size:13px;
   margin:0 0 2px 0;
   line-height:1.2;
 }
-
-#notifPanel .notif-msg{
+#notifList .notif-msg{
   margin:0;
   font-size:12px;
   line-height:1.35;
-  color:var(--muted);
+  color: var(--muted);
+  word-break: break-word;
 }
-
-#notifPanel .notif-meta{
+#notifList .notif-meta{
   margin-top:6px;
   font-size:11px;
   color: color-mix(in srgb, var(--muted) 85%, var(--text) 15%);
   display:flex; gap:8px; flex-wrap:wrap;
+  word-break: break-word;
 }
-
-#notifPanel .notif-ts{
+#notifList .notif-ts{
   margin-top:5px;
   font-size:11px;
   color: color-mix(in srgb, var(--muted) 80%, var(--text) 20%);
 }
 
-#notifPanel .notif-bubble.seen{
+/* Seen state: yazıyı soldurma yok */
+#notifList .notif-bubble.seen{
   opacity:1 !important;
-  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
-  border-color: color-mix(in srgb, var(--line) 60%, transparent 40%);
+  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%) !important;
 }
 
-html[data-theme="dark"] #notifPanel .notif-bubble{
-  background: rgba(30,41,59,.92);
-  border-color: rgba(148,163,184,.18);
+/* Mobilde paneli daha ferah yap */
+@media (max-width: 760px){
+  .notifPanel{
+    top:72px !important;
+    left:10px !important;
+    right:10px !important;
+    border-radius:18px !important;
+  }
+  .notifBd{ max-height:72vh !important; }
 }
+
+/* Dark mode */
+html[data-theme="dark"] #notifList .notif-bubble{
+  background: rgba(30,41,59,.92) !important;
+  border-color: rgba(148,163,184,.18) !important;
+}
+html[data-theme="dark"] #notifList .notif-title{ color:#f8fafc !important; }
+html[data-theme="dark"] #notifList .notif-msg{ color:#cbd5e1 !important; }
+html[data-theme="dark"] #notifList .notif-meta{ color:#cbd5e1 !important; }
+html[data-theme="dark"] #notifList .notif-ts{ color:#94a3b8 !important; }
+
 </style>
 </head>
 <body>
