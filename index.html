@@ -755,21 +755,17 @@ select.q-scope{
   color: var(--card);
   background: var(--bad);
 }
-#notifPanel{
-  position:absolute;
-  right:0;
-  top:calc(100% + 10px);
-  width:min(420px, calc(100vw - 24px));
-  max-height:420px;
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background: var(--card);
-  color: var(--text);
-  box-shadow: var(--shadow);
-  padding:10px;
-  z-index:999;
+
+.notifBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:9998;
 }
+@media (max-width:720px){
+  
+}
+
 .notifItem{
   border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
   border-radius:12px;
@@ -794,10 +790,7 @@ select.q-scope{
 .notifItem div{ color: var(--text); }
 
 /* dark theme: ensure panel stays dark but text stays light */
-html[data-theme="dark"] #notifPanel{
-  background: color-mix(in srgb, var(--card) 92%, #000 8%);
-  border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
-}
+html[data-theme="dark"] 
 
 /* =========================
    NOTIF BUBBLES THEME FIX (v30)
@@ -829,10 +822,7 @@ html[data-theme="dark"] #notifPanel{
 }
 
 /* Dark theme */
-html[data-theme="dark"] #notifPanel{
-  background: rgba(11,16,32,.96) !important;
-  color:#f8fafc !important;
-}
+html[data-theme="dark"] 
 html[data-theme="dark"] #notifPanel .notif-bubble{
   background: rgba(30,41,59,.92) !important;
   border-color: rgba(148,163,184,.18) !important;
@@ -890,6 +880,8 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
             <div>
               <b>Bildirimler</b>
               <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
+  <div id="notifBackdrop" class="notifBackdrop hidden" aria-hidden="true"></div>
+
             </div>
             <div class="row" style="gap:8px">
               <button class="btn" id="notifRefresh">↻</button>
