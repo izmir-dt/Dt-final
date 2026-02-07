@@ -881,15 +881,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
-<
-/* Manual Excel kopyalama panosu */
-#copyBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:9998}
-#copySheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(720px,92vw);max-height:86vh;overflow:auto;z-index:9999;
-  background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:16px}
-#copySheet .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
-#copySheet textarea{width:100%;min-height:220px;resize:vertical;border-radius:14px;border:1px solid var(--line);padding:12px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:13px;background:transparent;color:var(--text)}
-#copySheet .hint{font-size:13px;color:var(--muted);margin:8px 0 0}
-/style>
+</style>
 </head>
 <body>
 <header>
@@ -2786,10 +2778,10 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-els.copyBtn.addEventListener("click", async ()=>{
+els.copyBtn.addEventListener("click", ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  await copyText(tsv);
+  showManualCopy(tsv);
 });
 
 function showManualCopy(text){
@@ -2820,46 +2812,12 @@ function showManualCopy(text){
 }
 
 function copyText(text){
-  const value = String(text ?? "");
-  // 1) Synchronous execCommand first (keeps user gesture; works more reliably)
-  try{
-    const ta = document.createElement("textarea");
-    ta.value = value;
-    ta.setAttribute("readonly","readonly");
-    ta.style.position = "fixed";
-    ta.style.top = "-1000px";
-    ta.style.left = "-1000px";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    ta.setSelectionRange(0, ta.value.length);
-    const ok = document.execCommand("copy");
-    ta.remove();
-    if(ok){
-      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
-      setStatus("📋 Kopyalandı", "ok");
-      return Promise.resolve(true);
-    }
-  }catch(e){}
-
-  // 2) Async clipboard as fallback
-  if(navigator.clipboard && window.isSecureContext){
-    return navigator.clipboard.writeText(value).then(()=>{
-      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
-      setStatus("📋 Kopyalandı", "ok");
-      return true;
-    }).catch(()=>{
-      showManualCopy(value);
-      setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
-      return false;
-    });
-  }
-
-  // 3) Manual fallback
-  showManualCopy(value);
-  setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
-  return Promise.resolve(false);
+  // HER ZAMAN manuel pano aç (kopyalama izni/secure context derdi yok)
+  showManualCopy(String(text ?? ""));
+  return false;
 }
+
+
 
 
 function downloadText(filename, text){
@@ -3111,27 +3069,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       const box = document.querySelector(`#viewIntersection .input[title="${title}"]`);
       if(!box) return;
       // Remove leading emoji text nodes (1️⃣/2️⃣) if present
-   
-  <!-- Manual Excel Kopyalama Panosu -->
-  <div id="copyBackdrop" class="hidden" aria-hidden="true"></div>
-  <div id="copySheet" class="hidden" role="dialog" aria-modal="true" aria-label="Excel Kopyalama">
-    <div class="row">
-      <div>
-        <div style="font-weight:900;font-size:16px" id="copyTitle">Excel Kopyalama</div>
-        <div class="hint">Tarayıcı otomatik kopyalamayı engellediyse: aşağıdaki metne tıkla → <b>Ctrl+A</b> → <b>Ctrl+C</b> → Excel’de yapıştır.</div>
-      </div>
-      <button class="btn" id="copyCloseBtn">✕</button>
-    </div>
-    <textarea id="copyTextArea" spellcheck="false"></textarea>
-    <div class="row" style="margin-top:10px">
-      <div class="hint">İpucu: Excel’de “Metin sütunlara” gerekirse sekme (TAB) ayırır.</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="copySelectBtn">Seç</button>
-        <button class="btn" id="copyTryBtn">Tekrar Kopyala</button>
-      </div>
-    </div>
-  </div>
-   for(const node of Array.from(box.childNodes)){
+      for(const node of Array.from(box.childNodes)){
         if(node.nodeType===Node.TEXT_NODE && node.textContent.includes("️⃣")){
           node.textContent = node.textContent.replace(/\s*\d️⃣\s*/g,"");
         }
@@ -3158,59 +3096,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
 </body>
 </html>
-
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-
-  function openCopyModal(text, title){
-    const bd = $("copyBackdrop");
-    const sh = $("copySheet");
-    const ta = $("copyTextArea");
-    const tt = $("copyTitle");
-    if(!bd || !sh || !ta) return;
-
-    tt.textContent = title || "Excel Kopyalama";
-    ta.value = text || "";
-    bd.classList.remove("hidden");
-    sh.classList.remove("hidden");
-
-    // focus + select
-    setTimeout(()=>{
-      ta.focus();
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-    }, 30);
-  }
-
-  function closeCopyModal(){
-    $("copyBackdrop")?.classList.add("hidden");
-    $("copySheet")?.classList.add("hidden");
-  }
-
-  window.openCopyModal = openCopyModal;
-
-  $("copyBackdrop")?.addEventListener("click", closeCopyModal);
-  $("copyCloseBtn")?.addEventListener("click", closeCopyModal);
-  $("copySelectBtn")?.addEventListener("click", ()=>{
-    const ta=$("copyTextArea"); if(!ta) return;
-    ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
-  });
-  $("copyTryBtn")?.addEventListener("click", async ()=>{
-    const ta=$("copyTextArea"); if(!ta) return;
-    try{
-      await navigator.clipboard.writeText(ta.value);
-    }catch(e){
-      // ignore; user can still manual copy
-    }
-    const s = document.getElementById("status");
-    if(s) s.textContent = "📋 Kopyalama denendi (olmadıysa manuel kopyala).";
-  });
-
-  document.addEventListener("keydown", (e)=>{
-    if(e.key==="Escape"){
-      if(!$("copySheet")?.classList.contains("hidden")) closeCopyModal();
-    }
-  });
-})();
-</script>
