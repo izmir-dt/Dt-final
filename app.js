@@ -23,6 +23,55 @@ function isMobile(){
 }
 
 // Filtre eşleşmeleri: boşluk / büyük-küçük harf / görünmez karakter farklarını tolere et
+
+// --- Fuzzy search (mobile-friendly) ---
+function isSubsequence(hay, needle){
+  let i=0,j=0;
+  while(i<hay.length && j<needle.length){
+    if(hay[i]===needle[j]) j++;
+    i++;
+  }
+  return j===needle.length;
+}
+function levenshtein(a,b){
+  a=String(a); b=String(b);
+  const m=a.length, n=b.length;
+  if(!m) return n;
+  if(!n) return m;
+  const dp = Array(n+1);
+  for(let j=0;j<=n;j++) dp[j]=j;
+  for(let i=1;i<=m;i++){
+    let prev=dp[0]; dp[0]=i;
+    for(let j=1;j<=n;j++){
+      const tmp=dp[j];
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      dp[j]=Math.min(dp[j]+1, dp[j-1]+1, prev+cost);
+      prev=tmp;
+    }
+  }
+  return dp[n];
+}
+function fuzzyTokenMatch(hay, tok){
+  if(!tok) return true;
+  if(hay.includes(tok)) return true;
+  if(tok.length>=3 && isSubsequence(hay, tok)) return true;
+  if(tok.length<=6 && hay.length<=80){
+    // allow small typos for short tokens
+    const words = hay.split(/\s+/g).slice(0,40);
+    for(const w of words){
+      if(Math.abs(w.length - tok.length) <= 2 && levenshtein(w, tok) <= 1) return true;
+    }
+  }
+  return false;
+}
+function fuzzyMatch(hay, q){
+  const query = (q||"").trim().toLowerCase();
+  if(!query) return true;
+  const h = (hay||"").toLowerCase();
+  const toks = query.split(/\s+/g).filter(Boolean);
+  return toks.every(t=>fuzzyTokenMatch(h, t));
+}
+
 function normKey(s){
   return String(s||"")
     .trim()
@@ -101,6 +150,7 @@ const els = {
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
+  chartDownloadBtn: el("chartDownloadBtn"),
 
   drawer: el("chartDrawer"),
   drawerTitle: el("drawerTitle"),
@@ -116,26 +166,10 @@ const els = {
 };
 els.sheetBtn.href = CONFIG.sheetUrl();
 
-
-function fitNotifPanel(){
-  const p = els.notifPanel;
-  if(!p) return;
-  // max height within viewport
-  const vh = window.innerHeight || 800;
-  p.style.maxHeight = Math.max(280, Math.floor(vh * 0.70)) + "px";
-  p.style.overflow = "auto";
-  // If panel would overflow right/bottom, pin it
-  const r = p.getBoundingClientRect();
-  const pad = 10;
-  if(r.right > window.innerWidth - pad){
-    p.style.right = pad + "px";
-    p.style.left = "auto";
-  }
-  if(r.bottom > window.innerHeight - pad){
-    p.style.top = pad + "px";
-    p.style.bottom = "auto";
-  }
-}
+// chart tooltip
+chartTipEl = document.createElement("div");
+chartTipEl.className = "chartTip hidden";
+document.body.appendChild(chartTipEl);
 
 
 let rawRows = [];
@@ -146,7 +180,6 @@ let playsList = [];
 let activeMode = "plays";
 let activeId = null;
 let selectedItem = null;
-let expandedId = null; // mobile: inline accordion under list item
 
 let distribution = [];
 let figuran = [];
@@ -155,6 +188,7 @@ let activePlayFilter = null; // mobilde: oyundan kişilere geçince filtre
 
 let chartMode = "roles"; // roles | cats
 let chartHits = []; // clickable regions
+let chartTipEl = null;
 let drawerData = [];
 
 /* ---------- Theme toggle ---------- */
@@ -167,6 +201,27 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
+
+/* ---------- Mobile Tab Bar ---------- */
+function setTabbarActive(tabName){
+  const bar = document.getElementById("tabbar");
+  if(!bar) return;
+  bar.querySelectorAll(".tb").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===tabName));
+}
+function initTabbar(){
+  const bar = document.getElementById("tabbar");
+  if(!bar) return;
+  bar.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".tb");
+    if(!btn) return;
+    const t = btn.getAttribute("data-tab");
+    if(t==="Panel") els.tabPanel.click();
+    else if(t==="Distribution") els.tabDistribution.click();
+    else if(t==="Intersection") els.tabIntersection.click();
+    else if(t==="Charts") els.tabCharts.click();
+  });
+}
+
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
@@ -641,7 +696,7 @@ return list.filter(it=>{
       const playKey = normKey(activePlayFilter);
       if(!((it.plays||[]).some(p=>normKey(p)===playKey))) return false;
     }
-    if(q && !hay.includes(q)) return false;
+    if(q && !fuzzyMatch(hay, q)) return false;
     if(cat){
       const cats=(it.cats||[]).map(x=>x.toLowerCase());
       if(!cats.some(x=>x.includes(cat))) return false;
@@ -651,6 +706,50 @@ return list.filter(it=>{
 }
 
 /* ---------- UI render ---------- */
+
+function attachLongPress(node, onLong){
+  let timer=null;
+  const start = (e)=>{
+    if(!isMobile()) return;
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(()=>{
+      timer=null;
+      try{ onLong(e); }catch{}
+    }, 520);
+  };
+  const cancel = ()=>{
+    if(timer){ clearTimeout(timer); timer=null; }
+  };
+  node.addEventListener("touchstart", start, {passive:true});
+  node.addEventListener("touchend", cancel);
+  node.addEventListener("touchmove", cancel);
+  node.addEventListener("touchcancel", cancel);
+}
+function openMobileActionMenu(it){
+  if(!isMobile()) return;
+  const title = escapeHtml(it.title||"");
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="mobile-breadcrumb"><span class="mb-text">📌 İşlem</span><span class="mb-text" style="opacity:.7">${title}</span></div>
+      <button class="btn good" id="mActOpen">🔎 Detayı Aç</button>
+      <button class="btn" id="mActCopy">📋 Kopyala</button>
+      <button class="btn" id="mActClose">✕ Kapat</button>
+    </div>`;
+  openMobileModal(html);
+  setTimeout(()=>{
+    const o=document.getElementById("mActOpen");
+    const c=document.getElementById("mActCopy");
+    const x=document.getElementById("mActClose");
+    if(o) o.onclick=()=>{ closeMobileModal(); selectItem(it.id); };
+    if(c) c.onclick=()=>{ 
+      const text = (activeMode==="plays") ? it.title : it.title;
+      navigator.clipboard?.writeText(text).catch(()=>{});
+      closeMobileModal();
+    };
+    if(x) x.onclick=closeMobileModal;
+  }, 0);
+}
+
 function renderList(){
   const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
@@ -671,7 +770,6 @@ function renderList(){
     const chips = (it.cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
     const more = (it.cats||[]).length>6 ? `<span class="chip">+${it.cats.length-6}</span>` : "";
     const retiredTag = (activeMode==="people" && retiredSet.has(it.title)) ? `<span class="tag retired">Kurumdan Emekli Sanatçı</span>` : "";
-    const inline = (isMobile() && expandedId===it.id) ? `<div class="inlineDetails">${renderInlineDetails(it)}</div>` : "";
 
     const div=document.createElement("div");
     div.className="item";
@@ -685,79 +783,49 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
-      ${inline}
     `;
+
+    // Long-press (mobile): quick actions
+    attachLongPress(div, ()=>openMobileActionMenu(it));
+
     div.addEventListener("click", ()=>{
       activeId=it.id;
       selectedItem = it;
-      if(isMobile()){
-        expandedId = (expandedId===it.id) ? null : it.id;
-      }
       renderList();
       renderDetails(it);
-      if(isMobile() && expandedId){
-        setStatus(`📌 Seçildi: ${it.title}`, "ok");
+
+      if(isMobile() && activeMode==="plays"){
+        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
+        activePlayFilter = it.title;
+        activeMode="people";
+        els.btnPeople.classList.add("active");
+        els.btnPlays.classList.remove("active");
+
+        // Filtreli kişi listesi
+        renderList();
+
+        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
+
+        // Geri tuşu ile tekrar Oyunlar'a dönsün
+        history.pushState({mode:"people", play:activePlayFilter}, "");
+        window.scrollTo({top:0, behavior:"smooth"});
       }
+
     });
     els.list.appendChild(div);
   }
 
 
-  els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
-
-
-
-function renderInlineDetails(it){
-  if(!it) return "";
-  if(activeMode==="plays"){
-    const rowsSorted=[...it.rows].sort((a,b)=>
-      (a.category||"").localeCompare(b.category||"","tr") ||
-      (a.role||"").localeCompare(b.role||"","tr") ||
-      (a.person||"").localeCompare(b.person||"","tr")
-    );
-    const top = rowsSorted.slice(0, 28);
-    const more = rowsSorted.length>top.length ? `<div class="small" style="margin-top:8px;color:var(--muted)">+${rowsSorted.length-top.length} satır daha (Excel kopyala ile alabilirsin)</div>` : "";
-    return `
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div style="font-weight:900">${escapeHtml(it.title)}</div>
-        <div class="small" style="color:var(--muted)">${it.count} kişi</div>
-      </div>
-      <div style="margin-top:8px;overflow:auto">
-        <table class="table" style="min-width:520px">
-          <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
-          <tbody>
-            ${top.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
-          </tbody>
-        </table>
-      </div>
-      ${more}
-    `;
+  if(isMobile() && activeMode==="people" && activePlayFilter){
+    els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
+    setTimeout(()=>{
+      const b=document.getElementById("btnBackPlays");
+      if(b) b.onclick=()=>{ activePlayFilter=""; setActiveMode("plays"); render(); };
+    },0);
   } else {
-    // people mode
-    const byPlay=new Map();
-    for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
-    const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    const topBlocks = blocks.slice(0, 18);
-    const more = blocks.length>topBlocks.length ? `<div class="small" style="margin-top:8px;color:var(--muted)">+${blocks.length-topBlocks.length} oyun daha</div>` : "";
-    return `
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div style="font-weight:900">${escapeHtml(it.title)}${personTag(it.title)}</div>
-        <div class="small" style="color:var(--muted)">${it.count} oyun</div>
-      </div>
-      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
-        ${topBlocks.map(([p,rs])=>{
-          const r0 = rs[0]||{};
-          const roles = [...new Set(rs.map(x=>x.role).filter(Boolean))].slice(0,4).join(", ");
-          return `<div class="card" style="box-shadow:none;border:1px solid var(--line);padding:10px;border-radius:14px">
-            <div style="font-weight:900">${escapeHtml(p)}</div>
-            <div class="small" style="color:var(--muted);margin-top:4px">${escapeHtml(roles||"")}</div>
-          </div>`;
-        }).join("")}
-      </div>
-      ${more}
-    `;
+    els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
   }
-}
+
 
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
@@ -1094,6 +1162,64 @@ function renderMobileChartList(items){
 }
 function rowsAll(){ return rows || []; }
 
+
+function hitAt(x,y){
+  for(const h of chartHits||[]){
+    if(x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h) return h;
+  }
+  return null;
+}
+function showChartTip(hit, clientX, clientY){
+  if(!chartTipEl || !hit) return;
+  chartTipEl.innerHTML = `${escapeHtml(hit.label||"")}` + (hit.value!=null ? ` <b>${escapeHtml(String(hit.value))}</b>` : "");
+  chartTipEl.style.left = clientX + "px";
+  chartTipEl.style.top  = clientY + "px";
+  chartTipEl.classList.remove("hidden");
+}
+function hideChartTip(){
+  if(!chartTipEl) return;
+  chartTipEl.classList.add("hidden");
+}
+function initChartUX(){
+  if(!els.chartMain) return;
+  // hover tooltip (desktop)
+  els.chartMain.addEventListener("mousemove", (e)=>{
+    const rect = els.chartMain.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (els.chartMain.width / rect.width);
+    const y = (e.clientY - rect.top)  * (els.chartMain.height / rect.height);
+    const hit = hitAt(x,y);
+    if(hit) showChartTip(hit, e.clientX, e.clientY);
+    else hideChartTip();
+  });
+  els.chartMain.addEventListener("mouseleave", hideChartTip);
+
+  // tap tooltip (mobile just in case canvas visible)
+  els.chartMain.addEventListener("click", (e)=>{
+    if(!isMobile()) return;
+    const rect = els.chartMain.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (els.chartMain.width / rect.width);
+    const y = (e.clientY - rect.top)  * (els.chartMain.height / rect.height);
+    const hit = hitAt(x,y);
+    if(hit){ showChartTip(hit, e.clientX, e.clientY); setTimeout(hideChartTip, 1200); }
+  });
+
+  // download
+  if(els.chartDownloadBtn){
+    els.chartDownloadBtn.addEventListener("click", ()=>{
+      try{
+        const url = els.chartMain.toDataURL("image/png");
+        const a = document.createElement("a");
+        const title = (els.chartTitle?.textContent || "grafik").trim().replace(/\s+/g,"_");
+        a.download = `${title}.png`;
+        a.href = url;
+        a.click();
+      }catch(err){
+        alert("İndirme desteklenmiyor.");
+      }
+    });
+  }
+}
+
 function drawChart(){
   if(!rows.length) return;
   if(chartMode==="roles"){
@@ -1359,13 +1485,7 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
-
-  // Mobil Tab Bar active state
-  try{
-    document.querySelectorAll("#tabbar .tb-btn").forEach(b=>{
-      b.classList.toggle("active", b.getAttribute("data-tab")===which);
-    });
-  }catch(e){}
+  setTabbarActive(which);
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
   const slugMap = {
@@ -1403,17 +1523,6 @@ els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
-
-
-// Mobile tabbar (thumb-driven)
-document.querySelectorAll("#tabbar .tb-btn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    const t = btn.getAttribute("data-tab");
-    if(!t) return;
-    setActiveTab(t);
-    window.scrollTo({top:0, behavior:"smooth"});
-  });
-});
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1471,7 +1580,6 @@ els.reloadBtn.addEventListener("click", ()=>load(false));
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
   els.notifPanel.classList.toggle("hidden");
   if(!els.notifPanel.classList.contains("hidden")){
-    fitNotifPanel();
     await loadNotifications();
     // panel açılınca "görüldü" say (sayaç sıfırlansın)
     localStorage.setItem("idt_log_seen_ts", String(Date.now()));
@@ -1485,14 +1593,14 @@ els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
 renderList(); });
 
 els.q.addEventListener("input", ()=>renderList());
-els.btnPlays && els.btnPlays.addEventListener("click", ()=>{
+els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
   renderList(); renderDetails(null);
 });
-els.btnPeople && els.btnPeople.addEventListener("click", ()=>{
+els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
@@ -1747,4 +1855,6 @@ Hata: ${escapeHtml(err.message || String(err))}
   }
 }
 
+initTabbar();
+initChartUX();
 load(false);
