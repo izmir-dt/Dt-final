@@ -1804,11 +1804,14 @@ async function load(isAuto=false, forceRefresh=false){
   if(els.list) els.list.innerHTML = `<div class="empty">⏳ Yükleniyor…</div>`;
   if(els.details) els.details.innerHTML = `<div class="empty">⏳ Yükleniyor…</div>`;
   activeId=null; selectedItem=null;
-  // 1) Cache'den oku (5dkz)
+
+  try{
+    // 1) Cache'den oku (5dk)
     const cached = cacheGet(CACHE_MAIN_KEY);
-    const fresh = !forceRefresh && cacheFresh(cached, 5*60*1000);
-    if(fresh){
-      rawRows = fresh;
+    const freshData = (!forceRefresh) ? cacheFresh(cached, 5*60*1000) : null;
+
+    if(freshData){
+      rawRows = freshData;
       const when = new Date(cached.timestamp).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
       setStatus(`✅ Hazır (cache) • ${when}`, "ok");
     }else{
@@ -1820,12 +1823,12 @@ async function load(isAuto=false, forceRefresh=false){
       }
       cacheSet(CACHE_MAIN_KEY, rawRows);
     }
-rows = expandRowsByPeople(rawRows);
+
+    rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
     roles = groupByRole(rows);
     playsList = plays.map(p=>p.title);
-
 
     renderList();
     renderDetails(null);
@@ -1859,6 +1862,7 @@ rows = expandRowsByPeople(rawRows);
       people = groupByPerson(rows);
       roles = groupByRole(rows);
       playsList = plays.map(p=>p.title);
+
       renderList();
       renderDetails(null);
       distribution = computeDistribution();
@@ -1869,24 +1873,16 @@ rows = expandRowsByPeople(rawRows);
       renderPlayOptions();
       renderIntersection();
       renderKpis();
-      setStatus("⚠️ Bağlantı zayıf • Son kaydedilen veriler gösteriliyor", "warn");
-      loadNotifications();
+
+      const when = new Date(cached.timestamp).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+      setStatus(`⚠️ Bağlantı sorunu • Cache gösteriliyor • ${when}`, "warn");
+      // bildirimleri deneyelim (ayrı endpoint)
+      try{ loadNotifications(); }catch(e){}
       return;
     }
-    setStatus("⛔ Veri çekilemedi", "bad");
-    els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
-<b>Veri çekilemedi.</b>
-
-1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
-2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
-
-Hata: ${escapeHtml(err.message || String(err))}
-</div>`;
-    els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
-    els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    els.intersectionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+    setStatus("⛔ Veri yüklenemedi. Sheet paylaşımını ve bağlantıyı kontrol et.", "bad");
   }
+}
 }
 
 
