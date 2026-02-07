@@ -2016,7 +2016,13 @@ function initKpiShortcuts(){
     });
   }
 }
-initKpiShortcuts();
-initTabbar();
 
-load(false);
+// ---- expose critical functions (prevent scope issues) ----
+try{ window.load = load; }catch(e){}
+try{ window.renderDetails = renderDetails; }catch(e){}
+try{ window.loadNotifications = loadNotifications; }catch(e){}
+window.addEventListener('DOMContentLoaded', ()=>{
+  try{ initKpiShortcuts(); }catch(e){console.error(e)}
+  try{ initTabbar(); }catch(e){console.error(e)}
+  try{ load(false); }catch(e){console.error(e)}
+});
