@@ -909,7 +909,6 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   .nav{ display:none !important; }
   .tabbar{
     display:flex;
-    touch-action: manipulation;
     position:fixed;
     left:12px; right:12px; bottom:12px;
     height:64px;
@@ -922,7 +921,6 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     pointer-events:auto;
   }
   .tabbar .tb{
-    touch-action: manipulation;
     flex:1;
     border:0;
     background:transparent;
@@ -945,15 +943,11 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
 /* --- Mobile: Liste yatay kaydırma (kart carousel) --- */
 @media (max-width: 980px){
   #list{
-    display:flex !important;
-    flex-direction:row !important;
+    display:flex;
+    flex-direction:column;
     gap:12px;
-    overflow-x:auto;
-    overflow-y:hidden;
-    scroll-snap-type:x mandatory;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom:10px;
-  }
+    overflow:visible;
+}
   #list .item{
     min-width: 78vw;
     max-width: 78vw;
@@ -964,18 +958,56 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
 }
 
 
-/* --- Inline play details accordion (mobile) --- */
-.inlineDetails{ margin-top:10px; border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%); border-radius:14px; background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%); overflow:hidden; }
-.inlineDetails.hidden{ display:none; }
-.inlineHd{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%); }
-.inlineTitle{ font-weight:800; }
-.inlineBody{ padding:10px 12px; }
+/* ----- Smooth theme transitions ----- */
+body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+
+/* ----- Mobile: table -> stacked cards (requires td[data-label]) ----- */
 @media (max-width: 768px){
-  .inlineBody table, .inlineBody thead, .inlineBody tbody, .inlineBody th, .inlineBody td, .inlineBody tr { display:block; }
-  .inlineBody thead tr{ position:absolute; top:-9999px; left:-9999px; }
-  .inlineBody tr{ border:1px solid var(--line); margin-bottom:10px; border-radius:12px; padding:10px; background: var(--card); }
-  .inlineBody td{ border:none; position:relative; padding-left:50%; text-align:right; }
-  .inlineBody td:before{ content: attr(data-label); position:absolute; left:10px; width:45%; text-align:left; font-weight:700; color:var(--muted); }
+  .table, .table thead, .table tbody, .table th, .table td, .table tr{ display:block; }
+  .table thead tr{ position:absolute; top:-9999px; left:-9999px; }
+  .table tbody tr{
+    border:1px solid var(--line);
+    margin-bottom:12px;
+    border-radius:var(--r2);
+    padding:10px;
+    background:var(--card);
+  }
+  .table tbody td{
+    border:none;
+    position:relative;
+    padding:8px 0 8px 50%;
+    text-align:right;
+    white-space:normal;
+  }
+  .table tbody td:before{
+    content: attr(data-label);
+    position:absolute;
+    left:10px;
+    width:45%;
+    text-align:left;
+    font-weight:800;
+    color:var(--muted);
+  }
+}
+
+/* ----- Notifications: mobile safe + click-outside close ----- */
+.backdrop{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:79;
+}
+@media (max-width: 768px){
+  .notifPanel{
+    position:fixed !important;
+    left:10px; right:10px;
+    top:78px;
+    bottom:88px;
+    width:auto !important;
+    max-height:none !important;
+    overflow:auto;
+  }
 }
 
 </style>
@@ -1022,6 +1054,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
           </div>
         </div>
       </div>
+      <div id="notifBackdrop" class="backdrop hidden" aria-hidden="true"></div>
       <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
     </div>
   </div>
@@ -1103,6 +1136,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
           <div class="input" title="Ara">
             🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/>
           </div>
+          <button class="btn" id="dCopy">📋 Excel'e Kopyala</button>
           <button class="btn" id="dClear">Temizle</button>
         </div>
         <div id="distributionBox"></div>
@@ -1261,6 +1295,7 @@ const els = {
   advInter: el("advInter"),
   notifBtn: el("notifBtn"),
   notifPanel: el("notifPanel"),
+  notifBackdrop: el("notifBackdrop"),
   notifCount: el("notifCount"),
   notifList: el("notifList"),
   notifRefresh: el("notifRefresh"),
@@ -1293,6 +1328,7 @@ const els = {
 
   dq: el("dq"),
   dClear: el("dClear"),
+  dCopy: el("dCopy"),
   distributionBox: el("distributionBox"),
 
   p1: el("p1"),
@@ -1935,6 +1971,59 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
+
+function mobileExpandHtml(it){
+  // Mobilde seçilen öğenin detayını kartın hemen altında göster
+  const maxRows = 60; // performans için
+  if(activeMode==="plays"){
+    const rowsSorted=[...it.rows].sort((a,b)=>
+      (a.category||"").localeCompare(b.category||"","tr") ||
+      (a.role||"").localeCompare(b.role||"","tr") ||
+      (a.person||"").localeCompare(b.person||"","tr")
+    ).slice(0, maxRows);
+    return `
+      <div class="expand">
+        <div class="small" style="margin:8px 0 6px;color:var(--muted)">Ekip (ilk ${rowsSorted.length}/${it.rows.length})</div>
+        <table class="table">
+          <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
+          <tbody>
+            ${rowsSorted.map(r=>`
+              <tr>
+                <td data-label="Kategori">${escapeHtml(r.category)}</td>
+                <td data-label="Görev">${escapeHtml(r.role)}</td>
+                <td data-label="Kişi">${escapeHtml(r.person)}${personTag(r.person)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // Kişi / Görev Ataması modları
+  const rs=[...it.rows].sort((a,b)=>
+    (a.play||"").localeCompare(b.play||"","tr") ||
+    (a.category||"").localeCompare(b.category||"","tr") ||
+    (a.role||"").localeCompare(b.role||"","tr")
+  ).slice(0, maxRows);
+
+  return `
+    <div class="expand">
+      <div class="small" style="margin:8px 0 6px;color:var(--muted)">Görev aldığı oyunlar (ilk ${rs.length}/${it.rows.length})</div>
+      <table class="table">
+        <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th></tr></thead>
+        <tbody>
+          ${rs.map(r=>`
+            <tr>
+              <td data-label="Oyun"><b>${escapeHtml(r.play||"")}</b></td>
+              <td data-label="Kategori">${escapeHtml(r.category||"")}</td>
+              <td data-label="Görev">${escapeHtml(r.role||"")}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderList(){
   const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
@@ -1969,24 +2058,14 @@ function renderList(){
       </div>
       <div class="chips">${chips}${more}</div>
     `;
+    if(isMobile() && isActive){
+      div.insertAdjacentHTML("beforeend", mobileExpandHtml(it));
+    }
     div.addEventListener("click", ()=>{
       activeId=it.id;
       selectedItem = it;
       renderList();
       renderDetails(it);
-
-      if(isMobile() && activeMode==="plays"){
-        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
-        activePlayFilter = it.title;
-        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
-
-        // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
-        // Modal içine aynı içeriği basıyoruz
-        openMobileModal(els.details.innerHTML);
-
-        // Geri tuşu: modal kapansın
-        history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
-      }
 
     });
     els.list.appendChild(div);
@@ -2009,7 +2088,7 @@ function renderDetails(it){
       <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
-          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
+          ${rowsSorted.map(r=>`<tr><td data-label="Kategori">${escapeHtml(r.category)}</td><td data-label="Görev">${escapeHtml(r.role)}</td><td data-label="Kişi">${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
     `;
@@ -2048,10 +2127,12 @@ function toTSVFromSelected(){
       (a.person||"").localeCompare(b.person||"","tr")
     );
     const playTitle = selectedItem.title || "";
-    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
-    for(let i=0;i<rowsSorted.length;i++){
-      const r = rowsSorted[i];
-      lines.push([i===0?playTitle:"", r.category||"", r.role||"", r.person||""].join("	"));
+    const lines=[];
+    // Oyun adı tek kez üstte başlık gibi
+    lines.push(["Oyun", playTitle].join("\t"));
+    lines.push(["Kategori","Görev","Kişi"].join("\t"));
+    for(const r of rowsSorted){
+      lines.push([r.category||"", r.role||"", r.person||""].join("\t"));
     }
     return lines.join("\n");
   } else {
@@ -2060,7 +2141,8 @@ function toTSVFromSelected(){
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr")
     );
-    const lines=[["Oyun","Kategori","Görev"].join("\t")];
+    const personName = selectedItem.title || "";
+    const lines=[["Kişi", personName].join("\t"), ["Oyun","Kategori","Görev"].join("\t")];
     for(const r of rs){
       lines.push([r.play||"", r.category||"", r.role||""].join("\t"));
     }
@@ -2069,6 +2151,7 @@ function toTSVFromSelected(){
 }
 
 /* ---------- charts ---------- */
+
 function roundRect(ctx, x, y, w, h, r){
   const rr = Math.min(r, w/2, h/2);
   ctx.beginPath();
@@ -2635,10 +2718,10 @@ function renderDistribution(){
       <tbody>
         ${filtered.map(d=>`
           <tr>
-            <td><b>${escapeHtml(d.person)}</b></td>
-            <td>${d.plays.length}</td>
-            <td>${escapeHtml(d.plays.join(" • "))}</td>
-            <td>${escapeHtml(d.roles.join(", "))}</td>
+            <td data-label="Kişi"><b>${escapeHtml(d.person)}</b></td>
+            <td data-label="Oyun Sayısı">${d.plays.length}</td>
+            <td data-label="Oyunlar">${escapeHtml(d.plays.join(" • "))}</td>
+            <td data-label="Görevler">${escapeHtml(d.roles.join(", "))}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -2773,6 +2856,34 @@ function setActiveTab(which){
   }
 }
 
+
+/* ---------- KPI quick filters (Panel cards) ---------- */
+function applyPanelModeFromKPI(mode){
+  setActiveTab("Panel");
+  if(mode==="plays"){
+    activeMode="plays"; showAssignments=false; els.qScope.value="play";
+  }else if(mode==="people"){
+    activeMode="people"; showAssignments=false; els.qScope.value="person";
+  }else if(mode==="rows"){
+    // Görev Ataması = kişi listesi ama satır (görev ataması) modunda
+    activeMode="people"; showAssignments=true; els.qScope.value="role";
+  }else if(mode==="figuran"){
+    setActiveTab("Figuran");
+    return;
+  }
+  activeId=null; selectedItem=null;
+  renderList(); renderDetails(null);
+  // mobilde arama alanına yakın bir yere kaydır
+  if(isMobile()){ try{ els.q.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){} }
+}
+// Click + keyboard
+document.querySelectorAll('.kpi[data-mode]').forEach(card=>{
+  const mode = card.getAttribute("data-mode");
+  const go = ()=>applyPanelModeFromKPI(mode);
+  card.addEventListener("click", go);
+  card.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } });
+});
+
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
@@ -2829,18 +2940,44 @@ if(els.advBtn && els.advMenu){
 
 
 // Bildirimler (LOG)
-els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
-  els.notifPanel.classList.toggle("hidden");
-  if(!els.notifPanel.classList.contains("hidden")){
-    await loadNotifications();
-  }
+function closeNotif(){
+  if(!els.notifPanel) return;
+  els.notifPanel.classList.add("hidden");
+  els.notifBackdrop && els.notifBackdrop.classList.add("hidden");
+}
+async function openNotif(){
+  if(!els.notifPanel) return;
+  els.notifPanel.classList.remove("hidden");
+  els.notifBackdrop && els.notifBackdrop.classList.remove("hidden");
+  await loadNotifications();
+}
+
+els.notifBtn && els.notifBtn.addEventListener("click", async (e)=>{
+  e.stopPropagation();
+  const willOpen = els.notifPanel.classList.contains("hidden");
+  if(willOpen) await openNotif(); else closeNotif();
 });
-els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
+els.notifClose && els.notifClose.addEventListener("click", closeNotif);
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
+els.notifBackdrop && els.notifBackdrop.addEventListener("click", closeNotif);
+document.addEventListener("click", (e)=>{
+  if(!els.notifPanel || els.notifPanel.classList.contains("hidden")) return;
+  if(els.notifPanel.contains(e.target) || (els.notifBtn && els.notifBtn.contains(e.target))) return;
+  closeNotif();
+});
 
 els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
 els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
-els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
+els.qScope && els.qScope.addEventListener("change", ()=>{
+  localStorage.setItem("idt_qscope", els.qScope.value);
+  if(els.qScope.value==="play"){ activeMode="plays"; showAssignments=false; }
+  else if(els.qScope.value==="person"){ activeMode="people"; showAssignments=false; }
+  else if(els.qScope.value==="role"){ activeMode="people"; showAssignments=true; }
+  else { /* all */ activeMode="plays"; showAssignments=false; }
+  activeId=null; selectedItem=null;
+  renderList();
+  renderDetails(null);
+});
 els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
@@ -2997,6 +3134,24 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
 });
 
 els.dq.addEventListener("input", renderDistribution);
+
+if(els.dCopy){
+  els.dCopy.addEventListener("click", async ()=>{
+    const q=els.dq.value.trim().toLowerCase();
+    const filtered = distribution.filter(d=>{
+      if(!q) return true;
+      const hay=(d.person+" "+d.plays.join(" ")+" "+d.roles.join(" ")).toLowerCase();
+      return hay.includes(q);
+    });
+    if(!filtered.length){ setStatus("⚠️ Kopyalanacak veri yok", "warn"); return; }
+    const lines=[["Kişi","Oyun Sayısı","Oyunlar","Görevler"].join("\t")];
+    for(const d of filtered){
+      lines.push([d.person, String(d.plays.length), d.plays.join(" • "), d.roles.join(", ")].join("\t"));
+    }
+    await copyText(lines.join("\n"));
+  });
+}
+
 els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution(); });
 
 els.fq.addEventListener("input", renderFiguran);
