@@ -1899,23 +1899,7 @@ async function load(isAuto=false, forceRefresh=false){
     setStatus("❌ Veri yüklenemedi. Sheet paylaşımı / internet / Apps Script erişimini kontrol et.", "bad");
     els.list.innerHTML = `<div class="empty">Veri yüklenemedi.<br><span class="small muted">${escapeHtml(err.message||err)}</span></div>`;
     renderDetails(null);
-  }
-}catch(err){
-    console.error(err);
-    setStatus("⛔ Veri çekilemedi", "bad");
-    els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
-<b>Veri çekilemedi.</b>
-
-1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
-2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
-
-Hata: ${escapeHtml(err.message || String(err))}
-</div>`;
-    els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
-    els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    els.intersectionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-  }
+  
 }
 
 
