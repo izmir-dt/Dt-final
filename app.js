@@ -1,1137 +1,13 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
-  <style>
 
-:root{
-      --bg:#e9ded1;            /* premium warm ivory */
-      --card:#fbf7f1;
-      --text:#16161a;
-      --muted:#5a5560;
-      --line:#dccbb7;
-
-      --accent:#7a1e2c;        /* bordo */
-      --accent2:#c07a2a;       /* altın */
-      --ok:#18794e;
-      --warn:#b45309;
-      --bad:#b42318;
-      --shadow:0 10px 30px rgba(24,16,8,.12);
-      --radius:18px;
-      --radius2:14px;
-    }
-
-
-/* --- Alias tokens (compat) --- */
-:root{
-  --r: var(--radius);
-  --r2: var(--radius2);
-  --good: var(--ok);
-  --border: var(--line);
-  --primary: var(--accent);
-  --ink: var(--text);
-  --chip: color-mix(in srgb, var(--card) 82%, var(--bg) 18%);
-}
-html[data-theme="dark"]{
-  --border: var(--line);
-  --primary: var(--accent);
-  --ink: var(--text);
-}
-html[data-theme="dark"]{
-      --bg:#0b1020;
-      --card:#0f172a;
-      --text:#f1f5f9;
-      --muted:#cbd5e1;
-      --line:#1f2a44;
-
-      --accent:#60a5fa;
-      --accent2:#93c5fd;
-
-      --shadow: 0 18px 44px rgba(0,0,0,.55);
-      --chip:#111827;
-
-      --soft1:rgba(96,165,250,.14);
-      --soft2:rgba(34,197,94,.14);
-      --soft3:rgba(245,158,11,.14);
-      --soft4:rgba(236,72,153,.14);
-
-      --tabActiveBg: rgba(148,163,184,.12);
-      --tabActiveBorder: rgba(148,163,184,.25);
-      --tabActiveText: #f1f5f9;
-    }
-
-    *{box-sizing:border-box}
-    body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;color:var(--text);background:var(--bg);}
-    a{color:inherit}
-    header{
-      position:sticky;top:0;z-index:40;
-      background: color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid var(--line);
-    }
-    .wrap{max-width:1220px;margin:0 auto;padding:16px}
-    .top{display:flex;align-items:center;flex-wrap:wrap;
-      padding:12px 16px;justify-content:space-between;gap:16px;}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{
-      width:44px;height:44px;border-radius:14px;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
-      box-shadow:var(--shadow);
-      display:grid;place-items:center;color:#fff;font-weight:900;
-      letter-spacing:.6px;
-    }
-    .brand h1{margin:0;font-size:14px;line-height:1.25}
-    .brand .sub{margin-top:3px;color:var(--muted);font-size:12px}
-    .actions{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;margin-left:auto;}
-
-    .notif{position:relative}
-    .badge{
-      margin-left:6px;
-      background:var(--accent);
-      color:#fff;
-      border-radius:999px;
-      padding:2px 7px;
-      font-size:11px;
-      font-weight:800;
-    }
-    .hidden{display:none !important}
-    .notifPanel{
-      position:absolute;
-      right:0;
-      top:46px;
-      width:min(420px, 92vw);
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      z-index:80;
-    }
-    .notifHd{
-      padding:12px;
-      border-bottom:1px solid var(--line);
-      display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
-      background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
-    }
-    .notifBd{max-height:52vh;overflow:auto;padding:10px}
-
-    /* Mobilde bildirim paneli viewport dışına taşmasın */
-    @media (max-width: 760px){
-      .notifPanel{
-        position:fixed;
-        top:76px;
-        left:12px;
-        right:12px;
-        width:auto;
-        max-height:78vh;
-      }
-      .notifBd{max-height:calc(78vh - 70px)}
-    }
-    .logItem{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 10px;
-      margin-bottom:8px;
-      background:color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
-    }
-    .logItem .meta{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.35}
-    .tag{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:4px 8px;border-radius:999px;
-      border:1px solid var(--line);
-      font-size:12px;font-weight:700;
-      background:var(--chip);
-      color:var(--text);
-      margin-left:8px;
-      white-space:nowrap;
-    }
-    .tag.retired{
-      border-color: color-mix(in srgb, var(--accent2) 35%, var(--line) 65%);
-      background: color-mix(in srgb, var(--accent2) 10%, var(--card) 90%);
-      color: color-mix(in srgb, var(--text) 60%, var(--accent) 40%);
-    }
-
-    .pill{
-      padding:8px 10px;border-radius:999px;
-      border:1px solid var(--line);
-      background:var(--card);
-      font-size:12px;color:var(--muted);
-      display:flex;gap:8px;align-items:center;
-      max-width:60vw; overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    }
-    .btn{
-      border:1px solid var(--line);
-      background:var(--card);
-      color:var(--text);
-      padding:9px 11px;border-radius:12px;
-      cursor:pointer;
-      display:inline-flex;gap:8px;align-items:center;
-      text-decoration:none;
-      font-size:13px;
-    }
-    .btn:hover{border-color:color-mix(in srgb, var(--line) 55%, var(--accent) 45%)}
-    .btn.primary{border-color:color-mix(in srgb, var(--accent) 35%, var(--line) 65%);background:color-mix(in srgb, var(--accent) 8%, var(--card) 92%);color:var(--accent2)}
-    .btn.good{border-color:color-mix(in srgb, var(--good) 30%, var(--line) 70%);background:color-mix(in srgb, var(--good) 7%, var(--card) 93%);color:var(--good)}
-
-    .nav{
-      display:flex;gap:8px;flex-wrap:wrap;
-      padding:0 16px 12px;
-    }
-    .tab{
-      padding:9px 12px;border-radius:12px;
-      border:1px solid var(--line);
-      background:var(--card);
-      cursor:pointer;font-size:13px;
-    }
-    .tab.active{
-      border-color:var(--tabActiveBorder);
-      background:var(--tabActiveBg);
-      color:var(--tabActiveText);
-    }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:12px 12px 10px;
-      border-bottom:1px solid var(--line);
-      display:flex;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:wrap;
-      background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
-    }
-    .card .hd h2{margin:0;font-size:14px}
-    .card .bd{padding:12px}
-    .grid{display:grid;gap:12px;grid-template-columns: 1.1fr .9fr;margin-top:12px}
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr} header{position:relative} }
-
-    .kpis{
-      display:grid;gap:12px;
-      grid-template-columns:repeat(4,1fr);
-      margin-bottom:12px;
-    }
-    @media (max-width: 980px){ .kpis{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width: 520px){ .kpis{grid-template-columns:1fr}}
-    .kpi{
-display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  padding:18px 18px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.06);
-  box-shadow: var(--shadow);
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-}
-    .kpi .label{color:var(--muted);font-size:12px}
-    .kpi .value{font-size:22px;font-weight:900;letter-spacing:.2px}
-    .kpi .icon{
-width:48px;
-  height:48px;
-  display:grid;
-  place-items:center;
-  border-radius:14px;
-  font-size:26px; /* bigger icon */
-  line-height:1;
-  flex:0 0 auto;
-  margin-left:18px;
-  background: rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.06);
-}
-.kpi > div:first-child{flex:1; min-width:0;}
-
-    /* KPI cards as shortcuts (Panel / Analiz / Figüran / Grafikler) */
-    .kpi[data-go]{cursor:pointer; user-select:none;}
-    .kpi[data-go]:hover{transform:translateY(-1px);}
-    .kpi[data-go]:active{transform:translateY(0);}
-    .kpi[data-go]:focus{outline:3px solid rgba(192,122,42,.35); outline-offset:2px;}
-
-    .kpi.soft1{background:linear-gradient(135deg,var(--soft1), var(--card));}
-    .kpi.soft2{background:linear-gradient(135deg,var(--soft2), var(--card));}
-    .kpi.soft3{background:linear-gradient(135deg,var(--soft3), var(--card));}
-    .kpi.soft4{background:linear-gradient(135deg,var(--soft4), var(--card));}
-
-    .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center;margin-left:auto;margin-right:auto}
-    .input{
-      display:flex;align-items:center;gap:8px;min-width:260px;max-width:560px;flex:0 1 560px;
-      padding:10px 12px;border-radius:12px;
-      border:1px solid var(--line);
-      background:var(--card);
-      min-width: 190px;
-      max-width: 640px;
-      flex:1 1 260px;
-    }
-    .input input, .input select{
-      width:100%;background:transparent;border:0;outline:0;
-      color:var(--text);font-size:14px;
-      appearance:none;
-    }
-    /* Dark-mode select dropdown readability */
-    select, option{
-      color:var(--text);
-      background: color-mix(in srgb, var(--card) 95%, var(--bg) 5%);
-    }
-    html[data-theme="dark"] select, html[data-theme="dark"] option{
-      background:#0f172a;
-      color:#e5e7eb;
-    }
-
-    .seg{
-      display:inline-flex;align-items:center;
-      border:1px solid var(--line);
-      border-radius:12px;
-      overflow:hidden;
-      background:var(--card);
-    }
-    .seg button{
-      border:0;background:transparent;color:var(--muted);
-      padding:10px 12px;cursor:pointer;font-size:13px;
-    }
-    .seg button.active{
-      color:var(--text);
-      background: color-mix(in srgb, var(--card) 78%, var(--bg) 22%);
-      font-weight:800;
-    }
-
-    .list{display:flex;flex-direction:column;gap:10px}
-    .item{
-      padding:12px;border-radius:var(--r2);
-      border:1px solid var(--line);
-      background:var(--card);
-      cursor:pointer;
-    }
-    .item:hover{border-color:color-mix(in srgb, var(--line) 60%, var(--accent) 40%)}
-    .item .t{display:flex;align-items:flex-start;justify-content:flex-start;gap:10px}
-    .name{font-weight:850; letter-spacing:.2px}
-    .meta{margin-top:4px;color:var(--muted);font-size:12px}
-    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-    .chip{
-      padding:6px 9px;border-radius:999px;
-      border:1px solid var(--line);
-      background:var(--chip);
-      font-size:12px;color:var(--muted);
-      max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    }
-    .chip.warn{border-color:color-mix(in srgb, var(--warn) 30%, var(--line) 70%);background:color-mix(in srgb, var(--warn) 10%, var(--chip) 90%);color:color-mix(in srgb, var(--warn) 65%, var(--text) 35%)}
-    .chip.good{border-color:color-mix(in srgb, var(--good) 30%, var(--line) 70%);background:color-mix(in srgb, var(--good) 10%, var(--chip) 90%);color:var(--good)}
-    .chip.bad{border-color:color-mix(in srgb, var(--bad) 30%, var(--line) 70%);background:color-mix(in srgb, var(--bad) 10%, var(--chip) 90%);color:var(--bad)}
-    .empty{
-      padding:16px;border-radius:14px;
-      border:1px dashed color-mix(in srgb, var(--line) 70%, var(--muted) 30%);
-      color:var(--muted);text-align:center;
-      background:var(--card);
-    }
-    .title{margin:0 0 6px;font-size:18px}
-    .subtitle{margin:0 0 12px;color:var(--muted);font-size:13px}
-
-    .table{
-      width:100%;
-      border-collapse:separate;border-spacing:0;
-      border:1px solid var(--line);
-      border-radius:14px;overflow:hidden;
-      background:var(--card);
-    }
-    .table th,.table td{
-      padding:10px 10px;border-bottom:1px solid var(--line);
-      text-align:left;font-size:13px;vertical-align:top;
-    }
-    .table th{color:var(--muted);font-weight:800;background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%)}
-    .table tr:last-child td{border-bottom:0}
-    footer{padding:12px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);background:var(--card)}
-    code{background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%);padding:2px 6px;border-radius:8px;border:1px solid var(--line)}
-    .small{color:var(--muted);font-size:12px}
-
-    /* Charts */
-    .chartsNav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-    .chartsNav .tab{border-radius:999px}
-    canvas{width:100%;height:340px;display:block;border-radius:14px;border:1px solid var(--line);background:var(--card);cursor:pointer}
-
-    .drawer{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:var(--card);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      position:sticky; top:98px;
-      height: fit-content;
-      min-height: 140px;
-    }
-    .drawer .hd{padding:12px;border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;gap:10px;align-items:center}
-    .drawer .bd{padding:12px}
-    .drawer.hidden{display:none}
-    .drawerTitle{font-weight:900}
-    .drawerSub{color:var(--muted);font-size:12px;margin-top:2px}
-    .miniList{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:60vh;overflow:auto}
-    .miniItem{border:1px solid var(--line);border-radius:14px;padding:10px;background:color-mix(in srgb, var(--card) 88%, var(--bg) 12%)}
-    .miniItem b{display:block}
-  
-
-    /* ---- UI tweaks ---- */
-    .seg button{ padding:12px 16px; font-size:15px; }
-    .seg button.active{ box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 55%, transparent); }
-    input, select, textarea{ color: var(--text); background: var(--card); border:1px solid var(--border); }
-    input::placeholder, textarea::placeholder{ color: color-mix(in srgb, var(--text) 45%, transparent); }
-    table{ color: var(--text); }
-    th, td{ color: var(--text); }
-    .muted{ color: var(--muted); }
-
-    /* Mobile detail as modal */
-    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; }
-    .modal{ position:fixed; left:50%; transform:translateX(-50%); bottom:12px; width:min(980px, calc(100% - 24px));
-            max-height:80vh; background:var(--card); border:1px solid var(--border); border-radius:16px; z-index:60;
-            box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow:hidden; }
-    .modalHead{ display:flex; align-items:center; justify-content:flex-start; padding:12px 12px; border-bottom:1px solid var(--border); }
-    .modalTitle{ font-weight:800; }
-    .modalBody{ padding:12px; overflow:auto; max-height:calc(80vh - 54px); }
-    .hidden{ display:none !important; }
-
-    @media (min-width: 981px){
-      /* Desktop: keep modal hidden */
-      #mobileModal, #mobileOverlay{ display:none !important; }
-    }
-
-/* --- UI sadeleştirme: sadece Panel + Grafikler --- */
-.tabs button#tabDistribution,
-.tabs button#tabIntersection,
-.tabs button#tabFiguran { display:none !important; }
-
-/* Dark mode düğmesini gizle (tema sabit) */
-
-
-/* Mobilde detay modalı daha geniş ve okunur */
-@media (max-width: 900px){
-  .modal{ width:min(92vw, 720px) !important; }
-  .modalContent{ max-height: 75vh !important; overflow:auto; }
-
-  /* Grafikler: mobilde tek kolon + çizimler taşmasın */
-  #viewCharts .grid{ grid-template-columns: 1fr !important; }
-  /* Mobilde canvas yerine dokunmatik liste kullanacağız */
-  #chartMain{ display:none !important; }
-  canvas{ max-width:100%; height:auto; }
-
-  /* Mobil modal içindeki tablolar yatay kaydırılabilir olsun */
-  #mobileModalBd table{ display:block; width:100%; overflow-x:auto; }
-}
-
-/* ---- Mobil Grafik Listesi (Canvas alternatifi) ---- */
-.mobileChartWrap{ display:none; }
-.mobileChartList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
-.chipRow{ display:flex; align-items:center; justify-content:flex-start; gap:10px; padding:12px 12px; border-radius:14px; cursor:pointer; user-select:none;
-  border:1px solid rgba(0,0,0,.08); box-shadow: 0 6px 20px rgba(0,0,0,.06); }
-.chipLeft{ display:flex; align-items:center; gap:10px; min-width:0; }
-.dot{ width:14px; height:14px; border-radius:999px; flex:0 0 14px; box-shadow:0 0 0 4px rgba(255,255,255,.35) inset; }
-.chipTitle{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:62vw; }
-.chipCount{ font-weight:900; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.35); }
-
-@media (max-width: 900px){
-  .mobileChartWrap{ display:block; }
-}
-
-/* Grafik yazıları daha okunur */
-.chartWrap svg text{ font-size: 12px; fill: var(--text); }
-
-
-/* --- Notifications (chat bubble) --- */
-.notif-bubble{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  padding:8px 10px;
-  margin:8px 0;
-  border-radius:14px;
-  background:rgba(255,255,255,.78);
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:0 6px 14px rgba(0,0,0,.06);
-  cursor:pointer
-}
-.notif-bubble:hover{transform:translateY(-1px)}
-.notif-bubble.seen{opacity:.62}
-.notif-type{
-  width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:10px;
-  background:rgba(0,0,0,.05);
-  font-size:15px;
-  flex:0 0 28px
-}
-.notif-title{font-weight:800;margin-bottom:2px;font-size:13px;letter-spacing:.2px}
-.notif-msg{margin:2px 0 6px 0;font-size:13px;line-height:1.35}
-.notif-meta{font-size:12px;opacity:.8}
-.notif-ts{font-size:11px;opacity:.65;margin-top:6px}
-
-/* Mobil breadcrumb (oyun -> ekip) */
-.mobile-breadcrumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.55);backdrop-filter: blur(6px);}
-.mobile-breadcrumb .mb-text{font-weight:600;color:var(--ink);opacity:.9}
-@media (max-width: 980px){
-  .mobile-breadcrumb{position:sticky;top:8px;z-index:5}
-}
-
-
-
-    /* --- Responsive: mobilde canvas gizle, renkli liste göster --- */
-    @media (max-width: 820px){
-  #chartMain{ display:none !important; }
-  .mobileChartWrap{ display:block !important; }
-  .drawer{ position:relative !important; top:auto !important; inset:auto !important; border-radius: var(--r) !important; z-index:auto !important; }
-}
-.miniItem{ padding:14px !important; }
-      .miniItem b{ font-size:16px; }
-    }
-
-
-
-body.drawerOpen{ overflow:auto; }
-
-
-
-/* Enforce theme text colors */
-body{ background:var(--bg); color:var(--text); }
-a{ color:inherit; }
-.table th, .table td{ color:var(--text); }
-.btn{ color:var(--text); }
-.input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
-
-
-
-    /* Dark mode – bazı tarayıcılarda siyah kalan metinleri zorla düzelt */
-    html[data-theme="dark"] body{ color: var(--text); }
-    html[data-theme="dark"] button,
-    html[data-theme="dark"] input,
-    html[data-theme="dark"] select,
-    html[data-theme="dark"] textarea,
-    html[data-theme="dark"] option,
-    html[data-theme="dark"] label,
-    html[data-theme="dark"] summary,
-    html[data-theme="dark"] .btn,
-    html[data-theme="dark"] .input,
-    html[data-theme="dark"] .table,
-    html[data-theme="dark"] .table td,
-    html[data-theme="dark"] .table th,
-    html[data-theme="dark"] .modal,
-    html[data-theme="dark"] .drawer{
-      color: var(--text);
-    }
-    html[data-theme="dark"] .subtitle,
-    html[data-theme="dark"] .muted,
-    html[data-theme="dark"] .pill,
-    html[data-theme="dark"] footer{
-      color: var(--muted);
-    }
-    /* Safari/Chrome autofill siyah yazı bug'ı */
-    html[data-theme="dark"] input:-webkit-autofill,
-    html[data-theme="dark"] textarea:-webkit-autofill,
-    html[data-theme="dark"] select:-webkit-autofill{
-      -webkit-text-fill-color: var(--text) !important;
-      transition: background-color 999999s ease-in-out 0s;
-    }
-    /* SVG içinde text (ikon vb.) */
-    html[data-theme="dark"] svg text{ fill: var(--text); }
-
-
-
-    #distributionBox th:nth-child(2){white-space:nowrap; width:110px}
-
-
-/* UX: tıklanabilir liste öğeleri */
-.miniItem, .miniRow{
-  cursor:pointer;
-}
-.miniItem:hover, .miniRow:hover{
-  filter: brightness(1.04);
-}
-
-@media (max-width: 720px){.actions{flex-wrap:wrap;margin-left:0} .top{flex-wrap:wrap;justify-content:flex-start}}
-
-/* --- Polishing: arama scope + temizle --- */
-.input{position:relative}
-.q-scope{
-  border:1px solid var(--line);
-  background: color-mix(in srgb, var(--card) 90%, var(--bg) 10%);
-  color:var(--text);
-  border-radius:10px;
-  padding:8px 10px;
-  font-size:12px;
-  font-weight:700;
-  max-width:140px;
-}
-.q-clear{
-  border:0;
-  background:transparent;
-  color:var(--muted);
-  cursor:pointer;
-  font-size:16px;
-  line-height:1;
-  padding:6px 8px;
-  border-radius:10px;
-}
-.q-clear:hover{ background: color-mix(in srgb, var(--card) 75%, var(--bg) 25%); color:var(--text); }
-
-/* --- Polishing: Gelişmiş menüsü --- */
-.menu{ position:relative; }
-.menuPanel{
-  position:absolute;
-  right:0;
-  top:46px;
-  width:min(280px, 92vw);
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  box-shadow:var(--shadow);
-  overflow:hidden;
-  z-index:90;
-}
-.menuPanel .mi{
-  padding:10px 12px;
-  cursor:pointer;
-  border-bottom:1px solid var(--line);
-  display:flex; align-items:center; justify-content:space-between;
-  font-weight:700;
-}
-.menuPanel .mi:last-child{border-bottom:0}
-.menuPanel .mi:hover{ background: color-mix(in srgb, var(--card) 78%, var(--bg) 22%); }
-.menuPanel .mi small{ color:var(--muted); font-weight:600; }
-
-/* Mobil: modal head sticky */
-@media (max-width: 980px){
-  .modalHead{ position:sticky; top:0; background:var(--card); z-index:2; }
-}
-
-
-/* --- Mobile polishing (layout fixes) --- */
-@media (max-width: 760px){
-  .top{flex-direction:column; align-items:flex-start; gap:10px; padding:10px 12px;}
-  .brand h1{font-size:13px; line-height:1.25;}
-  .actions{width:100%; flex-wrap:wrap; justify-content:flex-start; gap:8px; margin-left:0;}
-  .pill{max-width:100%; width:100%;}
-  .btn{padding:9px 10px; border-radius:12px;}
-  .wrap{padding:12px;}
-  .kpis{grid-template-columns:repeat(2,1fr);}
-  .kpi{padding:14px 14px;}
-}
-/* Tabs: yatay kaydırma (mobil) */
-@media (max-width: 980px){
-  .nav{overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; gap:8px; padding-bottom:10px;}
-  .nav::-webkit-scrollbar{display:none;}
-  .tab{white-space:nowrap;}
-}
-/* Mobile chart list visuals */
-@media (max-width: 900px){
-  .chipRow{border:1px solid color-mix(in srgb, var(--line) 75%, transparent); }
-  .chipTitle{max-width:58vw;}
-}
-
-/* --- Mobile nav: scrollable & Intersection visible --- */
-@media (max-width: 980px){
-  .nav{overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; gap:8px; padding-bottom:10px;}
-  .nav::-webkit-scrollbar{display:none;}
-  .tab{white-space:nowrap;}
-  #tabIntersection{order:2;}
-  #tabFiguran{order:3;}
-  #tabCharts{order:4;}
-  #tabDistribution{order:5;}
-}
-/* --- Overflow safety: no clipped text --- */
-*{ overflow-wrap:anywhere; }
-.name,.meta,.chip,.pill,.btn,.tab,.drawerTitle,.drawerSub,.miniItem b,.miniItem div{ word-break:break-word; }
-.chip,.pill{ max-width:100%; white-space:normal; text-overflow:clip; }
-.table{ display:block; width:100%; overflow-x:auto; }
-.table th,.table td{ white-space:nowrap; }
-@media (min-width: 981px){
-  .table{ display:table; overflow:visible; }
-  .table th,.table td{ white-space:normal; }
-}
-/* --- Arama kapsamı: görünür kutucuk --- */
-.qScopeBox{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
-}
-select.q-scope{
-  border:0;
-  background:transparent;
-  padding:6px 6px;
-  font-weight:900;
-  font-size:13px;
-  color:var(--text);
-  outline:none;
-  cursor:pointer;
-}
-
-/* input satırında düzgün hizalama */
-.filters .input{ gap:10px; flex-wrap:wrap; }
-.filters .input input{ flex:1 1 220px; min-width:220px; }
-
-/* Sadece mobilde Ek Araçlar butonunu kaldır */
-
-/* --- Kapsam seçici: label kalktı, ok eklendi --- */
-.qScopeBox{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 12px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
-}
-.qScopeBox::after{
-  content:"▾";
-  font-weight:900;
-  color:var(--muted);
-  margin-left:2px;
-}
-select.q-scope{
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-  border:0;
-  background:transparent;
-  padding:6px 0;
-  font-weight:900;
-  font-size:13px;
-  color:var(--text);
-  outline:none;
-  cursor:pointer;
-}
-
-
-/* --- Masaüstü sekme sırası: Grafikler 1, Panel 2 --- */
-.nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-#tabCharts{order:1;}
-#tabPanel{order:2;}
-#tabDistribution{order:3;}
-#tabIntersection{order:4;}
-#tabFiguran{order:5;}
-#advBtn{order:6;}
-
-
-/* =========================
-   v26 HOTFIX (SAFE)
-   - Ek Araçlar tamamen kaldır (CSS ile gizle, JS kırılmasın)
-   - Kesişim: tek satır + modern numara badge
-   - Kapsam oku hizası iyileştir
-   ========================= */
-
-/* Ek Araçlar: tamamen gizle */
-#advBtn, #advMenu { display:none !important; }
-.menu { display:none !important; } /* ek araçlar menüsü komple */
-
-/* Kapsam seçici ok hizası (override) */
-.qScopeBox{ position:relative; }
-.qScopeBox::after{
-  content:"▾";
-  position:absolute; right:10px; top:50%;
-  transform:translateY(-50%);
-  pointer-events:none;
-  font-weight:900;
-  color:var(--muted);
-}
-select.q-scope{
-  appearance:none; -webkit-appearance:none; -moz-appearance:none;
-  padding-right:28px !important;
-}
-
-/* Kesişim: input satırı tek satır */
-#viewIntersection .filters .input{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-  flex-wrap:nowrap !important;
-  white-space:nowrap;
-}
-#viewIntersection .filters .input select{
-  min-width:0 !important;
-  flex:1 1 auto !important;
-}
-.numBadge{
-  width:26px;height:26px;display:grid;place-items:center;
-  border-radius:10px;font-weight:900;font-size:13px;
-  background: color-mix(in srgb, var(--accent) 10%, var(--card) 90%);
-  border:1px solid color-mix(in srgb, var(--accent) 22%, var(--line) 78%);
-  color: var(--accent);
-  flex:0 0 auto;
-}
-
-/* =========================
-   NOTIFICATIONS: CONTRAST FIX (v28)
-   ========================= */
-#notifBell{ position:relative; }
-#notifBtn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-}
-#notifBadge{
-  min-width:20px;
-  height:20px;
-  padding:0 6px;
-  border-radius:999px;
-  font-weight:900;
-  font-size:12px;
-  line-height:20px;
-  color: var(--card);
-  background: var(--bad);
-}
-#notifPanel{
-  position:absolute;
-  right:0;
-  top:calc(100% + 10px);
-  width:min(420px, calc(100vw - 24px));
-  max-height:420px;
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background: var(--card);
-  color: var(--text);
-  box-shadow: var(--shadow);
-  padding:10px;
-  z-index:999;
-}
-.notifItem{
-  border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
-  border-radius:12px;
-  padding:10px 12px;
-  margin:8px 0;
-  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
-  color: var(--text);
-}
-.notifTop{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom:6px;
-}
-.notifTop b{ color: var(--text); }
-.notifTop .muted,
-.notifItem .muted{
-  color: var(--muted) !important;
-  opacity:1 !important;
-}
-.notifItem div{ color: var(--text); }
-
-/* dark theme: ensure panel stays dark but text stays light */
-html[data-theme="dark"] #notifPanel{
-  background: color-mix(in srgb, var(--card) 92%, #000 8%);
-  border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
-}
-
-/* =========================
-   NOTIF BUBBLES THEME FIX (v30)
-   Fix: dark theme had white text on light bubble background.
-   ========================= */
-
-/* Base (light) */
-#notifPanel .notif-bubble{
-  background: #ffffff !important;
-  color: #0f172a !important;
-}
-#notifPanel .notif-title,
-#notifPanel .notif-msg,
-#notifPanel .notif-meta,
-#notifPanel .notif-ts{
-  color:#0f172a !important;
-}
-#notifPanel .notif-meta{ color:#334155 !important; opacity:1 !important; }
-#notifPanel .notif-ts{ color:#64748b !important; opacity:1 !important; }
-#notifPanel .notif-type{
-  background: rgba(15,23,42,.06) !important;
-}
-
-/* Seen state: don't fade text; just soften bg */
-#notifPanel .notif-bubble.seen{
-  opacity:1 !important;
-  background: #f8fafc !important;
-  border-color: rgba(15,23,42,.08) !important;
-}
-
-/* Dark theme */
-html[data-theme="dark"] #notifPanel{
-  background: rgba(11,16,32,.96) !important;
-  color:#f8fafc !important;
-}
-html[data-theme="dark"] #notifPanel .notif-bubble{
-  background: rgba(30,41,59,.92) !important;
-  border-color: rgba(148,163,184,.18) !important;
-  color:#f8fafc !important;
-}
-html[data-theme="dark"] #notifPanel .notif-title,
-html[data-theme="dark"] #notifPanel .notif-msg{
-  color:#f8fafc !important;
-}
-html[data-theme="dark"] #notifPanel .notif-meta{
-  color:#cbd5e1 !important;
-  opacity:1 !important;
-}
-html[data-theme="dark"] #notifPanel .notif-ts{
-  color:#94a3b8 !important;
-  opacity:1 !important;
-}
-html[data-theme="dark"] #notifPanel .notif-type{
-  background: rgba(255,255,255,.08) !important;
-}
-html[data-theme="dark"] #notifPanel .notif-bubble.seen{
-  opacity:1 !important;
-  background: rgba(30,41,59,.72) !important;
-}
-<
-/* Manual Excel kopyalama panosu */
-#copyBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:9998}
-#copySheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(720px,92vw);max-height:86vh;overflow:auto;z-index:9999;
-  background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:16px}
-#copySheet .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
-#copySheet textarea{width:100%;min-height:220px;resize:vertical;border-radius:14px;border:1px solid var(--line);padding:12px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:13px;background:transparent;color:var(--text)}
-#copySheet .hint{font-size:13px;color:var(--muted);margin:8px 0 0}
-/style>
-</head>
-<body>
-<header>
-  <div class="top">
-    <div class="brand">
-      <div class="logo">IDT</div>
-      <div>
-        <h1>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</h1>
-        </div>
-    </div>
-    <div class="actions">
-      <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
-      <span id="status" class="pill">⏳ Yükleniyor…</span>
-      <button class="btn" id="reloadBtn">↻ Yenile</button>
-
-      <div class="menu">
-        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
-        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
-          <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
-          <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
-        </div>
-      </div>
-
-      <div class="notif">
-        <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
-          🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
-        </button>
-        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
-          <div class="notifHd">
-            <div>
-              <b>Bildirimler</b>
-              <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
-            </div>
-            <div class="row" style="gap:8px">
-              <button class="btn" id="notifRefresh">↻</button>
-              <button class="btn" id="notifClose">✕</button>
-            </div>
-          </div>
-          <div class="notifBd" id="notifList">
-            <div class="empty">LOG okunuyor…</div>
-          </div>
-        </div>
-      </div>
-      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
-    </div>
-  </div>
-
-  <div class="nav">
-    <button class="tab active" id="tabPanel">Panel</button>
-    <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
-    <button class="tab" id="tabIntersection">Kesişim Analizi</button>
-    <button class="tab" id="tabFiguran">Figüranlar</button>
-    <button class="tab" id="tabCharts">Grafikler</button>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="kpis" id="kpis">
-    <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
-    <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
-    <div class="kpi soft3" data-go="Panel" data-mode="rows" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
-    <div class="kpi soft4" data-go="Figuran" data-mode="figuran" role="button" tabindex="0" aria-label="Figüran listesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
-  </div>
-
-  <!-- PANEL -->
-  <section id="viewPanel">
-    <div class="card">
-      <div class="hd">
-        <h2>Liste</h2>
-        <div class="filters">
-          <div class="input" title="Ara">
-            🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
-              <option value="all">Tümü</option>
-              <option value="play">Oyun</option>
-              <option value="person">Kişi</option>
-              <option value="role">Görev</option>
-            </select></div>
-            <button class="q-clear" id="qClear" title="Temizle">✕</button>
-          </div>
-<div class="seg" title="Görünüm">
-            <button id="btnPlays" class="active">🎭 Oyunlar</button>
-            <button id="btnPeople">👥 Kişiler</button>
-          </div>
-
-          <button class="btn" id="clearBtn">Temizle</button>
-        </div>
-      </div>
-      <div class="bd">
-        <div class="grid">
-          <div>
-            <div class="list" id="list"></div>
-            <div class="small" id="hint" style="margin-top:10px"></div>
-          </div>
-          <div class="card" style="box-shadow:none">
-            <div class="hd">
-              <h2>Detay</h2>
-              <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
-</div>
-            <div class="bd" id="details">
-              <div class="empty">Soldan bir oyun veya kişi seç.</div>
-            </div>
-            <footer>
-              <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
-              <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
-            </footer>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
-  <section id="viewDistribution" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Oyunlara Göre Personel Dağılımı</h2>
-        <div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
-      </div>
-      <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="Ara">
-            🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/>
-          </div>
-          <button class="btn" id="dClear">Temizle</button>
-        </div>
-        <div id="distributionBox"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- KESİŞİM -->
-  <section id="viewIntersection" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Kesişim Analizi</h2>
-        <div class="small">İki oyunu seç — ortak personeli ve görevlerini gösterir.</div>
-      </div>
-      <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="1. Oyun">
-            1️⃣
-            <select id="p1"></select>
-          </div>
-          <div class="input" title="2. Oyun">
-            2️⃣
-            <select id="p2"></select>
-          </div>
-          <button class="btn" id="swapBtn">⇄ Değiştir</button>
-        </div>
-        <div id="intersectionBox"></div>
-      </div>
-      <footer>
-        Not: Kesişim için kişi hücresindeki “virgül / ve / / / satır sonu” ayrımları otomatik yapılır.
-      </footer>
-    </div>
-  </section>
-
-  <!-- FİGÜRAN -->
-  <section id="viewFiguran" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Figüranlar</h2>
-        <div class="small">Apps Script mantığıyla: çoklu kişi varsa sadece <code>(Figüran)</code> etiketi olanlar alınır.</div>
-      </div>
-      <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="Ara">
-            🔎 <input id="fq" type="search" placeholder="Figüran / oyun ara…" autocomplete="off"/>
-          </div>
-          <button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
-                    <button class="btn" id="fClear">Temizle</button>
-        </div>
-        <div id="figuranBox"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- GRAFİKLER -->
-  <section id="viewCharts" style="display:none">
-    <div class="chartsNav">
-      <button class="tab active" id="chartTabRoles">Görevlere Göre Dağılım</button>
-      <button class="tab" id="chartTabCats">Kategori Dağılımı</button>
-    </div>
-
-    <div class="grid" style="grid-template-columns: 1.1fr .9fr">
-      <div class="card">
-        <div class="hd">
-          <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div>
-        </div>
-        <div class="bd">
-          <canvas id="chartMain" width="900" height="340"></canvas>
-          <div class="mobileChartWrap">
-            <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
-            <div class="mobileChartList" id="chartMobileList"></div>
-          </div>
-        </div>
-      </div>
-
-      <aside class="drawer hidden" id="chartDrawer">
-        <div class="hd">
-          <div>
-            <div class="drawerTitle" id="drawerTitle">Seçim</div>
-            <div class="drawerSub" id="drawerSub">—</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
-            <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
-            <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
-            <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
-            <button class="btn" id="drawerClose">✕</button>
-          </div>
-        </div>
-        <div class="bd">
-          <div class="input" style="min-width:unset" title="Ara">
-            🔎 <input id="drawerSearch" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/>
-          </div>
-          <div class="miniList" id="drawerList"></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-  <!-- İSTATİSTİKLER -->
-  
-
-</div>
-
-<script>
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
-  // Bildirimler için en stabil kaynak: Apps Script'in otomatik oluşturduğu LOG sayfası
-  // (Eğer sende BİLDİRİMLER diye ayrı sayfa varsa, aşağıda fallback var.)
-  SHEET_NOTIFS: "LOG",
+  SHEET_NOTIFS: "BİLDİRİMLER",
 
 
-    NOTIF_SHEET_NAME: "BİLDİRİMLER",
-  NOTIF_GVIZ_URL: "", // boş bırak (aşağıda otomatik oluşturulacak)
-// Ana veri (genelde: "BÜTÜN OYUNLAR")
+  // Ana veri (genelde: "BÜTÜN OYUNLAR")
   GID: "1233566992",
 
   // Apps Script'in oluşturduğu LOG sayfasının gid'sini buraya yaz (URL'den kopyala: ...?gid=XXXX)
@@ -1145,6 +21,16 @@ const CONFIG = {
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
+
+// Filtre eşleşmeleri: boşluk / büyük-küçük harf / görünmez karakter farklarını tolere et
+function normKey(s){
+  return String(s||"")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/\s+/g, " ");
+}
+
 function openMobileModal(html){
   if(!isMobile()) return;
   els.mobileContent.innerHTML = html;
@@ -1166,10 +52,6 @@ const els = {
   status: el("status"),
   sheetBtn: el("sheetBtn"),
   reloadBtn: el("reloadBtn"),
-  advBtn: el("advBtn"),
-  advMenu: el("advMenu"),
-  advDist: el("advDist"),
-  advInter: el("advInter"),
   notifBtn: el("notifBtn"),
   notifPanel: el("notifPanel"),
   notifCount: el("notifCount"),
@@ -1190,8 +72,6 @@ const els = {
   viewCharts: el("viewCharts"),
 
   q: el("q"),
-  qScope: el("qScope"),
-  qClear: el("qClear"),
   category: el("category"),
   clearBtn: el("clearBtn"),
   list: el("list"),
@@ -1212,24 +92,20 @@ const els = {
   intersectionBox: el("intersectionBox"),
 
   fq: el("fq"),
-  figDownloadAllBtn: el("figDownloadAllBtn"),
   fClear: el("fClear"),
   figuranBox: el("figuranBox"),
+  figDownloadAllBtn: el("figDownloadAllBtn"),
+  figDownloadFilteredBtn: el("figDownloadFilteredBtn"),
 
   chartTabRoles: el("chartTabRoles"),
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
-  chartMobileList: el("chartMobileList"),
 
   drawer: el("chartDrawer"),
   drawerTitle: el("drawerTitle"),
   drawerSub: el("drawerSub"),
   drawerClose: el("drawerClose"),
-  drawerBack: el("drawerBack"),
-  drawerCopyAll: el("drawerCopyAll"),
-  drawerCopyVisible: el("drawerCopyVisible"),
-  drawerCopyExpanded: el("drawerCopyExpanded"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
@@ -1240,19 +116,8 @@ const els = {
 };
 els.sheetBtn.href = CONFIG.sheetUrl();
 
-// --- Chart canvas interactions (desktop) ---
-if(els.chartMain){
-  els.chartMain.addEventListener('click', onChartCanvasClick);
-  els.chartMain.addEventListener('mousemove', (ev)=>{
-    const hit = chartHitKeyFromEvent(ev);
-    els.chartMain.style.cursor = hit ? 'pointer' : 'default';
-  });
-}
-
-
 let rawRows = [];
 let rows = [];
-let ACTIVE_TAB = 'Panel';
 let plays = [];
 let people = [];
 let playsList = [];
@@ -1268,8 +133,6 @@ let activePlayFilter = null; // mobilde: oyundan kişilere geçince filtre
 let chartMode = "roles"; // roles | cats
 let chartHits = []; // clickable regions
 let drawerData = [];
-let drawerStack = []; // for drill-down navigation
-let drawerMode = "items"; // 'items' or 'labels'
 
 /* ---------- Theme toggle ---------- */
 function applyTheme(theme){
@@ -1279,25 +142,8 @@ function applyTheme(theme){
 (function initTheme(){
   const saved = localStorage.getItem("idt_theme");
   if(saved === "dark" || saved === "light") applyTheme(saved);
-  else applyTheme("light");
+  else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
-/* ---------- UI state (search/mode) ---------- */
-(function initUiState(){
-  try{
-    const savedQ = localStorage.getItem("idt_q") || "";
-    const savedScope = localStorage.getItem("idt_qscope") || "all";
-    const savedMode = localStorage.getItem("idt_mode") || "plays";
-    if(els.q) els.q.value = savedQ;
-    if(els.qScope) els.qScope.value = savedScope;
-    if(savedMode==="people" || savedMode==="plays"){
-      activeMode = savedMode;
-      if(activeMode==="plays"){ els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active"); }
-      else { els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active"); }
-    }
-  }catch(_e){}
-})();
-
-
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
@@ -1343,44 +189,6 @@ function personTag(name){
 
 function normalizeHeader(h){ return (h||"").trim().toLowerCase().replace(/\s+/g," "); }
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
-/* ---------- chart colors (canlı + kategori sabit renk) ---------- */
-// ---------- Grafik renkleri: her grafikte benzersiz / canlı ----------
-function currentTheme(){
-  return (document.documentElement.getAttribute("data-theme") || "light") === "dark" ? "dark" : "light";
-}
-// Golden-angle ile birbirinden uzak renkler
-function makeUniqueColors(n){
-  const N = Math.max(1, n|0);
-  const theme = currentTheme();
-  const L = theme === "dark" ? 62 : 50;
-
-  // First use a hand-picked distinct palette (good separation)
-  const base = [
-    "#e11d48","#f97316","#f59e0b","#84cc16","#22c55e","#10b981",
-    "#06b6d4","#0ea5e9","#3b82f6","#6366f1","#8b5cf6","#a855f7",
-    "#d946ef","#ec4899","#fb7185","#fda4af","#fdba74","#fde047",
-    "#bef264","#86efac","#67e8f9","#93c5fd","#a5b4fc","#c4b5fd"
-  ];
-  const out = [];
-  for(let i=0;i<N;i++){
-    if(i < base.length){ out.push(base[i]); continue; }
-    // Golden-angle fallback for large counts
-    const hue = (i * 137.508) % 360;
-    out.push(`hsl(${hue} 88% ${L}%)`);
-  }
-  return out;
-}
-function makeChartColorGetter(keys){
-  const uniq = [...new Set((keys||[]).map(k=>String(k)))];
-  const cols = makeUniqueColors(uniq.length);
-  const map = new Map();
-  uniq.forEach((k,i)=> map.set(k, cols[i]));
-  // "Diğer" ayrı ve tıklanabilir bir toplamdır
-  const otherCol = cssVar("--accent2") || "#c07a2a";
-  return (key)=> (String(key)==="Diğer" ? otherCol : (map.get(String(key)) || otherCol));
-}
-
 
 /* ---------- load from Google ---------- */
 function parseGviz(text){
@@ -1608,11 +416,12 @@ function computeFiguranFromRaw(){
     if(!selectedPeople.length) continue;
 
     for(const kisi of selectedPeople){
-      if(!map.has(kisi)) map.set(kisi, {games:new Set(), roles:new Set(), cats:new Set()});
+      if(!map.has(kisi)) map.set(kisi, {games:new Set(), roles:new Set(), cats:new Set(), rows:0});
       const obj = map.get(kisi);
       obj.cats.add(isRetiredArtist ? "Kurumdan Emekli Sanatçı" : "Figüran");
       if(oyun) obj.games.add(oyun);
       if(gorevRaw) obj.roles.add(gorevRaw);
+      obj.rows += 1;
     }
   }
 
@@ -1620,7 +429,9 @@ function computeFiguranFromRaw(){
     person,
     cats:[...obj.cats].sort((a,b)=>a.localeCompare(b,"tr")),
     plays:[...obj.games].sort((a,b)=>a.localeCompare(b,"tr")),
-    roles:[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr"))}));
+    roles:[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr")),
+    rows: obj.rows
+  }));
   out.sort((a,b)=>a.person.localeCompare(b.person,"tr"));
   return out;
 }
@@ -1655,51 +466,36 @@ function parseLogFromGviz(obj){
 async function loadNotifications(){
   if(!els.notifPanel) return;
 
+  // BİLDİRİMLER sheet'i yoksa / boşsa kibarca göster
   try{
-    // GVIZ (no JSONP) → BİLDİRİMLER sayfasını okur
-    const sheetName = CONFIG.NOTIF_SHEET_NAME || "BİLDİRİMLER";
-    const gvizUrl = CONFIG.NOTIF_GVIZ_URL && CONFIG.NOTIF_GVIZ_URL.trim()
-      ? CONFIG.NOTIF_GVIZ_URL.trim()
-      : `https://docs.google.com/spreadsheets/d/${encodeURIComponent(CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+    const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
+    const data = await jsonp(url);
+    if(!data || data.ok !== true || !Array.isArray(data.rows)){
+      els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
+      els.notifCount.textContent = "";
+    els.notifCount.classList.add("hidden");
+      return;
+    }
 
-    const res = await fetch(gvizUrl, { cache: "no-store" });
-    const txt = await res.text();
+    // Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
+    const rows = data.rows.map(r=>({
+      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
+      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
+      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
+      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
+      play: String(r["Oyun"] ?? "").trim(),
+      person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
+      read: String(r["Okundu"] ?? "").trim()
+    })).filter(x=>x.ts || x.title || x.msg);
 
-    // gviz response: google.visualization.Query.setResponse({...});
-    const match = txt.match(/setResponse\((.*)\);\s*$/s);
-    if(!match) throw new Error("GVIZ parse failed");
-    const obj = JSON.parse(match[1]);
-
-    const table = obj?.table;
-    const cols = (table?.cols||[]).map(c=>(c.label||"").trim());
-    const rawRows = (table?.rows||[]);
-
-    const rows = rawRows.map(r=>{
-      const c = r.c || [];
-      const get = (name)=>{
-        const idx = cols.indexOf(name);
-        if(idx === -1) return "";
-        const cell = c[idx];
-        return cell ? (cell.f ?? cell.v ?? "") : "";
-      };
-      return {
-        ts: String(get("Tarih") || get("Tarih/Saat") || "").trim(),
-        action: String(get("İşlem") || get("Islem") || "").trim(),
-        play: String(get("Oyun") || "").trim(),
-        person: String(get("Kişi") || get("Kisi") || "").trim(),
-        role: String(get("Görev") || get("Gorev") || "").trim(),
-        msg: String(get("Açıklama") || get("Aciklama") || "").trim()
-      };
-    }).filter(x=>x.ts || x.action || x.msg || x.play || x.person);
-
-    // newest first
+    // newest first (basit)
     rows.reverse();
 
     // local okundu (site tarafı): imza üzerinden
     const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
-    const norm = (x)=> (x||"").toString().slice(0,140);
+    const norm = (x)=> (x||"").toString().slice(0,120);
     rows.forEach(n=>{
-      const key = `${norm(n.ts)}|${norm(n.action)}|${norm(n.play)}|${norm(n.person)}|${norm(n.role)}|${norm(n.msg)}`;
+      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
       n._key = key;
       n._seen = !!seen[key];
     });
@@ -1714,30 +510,33 @@ async function loadNotifications(){
     }
 
     if(!rows.length){
+
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirim yok.</div>`;
       return;
     }
 
-    const iconBy = (a)=>{
-      const s = (a||"").toString().toLowerCase();
-      if(s.includes("ekl")) return "✅";
-      if(s.includes("çıkar") || s.includes("cikar") || s.includes("sil")) return "🗑️";
-      if(s.includes("güncel") || s.includes("guncel")) return "✏️";
-      return "🔔";
+    
+    const typeInfo = (t)=>{
+      const tt = (t||"").toString().trim().toUpperCase();
+      if(tt.includes("EKLEND")) return {icon:"✅", label:"EKLENDİ"};
+      if(tt.includes("SİL") || tt.includes("CIKAR")) return {icon:"❌", label:"SİLİNDİ"};
+      if(tt.includes("GÜNC") || tt.includes("GUNC")) return {icon:"✏️", label:"GÜNCELLENDİ"};
+      if(tt.includes("TOPLU")) return {icon:"🧹", label:"TOPLU"};
+      if(tt.includes("DEĞİŞ") || tt.includes("DEGIS")) return {icon:"🔔", label:"DEĞİŞİKLİK"};
+      if(tt.includes("DÜZEN") || tt.includes("DUZEN")) return {icon:"🔔", label:"DÜZENLENDİ"};
+      return {icon:"🔔", label:(t||"").toString().trim() || "BİLDİRİM"};
     };
-
-    const show = rows.slice(0, 60);
-
-    els.notifList.innerHTML = show.map(n=>{
-      const meta = [n.play, n.person, n.role].filter(Boolean).join(" • ");
+els.notifList.innerHTML = rows.map(n=>{
+      const info = typeInfo(n.type);
+      const meta = [n.play, n.person].filter(Boolean).join(" • ");
       const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
+      const titleText = n.title || info.label;
+      const title = titleText ? `<div class="notif-title">${escapeHtml(titleText)}</div>` : "";
       const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
       const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
-      const title = n.action ? `<div class="notif-title">${escapeHtml(n.action)}</div>` : "";
       const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
-      const type = iconBy(n.action);
       return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
-        <div class="notif-type">${escapeHtml(type)}</div>
+        <div class="notif-type">${escapeHtml(info.icon)}</div>
         <div class="notif-body">
           ${title}${msg}${who}${ts}
         </div>
@@ -1753,28 +552,22 @@ async function loadNotifications(){
         seen2[key]=true;
         localStorage.setItem("idt_seen_notifs", JSON.stringify(seen2));
         el.classList.add("seen");
-        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble"))
-          .filter(x=>!x.classList.contains("seen")).length;
-        if(left){
-          els.notifCount.classList.remove("hidden");
-          els.notifCount.textContent=String(left);
-        } else {
-          els.notifCount.textContent="";
-          els.notifCount.classList.add("hidden");
-        }
+        // badge güncelle
+        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble")).filter(x=>!x.classList.contains("seen")).length;
+        if(left){ els.notifCount.classList.remove("hidden"); els.notifCount.textContent=String(left); } else { els.notifCount.textContent=""; els.notifCount.classList.add("hidden"); }
       });
     });
 
   }catch(err){
     console.error(err);
-    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.<br><span class="small muted">Kontrol: Sheet "Bağlantıya sahip herkes görüntüleyebilir" olmalı.</span></div>`;
+    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi. (API/JSONP)
+<br><span class="small muted">Not: Apps Script doGet içinde JSONP (callback) açık olmalı.</span></div>`;
     els.notifCount.textContent = "";
     els.notifCount.classList.add("hidden");
   }
 }
 
 /* ---------- transforms ---------- */
-
 function groupByPlay(data){
   const map=new Map();
   for(const r of data){ if(!map.has(r.play)) map.set(r.play,[]); map.get(r.play).push(r); }
@@ -1815,26 +608,15 @@ function chipTone(cat){
   return "";
 }
 function applyFilters(list){
-  const q=(els.q.value||"").trim().toLowerCase();
-  const scope = (els.qScope && els.qScope.value) ? els.qScope.value : "all";
+  const q=els.q.value.trim().toLowerCase();
   const cat="";
-  return list.filter(it=>{
-    let hay = "";
-    if(activeMode==="plays"){
-      if(scope==="play") hay = it.title;
-      else if(scope==="person") hay = it.rows.map(r=>r.person).join(" ");
-      else if(scope==="role") hay = it.rows.map(r=>r.role).join(" ");
-      else hay = it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ");
-    }else{
-      if(scope==="play") hay = (it.plays||[]).join(" ");
-      else if(scope==="person") hay = it.title;
-      else if(scope==="role") hay = (it.roles||[]).join(" ");
-      else hay = it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ");
-    }
-    hay = (hay||"").toLowerCase();
-
+return list.filter(it=>{
+    const hay = (activeMode==="plays")
+      ? (it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ")).toLowerCase()
+      : (it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ")).toLowerCase();
     if(activeMode==="people" && activePlayFilter){
-      if(!((it.plays||[]).includes(activePlayFilter))) return false;
+      const playKey = normKey(activePlayFilter);
+      if(!((it.plays||[]).some(p=>normKey(p)===playKey))) return false;
     }
     if(q && !hay.includes(q)) return false;
     if(cat){
@@ -1887,24 +669,38 @@ function renderList(){
       renderDetails(it);
 
       if(isMobile() && activeMode==="plays"){
-        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
+        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
         activePlayFilter = it.title;
-        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
+        activeMode="people";
+        els.btnPeople.classList.add("active");
+        els.btnPlays.classList.remove("active");
 
-        // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
-        // Modal içine aynı içeriği basıyoruz
-        openMobileModal(els.details.innerHTML);
+        // Filtreli kişi listesi
+        renderList();
 
-        // Geri tuşu: modal kapansın
-        history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
+        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
+
+        // Geri tuşu ile tekrar Oyunlar'a dönsün
+        history.pushState({mode:"people", play:activePlayFilter}, "");
+        window.scrollTo({top:0, behavior:"smooth"});
       }
 
     });
     els.list.appendChild(div);
   }
 
-  els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
-}
+
+  if(isMobile() && activeMode==="people" && activePlayFilter){
+    els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
+    setTimeout(()=>{
+      const b=document.getElementById("btnBackPlays");
+      if(b) b.onclick=()=>{ activePlayFilter=""; setActiveMode("plays"); render(); };
+    },0);
+  } else {
+    els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
+  }
+
+
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
@@ -1958,27 +754,50 @@ function toTSVFromSelected(){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const playTitle = selectedItem.title || "";
-    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
-    for(let i=0;i<rowsSorted.length;i++){
-      const r = rowsSorted[i];
-      lines.push([i===0?playTitle:"", r.category||"", r.role||"", r.person||""].join("	"));
+    const playTitle = (selectedItem.title || "").trim();
+    const lines=[playTitle || "OYUN"];
+    lines.push(["Kategori","Görev","Kişi"].join("	"));
+    for(const r of rowsSorted){
+      lines.push([r.category||"", r.role||"", r.person||""].join("	"));
     }
-    return lines.join("\n");
+    return lines.join("
+");
   } else {
+    const personTitle = (selectedItem.title || "").trim();
     const rs=[...selectedItem.rows].sort((a,b)=>
       (a.play||"").localeCompare(b.play||"","tr") ||
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr")
     );
-    const lines=[["Oyun","Kategori","Görev"].join("\t")];
+    const lines=[personTitle || "KİŞİ"];
+    lines.push(["Oyun","Kategori","Görev"].join("	"));
     for(const r of rs){
-      lines.push([r.play||"", r.category||"", r.role||""].join("\t"));
+      lines.push([r.play||"", r.category||"", r.role||""].join("	"));
     }
-    return lines.join("\n");
+    return lines.join("
+");
   }
 }
 
+
+
+/* ---------- distinct colors (unique per chart) ---------- */
+function makeDistinctColors(n){
+  const out = [];
+  const N = Math.max(1, n|0);
+  for(let i=0;i<N;i++){
+    const hue = (i * 360 / N);
+    out.push(`hsl(${hue} 85% 55%)`);
+  }
+  return out;
+}
+function makeColorGetter(keys){
+  const uniq = [...new Set((keys||[]).map(k=>String(k)))].sort((a,b)=>a.localeCompare(b,"tr"));
+  const cols = makeDistinctColors(uniq.length);
+  const map = new Map();
+  uniq.forEach((k,i)=>map.set(k, cols[i]));
+  return (key)=> map.get(String(key)) || "hsl(0 0% 60%)";
+}
 /* ---------- charts ---------- */
 function roundRect(ctx, x, y, w, h, r){
   const rr = Math.min(r, w/2, h/2);
@@ -2000,6 +819,7 @@ function drawBars(canvas, items, topN){
   ctx.setTransform(dpr,0,0,dpr,0,0);
 
   const data = items.slice(0, topN);
+  const getColor = makeColorGetter(data.map(d=>d.k));
 
   const card = cssVar("--card");
   const grid = cssVar("--line");
@@ -2035,15 +855,11 @@ function drawBars(canvas, items, topN){
     const y = padT + (h-bh);
     const bw = Math.max(barW-12, 14);
 
-    ctx.fillStyle = (window.__chartColorOf ? window.__chartColorOf(d.k) : accent);
-    ctx.globalAlpha = 0.90;
+    ctx.fillStyle = getColor(d.k);
+    ctx.globalAlpha = 0.78;
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
     ctx.globalAlpha = 1;
-    // slice separator
-    ctx.strokeStyle = card;
-    ctx.lineWidth = 2;
-    ctx.stroke();
 
     ctx.fillStyle = text;
     ctx.font = "12px system-ui";
@@ -2076,7 +892,6 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const top = sorted.slice(0, topN);
   const rest = sorted.slice(topN);
   if(rest.length){
-    window.__chartOtherItems = rest.slice();
     const other = rest.reduce((s,x)=>s+x.v,0);
     top.push({k:"Diğer", v:other});
   }
@@ -2088,7 +903,12 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const text = cssVar("--text");
   const muted = cssVar("--muted");
 
-  const colorOf = (label)=> (window.__chartColorOf ? window.__chartColorOf(label) : "#8e8e93");
+  const palette = [
+    cssVar("--accent"), cssVar("--accent2"),
+    "#2E7D32","#1565C0","#6A1B9A","#EF6C00",
+    "#00838F","#C2185B","#5D4037","#455A64",
+    "#9E9D24","#AD1457"
+  ];
 
   chartHits = [];
 
@@ -2100,7 +920,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const isM = isMobile();
   const cx = isM ? cssW*0.50 : cssW*0.34;
   const cy = cssH*0.52;
-  const rOuter = Math.min(cssW, cssH)*(isM ? 0.34 : 0.40);
+  const rOuter = Math.min(cssW, cssH)*(isM ? 0.28 : 0.32);
   const rInner = rOuter*0.60;
 
   let start = -Math.PI/2;
@@ -2113,7 +933,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, rOuter, start, end);
     ctx.closePath();
-    ctx.fillStyle = colorOf(d.k);
+    ctx.fillStyle = getColor(d.k);
     ctx.globalAlpha = 0.92;
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -2152,7 +972,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   for(let i=0;i<Math.min(data.length, maxLegend);i++){
     const d=data[i];
     ly += 18;
-    ctx.fillStyle = colorOf(d.k);
+    ctx.fillStyle = getColor(d.k);
     roundRect(ctx, lx, ly-11, 10, 10, 3);
     ctx.fill();
     ctx.fillStyle = muted;
@@ -2169,166 +989,59 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   ctx.strokeRect(0.5,0.5,cssW-1,cssH-1);
 }
 
-// --- Chart hit test (desktop) ---
-function chartHitKeyFromEvent(ev){
-  if(!chartHits || !chartHits.length) return null;
-  const canvas = ev.currentTarget || els.chartMain;
-  const rect = canvas.getBoundingClientRect();
-  const x = ev.clientX - rect.left;
-  const y = ev.clientY - rect.top;
-
-  for(const h of chartHits){
-    if(h.type !== 'wedge') continue;
-    const dx = x - h.cx;
-    const dy = y - h.cy;
-    const r = Math.sqrt(dx*dx + dy*dy);
-    if(r < h.rInner || r > h.rOuter) continue;
-
-    // angle in [-PI, PI] -> normalize to [0, 2PI)
-    let a = Math.atan2(dy, dx);
-    if(a < -Math.PI/2) a += Math.PI*2;
-
-    // wedge angles are drawn starting at -PI/2 and increasing
-    // Normalize wedge start/end into [0, 2PI) relative to -PI/2
-    const norm = (t)=>{
-      let v = t;
-      while(v < -Math.PI/2) v += Math.PI*2;
-      while(v >= -Math.PI/2 + Math.PI*2) v -= Math.PI*2;
-      return v;
-    };
-    const s = norm(h.start);
-    const e = norm(h.end);
-    const aa = norm(a);
-
-    const inside = (s <= e) ? (aa >= s && aa <= e) : (aa >= s || aa <= e);
-    if(inside) return h.key;
-  }
-  return null;
-}
-
-function buildDrawerItemsForKey(key){
-  // returns [{person, role/roles, plays:[...]}]
-  const map = new Map();
-
-  for(const r of rows){
-    const rk = (chartMode === 'roles') ? ((r.role||'').trim() || 'Bilinmiyor') : ((r.category||'').trim() || 'Bilinmiyor');
-    if(rk !== key) continue;
-    const p = (r.person||'').trim();
-    if(!p) continue;
-    if(!map.has(p)) map.set(p, {plays:new Set(), roles:new Set()});
-    map.get(p).plays.add((r.play||'').trim());
-    if(r.role) map.get(p).roles.add((r.role||'').trim());
-  }
-
-  const out = [];
-  for(const [person, v] of map.entries()){
-    const plays = [...v.plays].filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
-    const roles = [...v.roles].filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
-    out.push({ person, plays, role: (chartMode==='roles' ? key : roles.join(' / ')) });
-  }
-  out.sort((a,b)=>a.person.localeCompare(b.person,'tr'));
-  return out;
-}
-
-function onChartCanvasClick(ev){
-  const key = chartHitKeyFromEvent(ev);
-  if(!key) return;
-
-  // "Diğer" -> drill-down into labels
-  if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
-    drawerStack.push({
-      title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
-      subtitle: els.drawerSub.textContent || '',
-      items: drawerData.slice(),
-      mode: drawerMode
-    });
-    const labels = window.__chartOtherItems
-      .slice()
-      .sort((a,b)=>b.v-a.v)
-      .map(x=>({label:x.k, value:x.v}));
-    openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
-    return;
-  }
-
-  const items = buildDrawerItemsForKey(String(key));
-  const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
-  openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
-}
-
 /* ---------- mobile chart list ---------- */
-function buildPeopleListForKey(key){
-  const map=new Map();
-  for(const r of rows){
-    const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
-    if(match && r.person){
-      if(!map.has(r.person)) map.set(r.person, new Set());
-      map.get(r.person).add(r.play);
-    }
-  }
-  const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
-  items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
-  return items;
-}
-
-function openMobilePeopleModal(title, subtitle, items){
-  const id = "chartMobileSearch";
-  const listId = "chartMobilePeopleList";
-  openMobileModal(`
-    <div class="modalTitle" style="font-weight:900">${escapeHtml(title)}</div>
-    <div class="small" style="margin:4px 0 10px">${escapeHtml(subtitle||"")}</div>
-    <div class="input" style="min-width:unset" title="Ara">🔎 <input id="${id}" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/></div>
-    <div class="miniList" id="${listId}" style="margin-top:10px"></div>
-  `);
-  const render = ()=>{
-    const q = (document.getElementById(id)?.value||"").trim().toLowerCase();
-    const filtered = items.filter(x=>{
-      if(!q) return true;
-      return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
-    });
-    const box = document.getElementById(listId);
-    if(!box) return;
-    box.innerHTML = filtered.length ? filtered.slice(0,250).map(x=>`
-      <div class="miniItem">
-        <b>${escapeHtml(x.person)}</b>
-        <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
-      </div>
-    `).join("") : `<div class="empty">Sonuç yok.</div>`;
-  };
-  // DOM hazır olunca bağla
-  setTimeout(()=>{
-    const inp = document.getElementById(id);
-    if(inp) inp.addEventListener("input", render);
-    render();
-  }, 0);
-}
-
 function renderMobileChartList(items){
-  if(!els.chartMobileList) return;
-  // Tam liste: büyükten küçüğe (mobilde seçilebilir)
-  const rows2 = items.slice().sort((a,b)=>b.v-a.v);
-  els.chartMobileList.innerHTML = rows2.map(d=>{
-    const c = (window.__chartColorOf ? window.__chartColorOf(d.k) : "#8e8e93");
+  const box = document.getElementById("chartMobileList");
+  const wrap = document.querySelector(".mobileChartWrap");
+  if(!box || !wrap) return;
+
+  // sadece mobilde göster
+  if(!isMobile()){ box.innerHTML=""; wrap.style.display="none"; return; }
+  wrap.style.display="block";
+
+  const sorted = items.slice().sort((a,b)=>b.v-a.v);
+  const rows = sorted.slice(0, 24); // mobilde çok uzamasın
+
+  const getColor = makeColorGetter(rows.map(r=>r.k));
+
+  box.innerHTML = rows.map(it=>{
+    const c = getColor(it.k);
+    const rawK = String(it.k||"");
+    const safeK = escapeHtml(rawK);
+    const encK = encodeURIComponent(rawK);
     return `
-      <div class="chipRow" data-key="${escapeHtml(d.k)}" style="background:linear-gradient(135deg, ${c}22, ${c}55)">
+      <div class="chipRow" data-key="${encK}">
         <div class="chipLeft">
           <div class="dot" style="background:${c}"></div>
-          <div class="chipTitle" title="${escapeHtml(d.k)}">${escapeHtml(d.k)}</div>
+          <div class="chipTitle" title="${safeK}">${safeK}</div>
         </div>
-        <div class="chipCount">${Number(d.v||0)}</div>
+        <div class="chipCount">${it.v}</div>
       </div>
     `;
   }).join("");
 
-  els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
-    elm.addEventListener("click", ()=>{
-      const key = elm.getAttribute("data-key");
-      if(!key || key==="Diğer") return;
-      const people = buildPeopleListForKey(key);
-      const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
-      openMobilePeopleModal(title, `${people.length} kişi`, people);
+  // click: drawer aç (chart ile aynı filtre mantığı)
+  box.querySelectorAll(".chipRow").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const key = decodeURIComponent(el.getAttribute("data-key") || "");
+      const map=new Map();
+      for(const r of rowsAll()){ // rows global
+        const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
+        if(match && r.person){
+          if(!map.has(r.person)) map.set(r.person, new Set());
+          map.get(r.person).add(r.play);
+        }
+      }
+      const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
+      items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
+      openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
+      // mobilde drawer açıkken sayfa kaymasın
+      document.body.classList.add("drawerOpen");
     });
   });
 }
+function rowsAll(){ return rows || []; }
+
 function drawChart(){
   if(!rows.length) return;
   if(chartMode==="roles"){
@@ -2339,10 +1052,9 @@ function drawChart(){
       counts.get(k).add((r.person||"").trim());
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
-    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Görevlere Göre Dağılım";
-    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
-    drawDoughnut(els.chartMain, items, 14, "Top Görevler");
+    renderMobileChartList(items);
+    drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Görevler");
   }else{
     const counts=new Map();
     for(const r of rows){
@@ -2351,136 +1063,35 @@ function drawChart(){
       counts.get(k).add((r.person||"").trim());
     }
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
-    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Kategori Dağılımı";
-    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
-    drawDoughnut(els.chartMain, items, 14, "Top Kategoriler");
+    renderMobileChartList(items);
+    drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Kategoriler");
   }
 }
 
 /* ---------- chart drawer ---------- */
-function openDrawer(title, subtitle, items, opts={}){
+function openDrawer(title, subtitle, items){
   els.drawerTitle.textContent = title;
   els.drawerSub.textContent = subtitle;
   drawerData = items.slice();
-  drawerMode = opts.mode || ((drawerData[0] && ("label" in (drawerData[0]||{}))) ? "labels" : "items");
   els.drawerSearch.value = "";
-  // copy buttons only make sense in item-list mode
-  const showCopy = (drawerMode === "items" && drawerData.length);
-  els.drawerCopyAll.style.display = showCopy ? "inline-flex" : "none";
-  els.drawerCopyVisible.style.display = showCopy ? "inline-flex" : "none";
-  els.drawerCopyExpanded.style.display = showCopy ? "inline-flex" : "none";
   renderDrawerList();
   els.drawer.classList.remove("hidden");
-  // back button
-  els.drawerBack.style.display = drawerStack.length ? "inline-flex" : "none";
+  if(isMobile()) document.body.classList.add("drawerOpen");
 }
 function closeDrawer(){
   els.drawer.classList.add("hidden");
+  document.body.classList.remove("drawerOpen");
   drawerData = [];
-  drawerStack = [];
-  els.drawerBack.style.display = "none";
-  els.drawerCopyAll.style.display = "none";
-  els.drawerCopyVisible.style.display = "none";
-  els.drawerCopyExpanded.style.display = "none";
   els.drawerList.innerHTML = "";
 }
-function getDrawerFilteredItems(){
-  const q = els.drawerSearch.value.trim().toLowerCase();
-  const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
-  if(labelMode) return drawerData.slice(); // copy only for items anyway
-  if(!q) return drawerData.slice();
-  return drawerData.filter(x=>{
-    const hay = (String(x.person||"") + " " + (Array.isArray(x.plays)?x.plays.join(" "):String(x.plays||""))).toLowerCase();
-    return hay.includes(q);
-  });
-}
-
-function drawerItemsToTSVSummary(items, labelForRole=""){
-  const lines = [];
-  lines.push(["Kişi","Görev","Oyunlar"].join("\t"));
-  const fixedRole = (labelForRole||"").toString().trim();
-  for(const it of items){
-    const plays = Array.isArray(it.plays) ? it.plays.join(" • ") : (it.plays || "");
-    const role = (it.role || it.gorev || fixedRole || "");
-    lines.push([it.person || "", role, plays].join("\t"));
-  }
-  return lines.join("\n");
-}
-
-function drawerItemsToTSVExpanded(items, labelForRole=""){
-  const lines = [];
-  lines.push(["Kişi","Görev","Oyun"].join("\t"));
-  const fixedRole = (labelForRole||"").toString().trim();
-  for(const it of items){
-    const role = (it.role || it.gorev || fixedRole || "");
-    const playsArr = Array.isArray(it.plays) ? it.plays : (it.plays ? [String(it.plays)] : [""]);
-    for(const p of playsArr){
-      lines.push([it.person || "", role, p || ""].join("\t"));
-    }
-  }
-  return lines.join("\n");
-}
 els.drawerClose.addEventListener("click", closeDrawer);
-els.drawerCopyAll.addEventListener("click", ()=>{
-  if(drawerMode !== "items" || !drawerData.length) return;
-  const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
-});
-els.drawerCopyVisible.addEventListener("click", ()=>{
-  if(drawerMode !== "items" || !drawerData.length) return;
-  const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
-});
-els.drawerCopyExpanded.addEventListener("click", ()=>{
-  if(drawerMode !== "items" || !drawerData.length) return;
-  const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVExpanded(items, els.drawerTitle.textContent));
-});
-els.drawerBack.addEventListener("click", ()=>{
-  const prev = drawerStack.pop();
-  if(!prev){
-    els.drawerBack.style.display = "none";
-    return;
-  }
-  openDrawer(prev.title, prev.subtitle, prev.items, {mode: prev.mode});
-});
 els.drawerSearch.addEventListener("input", renderDrawerList);
-// label list tıkla -> ilgili label için kişi listesi aç (drill-down)
-els.drawerList.addEventListener("click", (e)=>{
-  const item = e.target.closest(".miniItem[data-label]");
-  if(!item) return;
-  const label = item.getAttribute("data-label");
-  if(!label) return;
-
-  // mevcut state'i stack'e it
-  drawerStack.push({
-    title: els.drawerTitle.textContent,
-    subtitle: els.drawerSub.textContent,
-    items: drawerData.slice(),
-    mode: drawerMode
-  });
-
-  // label -> kişiler
-  const key = String(label);
-  const items = (key === "Diğer" && Array.isArray(window.__chartOtherItems))
-    ? []
-    : buildDrawerItemsForKey(key);
-
-  const title = `${chartMode === "roles" ? "Görev" : "Kategori"}: ${key}`;
-  openDrawer(title, `${items.length} kişi`, items, {mode:"items"});
-});
-
 
 function renderDrawerList(){
   const q = els.drawerSearch.value.trim().toLowerCase();
-  const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
-
   const filtered = drawerData.filter(x=>{
     if(!q) return true;
-    if(labelMode){
-      return String(x.label||"").toLowerCase().includes(q);
-    }
     return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
   });
 
@@ -2488,26 +1099,53 @@ function renderDrawerList(){
     els.drawerList.innerHTML = `<div class="empty">Sonuç yok.</div>`;
     return;
   }
-
-  if(labelMode){
-    els.drawerList.innerHTML = filtered.slice(0,400).map(x=>`
-      <div class="miniItem" role="button" tabindex="0" data-label="${escapeHtml(String(x.label||""))}">
-        <b>${escapeHtml(String(x.label||""))}</b>
-        <div class="small">${escapeHtml(String(x.value ?? ""))} kişi</div>
-      </div>
-    `).join("");
-    return;
-  }
-
   els.drawerList.innerHTML = filtered.slice(0,250).map(x=>`
     <div class="miniItem">
       <b>${escapeHtml(x.person)}</b>
-      ${x.role ? `<div class="small muted">Görev: ${escapeHtml(String(x.role))}</div>` : ""}
       <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
     </div>
   `).join("");
 }
 
+function hitTestChart(evt){
+  const rect = els.chartMain.getBoundingClientRect();
+  const x = evt.clientX - rect.left;
+  const y = evt.clientY - rect.top;
+
+  for(const h of chartHits){
+    if(h.type==="bar"){
+      if(x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h) return h;
+    }else if(h.type==="wedge"){
+      const dx=x-h.cx, dy=y-h.cy;
+      const rr=Math.sqrt(dx*dx+dy*dy);
+      if(rr < h.rInner || rr > h.rOuter) continue;
+      let ang=Math.atan2(dy,dx);
+      if(ang< -Math.PI/2) ang += Math.PI*2;
+      let s=h.start, e=h.end;
+      while(ang < s) ang += Math.PI*2;
+      if(ang >= s && ang <= e) return h;
+    }
+  }
+  return null;
+}
+
+els.chartMain.addEventListener("click", (evt)=>{
+  const h = hitTestChart(evt);
+  if(!h) return;
+  const key = h.key;
+
+  const map=new Map();
+  for(const r of rows){
+    const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
+    if(match && r.person){
+      if(!map.has(r.person)) map.set(r.person, new Set());
+      map.get(r.person).add(r.play);
+    }
+  }
+  const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
+  items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
+  openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
+});
 
 /* ---------- distribution ---------- */
 function computeDistribution(){
@@ -2583,7 +1221,6 @@ function renderFiguran(){
             <td>${escapeHtml((f.cats||[]).join(", "))}</td>
             <td>${escapeHtml(f.plays.join(" • "))}</td>
             <td>${escapeHtml(f.roles.join(", "))}</td>
-            
           </tr>
         `).join("")}
       </tbody>
@@ -2671,17 +1308,35 @@ function setActiveTab(which){
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
 
-  // URL hash (geri/ileri ve yenilemede aynı sekme)
-  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
+  // URL hash: geri/ileri tuşu + yenilemede aynı sekme
+  const slugMap = {
+    Panel: "panel",
+    Distribution: "analiz",
+    Intersection: "kesisim",
+    Figuran: "figuran",
+    Charts: "grafikler",
+  };
   const slug = slugMap[which] || "panel";
-  if (location.hash !== "#"+slug) {
-    history.replaceState(null, "", "#" + slug);
+  const newHash = "#" + slug;
+  if (location.hash !== newHash) {
+    // hash değiştirirken sayfanın scroll zıplamasını önle
+    history.replaceState(null, "", newHash);
   }
   if(which==="Charts" && rows.length){
     closeDrawer();
-    // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
-    setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
+    drawChart();
   }
+}
+
+function tabFromHash_(){
+  const h = String(location.hash || "").replace(/^#/, "").toLowerCase();
+  if (!h) return null;
+  if (["panel"].includes(h)) return "Panel";
+  if (["analiz","analysis","dagilim","distribution"].includes(h)) return "Distribution";
+  if (["kesisim","intersection"].includes(h)) return "Intersection";
+  if (["figuran","figüran"].includes(h)) return "Figuran";
+  if (["grafikler","charts","chart"].includes(h)) return "Charts";
+  return null;
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
@@ -2690,73 +1345,77 @@ els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
-function tabFromHash_(){
-  const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
-  if(h==="panel") return "Panel";
-  if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
-  if(h==="kesisim" || h==="intersection") return "Intersection";
-  if(h==="figuran" || h==="figüran") return "Figuran";
-  if(h==="grafikler" || h==="charts") return "Charts";
-  return null;
-}
-
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const target = String(card.getAttribute("data-go")||"").trim();
+  const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
-  card.addEventListener("click", ()=>setActiveTab(target));
+
+  const afterGo = ()=>{
+    // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
+    if(target === "Panel"){
+      if(mode === "people" && els.btnPeople) els.btnPeople.click();
+      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
+
+      // Liste alanına otomatik kaydır
+      const panelList = document.getElementById('viewPanel');
+      if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    if(target === "Figuran"){
+      const fig = document.getElementById('viewFiguran');
+      if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  };
+
+  const goNow = ()=>{
+    setActiveTab(target);
+    // DOM görünürlüğü güncellensin diye küçük gecikme
+    setTimeout(afterGo, 50);
+  };
+
+  card.addEventListener("click", goNow);
   card.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter" || e.key===" "){
+    if(e.key === "Enter" || e.key === " "){
       e.preventDefault();
-      setActiveTab(target);
+      goNow();
     }
   });
 });
 
-// Browser geri/ileri
+// URL hash değişince sekmeyi güncelle (geri/ileri tuşları)
 window.addEventListener("hashchange", ()=>{
   const t = tabFromHash_();
   if(t) setActiveTab(t);
 });
 
 // İlk açılışta hash varsa onu aç
-const initTab = tabFromHash_();
-if(initTab) setActiveTab(initTab);
+(function(){
+  const t = tabFromHash_();
+  if(t) setActiveTab(t);
+})();
+
 /* ---------- events ---------- */
 els.reloadBtn.addEventListener("click", ()=>load(false));
-// Gelişmiş menü (Dağılım / Kesişim)
-if(els.advBtn && els.advMenu){
-  els.advBtn.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    els.advMenu.classList.toggle("hidden");
-  });
-  const closeAdv = ()=> els.advMenu.classList.add("hidden");
-  document.addEventListener("click", closeAdv);
-  els.advMenu.addEventListener("click", (e)=> e.stopPropagation());
-
-  els.advDist && els.advDist.addEventListener("click", ()=>{ closeAdv(); setActiveTab("Distribution"); });
-  els.advInter && els.advInter.addEventListener("click", ()=>{ closeAdv(); setActiveTab("Intersection"); });
-}
-
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
   els.notifPanel.classList.toggle("hidden");
   if(!els.notifPanel.classList.contains("hidden")){
     await loadNotifications();
+    // panel açılınca "görüldü" say (sayaç sıfırlansın)
+    localStorage.setItem("idt_log_seen_ts", String(Date.now()));
+    els.notifCount.classList.add("hidden");
   }
 });
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
-els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
-els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
-els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
+els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
+renderList(); });
+
+els.q.addEventListener("input", ()=>renderList());
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
-  try{ localStorage.setItem("idt_mode","plays"); }catch(_e){}
-
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
@@ -2764,8 +1423,6 @@ els.btnPlays.addEventListener("click", ()=>{
 });
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
-  try{ localStorage.setItem("idt_mode","people"); }catch(_e){}
-
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
   activeId=null; selectedItem=null;
@@ -2786,93 +1443,126 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-els.copyBtn.addEventListener("click", async ()=>{
-  const tsv = toTSVFromSelected();
-  if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  await copyText(tsv);
+// Manual copy modal (always manual; optional clipboard button)
+const copyEls = {
+  backdrop: document.getElementById("copyBackdrop"),
+  modal: document.getElementById("copyModal"),
+  text: document.getElementById("copyText"),
+  close: document.getElementById("copyClose"),
+  selectAll: document.getElementById("copySelectAll"),
+  tryClipboard: document.getElementById("copyTryClipboard"),
+};
+function openCopyModal(tsv, title){
+  if(!copyEls.modal || !copyEls.text) return;
+  if(title && document.getElementById("copyTitle")) document.getElementById("copyTitle").textContent = title;
+  copyEls.text.value = tsv || "";
+  copyEls.backdrop?.classList.remove("hidden");
+  copyEls.modal.classList.remove("hidden");
+  // select all for quick copy
+  setTimeout(()=>{ copyEls.text.focus(); copyEls.text.select(); }, 0);
+}
+function closeCopyModal(){
+  copyEls.modal?.classList.add("hidden");
+  copyEls.backdrop?.classList.add("hidden");
+}
+copyEls.backdrop?.addEventListener("click", closeCopyModal);
+copyEls.close?.addEventListener("click", closeCopyModal);
+copyEls.selectAll?.addEventListener("click", ()=>{
+  copyEls.text?.focus(); copyEls.text?.select();
+});
+copyEls.tryClipboard?.addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(copyEls.text.value || "");
+    setStatus("📋 Kopyalandı (panodan)", "ok");
+  }catch{
+    setStatus("⚠️ Tarayıcı kopyalamayı engelledi — Ctrl+C kullan", "warn");
+  }
 });
 
-function showManualCopy(text){
-  // Minimal modal with textarea (manual copy)
-  let modal = document.getElementById("copyModal");
-  if(!modal){
-    modal = document.createElement("div");
-    modal.id = "copyModal";
-    modal.innerHTML = `
-      <div class="overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;z-index:9999;">
-        <div class="card" style="max-width:720px;width:min(92vw,720px);padding:14px 14px 12px;">
-          <div style="display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:8px">
-            <div><div class="small" style="line-height:1.25;margin-bottom:6px">İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</div><b>📋 Kopyala</b><div class="small">Ctrl+C / Kopyala → Excel’de Ctrl+V</div></div>
-            <button class="btn" id="copyModalClose">✕</button>
-          </div>
-          <textarea id="copyModalTa" style="width:100%;height:260px;font:12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--text)"></textarea>
-        </div>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.querySelector("#copyModalClose").addEventListener("click", ()=> modal.remove());
-    modal.addEventListener("click", (e)=>{ if(e.target.classList.contains("overlay")) modal.remove(); });
-  }
-  const ta = modal.querySelector("#copyModalTa");
-  ta.value = String(text ?? "");
-  ta.focus();
-  ta.select();
-  ta.setSelectionRange(0, ta.value.length);
-}
+els.copyBtn.addEventListener("click", ()=> {
+  const tsv = toTSVFromSelected();
+  if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
+  const title = (activeMode==="plays")
+    ? `📋 ${selectedItem?.title || "Oyun"}`
+    : `📋 ${selectedItem?.title || "Kişi"}`;
+  openCopyModal(tsv, title);
+});
 
-function copyText(text){
+
+
+async function copyText(text){
   const value = String(text ?? "");
-  // 1) Synchronous execCommand first (keeps user gesture; works more reliably)
-  try{
-    const ta = document.createElement("textarea");
-    ta.value = value;
-    ta.setAttribute("readonly","readonly");
-    ta.style.position = "fixed";
-    ta.style.top = "-1000px";
-    ta.style.left = "-1000px";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    ta.setSelectionRange(0, ta.value.length);
-    const ok = document.execCommand("copy");
-    ta.remove();
-    if(ok){
-      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
-      setStatus("📋 Kopyalandı", "ok");
-      return Promise.resolve(true);
-    }
-  }catch(e){}
-
-  // 2) Async clipboard as fallback
+  // Modern Clipboard API (secure context)
   if(navigator.clipboard && window.isSecureContext){
-    return navigator.clipboard.writeText(value).then(()=>{
+    try{
+      await navigator.clipboard.writeText(value);
       toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
       setStatus("📋 Kopyalandı", "ok");
       return true;
-    }).catch(()=>{
-      showManualCopy(value);
-      setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
-      return false;
-    });
+    }catch(e){
+      // fall through to legacy
+    }
   }
-
-  // 3) Manual fallback
-  showManualCopy(value);
-  setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
-  return Promise.resolve(false);
+  // Legacy fallback
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = value;
+    ta.setAttribute("readonly", "");
+    ta.style.position="fixed";
+    ta.style.top="-1000px";
+    ta.style.left="-1000px";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    if(ok){
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }
+  }catch(e){}
+  alert("Kopyalama engellendi. Tarayıcı izinlerini kontrol et.");
+  return false;
 }
-
-
 function downloadText(filename, text){
-  const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  // Mobil/Safari uyumu için: önce Blob dene, gerekirse data: URI fallback
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const useDataUrl = isIOS; // iOS Safari'de Blob+download sık sık sorun çıkarıyor
+  try{
+    const a = document.createElement("a");
+    a.style.display = "none";
+    if(useDataUrl){
+      a.href = "data:text/tab-separated-values;charset=utf-8," + encodeURIComponent(text);
+    }else{
+      const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
+      a.href = URL.createObjectURL(blob);
+    }
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ try{ if(!useDataUrl) URL.revokeObjectURL(a.href); }catch{} a.remove(); }, 100);
+  }catch(e){
+    // Son çare: yeni sekmede aç
+    try{ window.open("data:text/plain;charset=utf-8," + encodeURIComponent(text), "_blank"); }catch{}
+  }
 }
 function safeFileName(s){
   return String(s||"").trim().replace(/[\\\/:*?"<>|]+/g,"-").slice(0,80) || "liste";
+}
+
+function toFiguranTSV(figList){
+  const out = [["Kişi","Kategori","Görevler","Oyunlar"]];
+  (figList||[]).forEach(f=>{
+    out.push([
+      f.person,
+      (f.cats||[]).join(", "),
+      (f.roles||[]).join(", "),
+      (f.plays||[]).join(" • ")
+    ]);
+  });
+  return out.map(line=>line.map(v=>String(v??"").replace(/\t/g," ")).join("\t")).join("\n");
 }
 function toFiguranTSVFromSelected(){
   if(!selectedItem) return "";
@@ -2907,27 +1597,28 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
   toast("Figüran listesi indiriliyor…");
 });
 
+
+// Figüranlar sekmesinden indirme
+els.figDownloadAllBtn && els.figDownloadAllBtn.addEventListener("click", ()=>{
+  if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
+  const tsv = toFiguranTSV(figuran);
+  copyText(tsv);
+});
+els.figDownloadFilteredBtn && els.figDownloadFilteredBtn.addEventListener("click", ()=>{
+  const q=els.fq.value.trim().toLowerCase();
+  const filtered = (figuran||[]).filter(f=>{
+    if(!q) return true;
+    const hay=(f.person+" "+(f.cats||[]).join(" ")+" "+f.plays.join(" ")+" "+f.roles.join(" ")).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!filtered.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
+  const tsv = toFiguranTSV(filtered);
+  copyText(tsv);
+});
 els.dq.addEventListener("input", renderDistribution);
 els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution(); });
 
 els.fq.addEventListener("input", renderFiguran);
-
-// Figüran sekmesi: Excel’e Kopyala
-if(els.figDownloadAllBtn){
-  els.figDownloadAllBtn.addEventListener("click", async ()=>{
-    if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
-    const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
-    figuran.forEach((f,i)=>rows.push([i+1, f.person, (f.cats||[]).join(", "), (f.plays||[]).join(" • "), (f.roles||[]).join(", ")]));
-    const tsv = rows
-      .map(r => r
-        .map(v => String(v ?? "")
-          .replace(/\t/g, " ")
-          .replace(/\r?\n/g, " ")
-        ).join("\t")
-      ).join("\n");
-    await copyText(tsv);
-  });
-}
 els.fClear.addEventListener("click", ()=>{ els.fq.value=""; renderFiguran(); });
 
 els.p1.addEventListener("change", renderIntersection);
@@ -2970,44 +1661,11 @@ async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
   try{
-    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
-    if(!isAuto){
-      try{
-        const cached = localStorage.getItem("idt_cache_v1");
-        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
-        if(cached){
-          const ageMin = (Date.now()-cachedAt)/60000;
-          rawRows = JSON.parse(cached);
-          rows = expandRowsByPeople(rawRows);
-          plays = groupByPlay(rows);
-          people = groupByPerson(rows);
-          playsList = plays.map(p=>p.title);
-          renderList();
-          renderDetails(null);
-          distribution = computeDistribution();
-          renderDistribution();
-          retiredSet = computeRetiredSetFromRaw();
-          figuran = computeFiguranFromRaw();
-          renderFiguran();
-          renderPlayOptions();
-          renderIntersection();
-          renderKpis();
-          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
-        }
-      }catch(_){/* cache bozuksa görmezden gel */}
-    }
-
     try{ rawRows = await tryLoadApiJsonp(); }
     catch(e1){
       try{ rawRows = await tryLoadGviz(); }
       catch(e2){ rawRows = await tryLoadCsv(); }
     }
-
-    // Cache (bir sonraki açılışta hızlı render için)
-    try{
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
-    }catch(_){/* localStorage doluysa sorun değil */}
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
@@ -3031,14 +1689,9 @@ async function load(isAuto=false){
 
     renderKpis();
 
-    // cache'e yaz
-    try{
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
-    }catch(_){/* storage dolu olabilir */}
-
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
+
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
   }catch(err){
@@ -3060,157 +1713,3 @@ Hata: ${escapeHtml(err.message || String(err))}
 }
 
 load(false);
-/* --- Fallback init: ensure data load runs --- */
-document.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    if(typeof boot === "function") boot();
-    else if(typeof loadAll === "function") loadAll();
-    else if(typeof load === "function") load();
-    else if(typeof init === "function") init();
-  }catch(e){ console.error(e); }
-});
-
-/* --- Nav polish: Ek Araçlar sekmeye taşınır + ikonlar --- */
-document.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    const nav = document.querySelector(".nav");
-    const advBtn = document.getElementById("advBtn");
-    if(nav && advBtn){
-      advBtn.classList.add("tab");
-      advBtn.classList.remove("btn");
-      nav.appendChild(advBtn);
-    }
-    const iconMap = [
-      ["tabPanel","🏠 "],
-      ["tabDistribution","🎭 "],
-      ["tabIntersection","🔁 "],
-      ["tabFiguran","👥 "],
-      ["tabCharts","📊 "],
-      ["advBtn","🧰 "],
-    ];
-    iconMap.forEach(([id,ico])=>{
-      const el = document.getElementById(id);
-      if(el && !el.dataset.iconed){
-        el.dataset.iconed="1";
-        el.textContent = ico + el.textContent.replace(/^(🧰|📊|👥|🔁|🎭|🏠)\s+/,"");
-      }
-    });
-  }catch(e){ console.error(e); }
-});
-
-/* v26: Intersection badge replace (emoji -> span) */
-document.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    const makeBadge = (n)=>{
-      const s=document.createElement("span");
-      s.className="numBadge";
-      s.textContent=String(n);
-      return s;
-    };
-    const fix = (title,n)=>{
-      const box = document.querySelector(`#viewIntersection .input[title="${title}"]`);
-      if(!box) return;
-      // Remove leading emoji text nodes (1️⃣/2️⃣) if present
-   
-  <!-- Manual Excel Kopyalama Panosu -->
-  <div id="copyBackdrop" class="hidden" aria-hidden="true"></div>
-  <div id="copySheet" class="hidden" role="dialog" aria-modal="true" aria-label="Excel Kopyalama">
-    <div class="row">
-      <div>
-        <div style="font-weight:900;font-size:16px" id="copyTitle">Excel Kopyalama</div>
-        <div class="hint">Tarayıcı otomatik kopyalamayı engellediyse: aşağıdaki metne tıkla → <b>Ctrl+A</b> → <b>Ctrl+C</b> → Excel’de yapıştır.</div>
-      </div>
-      <button class="btn" id="copyCloseBtn">✕</button>
-    </div>
-    <textarea id="copyTextArea" spellcheck="false"></textarea>
-    <div class="row" style="margin-top:10px">
-      <div class="hint">İpucu: Excel’de “Metin sütunlara” gerekirse sekme (TAB) ayırır.</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="copySelectBtn">Seç</button>
-        <button class="btn" id="copyTryBtn">Tekrar Kopyala</button>
-      </div>
-    </div>
-  </div>
-   for(const node of Array.from(box.childNodes)){
-        if(node.nodeType===Node.TEXT_NODE && node.textContent.includes("️⃣")){
-          node.textContent = node.textContent.replace(/\s*\d️⃣\s*/g,"");
-        }
-      }
-      if(!box.querySelector(".numBadge")){
-        box.insertBefore(makeBadge(n), box.firstChild);
-      }
-    };
-    fix("1. Oyun",1);
-    fix("2. Oyun",2);
-  }catch(e){ console.error(e); }
-});
-</script>
-
-  <!-- Mobile detail modal -->
-  <div id="mobileOverlay" class="overlay hidden" aria-hidden="true"></div>
-  <div id="mobileModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detay">
-    <div class="modalHead">
-      <div class="modalTitle">Detay</div>
-      <button id="modalClose" class="btn sm">Kapat</button>
-    </div>
-    <div id="mobileContent" class="modalBody"></div>
-  </div>
-
-</body>
-</html>
-
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-
-  function openCopyModal(text, title){
-    const bd = $("copyBackdrop");
-    const sh = $("copySheet");
-    const ta = $("copyTextArea");
-    const tt = $("copyTitle");
-    if(!bd || !sh || !ta) return;
-
-    tt.textContent = title || "Excel Kopyalama";
-    ta.value = text || "";
-    bd.classList.remove("hidden");
-    sh.classList.remove("hidden");
-
-    // focus + select
-    setTimeout(()=>{
-      ta.focus();
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-    }, 30);
-  }
-
-  function closeCopyModal(){
-    $("copyBackdrop")?.classList.add("hidden");
-    $("copySheet")?.classList.add("hidden");
-  }
-
-  window.openCopyModal = openCopyModal;
-
-  $("copyBackdrop")?.addEventListener("click", closeCopyModal);
-  $("copyCloseBtn")?.addEventListener("click", closeCopyModal);
-  $("copySelectBtn")?.addEventListener("click", ()=>{
-    const ta=$("copyTextArea"); if(!ta) return;
-    ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
-  });
-  $("copyTryBtn")?.addEventListener("click", async ()=>{
-    const ta=$("copyTextArea"); if(!ta) return;
-    try{
-      await navigator.clipboard.writeText(ta.value);
-    }catch(e){
-      // ignore; user can still manual copy
-    }
-    const s = document.getElementById("status");
-    if(s) s.textContent = "📋 Kopyalama denendi (olmadıysa manuel kopyala).";
-  });
-
-  document.addEventListener("keydown", (e)=>{
-    if(e.key==="Escape"){
-      if(!$("copySheet")?.classList.contains("hidden")) closeCopyModal();
-    }
-  });
-})();
-</script>
