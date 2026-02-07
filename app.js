@@ -2,8 +2,8 @@
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
-    API_NOTIFS: "https://script.google.com/macros/s/AKfycbx-Q5P-dF5EB3GGCSHMUFV3din4OEYHhvSeGSZZjmSj7fN4_XtEL4h9E55XFy0-tL8V/exec",
-SHEET_MAIN: "BÜTÜN OYUNLAR",
+  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbx-Q5P-dF5EB3GGCSHMUFV3din4OEYHhvSeGSZZjmSj7fN4_XtEL4h9E55XFy0-tL8V/exec",
+  SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
   SHEET_NOTIFS: "BİLDİRİMLER",
 
@@ -18,6 +18,18 @@ SHEET_MAIN: "BÜTÜN OYUNLAR",
   gvizUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${Date.now()}`; },
   csvUrl(gid=this.GID){  return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/export?format=csv&gid=${gid}&_=${Date.now()}`; },
 };
+/* ---------- cache (5dk) ---------- */
+const CACHE_MAIN_KEY = "idt_data_cache_v1";
+function cacheGet(key){
+  try{ const raw = localStorage.getItem(key); return raw? JSON.parse(raw): null; }catch(e){ return null; }
+}
+function cacheSet(key, data){
+  try{ localStorage.setItem(key, JSON.stringify({timestamp: Date.now(), data})); }catch(e){}
+}
+function cacheFresh(entry, maxAgeMs){
+  return entry && entry.timestamp && (Date.now() - entry.timestamp) < maxAgeMs && entry.data;
+}
+
 
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
@@ -548,8 +560,8 @@ async function loadNotifications(){
 
   // BİLDİRİMLER sheet'i yoksa / boşsa kibarca göster
   try{
-    const base = CONFIG.API_NOTIFS || CONFIG.API_BASE;
-    const url = `${base}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
+    const notifBase = CONFIG.NOTIF_API_BASE || CONFIG.API_BASE;
+    const url = `${notifBase}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
     const data = await jsonp(url);
     if(!data || data.ok !== true || !Array.isArray(data.rows)){
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
@@ -753,6 +765,7 @@ function renderList(){
   const filtered = applyFilters(source);
 
   els.list.innerHTML="";
+  const frag = document.createDocumentFragment();
   if(!filtered.length){
     els.list.innerHTML = `<div class="empty">Sonuç yok 😅</div>`;
     els.hint.textContent = "";
@@ -819,9 +832,11 @@ function renderList(){
       }
 
     });
-    els.list.appendChild(div);
+    frag.appendChild(div);
   }
 
+
+  els.list.appendChild(frag);
 
   if(isMobile() && activeMode==="people" && activePlayFilter){
     els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
@@ -1545,7 +1560,7 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false));
+els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -1569,7 +1584,7 @@ if(els.qScope){
     const v=els.qScope.value;
     if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
     else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=false; activeMode="roles"; activePlayFilter=null; }
+    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
     // all: mode değiştirme
     activeId=null; selectedItem=null;
     renderList(); renderDetails(null);
@@ -1783,17 +1798,29 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false){
+async function load(isAuto=false, forceRefresh=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
+  // Skeleton
+  if(els.list) els.list.innerHTML = `<div class="empty">⏳ Yükleniyor…</div>`;
+  if(els.details) els.details.innerHTML = `<div class="empty">⏳ Yükleniyor…</div>`;
   activeId=null; selectedItem=null;
-  try{
-    try{ rawRows = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ rawRows = await tryLoadGviz(); }
-      catch(e2){ rawRows = await tryLoadCsv(); }
+  // 1) Cache'den oku (5dkz)
+    const cached = cacheGet(CACHE_MAIN_KEY);
+    const fresh = !forceRefresh && cacheFresh(cached, 5*60*1000);
+    if(fresh){
+      rawRows = fresh;
+      const when = new Date(cached.timestamp).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+      setStatus(`✅ Hazır (cache) • ${when}`, "ok");
+    }else{
+      // 2) Ağdan çek (API → GViz → CSV)
+      try{ rawRows = await tryLoadApiJsonp(); }
+      catch(e1){
+        try{ rawRows = await tryLoadGviz(); }
+        catch(e2){ rawRows = await tryLoadCsv(); }
+      }
+      cacheSet(CACHE_MAIN_KEY, rawRows);
     }
-
-    rows = expandRowsByPeople(rawRows);
+rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
     roles = groupByRole(rows);
@@ -1806,7 +1833,6 @@ async function load(isAuto=false){
     distribution = computeDistribution();
     renderDistribution();
 
-    retiredSet = computeRetiredSetFromRaw();
     retiredSet = computeRetiredSetFromRaw();
     figuran = computeFiguranFromRaw();
     renderFiguran();
@@ -1823,6 +1849,30 @@ async function load(isAuto=false){
     loadNotifications();
   }catch(err){
     console.error(err);
+    // Offline fallback: cache varsa göster
+    const cached = cacheGet(CACHE_MAIN_KEY);
+    const cachedData = cached && cached.data;
+    if(cachedData){
+      rawRows = cachedData;
+      rows = expandRowsByPeople(rawRows);
+      plays = groupByPlay(rows);
+      people = groupByPerson(rows);
+      roles = groupByRole(rows);
+      playsList = plays.map(p=>p.title);
+      renderList();
+      renderDetails(null);
+      distribution = computeDistribution();
+      renderDistribution();
+      retiredSet = computeRetiredSetFromRaw();
+      figuran = computeFiguranFromRaw();
+      renderFiguran();
+      renderPlayOptions();
+      renderIntersection();
+      renderKpis();
+      setStatus("⚠️ Bağlantı zayıf • Son kaydedilen veriler gösteriliyor", "warn");
+      loadNotifications();
+      return;
+    }
     setStatus("⛔ Veri çekilemedi", "bad");
     els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
 <b>Veri çekilemedi.</b>
