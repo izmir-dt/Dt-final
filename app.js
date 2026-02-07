@@ -1937,7 +1937,6 @@ async function load(isAuto=false, forceRefresh=false){
     setStatus("⛔ Veri yüklenemedi. Sheet paylaşımını ve bağlantıyı kontrol et.", "bad");
   }
 }
-}
 
 
 /* ---------- KPI shortcuts (stabil veri çekmeyi BOZMADAN) ---------- */
