@@ -1136,14 +1136,17 @@ button, a{touch-action:manipulation;}
         <div class="filters">
           <div class="input" title="Ara">
             🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
+<button class="q-clear" id="qClear" title="Temizle">✕</button>
+          </div>
+          <div class="qScopeOutside" title="Arama kapsamı">
+            <select id="qScope" class="q-scope">
               <option value="all">Tümü</option>
               <option value="play">Oyun</option>
               <option value="person">Kişi</option>
               <option value="role">Görev</option>
-            </select></div>
-            <button class="q-clear" id="qClear" title="Temizle">✕</button>
+            </select>
           </div>
+
 <div class="seg" title="Görünüm">
             <button id="btnPlays" class="active">🎭 Oyunlar</button>
             <button id="btnPeople">👥 Kişiler</button>
@@ -1254,7 +1257,7 @@ button, a{touch-action:manipulation;}
       <div class="card">
         <div class="hd">
           <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><button class="btn" id="chartDownloadBtn" title="Grafiği PDF olarak indir">🧾 PDF indir</button></div>
+          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
         </div>
         <div class="bd">
           <canvas id="chartMain" width="900" height="340"></canvas>
@@ -1272,6 +1275,7 @@ button, a{touch-action:manipulation;}
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="chartDownloadBtn" title="Grafik + listeyi PDF olarak indir">🧾 PDF</button>
             <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
             <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
             <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
@@ -1316,5 +1320,24 @@ button, a{touch-action:manipulation;}
 
 
   <script src="app.js" defer></script>
+
+  <!-- Clipboard / Excel Pano -->
+  <div id="clipBackdrop" class="backdrop hidden" aria-hidden="true"></div>
+  <div id="clipSheet" class="clipSheet hidden" role="dialog" aria-modal="true" aria-label="Excel Panosu">
+    <div class="hd">
+      <div>
+        <div class="drawerTitle">Excel Panosu</div>
+        <div class="drawerSub">Kopyaladığın veriyi buradan seçip tekrar kopyalayabilirsin.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="clipClose">✕</button>
+      </div>
+    </div>
+    <div class="bd">
+      <textarea id="clipText" spellcheck="false"></textarea>
+      <div class="small">İpucu: Ctrl+V / Yapıştır ile Excel’e yapıştır.</div>
+    </div>
+  </div>
+
 </body>
 </html>
