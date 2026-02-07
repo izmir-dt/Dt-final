@@ -195,7 +195,7 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
-els.themeBtn && els.themeBtn.addEventListener("click", ()=>{
+els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
@@ -211,15 +211,23 @@ function setTabbarActive(tabName){
 function initTabbar(){
   const bar = document.getElementById("tabbar");
   if(!bar) return;
-  bar.addEventListener("click", (e)=>{
-    const btn = e.target.closest(".tb");
-    if(!btn) return;
-    const t = btn.getAttribute("data-tab");
+
+  const go = (t)=>{
     if(t==="Panel") els.tabPanel && els.tabPanel.click();
     else if(t==="Analiz") els.tabIntersection && els.tabIntersection.click();
     else if(t==="Figuran") els.tabFiguran && els.tabFiguran.click();
     else if(t==="Grafikler") els.tabCharts && els.tabCharts.click();
-  });
+  };
+
+  const bind = (btn)=>{
+    const t = btn.getAttribute("data-tab");
+    const handler = (e)=>{ e.preventDefault(); e.stopPropagation(); go(t); setTabbarActive(t); };
+    btn.addEventListener("click", handler, {passive:false});
+    // Bazı mobil tarayıcılarda click gecikebiliyor → touchend ile garanti
+    btn.addEventListener("touchend", handler, {passive:false});
+  };
+
+  bar.querySelectorAll(".tb").forEach(bind);
 }
 /* ---------- helpers ---------- */
 function setStatus(text, tone="") {
@@ -1225,8 +1233,8 @@ function closeDrawer(){
   drawerData = [];
   els.drawerList.innerHTML = "";
 }
-els.drawerClose && els.drawerClose.addEventListener("click", closeDrawer);
-els.drawerSearch && els.drawerSearch.addEventListener("input", renderDrawerList);
+els.drawerClose.addEventListener("click", closeDrawer);
+els.drawerSearch.addEventListener("input", renderDrawerList);
 
 function renderDrawerList(){
   const q = els.drawerSearch.value.trim().toLowerCase();
@@ -1269,7 +1277,7 @@ function hitTestChart(evt){
   return null;
 }
 
-els.chartMain && els.chartMain.addEventListener("click", (evt)=>{
+els.chartMain.addEventListener("click", (evt)=>{
   const h = hitTestChart(evt);
   if(!h) return;
   const key = h.key;
@@ -1479,11 +1487,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1535,7 +1543,7 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn && els.reloadBtn.addEventListener("click", ()=>load(false));
+els.reloadBtn.addEventListener("click", ()=>load(false));
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -1550,12 +1558,12 @@ els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn && els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
+els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
 renderList(); });
 
-els.q && els.q.addEventListener("input", ()=>renderList());
+els.q.addEventListener("input", ()=>renderList());
 if(els.qScope){
-  els.qScope && els.qScope.addEventListener("change", ()=>{
+  els.qScope.addEventListener("change", ()=>{
     const v=els.qScope.value;
     if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
     else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
@@ -1566,14 +1574,14 @@ if(els.qScope){
   });
 }
 
-els.btnPlays && els.btnPlays.addEventListener("click", ()=>{
+els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
   renderList(); renderDetails(null);
 });
-els.btnPeople && els.btnPeople.addEventListener("click", ()=>{
+els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
@@ -1595,7 +1603,7 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-els.copyBtn && els.copyBtn.addEventListener("click", async ()=>{
+els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
   try{
@@ -1841,8 +1849,9 @@ function initKpiShortcuts(){
       if(go==="Panel"){ els.tabPanel && els.tabPanel.click(); }
       if(mode==="plays"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
       else if(mode==="people"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-      else if(mode==="assignments"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
-      renderList(); renderDetails(null);
+      else if(mode==="rows" || mode==="assignments"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
+      try{ if(els.qScope){ els.qScope.value = (activeMode==="plays"?"play":(activeMode==="people"?"person":(activeMode==="roles"?"role":"all"))); } }catch{};
+    renderList(); renderDetails(null);
       window.scrollTo({top:0, behavior:"smooth"});
     };
     card.addEventListener("click", act);
@@ -1876,8 +1885,30 @@ function initKpiShortcuts(){
   }
   if(els.chartDownloadBtn){
     els.chartDownloadBtn.addEventListener("click", ()=>{
-      // PDF indir = yazdır penceresi (PDF olarak kaydet)
+      // PDF indir: en stabil yöntem = grafiği yeni pencerede açıp yazdır (PDF olarak kaydet)
       els.tabCharts && els.tabCharts.click();
+
+      const canvas = els.chartMain;
+      try{
+        if(canvas && canvas.toDataURL && getComputedStyle(canvas).display !== "none"){
+          const dataUrl = canvas.toDataURL("image/png");
+          const w = window.open("", "_blank");
+          if(w){
+            w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>İDT Grafik</title>
+              <style>body{margin:0;font-family:Arial,sans-serif} img{max-width:100%;height:auto;display:block;margin:16px auto}</style>
+              </head><body><img src="${dataUrl}" alt="Grafik"></body></html>`);
+            w.document.close();
+            w.focus();
+            setStatus("🧾 PDF indir: Açılan sekmede Yazdır → PDF olarak kaydet.", "ok");
+            setTimeout(()=>{ try{ w.print(); }catch{} }, 250);
+            return;
+          }
+        }
+      }catch(err){
+        console.warn(err);
+      }
+
+      // Fallback
       setStatus("🧾 PDF indir: Yazdır ekranında 'PDF olarak kaydet' seç.", "ok");
       requestAnimationFrame(()=>{ window.print(); });
     });
