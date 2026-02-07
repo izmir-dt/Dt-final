@@ -163,14 +163,6 @@ const els = {
   kpiRows: el("kpiRows"),
   kpiFiguran: el("kpiFiguran"),
 };
-
-
-function reqEl(x, name){
-  if(!x){
-    throw new Error("HTML eksik: #" + name + " bulunamadı (index.html ile app.js uyumsuz).");
-  }
-  return x;
-}
 els.sheetBtn.href = CONFIG.sheetUrl();
 
 let rawRows = [];
@@ -203,7 +195,7 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
-els.themeBtn.addEventListener("click", ()=>{
+els.themeBtn && els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
@@ -1233,8 +1225,8 @@ function closeDrawer(){
   drawerData = [];
   els.drawerList.innerHTML = "";
 }
-els.drawerClose.addEventListener("click", closeDrawer);
-els.drawerSearch.addEventListener("input", renderDrawerList);
+els.drawerClose && els.drawerClose.addEventListener("click", closeDrawer);
+els.drawerSearch && els.drawerSearch.addEventListener("input", renderDrawerList);
 
 function renderDrawerList(){
   const q = els.drawerSearch.value.trim().toLowerCase();
@@ -1277,7 +1269,7 @@ function hitTestChart(evt){
   return null;
 }
 
-els.chartMain.addEventListener("click", (evt)=>{
+els.chartMain && els.chartMain.addEventListener("click", (evt)=>{
   const h = hitTestChart(evt);
   if(!h) return;
   const key = h.key;
@@ -1487,11 +1479,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1543,7 +1535,7 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false));
+els.reloadBtn && els.reloadBtn.addEventListener("click", ()=>load(false));
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -1558,32 +1550,30 @@ els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
+els.clearBtn && els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
 renderList(); });
 
-els.q.addEventListener("input", ()=>renderList());
+els.q && els.q.addEventListener("input", ()=>renderList());
 if(els.qScope){
-  els.qScope.addEventListener("change", ()=>{
+  els.qScope && els.qScope.addEventListener("change", ()=>{
     const v=els.qScope.value;
     if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
     else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
+    else if(v==="role"){ showAssignments=false; activeMode="roles"; activePlayFilter=null; }
     // all: mode değiştirme
     activeId=null; selectedItem=null;
     renderList(); renderDetails(null);
   });
 }
 
-els.btnPlays.addEventListener("click", ()=>{
-  showAssignments=false;
+els.btnPlays && els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
   renderList(); renderDetails(null);
 });
-els.btnPeople.addEventListener("click", ()=>{
-  showAssignments=false;
+els.btnPeople && els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
@@ -1605,7 +1595,7 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-els.copyBtn.addEventListener("click", async ()=>{
+els.copyBtn && els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
   try{
