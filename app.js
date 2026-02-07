@@ -890,6 +890,8 @@ function renderList(){
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
 
 
+}
+
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
@@ -1728,7 +1730,7 @@ els.copyBtn.addEventListener("click", async ()=>{
 });
 
 
-async async function copyText(text){
+async function copyText(text){
   const value = String(text ?? "");
   // Modern Clipboard API (secure context)
   if(navigator.clipboard && window.isSecureContext){
