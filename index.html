@@ -1062,6 +1062,22 @@ body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
 /* Mobile tap reliability */
 #tabbar .tb{touch-action:manipulation;}
 button, a{touch-action:manipulation;}
+
+/* ==== vSTABLE-PATCH (UI only) ==== */
+/* Panel: arama + kapsam aynı satır (mobilde de) */
+.filters .input{display:flex; align-items:center; gap:10px; flex-wrap:nowrap;}
+.filters .input input{flex:1 1 auto; min-width:0;}
+.qScopeBox{flex:0 0 auto;}
+@media (max-width: 560px){
+  .filters .input{gap:8px;}
+  .qScopeBox{padding:6px 10px;}
+  select.q-scope{font-size:13px;}
+}
+
+/* Grafikler: başlık satırında aksiyonlar sağda */
+.chartHdRow{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.chartHdRow .rightActions{display:flex; gap:8px; align-items:center; justify-content:flex-end;}
+
 </style>
 </head>
 <body>
@@ -1090,7 +1106,8 @@ button, a{touch-action:manipulation;}
         <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
           🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
         </button>
-<div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
+        <div id="notifBackdrop" class="hidden"></div>
+        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
           <div class="notifHd">
             <div>
               <b>Bildirimler</b>
@@ -1136,17 +1153,14 @@ button, a{touch-action:manipulation;}
         <div class="filters">
           <div class="input" title="Ara">
             🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-<button class="q-clear" id="qClear" title="Temizle">✕</button>
-          </div>
-          <div class="qScopeOutside" title="Arama kapsamı">
-            <select id="qScope" class="q-scope">
+            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
               <option value="all">Tümü</option>
               <option value="play">Oyun</option>
               <option value="person">Kişi</option>
               <option value="role">Görev</option>
-            </select>
+            </select></div>
+            <button class="q-clear" id="qClear" title="Temizle">✕</button>
           </div>
-
 <div class="seg" title="Görünüm">
             <button id="btnPlays" class="active">🎭 Oyunlar</button>
             <button id="btnPeople">👥 Kişiler</button>
@@ -1257,7 +1271,7 @@ button, a{touch-action:manipulation;}
       <div class="card">
         <div class="hd">
           <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
+          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><button class="btn" id="chartDownloadBtn" title="Grafiği PDF olarak indir">🧾 PDF indir</button></div>
         </div>
         <div class="bd">
           <canvas id="chartMain" width="900" height="340"></canvas>
@@ -1275,7 +1289,6 @@ button, a{touch-action:manipulation;}
             <div class="drawerSub" id="drawerSub">—</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn" id="chartDownloadBtn" title="Grafik + listeyi PDF olarak indir">🧾 PDF</button>
             <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
             <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
             <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
@@ -1320,24 +1333,5 @@ button, a{touch-action:manipulation;}
 
 
   <script src="app.js" defer></script>
-
-  <!-- Clipboard / Excel Pano -->
-  <div id="clipBackdrop" class="backdrop hidden" aria-hidden="true"></div>
-  <div id="clipSheet" class="clipSheet hidden" role="dialog" aria-modal="true" aria-label="Excel Panosu">
-    <div class="hd">
-      <div>
-        <div class="drawerTitle">Excel Panosu</div>
-        <div class="drawerSub">Kopyaladığın veriyi buradan seçip tekrar kopyalayabilirsin.</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn" id="clipClose">✕</button>
-      </div>
-    </div>
-    <div class="bd">
-      <textarea id="clipText" spellcheck="false"></textarea>
-      <div class="small">İpucu: Ctrl+V / Yapıştır ile Excel’e yapıştır.</div>
-    </div>
-  </div>
-
 </body>
 </html>
