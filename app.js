@@ -18,6 +18,31 @@ const CONFIG = {
   gvizUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${Date.now()}`; },
   csvUrl(gid=this.GID){  return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/export?format=csv&gid=${gid}&_=${Date.now()}`; },
 };
+
+// === Responsive Stack Table Helper (adds data-label from <th>) ===
+function applyResponsiveTables(root=document) {
+  try {
+    const tables = Array.from(root.querySelectorAll("table"));
+    tables.forEach(t => t.classList.add("responsive-stack"));
+    tables.forEach(table => {
+      const ths = Array.from(table.querySelectorAll("thead th"));
+      const headers = ths.map(th => (th.textContent || "").trim());
+      if (!headers.length) return;
+      const rows = Array.from(table.querySelectorAll("tbody tr"));
+      rows.forEach(tr => {
+        const cells = Array.from(tr.children).filter(el => el.tagName === "TD");
+        cells.forEach((td, idx) => {
+          const label = headers[idx] || "";
+          if (label) td.setAttribute("data-label", label);
+        });
+      });
+    });
+  } catch (e) {
+    // never break data fetching / UI because of this helper
+  }
+}
+
+
 /* ---------- cache (5dk) ---------- */
 const CACHE_MAIN_KEY = "idt_data_cache_v1";
 function cacheGet(key){
@@ -2008,3 +2033,22 @@ initKpiShortcuts();
 initTabbar();
 
 load(false);
+
+
+// Keep responsive labels in sync when tables re-render
+(function initResponsiveTableObserver(){
+  try {
+    const schedule = () => {
+      if (window.__idt_rt_to) clearTimeout(window.__idt_rt_to);
+      window.__idt_rt_to = setTimeout(() => applyResponsiveTables(document), 50);
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", schedule);
+    } else {
+      schedule();
+    }
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.body, { childList: true, subtree: true });
+  } catch (e) {}
+})();
+
