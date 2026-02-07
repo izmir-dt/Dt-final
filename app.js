@@ -23,6 +23,55 @@ function isMobile(){
 }
 
 // Filtre eşleşmeleri: boşluk / büyük-küçük harf / görünmez karakter farklarını tolere et
+
+// --- Fuzzy search (mobile-friendly) ---
+function isSubsequence(hay, needle){
+  let i=0,j=0;
+  while(i<hay.length && j<needle.length){
+    if(hay[i]===needle[j]) j++;
+    i++;
+  }
+  return j===needle.length;
+}
+function levenshtein(a,b){
+  a=String(a); b=String(b);
+  const m=a.length, n=b.length;
+  if(!m) return n;
+  if(!n) return m;
+  const dp = Array(n+1);
+  for(let j=0;j<=n;j++) dp[j]=j;
+  for(let i=1;i<=m;i++){
+    let prev=dp[0]; dp[0]=i;
+    for(let j=1;j<=n;j++){
+      const tmp=dp[j];
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      dp[j]=Math.min(dp[j]+1, dp[j-1]+1, prev+cost);
+      prev=tmp;
+    }
+  }
+  return dp[n];
+}
+function fuzzyTokenMatch(hay, tok){
+  if(!tok) return true;
+  if(hay.includes(tok)) return true;
+  if(tok.length>=3 && isSubsequence(hay, tok)) return true;
+  if(tok.length<=6 && hay.length<=80){
+    // allow small typos for short tokens
+    const words = hay.split(/\s+/g).slice(0,40);
+    for(const w of words){
+      if(Math.abs(w.length - tok.length) <= 2 && levenshtein(w, tok) <= 1) return true;
+    }
+  }
+  return false;
+}
+function fuzzyMatch(hay, q){
+  const query = (q||"").trim().toLowerCase();
+  if(!query) return true;
+  const h = (hay||"").toLowerCase();
+  const toks = query.split(/\s+/g).filter(Boolean);
+  return toks.every(t=>fuzzyTokenMatch(h, t));
+}
+
 function normKey(s){
   return String(s||"")
     .trim()
@@ -101,6 +150,7 @@ const els = {
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
+  chartDownloadBtn: el("chartDownloadBtn"),
 
   drawer: el("chartDrawer"),
   drawerTitle: el("drawerTitle"),
@@ -115,6 +165,12 @@ const els = {
   kpiFiguran: el("kpiFiguran"),
 };
 els.sheetBtn.href = CONFIG.sheetUrl();
+
+// chart tooltip
+chartTipEl = document.createElement("div");
+chartTipEl.className = "chartTip hidden";
+document.body.appendChild(chartTipEl);
+
 
 let rawRows = [];
 let rows = [];
@@ -132,6 +188,7 @@ let activePlayFilter = null; // mobilde: oyundan kişilere geçince filtre
 
 let chartMode = "roles"; // roles | cats
 let chartHits = []; // clickable regions
+let chartTipEl = null;
 let drawerData = [];
 
 /* ---------- Theme toggle ---------- */
@@ -144,6 +201,27 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
+
+/* ---------- Mobile Tab Bar ---------- */
+function setTabbarActive(tabName){
+  const bar = document.getElementById("tabbar");
+  if(!bar) return;
+  bar.querySelectorAll(".tb").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===tabName));
+}
+function initTabbar(){
+  const bar = document.getElementById("tabbar");
+  if(!bar) return;
+  bar.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".tb");
+    if(!btn) return;
+    const t = btn.getAttribute("data-tab");
+    if(t==="Panel") els.tabPanel.click();
+    else if(t==="Distribution") els.tabDistribution.click();
+    else if(t==="Intersection") els.tabIntersection.click();
+    else if(t==="Charts") els.tabCharts.click();
+  });
+}
+
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
@@ -618,7 +696,7 @@ return list.filter(it=>{
       const playKey = normKey(activePlayFilter);
       if(!((it.plays||[]).some(p=>normKey(p)===playKey))) return false;
     }
-    if(q && !hay.includes(q)) return false;
+    if(q && !fuzzyMatch(hay, q)) return false;
     if(cat){
       const cats=(it.cats||[]).map(x=>x.toLowerCase());
       if(!cats.some(x=>x.includes(cat))) return false;
@@ -628,6 +706,50 @@ return list.filter(it=>{
 }
 
 /* ---------- UI render ---------- */
+
+function attachLongPress(node, onLong){
+  let timer=null;
+  const start = (e)=>{
+    if(!isMobile()) return;
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(()=>{
+      timer=null;
+      try{ onLong(e); }catch{}
+    }, 520);
+  };
+  const cancel = ()=>{
+    if(timer){ clearTimeout(timer); timer=null; }
+  };
+  node.addEventListener("touchstart", start, {passive:true});
+  node.addEventListener("touchend", cancel);
+  node.addEventListener("touchmove", cancel);
+  node.addEventListener("touchcancel", cancel);
+}
+function openMobileActionMenu(it){
+  if(!isMobile()) return;
+  const title = escapeHtml(it.title||"");
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="mobile-breadcrumb"><span class="mb-text">📌 İşlem</span><span class="mb-text" style="opacity:.7">${title}</span></div>
+      <button class="btn good" id="mActOpen">🔎 Detayı Aç</button>
+      <button class="btn" id="mActCopy">📋 Kopyala</button>
+      <button class="btn" id="mActClose">✕ Kapat</button>
+    </div>`;
+  openMobileModal(html);
+  setTimeout(()=>{
+    const o=document.getElementById("mActOpen");
+    const c=document.getElementById("mActCopy");
+    const x=document.getElementById("mActClose");
+    if(o) o.onclick=()=>{ closeMobileModal(); selectItem(it.id); };
+    if(c) c.onclick=()=>{ 
+      const text = (activeMode==="plays") ? it.title : it.title;
+      navigator.clipboard?.writeText(text).catch(()=>{});
+      closeMobileModal();
+    };
+    if(x) x.onclick=closeMobileModal;
+  }, 0);
+}
+
 function renderList(){
   const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
@@ -662,6 +784,10 @@ function renderList(){
       </div>
       <div class="chips">${chips}${more}</div>
     `;
+
+    // Long-press (mobile): quick actions
+    attachLongPress(div, ()=>openMobileActionMenu(it));
+
     div.addEventListener("click", ()=>{
       activeId=it.id;
       selectedItem = it;
@@ -1036,6 +1162,64 @@ function renderMobileChartList(items){
 }
 function rowsAll(){ return rows || []; }
 
+
+function hitAt(x,y){
+  for(const h of chartHits||[]){
+    if(x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h) return h;
+  }
+  return null;
+}
+function showChartTip(hit, clientX, clientY){
+  if(!chartTipEl || !hit) return;
+  chartTipEl.innerHTML = `${escapeHtml(hit.label||"")}` + (hit.value!=null ? ` <b>${escapeHtml(String(hit.value))}</b>` : "");
+  chartTipEl.style.left = clientX + "px";
+  chartTipEl.style.top  = clientY + "px";
+  chartTipEl.classList.remove("hidden");
+}
+function hideChartTip(){
+  if(!chartTipEl) return;
+  chartTipEl.classList.add("hidden");
+}
+function initChartUX(){
+  if(!els.chartMain) return;
+  // hover tooltip (desktop)
+  els.chartMain.addEventListener("mousemove", (e)=>{
+    const rect = els.chartMain.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (els.chartMain.width / rect.width);
+    const y = (e.clientY - rect.top)  * (els.chartMain.height / rect.height);
+    const hit = hitAt(x,y);
+    if(hit) showChartTip(hit, e.clientX, e.clientY);
+    else hideChartTip();
+  });
+  els.chartMain.addEventListener("mouseleave", hideChartTip);
+
+  // tap tooltip (mobile just in case canvas visible)
+  els.chartMain.addEventListener("click", (e)=>{
+    if(!isMobile()) return;
+    const rect = els.chartMain.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (els.chartMain.width / rect.width);
+    const y = (e.clientY - rect.top)  * (els.chartMain.height / rect.height);
+    const hit = hitAt(x,y);
+    if(hit){ showChartTip(hit, e.clientX, e.clientY); setTimeout(hideChartTip, 1200); }
+  });
+
+  // download
+  if(els.chartDownloadBtn){
+    els.chartDownloadBtn.addEventListener("click", ()=>{
+      try{
+        const url = els.chartMain.toDataURL("image/png");
+        const a = document.createElement("a");
+        const title = (els.chartTitle?.textContent || "grafik").trim().replace(/\s+/g,"_");
+        a.download = `${title}.png`;
+        a.href = url;
+        a.click();
+      }catch(err){
+        alert("İndirme desteklenmiyor.");
+      }
+    });
+  }
+}
+
 function drawChart(){
   if(!rows.length) return;
   if(chartMode==="roles"){
@@ -1301,6 +1485,7 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
+  setTabbarActive(which);
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
   const slugMap = {
@@ -1670,4 +1855,6 @@ Hata: ${escapeHtml(err.message || String(err))}
   }
 }
 
+initTabbar();
+initChartUX();
 load(false);
