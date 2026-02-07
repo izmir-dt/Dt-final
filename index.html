@@ -4,6 +4,9 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
 
 :root{
@@ -881,6 +884,76 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
+
+/* --- Fonts --- */
+body{font-family: Inter, Arial, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;}
+.mono, .kpi .value, .chipCount{font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+/* --- Zebra tables --- */
+.table tbody tr:nth-child(even){ background: color-mix(in srgb, var(--card) 84%, var(--bg) 16%); }
+
+/* --- Chart polish --- */
+#viewCharts canvas{
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, #fff 4%), color-mix(in srgb, var(--card) 90%, var(--bg) 10%));
+}
+html[data-theme="dark"] #viewCharts canvas{
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+  background: linear-gradient(180deg, rgba(15,23,42,.92), rgba(11,16,32,.92));
+}
+#viewCharts .card .hd{justify-content:space-between}
+
+/* --- Chart tooltip --- */
+.chartTip{
+  position:fixed;
+  z-index:9999;
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
+  background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+  box-shadow: var(--shadow);
+  font-size:13px;
+  pointer-events:none;
+  transform: translate(-50%, calc(-100% - 10px));
+  white-space:nowrap;
+}
+.chartTip b{font-family:"JetBrains Mono", ui-monospace, monospace; font-weight:900; margin-left:6px;}
+
+/* --- Mobile Tab Bar (thumb-driven) --- */
+.tabbar{display:none;}
+@media (max-width: 980px){
+  body{ padding-bottom: 72px; }
+  .nav{ display:none !important; }
+  .tabbar{
+    display:flex;
+    position:fixed;
+    left:12px; right:12px; bottom:12px;
+    height:56px;
+    border-radius:18px;
+    border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
+    background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+    box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    overflow:hidden;
+    z-index:120;
+  }
+  html[data-theme="dark"] .tabbar{ box-shadow: 0 16px 50px rgba(0,0,0,.55); }
+  .tabbar .tb{
+    flex:1;
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    font-size:20px;
+    cursor:pointer;
+  }
+  .tabbar .tb.active{
+    color:var(--text);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
+  }
+}
+
+/* Remove labels in seg buttons */
+#btnPlays, #btnPeople{min-width:48px; justify-content:center;}
+
 </style>
 </head>
 <body>
@@ -889,7 +962,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     <div class="brand">
       <div class="logo">IDT</div>
       <div>
-        <h1>İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</h1>
+        <h1><span style="font-weight:900;letter-spacing:.3px">İDT PANEL</span> <span class="sub" style="display:inline; margin-left:8px">SANAT TEKNİK BÜROSU</span></h1>
         </div>
     </div>
     <div class="actions">
@@ -963,8 +1036,8 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
             <button class="q-clear" id="qClear" title="Temizle">✕</button>
           </div>
 <div class="seg" title="Görünüm">
-            <button id="btnPlays" class="active">🎭 Oyunlar</button>
-            <button id="btnPeople">👥 Kişiler</button>
+            <button id="btnPlays" class="active">🎭</button>
+            <button id="btnPeople">👥</button>
           </div>
 
           <button class="btn" id="clearBtn">Temizle</button>
@@ -1072,6 +1145,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
         <div class="hd">
           <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
           <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div>
+          <button class="btn" id="chartDownloadBtn" title="Grafiği PNG indir">⬇ İndir</button>
         </div>
         <div class="bd">
           <canvas id="chartMain" width="900" height="340"></canvas>
@@ -3127,6 +3201,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
     </div>
     <div id="mobileContent" class="modalBody"></div>
   </div>
+
+
+<nav class="tabbar" id="tabbar" aria-label="Alt menü">
+  <button class="tb active" data-tab="Panel" aria-label="Panel">🏠</button>
+  <button class="tb" data-tab="Distribution" aria-label="Dağılım">📊</button>
+  <button class="tb" data-tab="Intersection" aria-label="Kesişim">🧩</button>
+  <button class="tb" data-tab="Charts" aria-label="Grafikler">📈</button>
+</nav>
 
 </body>
 </html>
