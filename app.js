@@ -234,9 +234,10 @@ function initTabbar(){
 
   const bind = (btn)=>{
     const t = btn.getAttribute("data-tab");
-    const handler = (e)=>{ e.stopPropagation(); go(t); setTabbarActive(t); };
-    btn.addEventListener("click", handler);
-    btn.addEventListener("pointerup", handler);
+    const handler = (e)=>{ e.preventDefault(); e.stopPropagation(); go(t); setTabbarActive(t); };
+    btn.addEventListener("click", handler, {passive:false});
+    // Bazı mobil tarayıcılarda click gecikebiliyor → touchend ile garanti
+    btn.addEventListener("touchend", handler, {passive:false});
   };
 
   bar.querySelectorAll(".tb").forEach(bind);
@@ -759,28 +760,6 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
-
-function inlinePanelHtml(it){
-  // Mobilde kartın altında açılan detay (accordion)
-  const rows = (it.rows||[]);
-  const sorted = [...rows].sort((a,b)=>
-    (a.category||"").localeCompare(b.category||"","tr") ||
-    (a.role||"").localeCompare(b.role||"","tr") ||
-    (a.person||"").localeCompare(b.person||"","tr")
-  );
-  const head = (activeMode==="plays")
-    ? "<thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>"
-    : "<thead><tr><th>Oyun</th><th>Görev</th><th>Kategori</th></tr></thead>";
-  const body = sorted.map(r=>{
-    if(activeMode==="plays"){
-      return `<tr><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.person||"")}</td></tr>`;
-    }else{
-      return `<tr><td>${escapeHtml(r.play||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.category||"")}</td></tr>`;
-    }
-  }).join("");
-  return `<div class="inlinePanel"><div class="inlineHead">${escapeHtml(it.title)}</div><div class="inlineTableWrap"><table class="table inlineTable">${head}<tbody>${body}</tbody></table></div></div>`;
-}
-
 function renderList(){
   const source = (activeMode==="plays") ? plays : (activeMode==="people" ? people : roles);
   const filtered = applyFilters(source);
@@ -828,15 +807,18 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
-      ${ (isMobile() && isActive) ? inlinePanelHtml(it) : "" }
     `;
     div.addEventListener("click", ()=>{
-      const wasActive = (activeId===it.id);
-      activeId = wasActive ? "" : it.id;
-      selectedItem = wasActive ? null : it;
+      activeId=it.id;
+      selectedItem = it;
       renderList();
-      if(!wasActive) renderDetails(it);
-      else renderDetails(null);
+      renderDetails(it);
+
+      if(isMobile() && activeMode==="plays"){
+        // Mobilde: oyuna tıklayınca aynı kartın altında aç/kapat (accordion)
+        toggleInlinePlayDetails(div, it);
+      }
+
     });
     frag.appendChild(div);
   }
@@ -865,7 +847,47 @@ function renderDetails(it){
       (a.person||"").localeCompare(b.person||"","tr")
     );
     els.details.innerHTML = `
-      <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
+      <h3 class
+function toggleInlinePlayDetails(itemEl, play){
+  // sadece "plays" listesinde kullanılır
+  let box = itemEl.querySelector(".inlineDetails");
+  if(box){
+    box.classList.toggle("hidden");
+    return;
+  }
+
+  box = document.createElement("div");
+  box.className = "inlineDetails";
+  const rowsSorted = [...(play.rows||[])].sort((a,b)=>String(a.category||"").localeCompare(String(b.category||""),"tr",{sensitivity:"base"}) || String(a.role||"").localeCompare(String(b.role||""),"tr",{sensitivity:"base"}) || String(a.person||"").localeCompare(String(b.person||""),"tr",{sensitivity:"base"}));
+
+  const thead = `<thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>`;
+  const tbody = rowsSorted.map(r=>(
+    `<tr>
+      <td data-label="Kategori">${escapeHtml(r.category||"")}</td>
+      <td data-label="Görev">${escapeHtml(r.role||"")}</td>
+      <td data-label="Kişi">${escapeHtml(r.person||"")}</td>
+    </tr>`
+  )).join("");
+
+  box.innerHTML = `
+    <div class="inlineHd">
+      <div class="inlineTitle">${escapeHtml(play.title||"")}</div>
+      <button type="button" class="btn sm inlineClose" aria-label="Kapat">Kapat</button>
+    </div>
+    <div class="inlineBody">
+      <table class="tbl">${thead}<tbody>${tbody}</tbody></table>
+    </div>
+  `;
+  itemEl.appendChild(box);
+
+  const closeBtn = box.querySelector(".inlineClose");
+  if(closeBtn) closeBtn.addEventListener("click", (e)=>{ e.stopPropagation(); box.classList.add("hidden"); });
+
+  // açılınca ekrana getir
+  box.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
       <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
       <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
@@ -1521,11 +1543,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1536,30 +1558,43 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const afterGo = ()=>{
     // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
     if(target === "Panel"){
-      // KPI -> Panel içi görünüm
+      // KPI -> Panel içi görünüm (segment butonları yoksa bile çalışsın)
+      activePlayFilter = null;
+      activeId = null;
+      selectedItem = null;
+
       if(mode === "people"){
         showAssignments = false;
         activeMode = "people";
         if(els.qScope) els.qScope.value = "person";
-        els.btnPeople && els.btnPeople.click();
       }else if(mode === "plays"){
         showAssignments = false;
         activeMode = "plays";
         if(els.qScope) els.qScope.value = "play";
-        els.btnPlays && els.btnPlays.click();
       }else if(mode === "rows"){
         // Görev ataması: kişi listesi + oyun/görev özeti
         showAssignments = true;
         activeMode = "people";
-        if(els.qScope) els.qScope.value = "role";
-        els.btnPeople && els.btnPeople.click();
+        if(els.qScope) els.qScope.value = "person";
       }
+
+      // Segment butonları varsa active görünümünü güncelle
+      if(els.btnPeople && els.btnPlays){
+        els.btnPeople.classList.toggle("active", activeMode==="people");
+        els.btnPlays.classList.toggle("active", activeMode==="plays");
+      }
+
+      // Listeyi yeniden çiz
+      try{
+        renderList();
+        els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`;
+      }catch(e){}
 
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
       if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
-    }
-    else if(target === "Figuran"){
+    }}
+    if(target === "Figuran"){
       const fig = document.getElementById('viewFiguran');
       if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
     }
@@ -1596,36 +1631,15 @@ window.addEventListener("hashchange", ()=>{
 els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
-els.notifBtn && (()=> {
-  const open = async ()=>{
-    els.notifPanel.classList.remove("hidden");
-    const bd = document.getElementById("notifBackdrop");
-    if(bd) bd.classList.remove("hidden");
+els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
+  els.notifPanel.classList.toggle("hidden");
+  if(!els.notifPanel.classList.contains("hidden")){
     await loadNotifications();
+    // panel açılınca "görüldü" say (sayaç sıfırlansın)
     localStorage.setItem("idt_log_seen_ts", String(Date.now()));
     els.notifCount.classList.add("hidden");
-  };
-  const close = ()=>{
-    els.notifPanel.classList.add("hidden");
-    const bd = document.getElementById("notifBackdrop");
-    if(bd) bd.classList.add("hidden");
-  };
-  const toggle = async ()=>{
-    if(els.notifPanel.classList.contains("hidden")) await open();
-    else close();
-  };
-  const handler = (e)=>{ e.stopPropagation(); toggle(); };
-  els.notifBtn.addEventListener("click", handler);
-  els.notifBtn.addEventListener("pointerup", handler);
-  els.notifClose && els.notifClose.addEventListener("click", close);
-  els.notifClose && els.notifClose.addEventListener("pointerup", close);
-  const bd = document.getElementById("notifBackdrop");
-  if(bd){
-    bd.addEventListener("click", close);
-    bd.addEventListener("pointerup", close);
   }
-  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") close(); });
-})();
+});
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
@@ -1937,6 +1951,7 @@ async function load(isAuto=false, forceRefresh=false){
     setStatus("⛔ Veri yüklenemedi. Sheet paylaşımını ve bağlantıyı kontrol et.", "bad");
   }
 }
+}
 
 
 /* ---------- KPI shortcuts (stabil veri çekmeyi BOZMADAN) ---------- */
@@ -2015,13 +2030,7 @@ function initKpiShortcuts(){
     });
   }
 }
+initKpiShortcuts();
+initTabbar();
 
-// ---- expose critical functions (prevent scope issues) ----
-try{ window.load = load; }catch(e){}
-try{ window.renderDetails = renderDetails; }catch(e){}
-try{ window.loadNotifications = loadNotifications; }catch(e){}
-window.addEventListener('DOMContentLoaded', ()=>{
-  try{ initKpiShortcuts(); }catch(e){console.error(e)}
-  try{ initTabbar(); }catch(e){console.error(e)}
-  try{ load(false); }catch(e){console.error(e)}
-});
+load(false);
