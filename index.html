@@ -909,6 +909,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   .nav{ display:none !important; }
   .tabbar{
     display:flex;
+    touch-action: manipulation;
     position:fixed;
     left:12px; right:12px; bottom:12px;
     height:64px;
@@ -921,6 +922,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     pointer-events:auto;
   }
   .tabbar .tb{
+    touch-action: manipulation;
     flex:1;
     border:0;
     background:transparent;
@@ -940,57 +942,40 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   }
 }
 
-
-/* --- Mobile: Oyun tıkla → kart altında kişiler aç (accordion) --- */
+/* --- Mobile: Liste yatay kaydırma (kart carousel) --- */
 @media (max-width: 980px){
-  .item .inline-play{margin-top:10px; padding:10px; border:1px dashed color-mix(in srgb, var(--line) 70%, transparent 30%); border-radius:14px; background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);}
-  .inline-play .p{display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid color-mix(in srgb, var(--line) 55%, transparent 45%);}
-  .inline-play .p:last-child{border-bottom:0}
-  .inline-play .pn{font-weight:800;}
-  .inline-play .pr{color:var(--muted); font-size:12px; text-align:right;}
+  #list{
+    display:flex !important;
+    flex-direction:row !important;
+    gap:12px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom:10px;
+  }
+  #list .item{
+    min-width: 78vw;
+    max-width: 78vw;
+    scroll-snap-align:start;
+  }
+  /* Detay kartı üstte kalsın, yatay listede seçim rahat */
+  .split{ grid-template-columns: 1fr !important; }
 }
 
-/* === Mobile Responsive Stack Tables (opt-in via .responsive-stack) === */
-@media (max-width: 768px) {
-  table.responsive-stack, table.responsive-stack thead, table.responsive-stack tbody,
-  table.responsive-stack th, table.responsive-stack td, table.responsive-stack tr {
-    display: block;
-    width: 100%;
-  }
-  table.responsive-stack thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-  table.responsive-stack tbody tr {
-    border: 1px solid var(--line);
-    margin-bottom: 1rem;
-    border-radius: var(--radius2, 14px);
-    padding: 10px;
-    background: var(--card);
-  }
-  table.responsive-stack td {
-    border: none !important;
-    position: relative;
-    padding-left: 50%;
-    text-align: right;
-    white-space: normal;
-  }
-  table.responsive-stack td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 10px;
-    width: 45%;
-    text-align: left;
-    font-weight: 700;
-    color: var(--muted);
-  }
-}
 
-/* === Dark mode transition polish === */
-html, body, .card, .panel, .kpi, .btn, .chip, .pill, .tab, .table-wrap, table, th, td,
-input, select, textarea, .modal, .drawer {
-  transition: background-color .30s ease, color .30s ease, border-color .30s ease, box-shadow .30s ease;
+/* --- Inline play details accordion (mobile) --- */
+.inlineDetails{ margin-top:10px; border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%); border-radius:14px; background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%); overflow:hidden; }
+.inlineDetails.hidden{ display:none; }
+.inlineHd{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%); }
+.inlineTitle{ font-weight:800; }
+.inlineBody{ padding:10px 12px; }
+@media (max-width: 768px){
+  .inlineBody table, .inlineBody thead, .inlineBody tbody, .inlineBody th, .inlineBody td, .inlineBody tr { display:block; }
+  .inlineBody thead tr{ position:absolute; top:-9999px; left:-9999px; }
+  .inlineBody tr{ border:1px solid var(--line); margin-bottom:10px; border-radius:12px; padding:10px; background: var(--card); }
+  .inlineBody td{ border:none; position:relative; padding-left:50%; text-align:right; }
+  .inlineBody td:before{ content: attr(data-label); position:absolute; left:10px; width:45%; text-align:left; font-weight:700; color:var(--muted); }
 }
 
 </style>
