@@ -1472,6 +1472,17 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
+  // A11y: aktif sekme
+  ["Panel","Distribution","Intersection","Figuran","Charts"].forEach(n=>{
+    const b = el("tab"+n);
+    if(b) b.setAttribute("aria-selected", n===which ? "true" : "false");
+  });
+  // Mobile tabbar senkron
+  try{
+    const m = {Panel:"Panel",Distribution:"Analiz",Intersection:"Analiz",Figuran:"Figuran",Charts:"Grafikler"};
+    setTabbarActive(m[which]||"Panel");
+  }catch(e){}
+
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
   const slugMap = {
@@ -1519,13 +1530,29 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const afterGo = ()=>{
     // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
     if(target === "Panel"){
-      if(mode === "people" && els.btnPeople) els.btnPeople.click();
-      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
+      // KPI -> Panel içi görünüm
+      if(mode === "people"){
+        showAssignments = false;
+        activeMode = "people";
+        if(els.qScope) els.qScope.value = "person";
+        els.btnPeople && els.btnPeople.click();
+      }else if(mode === "plays"){
+        showAssignments = false;
+        activeMode = "plays";
+        if(els.qScope) els.qScope.value = "play";
+        els.btnPlays && els.btnPlays.click();
+      }else if(mode === "rows"){
+        // Görev ataması: kişi listesi + oyun/görev özeti
+        showAssignments = true;
+        activeMode = "people";
+        if(els.qScope) els.qScope.value = "role";
+        els.btnPeople && els.btnPeople.click();
+      }
 
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
       if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
-    }
+    }}
     if(target === "Figuran"){
       const fig = document.getElementById('viewFiguran');
       if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
