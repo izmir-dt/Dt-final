@@ -195,7 +195,7 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 })();
-els.themeBtn.addEventListener("click", ()=>{
+els.themeBtn && els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
@@ -396,78 +396,6 @@ async function tryLoadCsv(){
   const csv = await res.text();
   return buildFromCsv(csvToRows(csv));
 }
-
-/* ---------- Local cache (5 dk) + offline fallback ---------- */
-const CACHE = {
-  key: "idt_data_cache_v1",
-  ttlMs: 5 * 60 * 1000,
-};
-function readCache_(){
-  try{
-    const s = localStorage.getItem(CACHE.key);
-    if(!s) return null;
-    const obj = JSON.parse(s);
-    if(!obj || !Array.isArray(obj.rawRows) || !obj.timestamp) return null;
-    return obj;
-  }catch{ return null; }
-}
-function writeCache_(rawRows, source){
-  try{
-    localStorage.setItem(CACHE.key, JSON.stringify({
-      timestamp: Date.now(),
-      source: source || "",
-      rawRows,
-    }));
-  }catch{}
-}
-async function getData_(forceRefresh=false){
-  const cached = readCache_();
-  if(cached && !forceRefresh){
-    const age = Date.now() - cached.timestamp;
-    if(age < CACHE.ttlMs){
-      return { rawRows: cached.rawRows, fromCache:true, stale:false, source: cached.source || "cache" };
-    }
-  }
-
-  try{
-    let rr;
-    try{ rr = await tryLoadApiJsonp(); writeCache_(rr, "api"); }
-    catch(e1){
-      try{ rr = await tryLoadGviz(); writeCache_(rr, "gviz"); }
-      catch(e2){ rr = await tryLoadCsv(); writeCache_(rr, "csv"); }
-    }
-    return { rawRows: rr, fromCache:false, stale:false, source:"live" };
-  }catch(err){
-    // canlı veri gelmezse: cache varsa göster (stale)
-    if(cached && Array.isArray(cached.rawRows) && cached.rawRows.length){
-      return { rawRows: cached.rawRows, fromCache:true, stale:true, source: cached.source || "cache" };
-    }
-    throw err;
-  }
-}
-
-/* ---------- Skeleton (yükleniyor) ---------- */
-function renderSkeleton_(){
-  if(!els.list) return;
-  const blocks = new Array(6).fill(0).map(()=>`
-    <div class="item skeleton">
-      <div class="t">
-        <div style="flex:1">
-          <div class="sk-line w60"></div>
-          <div class="sk-line w40"></div>
-          <div class="sk-chips">
-            <span class="sk-chip"></span><span class="sk-chip"></span><span class="sk-chip"></span>
-          </div>
-        </div>
-      </div>
-    </div>`).join("");
-  els.list.innerHTML = blocks;
-  if(els.details){
-    els.details.innerHTML = `<div class="empty skeletonBox"><div class="sk-line w50"></div><div class="sk-line w80"></div></div>`;
-  }
-}
-
-
 
 /* ---------- split general ---------- */
 function splitPeopleGeneral(cell){
@@ -1297,8 +1225,8 @@ function closeDrawer(){
   drawerData = [];
   els.drawerList.innerHTML = "";
 }
-els.drawerClose.addEventListener("click", closeDrawer);
-els.drawerSearch.addEventListener("input", renderDrawerList);
+els.drawerClose && els.drawerClose.addEventListener("click", closeDrawer);
+els.drawerSearch && els.drawerSearch.addEventListener("input", renderDrawerList);
 
 function renderDrawerList(){
   const q = els.drawerSearch.value.trim().toLowerCase();
@@ -1341,7 +1269,7 @@ function hitTestChart(evt){
   return null;
 }
 
-els.chartMain.addEventListener("click", (evt)=>{
+els.chartMain && els.chartMain.addEventListener("click", (evt)=>{
   const h = hitTestChart(evt);
   if(!h) return;
   const key = h.key;
@@ -1514,15 +1442,10 @@ function renderIntersection(){
 function setActiveTab(which){
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
-    const tEl = el(t);
-    const vEl = el(v);
-    tEl.classList.remove("active");
-    tEl.setAttribute("aria-selected","false");
-    vEl.style.display="none";
+    el(t).classList.remove("active");
+    el(v).style.display="none";
   }
-  const activeTab = el("tab"+which);
-  activeTab.classList.add("active");
-  activeTab.setAttribute("aria-selected","true");
+  el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
@@ -1556,11 +1479,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1612,7 +1535,7 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false, true));
+els.reloadBtn && els.reloadBtn.addEventListener("click", ()=>load(false));
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -1627,35 +1550,30 @@ els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
+els.clearBtn && els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
 renderList(); });
 
-els.q.addEventListener("input", ()=>renderList());
+els.q && els.q.addEventListener("input", ()=>renderList());
 if(els.qScope){
-  els.qScope.addEventListener("change", ()=>{
+  els.qScope && els.qScope.addEventListener("change", ()=>{
     const v=els.qScope.value;
     if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
     else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){
-      // "Görev" kapsamı: roller listesi yerine "Kişiler + görev/oyun özeti"
-      showAssignments=true;
-      activeMode="people";
-      activePlayFilter=null;
-    }
+    else if(v==="role"){ showAssignments=false; activeMode="roles"; activePlayFilter=null; }
     // all: mode değiştirme
     activeId=null; selectedItem=null;
     renderList(); renderDetails(null);
   });
 }
 
-els.btnPlays.addEventListener("click", ()=>{
+els.btnPlays && els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
   renderList(); renderDetails(null);
 });
-els.btnPeople.addEventListener("click", ()=>{
+els.btnPeople && els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
@@ -1677,7 +1595,7 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-els.copyBtn.addEventListener("click", async ()=>{
+els.copyBtn && els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
   try{
@@ -1855,16 +1773,15 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false, forceRefresh=false){
+async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
-
-  // Yükleme sırasında "boş ekran" yerine iskelet göster
-  renderSkeleton_();
-
   try{
-    const got = await getData_(!!forceRefresh);
-    rawRows = got.rawRows || [];
+    try{ rawRows = await tryLoadApiJsonp(); }
+    catch(e1){
+      try{ rawRows = await tryLoadGviz(); }
+      catch(e2){ rawRows = await tryLoadCsv(); }
+    }
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
@@ -1872,34 +1789,44 @@ async function load(isAuto=false, forceRefresh=false){
     roles = groupByRole(rows);
     playsList = plays.map(p=>p.title);
 
-    // veri kaynağı bilgisi
-    if(got.fromCache && got.stale) setStatus("⚠️ Bağlantı zayıf. Son kaydedilen veriler gösteriliyor.", "warn");
-    else if(got.fromCache) setStatus("✅ Hazır (cache)", "ok");
-    else setStatus("✅ Hazır", "ok");
 
     renderList();
     renderDetails(null);
+
+    distribution = computeDistribution();
     renderDistribution();
-    renderIntersection();
+
+    retiredSet = computeRetiredSetFromRaw();
+    retiredSet = computeRetiredSetFromRaw();
+    figuran = computeFiguranFromRaw();
     renderFiguran();
 
-    // KPI’lar
-    els.kpiPlays.textContent = String(plays.length || 0);
-    els.kpiPeople.textContent = String(people.length || 0);
-    els.kpiRows.textContent = String(rows.length || 0);
-    els.kpiFiguran.textContent = String(figuran.length || 0);
+    renderPlayOptions();
+    renderIntersection();
+
+    renderKpis();
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-    setStatus(`✅ Hazır • ${when}${(got.fromCache? " (cache)":"")}`, "ok");
+    setStatus(`✅ Hazır • ${when}`, "ok");
 
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
   }catch(err){
     console.error(err);
-    setStatus("❌ Veri yüklenemedi. Sheet paylaşımı / internet / Apps Script erişimini kontrol et.", "bad");
-    els.list.innerHTML = `<div class="empty">Veri yüklenemedi.<br><span class="small muted">${escapeHtml(err.message||err)}</span></div>`;
-    renderDetails(null);
-  
+    setStatus("⛔ Veri çekilemedi", "bad");
+    els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
+<b>Veri çekilemedi.</b>
+
+1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
+2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
+
+Hata: ${escapeHtml(err.message || String(err))}
+</div>`;
+    els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
+    els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+    els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+    els.intersectionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+  }
 }
 
 
