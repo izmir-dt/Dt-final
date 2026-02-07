@@ -178,6 +178,7 @@ let plays = [];
 let people = [];
 let playsList = [];
 let activeMode = "plays";
+let peopleView = "normal"; // normal | assignments
 let activeId = null;
 let selectedItem = null;
 
@@ -206,7 +207,8 @@ function applyTheme(theme){
 function setTabbarActive(tabName){
   const bar = document.getElementById("tabbar");
   if(!bar) return;
-  bar.querySelectorAll(".tb").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===tabName));
+  const mapped = (tabName==="Intersection" || tabName==="Distribution") ? "Analiz" : tabName;
+  bar.querySelectorAll(".tb").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===mapped));
 }
 function initTabbar(){
   const bar = document.getElementById("tabbar");
@@ -216,9 +218,12 @@ function initTabbar(){
     if(!btn) return;
     const t = btn.getAttribute("data-tab");
     if(t==="Panel") els.tabPanel.click();
+    else if(t==="Analiz") els.tabIntersection.click();
+    else if(t==="Figuran") els.tabFiguran.click();
+    else if(t==="Charts") els.tabCharts.click();
+    // fallback (eski isimler)
     else if(t==="Distribution") els.tabDistribution.click();
     else if(t==="Intersection") els.tabIntersection.click();
-    else if(t==="Charts") els.tabCharts.click();
   });
 }
 
@@ -750,6 +755,61 @@ function openMobileActionMenu(it){
   }, 0);
 }
 
+
+function buildInlineDetails(it){
+  try{
+    if(activeMode === "plays"){
+      const rowsSorted = [...(it.rows||[])].sort((a,b)=>
+        (a.category||"").localeCompare(b.category||"","tr") ||
+        (a.role||"").localeCompare(b.role||"","tr") ||
+        (a.person||"").localeCompare(b.person||"","tr")
+      );
+      const max = 14;
+      const items = rowsSorted.slice(0, max).map(r=>{
+        const p = escapeHtml(r.person||"-");
+        const role = escapeHtml(r.role||"-");
+        const cat = escapeHtml(r.category||"-");
+        return `<div class="miniRow"><div class="miniMain">${p}</div><div class="miniMeta">${cat} • ${role}</div></div>`;
+      }).join("");
+      const more = rowsSorted.length>max ? `<div class="miniMore">+${rowsSorted.length-max} satır daha… (Detay için masaüstünde sağ panel)</div>` : "";
+      return `<div class="miniBox">${items}${more}</div>`;
+    }
+
+    // people
+    const plays = (it.plays||[]);
+    const roles = (it.roles||[]);
+    const playsLine = plays.length ? escapeHtml(plays.join(" • ")) : "-";
+    const rolesLine = roles.length ? escapeHtml(roles.join(" • ")) : "-";
+
+    // satırları oyun bazında özetle
+    const byPlay = new Map();
+    for(const r of (it.rows||[])){
+      const key = r.play || "-";
+      if(!byPlay.has(key)) byPlay.set(key, new Set());
+      if(r.role) byPlay.get(key).add(r.role);
+    }
+    const maxPl = 12;
+    const plList = [...byPlay.entries()].slice(0, maxPl).map(([p, rs])=>{
+      const rsTxt = [...rs].sort((a,b)=>a.localeCompare(b,"tr")).join(", ");
+      return `<div class="miniRow"><div class="miniMain">${escapeHtml(p)}</div><div class="miniMeta">${escapeHtml(rsTxt||"-")}</div></div>`;
+    }).join("");
+    const morePl = byPlay.size>maxPl ? `<div class="miniMore">+${byPlay.size-maxPl} oyun daha…</div>` : "";
+
+    if(peopleView === "assignments"){
+      return `<div class="miniBox">
+        <div class="miniHdr">🎭 Oyunlar</div>
+        <div class="miniMetaLine">${playsLine}</div>
+        <div class="miniHdr" style="margin-top:8px">🧩 Görevler</div>
+        <div class="miniMetaLine">${rolesLine}</div>
+      </div>`;
+    }
+
+    return `<div class="miniBox">${plList}${morePl}</div>`;
+  }catch(_e){
+    return "";
+  }
+}
+
 function renderList(){
   const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
@@ -767,6 +827,10 @@ function renderList(){
       ? `${it.count} kişi • ${it.rows.length} satır`
       : `${it.count} oyun • ${it.rows.length} satır`;
 
+    const extraLine = (activeMode==="people" && peopleView==="assignments")
+      ? `<div class="meta" style="margin-top:6px">🎭 <b>Oyunlar:</b> ${escapeHtml((it.plays||[]).join(" • ") || "-")}<br>🧩 <b>Görevler:</b> ${escapeHtml((it.roles||[]).join(" • ") || "-")}</div>`
+      : "";
+
     const chips = (it.cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
     const more = (it.cats||[]).length>6 ? `<span class="chip">+${it.cats.length-6}</span>` : "";
     const retiredTag = (activeMode==="people" && retiredSet.has(it.title)) ? `<span class="tag retired">Kurumdan Emekli Sanatçı</span>` : "";
@@ -783,48 +847,47 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
+      <div class="expand hidden"></div>
     `;
 
     // Long-press (mobile): quick actions
     attachLongPress(div, ()=>openMobileActionMenu(it));
 
     div.addEventListener("click", ()=>{
-      activeId=it.id;
+      // desktop: sağ paneli güncelle
+      activeId = it.id;
       selectedItem = it;
-      renderList();
-      renderDetails(it);
 
-      if(isMobile() && activeMode==="plays"){
-        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
-        activePlayFilter = it.title;
-        activeMode="people";
-        els.btnPeople.classList.add("active");
-        els.btnPlays.classList.remove("active");
-
-        // Filtreli kişi listesi
+      if(!isMobile()){
         renderList();
-
-        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
-
-        // Geri tuşu ile tekrar Oyunlar'a dönsün
-        history.pushState({mode:"people", play:activePlayFilter}, "");
-        window.scrollTo({top:0, behavior:"smooth"});
+        renderDetails(it);
+        return;
       }
 
+      // mobile: satırın altında accordion detay aç/kapa
+      const exp = div.querySelector(".expand");
+      if(!exp) return;
+
+      const isOpen = !exp.classList.contains("hidden");
+      // önce diğer açıkları kapat
+      els.list.querySelectorAll(".expand:not(.hidden)").forEach(x=>{
+        if(x!==exp){ x.classList.add("hidden"); x.innerHTML=""; }
+      });
+
+      if(isOpen){
+        exp.classList.add("hidden");
+        exp.innerHTML = "";
+        return;
+      }
+
+      exp.innerHTML = buildInlineDetails(it);
+      exp.classList.remove("hidden");
+      // küçük bir kaydırma (baş parmak rahat)
+      setTimeout(()=>{ div.scrollIntoView({behavior:"smooth", block:"nearest"}); }, 50);
     });
     els.list.appendChild(div);
   }
-
-
-  if(isMobile() && activeMode==="people" && activePlayFilter){
-    els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
-    setTimeout(()=>{
-      const b=document.getElementById("btnBackPlays");
-      if(b) b.onclick=()=>{ activePlayFilter=""; setActiveMode("plays"); render(); };
-    },0);
-  } else {
-    els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
-  }
+  els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
 
 
 function renderDetails(it){
@@ -1203,19 +1266,36 @@ function initChartUX(){
     if(hit){ showChartTip(hit, e.clientX, e.clientY); setTimeout(hideChartTip, 1200); }
   });
 
-  // download
+  // PDF indir (tarayıcı yazdır -> PDF olarak kaydet)
   if(els.chartDownloadBtn){
     els.chartDownloadBtn.addEventListener("click", ()=>{
       try{
-        const url = els.chartMain.toDataURL("image/png");
-        const a = document.createElement("a");
-        const title = (els.chartTitle?.textContent || "grafik").trim().replace(/\s+/g,"_");
-        a.download = `${title}.png`;
-        a.href = url;
-        a.click();
-      }catch(err){
-        alert("İndirme desteklenmiyor.");
-      }
+        const title = (els.chartTitle?.textContent || "Grafik").trim();
+        const canvas = els.chartMain;
+        const imgUrl = canvas ? canvas.toDataURL("image/png") : "";
+        const w = window.open("", "_blank");
+        if(!w) return;
+
+        const safeTitle = title.replace(/[<>]/g,"");
+        w.document.open();
+        w.document.write(`<!doctype html><html><head><meta charset="utf-8">
+          <title>${safeTitle}</title>
+          <style>
+            body{ font-family: Inter, Arial, system-ui, sans-serif; margin:24px; }
+            h1{ font-size:16px; margin:0 0 12px 0; }
+            .meta{ color:#666; font-size:12px; margin-bottom:14px; }
+            img{ max-width:100%; height:auto; border:1px solid #ddd; border-radius:12px; }
+          </style>
+        </head><body>
+          <h1>${safeTitle}</h1>
+          <div class="meta">İzmir DT • ${new Date().toLocaleString("tr-TR")}</div>
+          ${imgUrl ? `<img src="${imgUrl}" alt="chart">` : `<div>Grafik bulunamadı.</div>`}
+          <script>
+            setTimeout(()=>{ window.focus(); window.print(); }, 250);
+          </script>
+        </body></html>`);
+        w.document.close();
+      }catch(_e){}
     });
   }
 }
@@ -1531,11 +1611,22 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   if(!target) return;
 
   const afterGo = ()=>{
-    // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
+    // Panel: KPI tıklaması ile liste modunu belirle (butonlar kaldırıldı)
     if(target === "Panel"){
-      if(mode === "people" && els.btnPeople) els.btnPeople.click();
-      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
-
+      if(mode === "plays"){
+        activeMode = "plays";
+        peopleView = "normal";
+      } else if(mode === "people"){
+        activeMode = "people";
+        peopleView = "normal";
+      } else if(mode === "assignments"){
+        activeMode = "people";
+        peopleView = "assignments";
+      }
+      activeId = null;
+      selectedItem = null;
+      renderList();
+      renderDetails(null);
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
       if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1593,6 +1684,7 @@ els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
 renderList(); });
 
 els.q.addEventListener("input", ()=>renderList());
+if(els.btnPlays){
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   activePlayFilter = null;
@@ -1600,6 +1692,8 @@ els.btnPlays.addEventListener("click", ()=>{
   activeId=null; selectedItem=null;
   renderList(); renderDetails(null);
 });
+}
+if(els.btnPeople){
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
   activePlayFilter = null;
@@ -1607,6 +1701,7 @@ els.btnPeople.addEventListener("click", ()=>{
   activeId=null; selectedItem=null;
   renderList(); renderDetails(null);
 });
+}
 
 
 // Mobil: oyundan kişilere geçişte geri tuşu Oyunlar'a döndürsün
