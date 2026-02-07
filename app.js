@@ -35,6 +35,27 @@ function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 
+function buildInlinePlay(playItem){
+  try{
+    const rows = (playItem.rows||[]);
+    const map = new Map();
+    for(const r of rows){
+      const name = (r.person||"").trim();
+      if(!name) continue;
+      const role = (r.role||"").trim();
+      if(!map.has(name)) map.set(name, new Set());
+      if(role) map.get(name).add(role);
+    }
+    const people = [...map.entries()].map(([n, roles])=>({n, roles:[...roles]}))
+      .sort((a,b)=>a.n.localeCompare(b.n,'tr'));
+    const items = people.slice(0,60).map(p=>`<div class="p"><div class="pn">${escapeHtml(p.n)}</div><div class="pr">${escapeHtml(p.roles.join(", "))}</div></div>`).join("");
+    const more = people.length>60 ? `<div class="meta" style="margin-top:8px;color:var(--muted)">+${people.length-60} kişi daha…</div>` : "";
+    return `<div class="inline-play" aria-label="Oyundaki kişiler">${items}${more}</div>`;
+  }catch(e){
+    return '';
+  }
+}
+
 // --- Fuzzy search (mobile-friendly) ---
 function isSubsequence(hay, needle){
   let i=0,j=0;
@@ -226,10 +247,10 @@ function initTabbar(){
   if(!bar) return;
 
   const go = (t)=>{
-    if(t==="Panel") els.tabPanel && els.tabPanel.click();
-    else if(t==="Analiz") els.tabIntersection && els.tabIntersection.click();
-    else if(t==="Figuran") els.tabFiguran && els.tabFiguran.click();
-    else if(t==="Grafikler") els.tabCharts && els.tabCharts.click();
+    if(t==="Panel") setActiveTab("Panel");
+    else if(t==="Analiz") setActiveTab("Intersection");
+    else if(t==="Figuran") setActiveTab("Figuran");
+    else if(t==="Grafikler") setActiveTab("Charts");
   };
 
   const bind = (btn)=>{
@@ -807,28 +828,16 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
+      ${ (isMobile() && activeMode==="plays" && isActive) ? buildInlinePlay(it) : "" }
     `;
     div.addEventListener("click", ()=>{
       activeId=it.id;
       selectedItem = it;
       renderList();
       renderDetails(it);
-
+      // Mobilde oyun tıkla → kart altında kişiler aç/kapat (mod değiştirme yok)
       if(isMobile() && activeMode==="plays"){
-        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
-        activePlayFilter = it.title;
-        activeMode="people";
-        els.btnPeople.classList.add("active");
-        els.btnPlays.classList.remove("active");
-
-        // Filtreli kişi listesi
-        renderList();
-
-        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
-
-        // Geri tuşu ile tekrar Oyunlar'a dönsün
-        history.pushState({mode:"people", play:activePlayFilter}, "");
-        window.scrollTo({top:0, behavior:"smooth"});
+        return;
       }
 
     });
@@ -1472,6 +1481,11 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
+  // Mobil alt menü senkron
+  if(which==="Panel") setTabbarActive("Panel");
+  else if(which==="Intersection"||which==="Distribution") setTabbarActive("Analiz");
+  else if(which==="Figuran") setTabbarActive("Figuran");
+  else if(which==="Charts") setTabbarActive("Grafikler");
   // A11y: aktif sekme
   ["Panel","Distribution","Intersection","Figuran","Charts"].forEach(n=>{
     const b = el("tab"+n);
@@ -1527,42 +1541,41 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
 
-  const afterGo = ()=>{
-    // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
-    if(target === "Panel"){
-      // KPI -> Panel içi görünüm
-      if(mode === "people"){
-        showAssignments = false;
-        activeMode = "people";
-        if(els.qScope) els.qScope.value = "person";
-        els.btnPeople && els.btnPeople.click();
-      }else if(mode === "plays"){
-        showAssignments = false;
-        activeMode = "plays";
-        if(els.qScope) els.qScope.value = "play";
-        els.btnPlays && els.btnPlays.click();
-      }else if(mode === "rows"){
-        // Görev ataması: kişi listesi + oyun/görev özeti
-        showAssignments = true;
-        activeMode = "people";
-        if(els.qScope) els.qScope.value = "role";
-        els.btnPeople && els.btnPeople.click();
-      }
-
-      // Liste alanına otomatik kaydır
-      const panelList = document.getElementById('viewPanel');
-      if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
-    }}
-    if(target === "Figuran"){
-      const fig = document.getElementById('viewFiguran');
-      if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
+  const applyPanelMode = ()=>{
+    if(mode === "plays"){
+      showAssignments = false;
+      activeMode = "plays";
+      if(els.qScope) els.qScope.value = "play";
+      els.btnPlays && els.btnPlays.click();
+      renderList();
+    }else if(mode === "people"){
+      showAssignments = false;
+      activeMode = "people";
+      if(els.qScope) els.qScope.value = "person";
+      els.btnPeople && els.btnPeople.click();
+      renderList();
+    }else if(mode === "rows"){
+      // Görev ataması: kişi listesi + oyun/görev özeti
+      showAssignments = true;
+      activeMode = "people";
+      if(els.qScope) els.qScope.value = "role";
+      els.btnPeople && els.btnPeople.click();
+      renderList();
     }
+    const panelList = document.getElementById('viewPanel');
+    if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
   };
 
   const goNow = ()=>{
-    setActiveTab(target);
-    // DOM görünürlüğü güncellensin diye küçük gecikme
-    setTimeout(afterGo, 50);
+    if(target==="Panel") setActiveTab("Panel");
+    else if(target==="Figuran") setActiveTab("Figuran");
+    else if(target==="Charts") setActiveTab("Charts");
+    else if(target==="Intersection") setActiveTab("Intersection");
+    else setActiveTab(target);
+
+    setTimeout(()=>{
+      if(target==="Panel") applyPanelMode();
+    }, 60);
   };
 
   card.addEventListener("click", goNow);
@@ -1608,22 +1621,24 @@ renderList(); });
 els.q.addEventListener("input", ()=>renderList());
 if(els.qScope){
   els.qScope.addEventListener("change", ()=>{
-    const v=els.qScope.value;
-    if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
-    else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
-    // all: mode değiştirme
-    activeId=null; selectedItem=null;
-    renderList(); renderDetails(null);
-  });
-}
-
-els.btnPlays.addEventListener("click", ()=>{
-  activeMode="plays";
-  activePlayFilter = null;
-  els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
-  activeId=null; selectedItem=null;
-  renderList(); renderDetails(null);
+  const v = String(els.qScope.value||"all").toLowerCase();
+  if(v==="play"){
+    showAssignments = false;
+    activeMode = "plays";
+  }else if(v==="person"){
+    showAssignments = false;
+    activeMode = "people";
+  }else if(v==="role"){
+    // Görev kapsamı: kişi listesi + görev/oyun özeti
+    showAssignments = true;
+    activeMode = "people";
+  }else{
+    showAssignments = false;
+    activeMode = "people";
+  }
+  activeId = null;
+  selectedItem = null;
+  renderList();
 });
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
