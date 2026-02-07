@@ -211,23 +211,15 @@ function setTabbarActive(tabName){
 function initTabbar(){
   const bar = document.getElementById("tabbar");
   if(!bar) return;
-
-  const go = (t)=>{
+  bar.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".tb");
+    if(!btn) return;
+    const t = btn.getAttribute("data-tab");
     if(t==="Panel") els.tabPanel && els.tabPanel.click();
     else if(t==="Analiz") els.tabIntersection && els.tabIntersection.click();
     else if(t==="Figuran") els.tabFiguran && els.tabFiguran.click();
     else if(t==="Grafikler") els.tabCharts && els.tabCharts.click();
-  };
-
-  const bind = (btn)=>{
-    const t = btn.getAttribute("data-tab");
-    const handler = (e)=>{ e.preventDefault(); e.stopPropagation(); go(t); setTabbarActive(t); };
-    btn.addEventListener("click", handler, {passive:false});
-    // Bazı mobil tarayıcılarda click gecikebiliyor → touchend ile garanti
-    btn.addEventListener("touchend", handler, {passive:false});
-  };
-
-  bar.querySelectorAll(".tb").forEach(bind);
+  });
 }
 /* ---------- helpers ---------- */
 function setStatus(text, tone="") {
@@ -1502,8 +1494,18 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const afterGo = ()=>{
     // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
     if(target === "Panel"){
-      if(mode === "people" && els.btnPeople) els.btnPeople.click();
-      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
+      if(mode === "people" && els.btnPeople) { showAssignments=false; els.btnPeople.click(); }
+      if(mode === "plays" && els.btnPlays) { showAssignments=false; els.btnPlays.click(); }
+      if(mode === "rows"){
+        // Görev Ataması KPI: kişiler listesi + görev/oyun özetini aç
+        if(els.btnPeople) els.btnPeople.click();
+        showAssignments = true;
+        // Arama kapsamını Görev'e çek (liste kişide kalır)
+        if(els.qScope){ els.qScope.value = "role"; }
+        activePlayFilter = null;
+        activeId = null; selectedItem = null;
+        renderList(); renderDetails(null);
+      }
 
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
@@ -1567,7 +1569,7 @@ if(els.qScope){
     const v=els.qScope.value;
     if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
     else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=false; activeMode="roles"; activePlayFilter=null; }
+    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
     // all: mode değiştirme
     activeId=null; selectedItem=null;
     renderList(); renderDetails(null);
@@ -1849,9 +1851,8 @@ function initKpiShortcuts(){
       if(go==="Panel"){ els.tabPanel && els.tabPanel.click(); }
       if(mode==="plays"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
       else if(mode==="people"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-      else if(mode==="rows" || mode==="assignments"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
-      try{ if(els.qScope){ els.qScope.value = (activeMode==="plays"?"play":(activeMode==="people"?"person":(activeMode==="roles"?"role":"all"))); } }catch{};
-    renderList(); renderDetails(null);
+      else if(mode==="assignments"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
+      renderList(); renderDetails(null);
       window.scrollTo({top:0, behavior:"smooth"});
     };
     card.addEventListener("click", act);
@@ -1885,30 +1886,8 @@ function initKpiShortcuts(){
   }
   if(els.chartDownloadBtn){
     els.chartDownloadBtn.addEventListener("click", ()=>{
-      // PDF indir: en stabil yöntem = grafiği yeni pencerede açıp yazdır (PDF olarak kaydet)
+      // PDF indir = yazdır penceresi (PDF olarak kaydet)
       els.tabCharts && els.tabCharts.click();
-
-      const canvas = els.chartMain;
-      try{
-        if(canvas && canvas.toDataURL && getComputedStyle(canvas).display !== "none"){
-          const dataUrl = canvas.toDataURL("image/png");
-          const w = window.open("", "_blank");
-          if(w){
-            w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>İDT Grafik</title>
-              <style>body{margin:0;font-family:Arial,sans-serif} img{max-width:100%;height:auto;display:block;margin:16px auto}</style>
-              </head><body><img src="${dataUrl}" alt="Grafik"></body></html>`);
-            w.document.close();
-            w.focus();
-            setStatus("🧾 PDF indir: Açılan sekmede Yazdır → PDF olarak kaydet.", "ok");
-            setTimeout(()=>{ try{ w.print(); }catch{} }, 250);
-            return;
-          }
-        }
-      }catch(err){
-        console.warn(err);
-      }
-
-      // Fallback
       setStatus("🧾 PDF indir: Yazdır ekranında 'PDF olarak kaydet' seç.", "ok");
       requestAnimationFrame(()=>{ window.print(); });
     });
