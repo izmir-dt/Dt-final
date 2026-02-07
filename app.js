@@ -815,8 +815,20 @@ function renderList(){
       renderDetails(it);
 
       if(isMobile() && activeMode==="plays"){
-        // Mobilde: oyuna tıklayınca aynı kartın altında aç/kapat (accordion)
-        toggleInlinePlayDetails(div, it);
+        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
+        activePlayFilter = it.title;
+        activeMode="people";
+        els.btnPeople.classList.add("active");
+        els.btnPlays.classList.remove("active");
+
+        // Filtreli kişi listesi
+        renderList();
+
+        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
+
+        // Geri tuşu ile tekrar Oyunlar'a dönsün
+        history.pushState({mode:"people", play:activePlayFilter}, "");
+        window.scrollTo({top:0, behavior:"smooth"});
       }
 
     });
@@ -847,47 +859,7 @@ function renderDetails(it){
       (a.person||"").localeCompare(b.person||"","tr")
     );
     els.details.innerHTML = `
-      <h3 class
-function toggleInlinePlayDetails(itemEl, play){
-  // sadece "plays" listesinde kullanılır
-  let box = itemEl.querySelector(".inlineDetails");
-  if(box){
-    box.classList.toggle("hidden");
-    return;
-  }
-
-  box = document.createElement("div");
-  box.className = "inlineDetails";
-  const rowsSorted = [...(play.rows||[])].sort((a,b)=>String(a.category||"").localeCompare(String(b.category||""),"tr",{sensitivity:"base"}) || String(a.role||"").localeCompare(String(b.role||""),"tr",{sensitivity:"base"}) || String(a.person||"").localeCompare(String(b.person||""),"tr",{sensitivity:"base"}));
-
-  const thead = `<thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>`;
-  const tbody = rowsSorted.map(r=>(
-    `<tr>
-      <td data-label="Kategori">${escapeHtml(r.category||"")}</td>
-      <td data-label="Görev">${escapeHtml(r.role||"")}</td>
-      <td data-label="Kişi">${escapeHtml(r.person||"")}</td>
-    </tr>`
-  )).join("");
-
-  box.innerHTML = `
-    <div class="inlineHd">
-      <div class="inlineTitle">${escapeHtml(play.title||"")}</div>
-      <button type="button" class="btn sm inlineClose" aria-label="Kapat">Kapat</button>
-    </div>
-    <div class="inlineBody">
-      <table class="tbl">${thead}<tbody>${tbody}</tbody></table>
-    </div>
-  `;
-  itemEl.appendChild(box);
-
-  const closeBtn = box.querySelector(".inlineClose");
-  if(closeBtn) closeBtn.addEventListener("click", (e)=>{ e.stopPropagation(); box.classList.add("hidden"); });
-
-  // açılınca ekrana getir
-  box.scrollIntoView({behavior:"smooth", block:"nearest"});
-}
-
-="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
+      <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
       <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
       <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
@@ -1558,37 +1530,24 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const afterGo = ()=>{
     // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
     if(target === "Panel"){
-      // KPI -> Panel içi görünüm (segment butonları yoksa bile çalışsın)
-      activePlayFilter = null;
-      activeId = null;
-      selectedItem = null;
-
+      // KPI -> Panel içi görünüm
       if(mode === "people"){
         showAssignments = false;
         activeMode = "people";
         if(els.qScope) els.qScope.value = "person";
+        els.btnPeople && els.btnPeople.click();
       }else if(mode === "plays"){
         showAssignments = false;
         activeMode = "plays";
         if(els.qScope) els.qScope.value = "play";
+        els.btnPlays && els.btnPlays.click();
       }else if(mode === "rows"){
         // Görev ataması: kişi listesi + oyun/görev özeti
         showAssignments = true;
         activeMode = "people";
-        if(els.qScope) els.qScope.value = "person";
+        if(els.qScope) els.qScope.value = "role";
+        els.btnPeople && els.btnPeople.click();
       }
-
-      // Segment butonları varsa active görünümünü güncelle
-      if(els.btnPeople && els.btnPlays){
-        els.btnPeople.classList.toggle("active", activeMode==="people");
-        els.btnPlays.classList.toggle("active", activeMode==="plays");
-      }
-
-      // Listeyi yeniden çiz
-      try{
-        renderList();
-        els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`;
-      }catch(e){}
 
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
