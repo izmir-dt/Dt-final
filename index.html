@@ -795,7 +795,7 @@ html[data-theme="light"] #notifPanel{
 .notifItem div{ color: var(--text); }
 
 /* dark theme: ensure panel stays dark but text stays light */
-html[data-theme="dark"] html[data-theme="light"] #notifPanel{
+html[data-theme="dark"] #notifPanel{
   background: color-mix(in srgb, var(--card) 92%, #000 8%);
   border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
 }
@@ -830,31 +830,31 @@ html[data-theme="light"] #notifPanel .notif-bubble.seen{
 }
 
 /* Dark theme */
-html[data-theme="dark"] html[data-theme="light"] #notifPanel{
+html[data-theme="dark"] #notifPanel{
   background: rgba(11,16,32,.96) !important;
   color:#f8fafc !important;
 }
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-bubble{
+html[data-theme="dark"] #notifPanel .notif-bubble{
   background: rgba(30,41,59,.92) !important;
   border-color: rgba(148,163,184,.18) !important;
   color:#f8fafc !important;
 }
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-title,
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-msg{
+html[data-theme="dark"] #notifPanel .notif-title,
+html[data-theme="dark"] #notifPanel .notif-msg{
   color:#f8fafc !important;
 }
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-meta{
+html[data-theme="dark"] #notifPanel .notif-meta{
   color:#cbd5e1 !important;
   opacity:1 !important;
 }
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-ts{
+html[data-theme="dark"] #notifPanel .notif-ts{
   color:#94a3b8 !important;
   opacity:1 !important;
 }
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-type{
+html[data-theme="dark"] #notifPanel .notif-type{
   background: rgba(255,255,255,.08) !important;
 }
-html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-bubble.seen{
+html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
@@ -1088,6 +1088,6 @@ html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-bubble.seen{
 
 </div>
 
-<script src="./app.js?v=20260207" defer></script>
+<script src="./app.js" defer></script>
 </body>
 </html>
