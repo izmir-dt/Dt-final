@@ -269,6 +269,67 @@ function personTag(name){
 function normalizeHeader(h){ return (h||"").trim().toLowerCase().replace(/\s+/g," "); }
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
+
+/* ---------- state/cache ---------- */
+const DATA_CACHE_KEY = "idt_data_cache_v1";
+const DATA_CACHE_TTL_MS = 5 * 60 * 1000; // 5 dk
+
+function readCachedData(){
+  try{
+    const s = localStorage.getItem(DATA_CACHE_KEY);
+    if(!s) return null;
+    const obj = JSON.parse(s);
+    if(!obj || !Array.isArray(obj.data)) return null;
+    return obj;
+  }catch{ return null; }
+}
+function writeCachedData(data){
+  try{
+    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify({timestamp: Date.now(), data}));
+  }catch{}
+}
+
+function showSkeleton(){
+  if(els.list){
+    els.list.innerHTML = `
+      <div class="skeleton skel-row"></div>
+      <div class="skeleton skel-row"></div>
+      <div class="skeleton skel-row"></div>
+      <div class="skeleton skel-row"></div>
+      <div class="skeleton skel-row"></div>
+    `;
+  }
+  if(els.details){
+    els.details.innerHTML = `<div class="skeleton skel-card"></div>`;
+  }
+}
+async function getData(forceRefresh=false){
+  const cached = readCachedData();
+  if(cached && !forceRefresh){
+    if(Date.now() - cached.timestamp < DATA_CACHE_TTL_MS){
+      return { data: cached.data, source: "cache_fresh" };
+    }
+  }
+  // Online dene (aynı sırayla: API JSONP -> GViz -> CSV)
+  try{
+    let fresh;
+    try{ fresh = await tryLoadApiJsonp(); }
+    catch(e1){
+      try{ fresh = await tryLoadGviz(); }
+      catch(e2){ fresh = await tryLoadCsv(); }
+    }
+    writeCachedData(fresh);
+    return { data: fresh, source: "network" };
+  }catch(err){
+    // Offline fallback
+    if(cached && Array.isArray(cached.data) && cached.data.length){
+      return { data: cached.data, source: "cache_stale", error: err };
+    }
+    throw err;
+  }
+}
+
+
 /* ---------- load from Google ---------- */
 function parseGviz(text){
   const m = text.match(/setResponse\((.*)\);?\s*$/s);
@@ -751,6 +812,7 @@ function renderList(){
   const filtered = applyFilters(source);
 
   els.list.innerHTML="";
+  const frag = document.createDocumentFragment();
   if(!filtered.length){
     els.list.innerHTML = `<div class="empty">Sonuç yok 😅</div>`;
     els.hint.textContent = "";
@@ -817,8 +879,9 @@ function renderList(){
       }
 
     });
-    els.list.appendChild(div);
+    frag.appendChild(div);
   }
+  els.list.appendChild(frag);
 
 
   if(isMobile() && activeMode==="people" && activePlayFilter){
@@ -1450,11 +1513,15 @@ function renderIntersection(){
 function setActiveTab(which){
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
-    el(t).classList.remove("active");
-    el(v).style.display="none";
+    const tb = el(t);
+    const vw = el(v);
+    if(tb){ tb.classList.remove("active"); tb.setAttribute("aria-selected","false"); }
+    if(vw) vw.style.display="none";
   }
-  el("tab"+which).classList.add("active");
-  el("view"+which).style.display="block";
+  const activeTb = el("tab"+which);
+  const activeVw = el("view"+which);
+  if(activeTb){ activeTb.classList.add("active"); activeTb.setAttribute("aria-selected","true"); }
+  if(activeVw) activeVw.style.display="block";
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
   const slugMap = {
@@ -1543,7 +1610,7 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false));
+els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -1781,15 +1848,13 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false){
+async function load(isAuto=false, forceRefresh=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
+  showSkeleton();
   activeId=null; selectedItem=null;
   try{
-    try{ rawRows = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ rawRows = await tryLoadGviz(); }
-      catch(e2){ rawRows = await tryLoadCsv(); }
-    }
+    const res = await getData(!!forceRefresh);
+    rawRows = res.data;
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
@@ -1805,7 +1870,6 @@ async function load(isAuto=false){
     renderDistribution();
 
     retiredSet = computeRetiredSetFromRaw();
-    retiredSet = computeRetiredSetFromRaw();
     figuran = computeFiguranFromRaw();
     renderFiguran();
 
@@ -1815,7 +1879,10 @@ async function load(isAuto=false){
     renderKpis();
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-    setStatus(`✅ Hazır • ${when}`, "ok");
+    let badge = "";
+    if(res && res.source==="cache_fresh") badge = " (cache)";
+    else if(res && res.source==="cache_stale") badge = " (offline cache)";
+    setStatus(`✅ Hazır${badge} • ${when}`, res && res.source==="cache_stale" ? "warn" : "ok");
 
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
