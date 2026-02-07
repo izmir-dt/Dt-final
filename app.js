@@ -1721,8 +1721,14 @@ function buildCmdkIndex(rows){
   __cmdkIndex=out;
 }
 function openCmdk(){
+  // Mobilde command palette istemiyoruz (tasarım küçücük ekranı kapatmasın)
+  if (window.matchMedia && window.matchMedia("(max-width: 899.98px)").matches) return;
   const ov=document.getElementById("cmdkOverlay"), inp=document.getElementById("cmdkInput");
-  if(!ov||!inp) return; ov.hidden=false; __cmdkOpen=true; __cmdkSel=0; inp.value=""; renderCmdkResults_(""); setTimeout(()=>inp.focus(),10);
+  if(!ov||!inp) return;
+  ov.hidden=false; __cmdkOpen=true; __cmdkSel=0;
+  inp.value="";
+  renderCmdkResults_("");
+  setTimeout(()=>inp.focus(),10);
 }
 function closeCmdk(){ const ov=document.getElementById("cmdkOverlay"); if(!ov) return; ov.hidden=true; __cmdkOpen=false; }
 function renderCmdkResults_(q){
@@ -1759,7 +1765,9 @@ function setupCmdkShortcuts(){
     if(e.key==="Enter"){ e.preventDefault(); document.querySelector(`.cmdk-item[data-i="${__cmdkSel}"]`)?.click(); }
   });
   document.getElementById("cmdkOverlay")?.addEventListener("click",(e)=>{ if(e.target&&e.target.id==="cmdkOverlay") closeCmdk(); });
+  document.getElementById("cmdkClose")?.addEventListener("click", closeCmdk);
   document.getElementById("cmdkInput")?.addEventListener("input",(e)=>{ __cmdkSel=0; renderCmdkResults_(e.target.value); });
+  document.getElementById("cmdkInput")?.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ e.preventDefault(); closeCmdk(); }});
 }
 function computeKpis_(){
   const activeGames=(plays?.length??0), totalPeople=(people?.length??0), assignments=(rows?.length??0);
