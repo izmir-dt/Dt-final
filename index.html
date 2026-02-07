@@ -83,6 +83,13 @@ html[data-theme="dark"]{
       letter-spacing:.6px;
     }
     .brand h1{margin:0;font-size:14px;line-height:1.25}
+
+    /* --- Brand box (requested) --- */
+    .brand-box{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+    .brand-main{font-weight:800;color:var(--accent2);letter-spacing:.3px}
+    .brand-divider{opacity:.6}
+    .brand-sub{font-weight:300;font-size:.75rem;letter-spacing:1px;color:var(--muted)}
+    
     .brand .sub{margin-top:3px;color:var(--muted);font-size:12px}
     .actions{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;margin-left:auto;}
 
@@ -344,6 +351,15 @@ width:48px;
     footer{padding:12px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);background:var(--card)}
     code{background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%);padding:2px 6px;border-radius:8px;border:1px solid var(--line)}
     .small{color:var(--muted);font-size:12px}
+
+    
+    /* --- Skeleton (loading shimmer) --- */
+    .skeleton{position:relative;overflow:hidden;background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%);border:1px solid var(--line);border-radius:14px}
+    .skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 1.2s infinite}
+    @keyframes shimmer{100%{transform:translateX(120%)}}
+    .skel-row{height:54px;margin:10px 0}
+    .skel-card{height:220px}
+    
 
     /* Charts */
     .chartsNav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
@@ -947,7 +963,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     <div class="brand">
       <div class="logo">IDT</div>
       <div>
-        <h1>İDT PANEL | <small style="font-weight:700;opacity:.85">SANAT TEKNİK BÜROSU</small></h1>
+        <h1><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></h1>
         </div>
     </div>
     <div class="actions">
