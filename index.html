@@ -881,7 +881,29 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
-</style>
+
+    /* Manual copy modal */
+    .modal{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:18px; z-index:1002; }
+    .modalCard{ width:min(980px, 96vw); max-height:86vh; display:flex; flex-direction:column;
+      background: var(--card); border:1px solid var(--line); border-radius:18px; box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modalHd{ display:flex; gap:12px; align-items:flex-start; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid var(--line); }
+    .modalKicker{ font-size:12px; color:var(--muted); }
+    .modalTitle{ font-size:18px; font-weight:900; letter-spacing:.2px; }
+    .modalSub{ font-size:12px; color:var(--muted); margin-top:2px; }
+    #copyText{ width:100%; flex:1; min-height:240px; padding:12px 12px; border:0; outline:none;
+      background: transparent; color: var(--text); font: 12.5px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      resize:none;
+    }
+    .modalFt{ display:flex; gap:10px; justify-content:flex-end; padding:12px 14px; border-top:1px solid var(--line); }
+    @media (max-width: 520px){
+      .modalCard{ width:96vw; max-height:88vh; }
+      .modalHd{ padding:12px; }
+      #copyText{ font-size:12px; }
+    }
+
+  </style>
 </head>
 <body>
 <header>
@@ -2778,10 +2800,10 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-els.copyBtn.addEventListener("click", ()=>{
+els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  showManualCopy(tsv);
+  await copyText(tsv);
 });
 
 function showManualCopy(text){
@@ -2812,12 +2834,46 @@ function showManualCopy(text){
 }
 
 function copyText(text){
-  // HER ZAMAN manuel pano aç (kopyalama izni/secure context derdi yok)
-  showManualCopy(String(text ?? ""));
-  return false;
+  const value = String(text ?? "");
+  // 1) Synchronous execCommand first (keeps user gesture; works more reliably)
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = value;
+    ta.setAttribute("readonly","readonly");
+    ta.style.position = "fixed";
+    ta.style.top = "-1000px";
+    ta.style.left = "-1000px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    ta.remove();
+    if(ok){
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return Promise.resolve(true);
+    }
+  }catch(e){}
+
+  // 2) Async clipboard as fallback
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(value).then(()=>{
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }).catch(()=>{
+      showManualCopy(value);
+      setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
+      return false;
+    });
+  }
+
+  // 3) Manual fallback
+  showManualCopy(value);
+  setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
+  return Promise.resolve(false);
 }
-
-
 
 
 function downloadText(filename, text){
@@ -3092,6 +3148,27 @@ document.addEventListener("DOMContentLoaded", ()=>{
       <button id="modalClose" class="btn sm">Kapat</button>
     </div>
     <div id="mobileContent" class="modalBody"></div>
+  </div>
+
+
+  <!-- Manual Excel Copy Modal -->
+  <div id="copyBackdrop" class="backdrop hidden" aria-hidden="true"></div>
+  <div id="copyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="copyTitle">
+    <div class="modalCard">
+      <div class="modalHd">
+        <div>
+          <div class="modalKicker">İzmir Devlet Tiyatrosu Müdürlüğü • Sanat Teknik Bürosu</div>
+          <div id="copyTitle" class="modalTitle">📋 Kopyala</div>
+          <div class="modalSub">Ctrl+A / Ctrl+C → Excel’de Ctrl+V</div>
+        </div>
+        <button class="btn icon" id="copyClose" aria-label="Kapat">✕</button>
+      </div>
+      <textarea id="copyText" spellcheck="false"></textarea>
+      <div class="modalFt">
+        <button class="btn" id="copySelectAll">Hepsini Seç</button>
+        <button class="btn primary" id="copyTryClipboard">Kopyala</button>
+      </div>
+    </div>
   </div>
 
 </body>
