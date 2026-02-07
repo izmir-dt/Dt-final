@@ -4,9 +4,6 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
 
 :root{
@@ -104,7 +101,7 @@ html[data-theme="dark"]{
       position:absolute;
       right:0;
       top:46px;
-      width:min(420px, 92vw);
+      width:min(520px, 92vw);
       background:var(--card);
       border:1px solid var(--line);
       border-radius:16px;
@@ -118,7 +115,7 @@ html[data-theme="dark"]{
       display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
-    .notifBd{max-height:52vh;overflow:auto;padding:10px}
+    .notifBd{max-height:60vh;overflow:auto;padding:12px}
 
     /* Mobilde bildirim paneli viewport dışına taşmasın */
     @media (max-width: 760px){
@@ -246,12 +243,6 @@ width:48px;
   border:1px solid rgba(255,255,255,.06);
 }
 .kpi > div:first-child{flex:1; min-width:0;}
-
-    /* KPI cards as shortcuts (Panel / Analiz / Figüran / Grafikler) */
-    .kpi[data-go]{cursor:pointer; user-select:none;}
-    .kpi[data-go]:hover{transform:translateY(-1px);}
-    .kpi[data-go]:active{transform:translateY(0);}
-    .kpi[data-go]:focus{outline:3px solid rgba(192,122,42,.35); outline-offset:2px;}
 
     .kpi.soft1{background:linear-gradient(135deg,var(--soft1), var(--card));}
     .kpi.soft2{background:linear-gradient(135deg,var(--soft2), var(--card));}
@@ -439,30 +430,12 @@ width:48px;
 
 
 /* --- Notifications (chat bubble) --- */
-.notif-bubble{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  padding:8px 10px;
-  margin:8px 0;
-  border-radius:14px;
-  background:rgba(255,255,255,.78);
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:0 6px 14px rgba(0,0,0,.06);
-  cursor:pointer
-}
+.notif-bubble{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:10px 0;border-radius:14px;background:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 18px rgba(0,0,0,.06);cursor:pointer}
 .notif-bubble:hover{transform:translateY(-1px)}
 .notif-bubble.seen{opacity:.62}
-.notif-type{
-  width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:10px;
-  background:rgba(0,0,0,.05);
-  font-size:15px;
-  flex:0 0 28px
-}
-.notif-title{font-weight:800;margin-bottom:2px;font-size:13px;letter-spacing:.2px}
-.notif-msg{margin:2px 0 6px 0;font-size:13px;line-height:1.35}
+.notif-type{width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;border-radius:10px;background:rgba(0,0,0,.04);font-size:16px;flex:0 0 34px}
+.notif-title{font-weight:700;margin-bottom:2px}
+.notif-msg{margin:2px 0 6px 0}
 .notif-meta{font-size:12px;opacity:.8}
 .notif-ts{font-size:11px;opacity:.65;margin-top:6px}
 
@@ -782,7 +755,7 @@ select.q-scope{
   color: var(--card);
   background: var(--bad);
 }
-#notifPanel{
+html[data-theme="light"] #notifPanel{
   position:absolute;
   right:0;
   top:calc(100% + 10px);
@@ -821,7 +794,7 @@ select.q-scope{
 .notifItem div{ color: var(--text); }
 
 /* dark theme: ensure panel stays dark but text stays light */
-html[data-theme="dark"] #notifPanel{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel{
   background: color-mix(in srgb, var(--card) 92%, #000 8%);
   border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
 }
@@ -832,348 +805,58 @@ html[data-theme="dark"] #notifPanel{
    ========================= */
 
 /* Base (light) */
-#notifPanel .notif-bubble{
+html[data-theme="light"] #notifPanel .notif-bubble{
   background: #ffffff !important;
   color: #0f172a !important;
 }
-#notifPanel .notif-title,
-#notifPanel .notif-msg,
-#notifPanel .notif-meta,
-#notifPanel .notif-ts{
+html[data-theme="light"] #notifPanel .notif-title,
+html[data-theme="light"] #notifPanel .notif-msg,
+html[data-theme="light"] #notifPanel .notif-meta,
+html[data-theme="light"] #notifPanel .notif-ts{
   color:#0f172a !important;
 }
-#notifPanel .notif-meta{ color:#334155 !important; opacity:1 !important; }
-#notifPanel .notif-ts{ color:#64748b !important; opacity:1 !important; }
-#notifPanel .notif-type{
+html[data-theme="light"] #notifPanel .notif-meta{ color:#334155 !important; opacity:1 !important; }
+html[data-theme="light"] #notifPanel .notif-ts{ color:#64748b !important; opacity:1 !important; }
+html[data-theme="light"] #notifPanel .notif-type{
   background: rgba(15,23,42,.06) !important;
 }
 
 /* Seen state: don't fade text; just soften bg */
-#notifPanel .notif-bubble.seen{
+html[data-theme="light"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: #f8fafc !important;
   border-color: rgba(15,23,42,.08) !important;
 }
 
 /* Dark theme */
-html[data-theme="dark"] #notifPanel{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel{
   background: rgba(11,16,32,.96) !important;
   color:#f8fafc !important;
 }
-html[data-theme="dark"] #notifPanel .notif-bubble{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-bubble{
   background: rgba(30,41,59,.92) !important;
   border-color: rgba(148,163,184,.18) !important;
   color:#f8fafc !important;
 }
-html[data-theme="dark"] #notifPanel .notif-title,
-html[data-theme="dark"] #notifPanel .notif-msg{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-title,
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-msg{
   color:#f8fafc !important;
 }
-html[data-theme="dark"] #notifPanel .notif-meta{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-meta{
   color:#cbd5e1 !important;
   opacity:1 !important;
 }
-html[data-theme="dark"] #notifPanel .notif-ts{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-ts{
   color:#94a3b8 !important;
   opacity:1 !important;
 }
-html[data-theme="dark"] #notifPanel .notif-type{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-type{
   background: rgba(255,255,255,.08) !important;
 }
-html[data-theme="dark"] #notifPanel .notif-bubble.seen{
+html[data-theme="dark"] html[data-theme="light"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
-
-
-/* ===== UI/UX polish (Deep Charcoal + Gold, Glass Cards, Micro-interactions) ===== */
-:root{
-  --bg:#121212;              /* deep charcoal */
-  --card:rgba(255,255,255,.06);
-  --card2:rgba(255,255,255,.08);
-  --text:#e8e8ee;
-  --muted:#b6b6c3;
-  --line:rgba(255,255,255,.12);
-  --accent:#D4AF37;          /* gold */
-  --accent2:#B22222;         /* velvet red */
-  --shadow: 0 18px 50px rgba(0,0,0,.45);
-  --blur: 14px;
-  --focus: 0 0 0 3px rgba(212,175,55,.25);
-  --fadeMs: 160ms;
-}
-
-html, body{
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-}
-
-h1,h2,h3,.brand-title{
-  font-family: "Playfair Display", Inter, serif;
-  letter-spacing: .2px;
-}
-
-a, button{ -webkit-tap-highlight-color: transparent; }
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
-  outline:none;
-  box-shadow: var(--focus);
-}
-
-/* Glass cards */
-.card, .panel-card, .stat-card, .box, .modal, .drawer, .list-card{
-  background: var(--card);
-  border: 1px solid var(--line);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  box-shadow: var(--shadow);
-}
-
-/* Hover polish */
-.stat-card, .list-item, .data-row, .btn{
-  transition: transform var(--fadeMs) ease, opacity var(--fadeMs) ease, background var(--fadeMs) ease, border-color var(--fadeMs) ease;
-}
-.stat-card:hover{
-  transform: translateY(-2px);
-  border-color: rgba(212,175,55,.45);
-}
-.list-item:hover, .data-row:hover{
-  background: rgba(255,255,255,.06);
-}
-
-/* Fade in/out for filtering */
-.fade-enter{ opacity: 0; transform: translateY(4px); }
-.fade-enter-active{ opacity: 1; transform: translateY(0); }
-
-/* Skeletons */
-.skeleton{
-  position: relative;
-  overflow: hidden;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 14px;
-}
-.skeleton:after{
-  content:"";
-  position:absolute; inset:0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
-  animation: sk 1.2s infinite;
-}
-@keyframes sk { to { transform: translateX(100%); } }
-
-/* Sticky Summary */
-.sticky-summary{
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  display:flex;
-  justify-content: space-between;
-  align-items:center;
-  gap: 12px;
-  padding: 10px 12px;
-  margin: 8px 0 0;
-  background: rgba(8,10,18,.72);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  opacity: 0;
-  pointer-events:none;
-  transform: translateY(-6px);
-  transition: opacity var(--fadeMs) ease, transform var(--fadeMs) ease;
-}
-.sticky-summary.is-on{
-  opacity: 1;
-  pointer-events:auto;
-  transform: translateY(0);
-}
-.sticky-summary__left{ display:flex; flex-wrap:wrap; gap:8px; }
-.pill{
-  display:inline-flex; align-items:center;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  font-size: 12px;
-  color: var(--text);
-}
-.btn.btn-ghost{
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-}
-
-/* Command palette */
-.cmdk-overlay{
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
-  padding-top: 10vh;
-  z-index: 200;
-}
-.cmdk{
-  width: min(680px, 92vw);
-  border-radius: 18px;
-  background: rgba(18,18,18,.70);
-  border: 1px solid rgba(255,255,255,.14);
-  box-shadow: 0 30px 90px rgba(0,0,0,.65);
-  overflow:hidden;
-}
-.cmdk__header{
-  display:flex; justify-content:space-between; align-items:center;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
-}
-.cmdk__title{ font-weight: 700; }
-.cmdk__hint{ font-size: 12px; color: var(--muted); }
-.cmdk__input{
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  padding: 14px;
-  font-size: 14px;
-}
-.cmdk__results{
-  max-height: 46vh;
-  overflow:auto;
-  padding: 6px;
-}
-.cmdk-item{
-  display:flex; gap:10px; align-items:center;
-  padding: 10px 10px;
-  border-radius: 12px;
-  cursor:pointer;
-  border: 1px solid transparent;
-}
-.cmdk-item:hover, .cmdk-item[aria-selected="true"]{
-  background: rgba(255,255,255,.07);
-  border-color: rgba(212,175,55,.35);
-}
-.cmdk-tag{
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: var(--muted);
-}
-.cmdk-main{ flex:1; min-width: 0; }
-.cmdk-title{ font-weight: 600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.cmdk-sub{ font-size: 12px; color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.cmdk__footer{ padding: 10px 14px; border-top: 1px solid rgba(255,255,255,.10); }
-
-/* Embedded quick search (replaces modal cmdk) */
-.quick-search{ display:flex; align-items:center; gap:8px; position:relative; }
-.quick-search__input{
-  width: 260px;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-  outline: none;
-  transition: width .18s ease, border-color .18s ease, background .18s ease;
-}
-.quick-search__input:focus{ border-color: rgba(212,175,55,.45); background: rgba(255,255,255,.08); width: min(420px, 48vw); }
-.quick-search__results{
-  position:absolute;
-  top: 44px;
-  left: 0;
-  width: min(520px, 62vw);
-  max-height: 52vh;
-  overflow:auto;
-  border-radius: 16px;
-  background: rgba(18,18,18,.88);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 24px 80px rgba(0,0,0,.65);
-  padding: 6px;
-  z-index: 220;
-}
-.quick-item{
-  display:flex; align-items:center; gap:10px;
-  padding: 10px 10px;
-  border-radius: 12px;
-  cursor:pointer;
-  border: 1px solid transparent;
-}
-.quick-item:hover, .quick-item[aria-selected="true"]{ background: rgba(255,255,255,.07); border-color: rgba(212,175,55,.35); }
-.quick-tag{
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: var(--muted);
-}
-.quick-main{ flex:1; min-width: 0; }
-.quick-title{ font-weight: 600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.quick-sub{ font-size: 12px; color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-@media (max-width: 720px){
-  .quick-search__input{ width: 0; padding: 0; border: 0; background: transparent; }
-  .quick-search.is-open .quick-search__input{ width: min(78vw, 420px); padding: 0 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); }
-  .quick-search__results{ width: min(92vw, 520px); }
-}
-
-/* Toasts */
-.toast-host{
-  position: fixed;
-  right: 14px;
-  bottom: 14px;
-  z-index: 250;
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-}
-.toast{
-  min-width: 240px;
-  max-width: min(420px, 90vw);
-  padding: 12px 12px;
-  border-radius: 14px;
-  background: rgba(18,18,18,.80);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 18px 60px rgba(0,0,0,.55);
-}
-.toast__title{ font-weight:700; margin-bottom:2px; }
-.toast__msg{ font-size: 13px; color: var(--muted); }
-.toast--ok{ border-color: rgba(24,121,78,.35); }
-.toast--warn{ border-color: rgba(212,175,55,.35); }
-.toast--bad{ border-color: rgba(178,34,34,.40); }
-
-/* Mobile: card view for tables + 44px targets */
-@media (max-width: 640px){
-  table thead{ display:none; }
-  table tbody tr{
-    display:block;
-    margin: 10px 0;
-    border: 1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.05);
-    border-radius: 14px;
-    padding: 10px;
-  }
-  table tbody td{
-    display:flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
-    border: 0 !important;
-  }
-  table tbody td::before{
-    content: attr(data-label);
-    color: var(--muted);
-    font-size: 12px;
-    padding-right: 10px;
-  }
-  .btn, button, input, select{ min-height: 44px; }
-}
-
 </style>
 </head>
 <body>
@@ -1218,7 +901,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
           </div>
         </div>
       </div>
-      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
+      <a class="btn primary" id="sheetBtn" href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit?gid=1233566992" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
     </div>
   </div>
 
@@ -1233,10 +916,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 <div class="wrap">
   <div class="kpis" id="kpis">
-    <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
-    <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
-    <div class="kpi soft3" data-go="Panel" data-mode="rows" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
-    <div class="kpi soft4" data-go="Figuran" data-mode="figuran" role="button" tabindex="0" aria-label="Figüran listesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+    <div class="kpi soft1"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
+    <div class="kpi soft2"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
+    <div class="kpi soft3"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
+    <div class="kpi soft4"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
   </div>
 
   <!-- PANEL -->
@@ -1403,40 +1086,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 </div>
 
-<script defer src="app.js"></script>
-
-
-  <!-- Mobile detail modal -->
-  <div id="mobileOverlay" class="overlay hidden" aria-hidden="true"></div>
-  <div id="mobileModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detay">
-    <div class="modalHead">
-      <div class="modalTitle">Detay</div>
-      <button id="modalClose" class="btn sm">Kapat</button>
-    </div>
-    <div id="mobileContent" class="modalBody"></div>
-  </div>
-
-
-  <!-- Sticky Summary Bar -->
-  <div id="stickySummary" class="sticky-summary" aria-hidden="true">
-    <div class="sticky-summary__left">
-      <span class="pill" id="stickyActiveGame">Aktif Oyun: -</span>
-      <span class="pill" id="stickyTotalPeople">Toplam Personel: -</span>
-      <span class="pill" id="stickyAssignments">Atama: -</span>
-      <span class="pill" id="stickyFiguran">Figüran: -</span>
-    </div>
-    <div class="sticky-summary__right">
-      <div class="quick-search" id="quickSearch" role="search" aria-label="Hızlı Arama">
-        <button class="btn btn-ghost quick-search__toggle" id="searchToggle" title="Ara (Ctrl+K)" aria-label="Ara">🔎</button>
-        <input id="globalSearchInput" class="quick-search__input" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off" spellcheck="false" />
-        <div id="globalSearchResults" class="quick-search__results" hidden></div>
-      </div>
-      <button class="btn btn-ghost" id="stickyTopBtn" title="Yukarı">↑</button>
-    </div>
-  </div>
-
-  <!-- Toasts -->
-  <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
-
+<script src="./app.js?v=20260207" defer></script>
 </body>
 </html>
