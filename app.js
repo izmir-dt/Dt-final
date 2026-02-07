@@ -1648,6 +1648,12 @@ async function load(isAuto=false){
 
     renderKpis();
 
+    // Üst bar yardımcıları
+    setupStickySummary();
+    // Hızlı arama (gömülü) index + klavye kısayol
+    buildCmdkIndex();
+    setupCmdkShortcuts();
+
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
 
@@ -1691,7 +1697,11 @@ function applyFade(el){
 function setupStickySummary(){
   const bar=document.getElementById("stickySummary"); if(!bar) return;
   document.getElementById("stickyTopBtn")?.addEventListener("click", ()=>window.scrollTo({top:0,behavior:"smooth"}));
-  document.getElementById("cmdkBtn")?.addEventListener("click", ()=>openCmdk());
+  document.getElementById("searchToggle")?.addEventListener("click", ()=>{
+    const box=document.getElementById("quickSearch");
+    box?.classList.toggle("is-open");
+    openCmdk();
+  });
   const onScroll=()=>{ const on=window.scrollY>140; bar.classList.toggle("is-on", on); bar.setAttribute("aria-hidden", on ? "false":"true"); };
   window.addEventListener("scroll", onScroll, {passive:true}); onScroll();
 }
@@ -1720,23 +1730,35 @@ function buildCmdkIndex(rows){
   });
   __cmdkIndex=out;
 }
+// Hızlı arama: modal yerine üst bara gömülü
 function openCmdk(){
-  // Mobilde command palette istemiyoruz (tasarım küçücük ekranı kapatmasın)
-  if (window.matchMedia && window.matchMedia("(max-width: 899.98px)").matches) return;
-  const ov=document.getElementById("cmdkOverlay"), inp=document.getElementById("cmdkInput");
-  if(!ov||!inp) return;
-  ov.hidden=false; __cmdkOpen=true; __cmdkSel=0;
-  inp.value="";
-  renderCmdkResults_("");
-  setTimeout(()=>inp.focus(),10);
+  const box=document.getElementById("quickSearch");
+  const inp=document.getElementById("globalSearchInput");
+  if(!box||!inp) return;
+  box.classList.add("is-open");
+  __cmdkOpen=true; __cmdkSel=0;
+  inp.focus();
+  renderCmdkResults_(inp.value||"");
 }
-function closeCmdk(){ const ov=document.getElementById("cmdkOverlay"); if(!ov) return; ov.hidden=true; __cmdkOpen=false; }
+function closeCmdk(){
+  const box=document.getElementById("quickSearch");
+  const res=document.getElementById("globalSearchResults");
+  if(box) box.classList.remove("is-open");
+  if(res) res.hidden=true;
+  __cmdkOpen=false;
+}
 function renderCmdkResults_(q){
-  const res=document.getElementById("cmdkResults"); if(!res) return;
+  const res=document.getElementById("globalSearchResults");
+  const inp=document.getElementById("globalSearchInput");
+  if(!res) return;
   const query=String(q||"").trim().toLocaleLowerCase("tr-TR");
   let items=__cmdkIndex;
-  if(query) items=items.filter(it=>(it.title+" "+(it.sub||"")).toLocaleLowerCase("tr-TR").includes(query));
-  items=items.slice(0,30);
+  if(query){
+    items=items.filter(it=>(it.title+" "+(it.sub||"")).toLocaleLowerCase("tr-TR").includes(query));
+  }
+  // Boşken listeyi açma; sadece odakta iken ve query >= 2
+  if(!query || query.length<2){ res.hidden=true; res.innerHTML=""; return; }
+  items=items.slice(0,12);
   res.innerHTML=items.map((it,i)=>`
     <div class="cmdk-item" role="option" aria-selected="${i===__cmdkSel}" data-i="${i}">
       <span class="cmdk-tag">${escapeHtml_(it.type)}</span>
@@ -1745,7 +1767,16 @@ function renderCmdkResults_(q){
         <div class="cmdk-sub">${escapeHtml_(it.sub||"")}</div>
       </div>
     </div>`).join("") || `<div class="muted" style="padding:10px 12px">Sonuç yok</div>`;
-  res.querySelectorAll(".cmdk-item").forEach(el=>el.addEventListener("click", ()=>chooseCmdk_(items[Number(el.dataset.i||0)])));
+  res.hidden=false;
+  res.querySelectorAll(".cmdk-item").forEach(el=>el.addEventListener("mousedown", (ev)=>{
+    // mousedown: input blur olmadan seçim
+    ev.preventDefault();
+    chooseCmdk_(items[Number(el.dataset.i||0)]);
+  }));
+  // klavye ile seçimde görünür alanı tut
+  if(inp && document.activeElement===inp){
+    res.querySelectorAll('.cmdk-item').forEach((el,idx)=>el.setAttribute('aria-selected', String(idx===__cmdkSel)));
+  }
 }
 function chooseCmdk_(it){
   if(!it) return; closeCmdk();
@@ -1755,19 +1786,40 @@ function chooseCmdk_(it){
   showToast("Bulundu", `${it.type}: ${it.title}`, "ok", 1600);
 }
 function setupCmdkShortcuts(){
+  // Ctrl/Cmd+K: arama alanına odaklan
   document.addEventListener("keydown",(e)=>{
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){ e.preventDefault(); __cmdkOpen?closeCmdk():openCmdk(); return; }
-    if(!__cmdkOpen) return;
-    const inp=document.getElementById("cmdkInput");
-    if(e.key==="Escape"){ closeCmdk(); return; }
-    if(e.key==="ArrowDown"){ e.preventDefault(); __cmdkSel=Math.min(__cmdkSel+1,29); renderCmdkResults_(inp?.value||""); return; }
-    if(e.key==="ArrowUp"){ e.preventDefault(); __cmdkSel=Math.max(__cmdkSel-1,0); renderCmdkResults_(inp?.value||""); return; }
-    if(e.key==="Enter"){ e.preventDefault(); document.querySelector(`.cmdk-item[data-i="${__cmdkSel}"]`)?.click(); }
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){
+      e.preventDefault();
+      openCmdk();
+      return;
+    }
   });
-  document.getElementById("cmdkOverlay")?.addEventListener("click",(e)=>{ if(e.target&&e.target.id==="cmdkOverlay") closeCmdk(); });
-  document.getElementById("cmdkClose")?.addEventListener("click", closeCmdk);
-  document.getElementById("cmdkInput")?.addEventListener("input",(e)=>{ __cmdkSel=0; renderCmdkResults_(e.target.value); });
-  document.getElementById("cmdkInput")?.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ e.preventDefault(); closeCmdk(); }});
+
+  const inp=document.getElementById("globalSearchInput");
+  const res=document.getElementById("globalSearchResults");
+  const tog=document.getElementById("searchToggle");
+  if(tog) tog.addEventListener("click",()=>{ (__cmdkOpen?closeCmdk():openCmdk()); });
+
+  inp?.addEventListener("focus",()=>{ __cmdkOpen=true; });
+  inp?.addEventListener("input",(e)=>{ __cmdkSel=0; renderCmdkResults_(e.target.value); });
+  inp?.addEventListener("keydown",(e)=>{
+    if(!__cmdkOpen) return;
+    if(e.key==="Escape"){ closeCmdk(); inp.blur(); return; }
+    if(e.key==="ArrowDown"){ e.preventDefault(); __cmdkSel=Math.min(__cmdkSel+1,11); renderCmdkResults_(inp.value||""); return; }
+    if(e.key==="ArrowUp"){ e.preventDefault(); __cmdkSel=Math.max(__cmdkSel-1,0); renderCmdkResults_(inp.value||""); return; }
+    if(e.key==="Enter"){
+      const el = res?.querySelector(`.cmdk-item[data-i="${__cmdkSel}"]`);
+      if(el){ e.preventDefault(); el.dispatchEvent(new MouseEvent('mousedown',{bubbles:true})); }
+    }
+  });
+
+  // dışarı tıkla: kapat
+  document.addEventListener("mousedown",(e)=>{
+    const box=document.getElementById("quickSearch");
+    if(!box) return;
+    if(box.contains(e.target)) return;
+    closeCmdk();
+  });
 }
 function computeKpis_(){
   const activeGames=(plays?.length??0), totalPeople=(people?.length??0), assignments=(rows?.length??0);
