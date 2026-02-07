@@ -50,6 +50,7 @@ const el = (id)=>document.getElementById(id);
 const els = {
   themeBtn: el("themeBtn"),
   status: el("status"),
+  apiTestLink: el("apiTestLink"),
   sheetBtn: el("sheetBtn"),
   reloadBtn: el("reloadBtn"),
   notifBtn: el("notifBtn"),
@@ -116,9 +117,11 @@ const els = {
 };
 
 // ✅ Fail-safe: Google Sheet'i Aç linki her durumda çalışsın
-try{ if(els.sheetBtn) els.sheetBtn.href = CONFIG.sheetUrl(); }catch(e){}
+try{ if(els.sheetBtn) els.sheetBtn.href = CONFIG.sheetUrl();
+if(els.apiTestLink){ els.apiTestLink.href = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`; } }catch(e){}
 
 els.sheetBtn.href = CONFIG.sheetUrl();
+if(els.apiTestLink){ els.apiTestLink.href = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`; }
 
 let rawRows = [];
 let rows = [];
@@ -570,16 +573,20 @@ async function load(isAuto=false){
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
     setStatus(`✅ Hazır • ${when}`, "ok");
+    if(els.apiTestLink) els.apiTestLink.classList.add("hidden");
 
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
   }catch(err){
     console.error(err);
     setStatus("⛔ Veri çekilemedi", "bad");
+    if(els.apiTestLink){ els.apiTestLink.classList.remove("hidden"); els.apiTestLink.href = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`; }
     els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
 <b>Veri çekilemedi.</b>
 
 1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
+2) Apps Script Web App: Deploy → Web app → Execute as: Me, Who has access: Anyone
+3) API Test butonuna basıp JSON geliyor mu kontrol et
 2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
 
 Hata: ${escapeHtml(err.message || String(err))}
