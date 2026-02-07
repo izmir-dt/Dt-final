@@ -269,7 +269,7 @@ function buildFromCsv(raw){
   return out;
 }
 
-function jsonp(url, timeoutMs=20000){
+function jsonp(url, timeoutMs=7000){
   return new Promise((resolve, reject)=>{
     const cb = "idt_cb_" + Math.random().toString(36).slice(2);
     const s = document.createElement("script");
@@ -580,6 +580,7 @@ async function load(isAuto=false){
   }catch(err){
     console.error(err);
     setStatus("⛔ Veri çekilemedi", "bad");
+    const apiTest = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}&callback=test`;
     if(els.apiTestLink){ els.apiTestLink.classList.remove("hidden"); els.apiTestLink.href = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`; }
     els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
 <b>Veri çekilemedi.</b>
@@ -590,7 +591,13 @@ async function load(isAuto=false){
 2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
 
 Hata: ${escapeHtml(err.message || String(err))}
-</div>`;
+</div>
+<p style="margin-top:10px;opacity:.9">
+<b>Hızlı kontrol:</b> API JSONP çalışıyor mu?<br>
+<a href="${apiTest}" target="_blank" rel="noopener">API test (callback=test)</a><br>
+Bu link <code>test({...});</code> şeklinde dönmeli. Eğer sadece <code>{...}</code> dönüyorsa Apps Script'te JSONP desteği yoktur.
+</p>
+`;
     els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
     els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
     els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
