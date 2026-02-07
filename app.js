@@ -397,6 +397,78 @@ async function tryLoadCsv(){
   return buildFromCsv(csvToRows(csv));
 }
 
+/* ---------- Local cache (5 dk) + offline fallback ---------- */
+const CACHE = {
+  key: "idt_data_cache_v1",
+  ttlMs: 5 * 60 * 1000,
+};
+function readCache_(){
+  try{
+    const s = localStorage.getItem(CACHE.key);
+    if(!s) return null;
+    const obj = JSON.parse(s);
+    if(!obj || !Array.isArray(obj.rawRows) || !obj.timestamp) return null;
+    return obj;
+  }catch{ return null; }
+}
+function writeCache_(rawRows, source){
+  try{
+    localStorage.setItem(CACHE.key, JSON.stringify({
+      timestamp: Date.now(),
+      source: source || "",
+      rawRows,
+    }));
+  }catch{}
+}
+async function getData_(forceRefresh=false){
+  const cached = readCache_();
+  if(cached && !forceRefresh){
+    const age = Date.now() - cached.timestamp;
+    if(age < CACHE.ttlMs){
+      return { rawRows: cached.rawRows, fromCache:true, stale:false, source: cached.source || "cache" };
+    }
+  }
+
+  try{
+    let rr;
+    try{ rr = await tryLoadApiJsonp(); writeCache_(rr, "api"); }
+    catch(e1){
+      try{ rr = await tryLoadGviz(); writeCache_(rr, "gviz"); }
+      catch(e2){ rr = await tryLoadCsv(); writeCache_(rr, "csv"); }
+    }
+    return { rawRows: rr, fromCache:false, stale:false, source:"live" };
+  }catch(err){
+    // canlı veri gelmezse: cache varsa göster (stale)
+    if(cached && Array.isArray(cached.rawRows) && cached.rawRows.length){
+      return { rawRows: cached.rawRows, fromCache:true, stale:true, source: cached.source || "cache" };
+    }
+    throw err;
+  }
+}
+
+/* ---------- Skeleton (yükleniyor) ---------- */
+function renderSkeleton_(){
+  if(!els.list) return;
+  const blocks = new Array(6).fill(0).map(()=>`
+    <div class="item skeleton">
+      <div class="t">
+        <div style="flex:1">
+          <div class="sk-line w60"></div>
+          <div class="sk-line w40"></div>
+          <div class="sk-chips">
+            <span class="sk-chip"></span><span class="sk-chip"></span><span class="sk-chip"></span>
+          </div>
+        </div>
+      </div>
+    </div>`).join("");
+  els.list.innerHTML = blocks;
+  if(els.details){
+    els.details.innerHTML = `<div class="empty skeletonBox"><div class="sk-line w50"></div><div class="sk-line w80"></div></div>`;
+  }
+}
+
+
+
 /* ---------- split general ---------- */
 function splitPeopleGeneral(cell){
   const s = (cell||"").toString().trim();
@@ -1442,10 +1514,15 @@ function renderIntersection(){
 function setActiveTab(which){
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
-    el(t).classList.remove("active");
-    el(v).style.display="none";
+    const tEl = el(t);
+    const vEl = el(v);
+    tEl.classList.remove("active");
+    tEl.setAttribute("aria-selected","false");
+    vEl.style.display="none";
   }
-  el("tab"+which).classList.add("active");
+  const activeTab = el("tab"+which);
+  activeTab.classList.add("active");
+  activeTab.setAttribute("aria-selected","true");
   el("view"+which).style.display="block";
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
@@ -1494,18 +1571,8 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const afterGo = ()=>{
     // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
     if(target === "Panel"){
-      if(mode === "people" && els.btnPeople) { showAssignments=false; els.btnPeople.click(); }
-      if(mode === "plays" && els.btnPlays) { showAssignments=false; els.btnPlays.click(); }
-      if(mode === "rows"){
-        // Görev Ataması KPI: kişiler listesi + görev/oyun özetini aç
-        if(els.btnPeople) els.btnPeople.click();
-        showAssignments = true;
-        // Arama kapsamını Görev'e çek (liste kişide kalır)
-        if(els.qScope){ els.qScope.value = "role"; }
-        activePlayFilter = null;
-        activeId = null; selectedItem = null;
-        renderList(); renderDetails(null);
-      }
+      if(mode === "people" && els.btnPeople) els.btnPeople.click();
+      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
 
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
@@ -1545,7 +1612,7 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false));
+els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
@@ -1569,7 +1636,12 @@ if(els.qScope){
     const v=els.qScope.value;
     if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
     else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
+    else if(v==="role"){
+      // "Görev" kapsamı: roller listesi yerine "Kişiler + görev/oyun özeti"
+      showAssignments=true;
+      activeMode="people";
+      activePlayFilter=null;
+    }
     // all: mode değiştirme
     activeId=null; selectedItem=null;
     renderList(); renderDetails(null);
@@ -1783,15 +1855,16 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false){
+async function load(isAuto=false, forceRefresh=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
   activeId=null; selectedItem=null;
+
+  // Yükleme sırasında "boş ekran" yerine iskelet göster
+  renderSkeleton_();
+
   try{
-    try{ rawRows = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ rawRows = await tryLoadGviz(); }
-      catch(e2){ rawRows = await tryLoadCsv(); }
-    }
+    const got = await getData_(!!forceRefresh);
+    rawRows = got.rawRows || [];
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
@@ -1799,29 +1872,35 @@ async function load(isAuto=false){
     roles = groupByRole(rows);
     playsList = plays.map(p=>p.title);
 
+    // veri kaynağı bilgisi
+    if(got.fromCache && got.stale) setStatus("⚠️ Bağlantı zayıf. Son kaydedilen veriler gösteriliyor.", "warn");
+    else if(got.fromCache) setStatus("✅ Hazır (cache)", "ok");
+    else setStatus("✅ Hazır", "ok");
 
     renderList();
     renderDetails(null);
-
-    distribution = computeDistribution();
     renderDistribution();
-
-    retiredSet = computeRetiredSetFromRaw();
-    retiredSet = computeRetiredSetFromRaw();
-    figuran = computeFiguranFromRaw();
+    renderIntersection();
     renderFiguran();
 
-    renderPlayOptions();
-    renderIntersection();
-
-    renderKpis();
+    // KPI’lar
+    els.kpiPlays.textContent = String(plays.length || 0);
+    els.kpiPeople.textContent = String(people.length || 0);
+    els.kpiRows.textContent = String(rows.length || 0);
+    els.kpiFiguran.textContent = String(figuran.length || 0);
 
     const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-    setStatus(`✅ Hazır • ${when}`, "ok");
+    setStatus(`✅ Hazır • ${when}${(got.fromCache? " (cache)":"")}`, "ok");
 
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
   }catch(err){
+    console.error(err);
+    setStatus("❌ Veri yüklenemedi. Sheet paylaşımı / internet / Apps Script erişimini kontrol et.", "bad");
+    els.list.innerHTML = `<div class="empty">Veri yüklenemedi.<br><span class="small muted">${escapeHtml(err.message||err)}</span></div>`;
+    renderDetails(null);
+  }
+}catch(err){
     console.error(err);
     setStatus("⛔ Veri çekilemedi", "bad");
     els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
