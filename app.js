@@ -1342,12 +1342,36 @@ els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const target = String(card.getAttribute("data-go")||"").trim();
+  const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
-  card.addEventListener("click", ()=>setActiveTab(target));
+
+  const afterGo = ()=>{
+    // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
+    if(target === "Panel"){
+      if(mode === "people" && els.btnPeople) els.btnPeople.click();
+      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
+
+      // Liste alanına otomatik kaydır
+      const panelList = document.getElementById('viewPanel');
+      if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    if(target === "Figuran"){
+      const fig = document.getElementById('viewFiguran');
+      if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  };
+
+  const goNow = ()=>{
+    setActiveTab(target);
+    // DOM görünürlüğü güncellensin diye küçük gecikme
+    setTimeout(afterGo, 50);
+  };
+
+  card.addEventListener("click", goNow);
   card.addEventListener("keydown", (e)=>{
     if(e.key === "Enter" || e.key === " "){
       e.preventDefault();
-      setActiveTab(target);
+      goNow();
     }
   });
 });
