@@ -234,10 +234,9 @@ function initTabbar(){
 
   const bind = (btn)=>{
     const t = btn.getAttribute("data-tab");
-    const handler = (e)=>{ e.preventDefault(); e.stopPropagation(); go(t); setTabbarActive(t); };
-    btn.addEventListener("click", handler, {passive:false});
-    // Bazı mobil tarayıcılarda click gecikebiliyor → touchend ile garanti
-    btn.addEventListener("touchend", handler, {passive:false});
+    const handler = (e)=>{ e.stopPropagation(); go(t); setTabbarActive(t); };
+    btn.addEventListener("click", handler);
+    btn.addEventListener("pointerup", handler);
   };
 
   bar.querySelectorAll(".tb").forEach(bind);
@@ -760,6 +759,28 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
+
+function inlinePanelHtml(it){
+  // Mobilde kartın altında açılan detay (accordion)
+  const rows = (it.rows||[]);
+  const sorted = [...rows].sort((a,b)=>
+    (a.category||"").localeCompare(b.category||"","tr") ||
+    (a.role||"").localeCompare(b.role||"","tr") ||
+    (a.person||"").localeCompare(b.person||"","tr")
+  );
+  const head = (activeMode==="plays")
+    ? "<thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>"
+    : "<thead><tr><th>Oyun</th><th>Görev</th><th>Kategori</th></tr></thead>";
+  const body = sorted.map(r=>{
+    if(activeMode==="plays"){
+      return `<tr><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.person||"")}</td></tr>`;
+    }else{
+      return `<tr><td>${escapeHtml(r.play||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.category||"")}</td></tr>`;
+    }
+  }).join("");
+  return `<div class="inlinePanel"><div class="inlineHead">${escapeHtml(it.title)}</div><div class="inlineTableWrap"><table class="table inlineTable">${head}<tbody>${body}</tbody></table></div></div>`;
+}
+
 function renderList(){
   const source = (activeMode==="plays") ? plays : (activeMode==="people" ? people : roles);
   const filtered = applyFilters(source);
@@ -807,30 +828,15 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
+      ${ (isMobile() && isActive) ? inlinePanelHtml(it) : "" }
     `;
     div.addEventListener("click", ()=>{
-      activeId=it.id;
-      selectedItem = it;
+      const wasActive = (activeId===it.id);
+      activeId = wasActive ? "" : it.id;
+      selectedItem = wasActive ? null : it;
       renderList();
-      renderDetails(it);
-
-      if(isMobile() && activeMode==="plays"){
-        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
-        activePlayFilter = it.title;
-        activeMode="people";
-        els.btnPeople.classList.add("active");
-        els.btnPlays.classList.remove("active");
-
-        // Filtreli kişi listesi
-        renderList();
-
-        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
-
-        // Geri tuşu ile tekrar Oyunlar'a dönsün
-        history.pushState({mode:"people", play:activePlayFilter}, "");
-        window.scrollTo({top:0, behavior:"smooth"});
-      }
-
+      if(!wasActive) renderDetails(it);
+      else renderDetails(null);
     });
     frag.appendChild(div);
   }
@@ -848,6 +854,7 @@ function renderList(){
     els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
   }
 
+}
 
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
@@ -1515,11 +1522,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1552,8 +1559,8 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
       if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
-    }}
-    if(target === "Figuran"){
+    }
+    else if(target === "Figuran"){
       const fig = document.getElementById('viewFiguran');
       if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
     }
@@ -1590,15 +1597,36 @@ window.addEventListener("hashchange", ()=>{
 els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
-els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
-  els.notifPanel.classList.toggle("hidden");
-  if(!els.notifPanel.classList.contains("hidden")){
+els.notifBtn && (()=> {
+  const open = async ()=>{
+    els.notifPanel.classList.remove("hidden");
+    const bd = document.getElementById("notifBackdrop");
+    if(bd) bd.classList.remove("hidden");
     await loadNotifications();
-    // panel açılınca "görüldü" say (sayaç sıfırlansın)
     localStorage.setItem("idt_log_seen_ts", String(Date.now()));
     els.notifCount.classList.add("hidden");
+  };
+  const close = ()=>{
+    els.notifPanel.classList.add("hidden");
+    const bd = document.getElementById("notifBackdrop");
+    if(bd) bd.classList.add("hidden");
+  };
+  const toggle = async ()=>{
+    if(els.notifPanel.classList.contains("hidden")) await open();
+    else close();
+  };
+  const handler = (e)=>{ e.stopPropagation(); toggle(); };
+  els.notifBtn.addEventListener("click", handler);
+  els.notifBtn.addEventListener("pointerup", handler);
+  els.notifClose && els.notifClose.addEventListener("click", close);
+  els.notifClose && els.notifClose.addEventListener("pointerup", close);
+  const bd = document.getElementById("notifBackdrop");
+  if(bd){
+    bd.addEventListener("click", close);
+    bd.addEventListener("pointerup", close);
   }
-});
+  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") close(); });
+})();
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
@@ -1910,7 +1938,6 @@ async function load(isAuto=false, forceRefresh=false){
     setStatus("⛔ Veri yüklenemedi. Sheet paylaşımını ve bağlantıyı kontrol et.", "bad");
   }
 }
-}
 
 
 /* ---------- KPI shortcuts (stabil veri çekmeyi BOZMADAN) ---------- */
@@ -1989,7 +2016,13 @@ function initKpiShortcuts(){
     });
   }
 }
-initKpiShortcuts();
-initTabbar();
 
-load(false);
+// ---- expose critical functions (prevent scope issues) ----
+try{ window.load = load; }catch(e){}
+try{ window.renderDetails = renderDetails; }catch(e){}
+try{ window.loadNotifications = loadNotifications; }catch(e){}
+window.addEventListener('DOMContentLoaded', ()=>{
+  try{ initKpiShortcuts(); }catch(e){console.error(e)}
+  try{ initTabbar(); }catch(e){console.error(e)}
+  try{ load(false); }catch(e){console.error(e)}
+});
