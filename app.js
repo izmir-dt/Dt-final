@@ -2,6 +2,7 @@
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
+  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbx-Q5P-dF5EB3GGCSHMUFV3din4OEYHhvSeGSZZjmSj7fN4_XtEL4h9E55XFy0-tL8V/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
   SHEET_NOTIFS: "BİLDİRİMLER",
@@ -17,9 +18,68 @@ const CONFIG = {
   gvizUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${Date.now()}`; },
   csvUrl(gid=this.GID){  return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/export?format=csv&gid=${gid}&_=${Date.now()}`; },
 };
+/* ---------- cache (5dk) ---------- */
+const CACHE_MAIN_KEY = "idt_data_cache_v1";
+function cacheGet(key){
+  try{ const raw = localStorage.getItem(key); return raw? JSON.parse(raw): null; }catch(e){ return null; }
+}
+function cacheSet(key, data){
+  try{ localStorage.setItem(key, JSON.stringify({timestamp: Date.now(), data})); }catch(e){}
+}
+function cacheFresh(entry, maxAgeMs){
+  return entry && entry.timestamp && (Date.now() - entry.timestamp) < maxAgeMs && entry.data;
+}
+
 
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
+}
+
+// --- Fuzzy search (mobile-friendly) ---
+function isSubsequence(hay, needle){
+  let i=0,j=0;
+  while(i<hay.length && j<needle.length){
+    if(hay[i]===needle[j]) j++;
+    i++;
+  }
+  return j===needle.length;
+}
+function levenshtein(a,b){
+  a=String(a); b=String(b);
+  const m=a.length, n=b.length;
+  if(!m) return n;
+  if(!n) return m;
+  const dp = Array(n+1);
+  for(let j=0;j<=n;j++) dp[j]=j;
+  for(let i=1;i<=m;i++){
+    let prev=dp[0]; dp[0]=i;
+    for(let j=1;j<=n;j++){
+      const tmp=dp[j];
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      dp[j]=Math.min(dp[j]+1, dp[j-1]+1, prev+cost);
+      prev=tmp;
+    }
+  }
+  return dp[n];
+}
+function fuzzyTokenMatch(hay, tok){
+  if(!tok) return true;
+  if(hay.includes(tok)) return true;
+  if(tok.length>=3 && isSubsequence(hay, tok)) return true;
+  if(tok.length<=6 && hay.length<=80){
+    const words = hay.split(/\s+/g).slice(0,40);
+    for(const w of words){
+      if(Math.abs(w.length - tok.length) <= 2 && levenshtein(w, tok) <= 1) return true;
+    }
+  }
+  return false;
+}
+function fuzzyMatch(hay, q){
+  const query = (q||"").trim().toLowerCase();
+  if(!query) return true;
+  const h = (hay||"").toLowerCase();
+  const toks = query.split(/\s+/g).filter(Boolean);
+  return toks.every(t=>fuzzyTokenMatch(h, t));
 }
 
 // Filtre eşleşmeleri: boşluk / büyük-küçük harf / görünmez karakter farklarını tolere et
@@ -72,6 +132,7 @@ const els = {
   viewCharts: el("viewCharts"),
 
   q: el("q"),
+  qScope: el("qScope"),
   category: el("category"),
   clearBtn: el("clearBtn"),
   list: el("list"),
@@ -101,6 +162,7 @@ const els = {
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
+  chartDownloadBtn: el("chartDownloadBtn"),
 
   drawer: el("chartDrawer"),
   drawerTitle: el("drawerTitle"),
@@ -120,8 +182,10 @@ let rawRows = [];
 let rows = [];
 let plays = [];
 let people = [];
+let roles = [];
 let playsList = [];
 let activeMode = "plays";
+let showAssignments = false; // KPI "Görev Ataması" görünümü
 let activeId = null;
 let selectedItem = null;
 
@@ -150,6 +214,33 @@ els.themeBtn.addEventListener("click", ()=>{
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
 });
 
+
+/* ---------- Mobile Tab Bar ---------- */
+function setTabbarActive(tabName){
+  const bar = document.getElementById("tabbar");
+  if(!bar) return;
+  bar.querySelectorAll(".tb").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===tabName));
+}
+function initTabbar(){
+  const bar = document.getElementById("tabbar");
+  if(!bar) return;
+
+  const go = (t)=>{
+    if(t==="Panel") els.tabPanel && els.tabPanel.click();
+    else if(t==="Analiz") els.tabIntersection && els.tabIntersection.click();
+    else if(t==="Figuran") els.tabFiguran && els.tabFiguran.click();
+    else if(t==="Grafikler") els.tabCharts && els.tabCharts.click();
+  };
+
+  const bind = (btn)=>{
+    const t = btn.getAttribute("data-tab");
+    const handler = (e)=>{ e.stopPropagation(); go(t); setTabbarActive(t); };
+    btn.addEventListener("click", handler);
+    btn.addEventListener("pointerup", handler);
+  };
+
+  bar.querySelectorAll(".tb").forEach(bind);
+}
 /* ---------- helpers ---------- */
 function setStatus(text, tone="") {
   els.status.textContent = text;
@@ -468,7 +559,8 @@ async function loadNotifications(){
 
   // BİLDİRİMLER sheet'i yoksa / boşsa kibarca göster
   try{
-    const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
+    const notifBase = CONFIG.NOTIF_API_BASE || CONFIG.API_BASE;
+    const url = `${notifBase}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
     const data = await jsonp(url);
     if(!data || data.ok !== true || !Array.isArray(data.rows)){
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
@@ -600,6 +692,30 @@ function uniqCategories(data){
   cats.sort((a,b)=>a.localeCompare(b,"tr"));
   return cats;
 }
+
+function groupByRole(rows){
+  const map=new Map();
+  for(const r of rows){
+    const role = (r.role||"").toString().trim();
+    if(!role) continue;
+    if(!map.has(role)) map.set(role, {title:role, rows:[], people:new Set(), plays:new Set(), cats:new Set()});
+    const o=map.get(role);
+    o.rows.push(r);
+    if(r.person) o.people.add(r.person);
+    if(r.play) o.plays.add(r.play);
+    if(r.category) o.cats.add(r.category);
+  }
+  const out=[...map.values()].map((o,i)=>({
+    id:"role_"+i,
+    title:o.title,
+    rows:o.rows,
+    count:o.people.size,
+    people:[...o.people].sort((a,b)=>a.localeCompare(b,"tr")),
+    plays:[...o.plays].sort((a,b)=>a.localeCompare(b,"tr")),
+    cats:[...o.cats].sort((a,b)=>a.localeCompare(b,"tr")),
+  })).sort((a,b)=>a.title.localeCompare(b.title,"tr"));
+  return out;
+}
 function chipTone(cat){
   const t=(cat||"").toLowerCase();
   if(t.includes("figüran") || t.includes("figuran")) return "warn";
@@ -607,32 +723,70 @@ function chipTone(cat){
   if(t.includes("oyuncu")) return "bad";
   return "";
 }
+
 function applyFilters(list){
-  const q=els.q.value.trim().toLowerCase();
-  const cat="";
-return list.filter(it=>{
-    const hay = (activeMode==="plays")
-      ? (it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ")).toLowerCase()
-      : (it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ")).toLowerCase();
+  const qRaw = (els.q?.value || "").trim();
+  const scope = (els.qScope?.value || "all");
+  return list.filter(it=>{
+    // Mobil oyun->kişiler filtresi
     if(activeMode==="people" && activePlayFilter){
       const playKey = normKey(activePlayFilter);
       if(!((it.plays||[]).some(p=>normKey(p)===playKey))) return false;
     }
-    if(q && !hay.includes(q)) return false;
-    if(cat){
-      const cats=(it.cats||[]).map(x=>x.toLowerCase());
-      if(!cats.some(x=>x.includes(cat))) return false;
+
+    // Scope'a göre arama metni
+    let hay = "";
+    if(activeMode==="plays"){
+      hay = `${it.title} ${(it.cats||[]).join(" ")} ${(it.rows||[]).map(r=>`${r.person} ${r.role}`).join(" ")}`;
+      if(scope==="person") hay = (it.rows||[]).map(r=>r.person).join(" ");
+      else if(scope==="role") hay = (it.rows||[]).map(r=>r.role).join(" ");
+      else if(scope==="play") hay = it.title;
+    }else if(activeMode==="people"){
+      hay = `${it.title} ${(it.cats||[]).join(" ")} ${(it.roles||[]).join(" ")} ${(it.plays||[]).join(" ")}`;
+      if(scope==="play") hay = (it.plays||[]).join(" ");
+      else if(scope==="role") hay = (it.roles||[]).join(" ");
+      else if(scope==="person") hay = it.title;
+    }else if(activeMode==="roles"){
+      // role list
+      hay = `${it.title} ${(it.plays||[]).join(" ")} ${(it.people||[]).join(" ")}`;
+      if(scope==="play") hay = (it.plays||[]).join(" ");
+      else if(scope==="person") hay = (it.people||[]).join(" ");
+      else if(scope==="role") hay = it.title;
     }
-    return true;
+
+    return fuzzyMatch(hay, qRaw);
   });
 }
 
 /* ---------- UI render ---------- */
+
+function inlinePanelHtml(it){
+  // Mobilde kartın altında açılan detay (accordion)
+  const rows = (it.rows||[]);
+  const sorted = [...rows].sort((a,b)=>
+    (a.category||"").localeCompare(b.category||"","tr") ||
+    (a.role||"").localeCompare(b.role||"","tr") ||
+    (a.person||"").localeCompare(b.person||"","tr")
+  );
+  const head = (activeMode==="plays")
+    ? "<thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>"
+    : "<thead><tr><th>Oyun</th><th>Görev</th><th>Kategori</th></tr></thead>";
+  const body = sorted.map(r=>{
+    if(activeMode==="plays"){
+      return `<tr><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.person||"")}</td></tr>`;
+    }else{
+      return `<tr><td>${escapeHtml(r.play||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.category||"")}</td></tr>`;
+    }
+  }).join("");
+  return `<div class="inlinePanel"><div class="inlineHead">${escapeHtml(it.title)}</div><div class="inlineTableWrap"><table class="table inlineTable">${head}<tbody>${body}</tbody></table></div></div>`;
+}
+
 function renderList(){
-  const source = (activeMode==="plays") ? plays : people;
+  const source = (activeMode==="plays") ? plays : (activeMode==="people" ? people : roles);
   const filtered = applyFilters(source);
 
   els.list.innerHTML="";
+  const frag = document.createDocumentFragment();
   if(!filtered.length){
     els.list.innerHTML = `<div class="empty">Sonuç yok 😅</div>`;
     els.hint.textContent = "";
@@ -641,9 +795,22 @@ function renderList(){
 
   for(const it of filtered){
     const isActive = it.id===activeId;
-    const meta = (activeMode==="plays")
-      ? `${it.count} kişi • ${it.rows.length} satır`
-      : `${it.count} oyun • ${it.rows.length} satır`;
+    let meta = "";
+    if(activeMode==="plays") meta = `${it.count} kişi • ${it.rows.length} satır`;
+    else if(activeMode==="people") meta = `${it.count} oyun • ${it.rows.length} satır`;
+    else meta = `${it.count} kişi • ${it.rows.length} satır`;
+    let meta2 = "";
+    if(activeMode==="people"){
+      const uniqPlays = [...new Set((it.rows||[]).map(r=>r.play).filter(Boolean))];
+      const uniqRoles = [...new Set((it.rows||[]).map(r=>r.role).filter(Boolean))];
+      const playsPreview = uniqPlays.slice(0,3);
+      if(showAssignments){
+        const rolesPreview = uniqRoles.slice(0,3);
+        meta2 = `Oyunlar: ${playsPreview.join(", ")}${uniqPlays.length>3?" …":""} • Görevler: ${rolesPreview.join(", ")}${uniqRoles.length>3?" …":""}`;
+      }else{
+        meta2 = playsPreview.length ? `Oyunlar: ${playsPreview.join(", ")}${uniqPlays.length>3?" …":""}` : "";
+      }
+    }
 
     const chips = (it.cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
     const more = (it.cats||[]).length>6 ? `<span class="chip">+${it.cats.length-6}</span>` : "";
@@ -656,39 +823,26 @@ function renderList(){
       <div class="t">
         <div>
           <div class="name">${escapeHtml(it.title)}${retiredTag}</div>
-          <div class="meta">${escapeHtml(meta)}</div>
+          <div class="meta">${escapeHtml(meta)}</div>${meta2?`<div class="meta" style="margin-top:2px">${escapeHtml(meta2)}</div>`:""}
         </div>
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
+      ${ (isMobile() && isActive) ? inlinePanelHtml(it) : "" }
     `;
     div.addEventListener("click", ()=>{
-      activeId=it.id;
-      selectedItem = it;
+      const wasActive = (activeId===it.id);
+      activeId = wasActive ? "" : it.id;
+      selectedItem = wasActive ? null : it;
       renderList();
-      renderDetails(it);
-
-      if(isMobile() && activeMode==="plays"){
-        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
-        activePlayFilter = it.title;
-        activeMode="people";
-        els.btnPeople.classList.add("active");
-        els.btnPlays.classList.remove("active");
-
-        // Filtreli kişi listesi
-        renderList();
-
-        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
-
-        // Geri tuşu ile tekrar Oyunlar'a dönsün
-        history.pushState({mode:"people", play:activePlayFilter}, "");
-        window.scrollTo({top:0, behavior:"smooth"});
-      }
-
+      if(!wasActive) renderDetails(it);
+      else renderDetails(null);
     });
-    els.list.appendChild(div);
+    frag.appendChild(div);
   }
 
+
+  els.list.appendChild(frag);
 
   if(isMobile() && activeMode==="people" && activePlayFilter){
     els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
@@ -700,6 +854,7 @@ function renderList(){
     els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
   }
 
+}
 
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
@@ -719,6 +874,29 @@ function renderDetails(it){
           ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
+    `;
+
+  } else if(activeMode==="roles"){
+    const byPlay=new Map();
+    for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
+    const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
+    els.details.innerHTML = `
+      <h3 class="title">${escapeHtml(it.title)}</h3>
+      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
+      <div id="detailTable">
+      ${blocks.map(([p, rs])=>{
+        const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.person||"").localeCompare(b.person||"","tr"));
+        return `
+          <div style="margin:12px 0 10px">
+            <div style="font-weight:850;margin:0 0 8px">${escapeHtml(p)}</div>
+            <table class="table">
+              <thead><tr><th>Kişi</th><th>Kategori</th></tr></thead>
+              <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.person)}${personTag(r.person)}</td><td>${escapeHtml(r.category)}</td></tr>`).join("")}</tbody>
+            </table>
+          </div>
+        `;
+      }).join("")}
+      </div>
     `;
   } else {
     const byPlay=new Map();
@@ -754,31 +932,26 @@ function toTSVFromSelected(){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const playTitle = (selectedItem.title || "").trim();
-    const lines=[playTitle || "OYUN"];
-    lines.push(["Kategori","Görev","Kişi"].join("	"));
+    const playTitle = selectedItem.title || "";
+    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
     for(const r of rowsSorted){
-      lines.push([r.category||"", r.role||"", r.person||""].join("	"));
+      lines.push([playTitle, r.category||"", r.role||"", r.person||""].join("\t"));
     }
-    return lines.join("
-");
+    return lines.join("\n");
   } else {
-    const personTitle = (selectedItem.title || "").trim();
     const rs=[...selectedItem.rows].sort((a,b)=>
       (a.play||"").localeCompare(b.play||"","tr") ||
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr")
     );
-    const lines=[personTitle || "KİŞİ"];
-    lines.push(["Oyun","Kategori","Görev"].join("	"));
+        const personTitle = selectedItem.title || "";
+    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
     for(const r of rs){
-      lines.push([r.play||"", r.category||"", r.role||""].join("	"));
+      lines.push([r.play||"", r.category||"", r.role||"", personTitle].join("\t"));
     }
-    return lines.join("
-");
+    return lines.join("\n");
   }
 }
-
 
 
 /* ---------- distinct colors (unique per chart) ---------- */
@@ -1307,6 +1480,17 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
+  // A11y: aktif sekme
+  ["Panel","Distribution","Intersection","Figuran","Charts"].forEach(n=>{
+    const b = el("tab"+n);
+    if(b) b.setAttribute("aria-selected", n===which ? "true" : "false");
+  });
+  // Mobile tabbar senkron
+  try{
+    const m = {Panel:"Panel",Distribution:"Analiz",Intersection:"Analiz",Figuran:"Figuran",Charts:"Grafikler"};
+    setTabbarActive(m[which]||"Panel");
+  }catch(e){}
+
 
   // URL hash: geri/ileri tuşu + yenilemede aynı sekme
   const slugMap = {
@@ -1339,11 +1523,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1354,14 +1538,30 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const afterGo = ()=>{
     // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
     if(target === "Panel"){
-      if(mode === "people" && els.btnPeople) els.btnPeople.click();
-      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
+      // KPI -> Panel içi görünüm
+      if(mode === "people"){
+        showAssignments = false;
+        activeMode = "people";
+        if(els.qScope) els.qScope.value = "person";
+        els.btnPeople && els.btnPeople.click();
+      }else if(mode === "plays"){
+        showAssignments = false;
+        activeMode = "plays";
+        if(els.qScope) els.qScope.value = "play";
+        els.btnPlays && els.btnPlays.click();
+      }else if(mode === "rows"){
+        // Görev ataması: kişi listesi + oyun/görev özeti
+        showAssignments = true;
+        activeMode = "people";
+        if(els.qScope) els.qScope.value = "role";
+        els.btnPeople && els.btnPeople.click();
+      }
 
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
       if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
     }
-    if(target === "Figuran"){
+    else if(target === "Figuran"){
       const fig = document.getElementById('viewFiguran');
       if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
     }
@@ -1395,18 +1595,39 @@ window.addEventListener("hashchange", ()=>{
 })();
 
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false));
+els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
-els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
-  els.notifPanel.classList.toggle("hidden");
-  if(!els.notifPanel.classList.contains("hidden")){
+els.notifBtn && (()=> {
+  const open = async ()=>{
+    els.notifPanel.classList.remove("hidden");
+    const bd = document.getElementById("notifBackdrop");
+    if(bd) bd.classList.remove("hidden");
     await loadNotifications();
-    // panel açılınca "görüldü" say (sayaç sıfırlansın)
     localStorage.setItem("idt_log_seen_ts", String(Date.now()));
     els.notifCount.classList.add("hidden");
+  };
+  const close = ()=>{
+    els.notifPanel.classList.add("hidden");
+    const bd = document.getElementById("notifBackdrop");
+    if(bd) bd.classList.add("hidden");
+  };
+  const toggle = async ()=>{
+    if(els.notifPanel.classList.contains("hidden")) await open();
+    else close();
+  };
+  const handler = (e)=>{ e.stopPropagation(); toggle(); };
+  els.notifBtn.addEventListener("click", handler);
+  els.notifBtn.addEventListener("pointerup", handler);
+  els.notifClose && els.notifClose.addEventListener("click", close);
+  els.notifClose && els.notifClose.addEventListener("pointerup", close);
+  const bd = document.getElementById("notifBackdrop");
+  if(bd){
+    bd.addEventListener("click", close);
+    bd.addEventListener("pointerup", close);
   }
-});
+  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") close(); });
+})();
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
@@ -1414,6 +1635,18 @@ els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
 renderList(); });
 
 els.q.addEventListener("input", ()=>renderList());
+if(els.qScope){
+  els.qScope.addEventListener("change", ()=>{
+    const v=els.qScope.value;
+    if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
+    else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
+    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
+    // all: mode değiştirme
+    activeId=null; selectedItem=null;
+    renderList(); renderDetails(null);
+  });
+}
+
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   activePlayFilter = null;
@@ -1443,51 +1676,15 @@ window.addEventListener("popstate", ()=>{
     setStatus("↩️ Oyunlar listesine dönüldü", "ok");
   }
 });
-// Manual copy modal (always manual; optional clipboard button)
-const copyEls = {
-  backdrop: document.getElementById("copyBackdrop"),
-  modal: document.getElementById("copyModal"),
-  text: document.getElementById("copyText"),
-  close: document.getElementById("copyClose"),
-  selectAll: document.getElementById("copySelectAll"),
-  tryClipboard: document.getElementById("copyTryClipboard"),
-};
-function openCopyModal(tsv, title){
-  if(!copyEls.modal || !copyEls.text) return;
-  if(title && document.getElementById("copyTitle")) document.getElementById("copyTitle").textContent = title;
-  copyEls.text.value = tsv || "";
-  copyEls.backdrop?.classList.remove("hidden");
-  copyEls.modal.classList.remove("hidden");
-  // select all for quick copy
-  setTimeout(()=>{ copyEls.text.focus(); copyEls.text.select(); }, 0);
-}
-function closeCopyModal(){
-  copyEls.modal?.classList.add("hidden");
-  copyEls.backdrop?.classList.add("hidden");
-}
-copyEls.backdrop?.addEventListener("click", closeCopyModal);
-copyEls.close?.addEventListener("click", closeCopyModal);
-copyEls.selectAll?.addEventListener("click", ()=>{
-  copyEls.text?.focus(); copyEls.text?.select();
-});
-copyEls.tryClipboard?.addEventListener("click", async ()=>{
-  try{
-    await navigator.clipboard.writeText(copyEls.text.value || "");
-    setStatus("📋 Kopyalandı (panodan)", "ok");
-  }catch{
-    setStatus("⚠️ Tarayıcı kopyalamayı engelledi — Ctrl+C kullan", "warn");
-  }
-});
-
-els.copyBtn.addEventListener("click", ()=> {
+els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  const title = (activeMode==="plays")
-    ? `📋 ${selectedItem?.title || "Oyun"}`
-    : `📋 ${selectedItem?.title || "Kişi"}`;
-  openCopyModal(tsv, title);
+  try{
+    await navigator.clipboard.writeText(tsv);
+    setStatus("📋 Excel formatında kopyalandı", "ok");
+    setTimeout(()=>setStatus("✅ Hazır", "ok"), 1000);
+  }catch{ alert("Kopyalama engellendi."); }
 });
-
 
 
 async function copyText(text){
@@ -1657,21 +1854,37 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false){
+async function load(isAuto=false, forceRefresh=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
+  // Skeleton
+  if(els.list) els.list.innerHTML = `<div class="empty">⏳ Yükleniyor…</div>`;
+  if(els.details) els.details.innerHTML = `<div class="empty">⏳ Yükleniyor…</div>`;
   activeId=null; selectedItem=null;
+
   try{
-    try{ rawRows = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ rawRows = await tryLoadGviz(); }
-      catch(e2){ rawRows = await tryLoadCsv(); }
+    // 1) Cache'den oku (5dk)
+    const cached = cacheGet(CACHE_MAIN_KEY);
+    const freshData = (!forceRefresh) ? cacheFresh(cached, 5*60*1000) : null;
+
+    if(freshData){
+      rawRows = freshData;
+      const when = new Date(cached.timestamp).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+      setStatus(`✅ Hazır (cache) • ${when}`, "ok");
+    }else{
+      // 2) Ağdan çek (API → GViz → CSV)
+      try{ rawRows = await tryLoadApiJsonp(); }
+      catch(e1){
+        try{ rawRows = await tryLoadGviz(); }
+        catch(e2){ rawRows = await tryLoadCsv(); }
+      }
+      cacheSet(CACHE_MAIN_KEY, rawRows);
     }
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
+    roles = groupByRole(rows);
     playsList = plays.map(p=>p.title);
-
 
     renderList();
     renderDetails(null);
@@ -1679,7 +1892,6 @@ async function load(isAuto=false){
     distribution = computeDistribution();
     renderDistribution();
 
-    retiredSet = computeRetiredSetFromRaw();
     retiredSet = computeRetiredSetFromRaw();
     figuran = computeFiguranFromRaw();
     renderFiguran();
@@ -1696,20 +1908,122 @@ async function load(isAuto=false){
     loadNotifications();
   }catch(err){
     console.error(err);
-    setStatus("⛔ Veri çekilemedi", "bad");
-    els.list.innerHTML = `<div class="empty" style="text-align:left;white-space:pre-wrap">
-<b>Veri çekilemedi.</b>
+    // Offline fallback: cache varsa göster
+    const cached = cacheGet(CACHE_MAIN_KEY);
+    const cachedData = cached && cached.data;
+    if(cachedData){
+      rawRows = cachedData;
+      rows = expandRowsByPeople(rawRows);
+      plays = groupByPlay(rows);
+      people = groupByPerson(rows);
+      roles = groupByRole(rows);
+      playsList = plays.map(p=>p.title);
 
-1) Sheet paylaşımı: Paylaş → “Bağlantıya sahip herkes: Görüntüleyebilir”
-2) Netlify / GitHub Pages’da genelde sorunsuz çalışır.
+      renderList();
+      renderDetails(null);
+      distribution = computeDistribution();
+      renderDistribution();
+      retiredSet = computeRetiredSetFromRaw();
+      figuran = computeFiguranFromRaw();
+      renderFiguran();
+      renderPlayOptions();
+      renderIntersection();
+      renderKpis();
 
-Hata: ${escapeHtml(err.message || String(err))}
-</div>`;
-    els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
-    els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    els.intersectionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+      const when = new Date(cached.timestamp).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+      setStatus(`⚠️ Bağlantı sorunu • Cache gösteriliyor • ${when}`, "warn");
+      // bildirimleri deneyelim (ayrı endpoint)
+      try{ loadNotifications(); }catch(e){}
+      return;
+    }
+    setStatus("⛔ Veri yüklenemedi. Sheet paylaşımını ve bağlantıyı kontrol et.", "bad");
   }
 }
 
-load(false);
+
+/* ---------- KPI shortcuts (stabil veri çekmeyi BOZMADAN) ---------- */
+function initKpiShortcuts(){
+  // KPI kartlarının tamamı tıklanabilir
+  document.querySelectorAll(".kpi[data-go]").forEach(card=>{
+    const act = ()=>{
+      const go = card.getAttribute("data-go");
+      const mode = card.getAttribute("data-mode");
+      if(go==="Figuran"){ els.tabFiguran && els.tabFiguran.click(); return; }
+      if(go==="Panel"){ els.tabPanel && els.tabPanel.click(); }
+      if(mode==="plays"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
+      else if(mode==="people"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
+      else if(mode==="rows" || mode==="assignments"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
+      try{ if(els.qScope){ els.qScope.value = (activeMode==="plays"?"play":(activeMode==="people"?"person":(activeMode==="roles"?"role":"all"))); } }catch{};
+    renderList(); renderDetails(null);
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+    card.addEventListener("click", act);
+    card.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); } });
+  });
+
+  if(els.kpiPlays){
+    els.kpiPlays.addEventListener("click", ()=>{
+      showAssignments = false;
+      els.btnPlays && els.btnPlays.click();
+    });
+  }
+  if(els.kpiPeople){
+    els.kpiPeople.addEventListener("click", ()=>{
+      showAssignments = false;
+      els.btnPeople && els.btnPeople.click();
+    });
+  }
+  if(els.kpiRows){
+    els.kpiRows.addEventListener("click", ()=>{
+      showAssignments = true;
+      els.btnPeople && els.btnPeople.click();
+      // Liste meta satırında oyun+görev özetini göster
+      renderList();
+    });
+  }
+  if(els.kpiFiguran){
+    els.kpiFiguran.addEventListener("click", ()=>{
+      els.tabFiguran && els.tabFiguran.click();
+    });
+  }
+  if(els.chartDownloadBtn){
+    els.chartDownloadBtn.addEventListener("click", ()=>{
+      // PDF indir: en stabil yöntem = grafiği yeni pencerede açıp yazdır (PDF olarak kaydet)
+      els.tabCharts && els.tabCharts.click();
+
+      const canvas = els.chartMain;
+      try{
+        if(canvas && canvas.toDataURL && getComputedStyle(canvas).display !== "none"){
+          const dataUrl = canvas.toDataURL("image/png");
+          const w = window.open("", "_blank");
+          if(w){
+            w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>İDT Grafik</title>
+              <style>body{margin:0;font-family:Arial,sans-serif} img{max-width:100%;height:auto;display:block;margin:16px auto}</style>
+              </head><body><img src="${dataUrl}" alt="Grafik"></body></html>`);
+            w.document.close();
+            w.focus();
+            setStatus("🧾 PDF indir: Açılan sekmede Yazdır → PDF olarak kaydet.", "ok");
+            setTimeout(()=>{ try{ w.print(); }catch{} }, 250);
+            return;
+          }
+        }
+      }catch(err){
+        console.warn(err);
+      }
+
+      // Fallback
+      setStatus("🧾 PDF indir: Yazdır ekranında 'PDF olarak kaydet' seç.", "ok");
+      requestAnimationFrame(()=>{ window.print(); });
+    });
+  }
+}
+
+// ---- expose critical functions (prevent scope issues) ----
+try{ window.load = load; }catch(e){}
+try{ window.renderDetails = renderDetails; }catch(e){}
+try{ window.loadNotifications = loadNotifications; }catch(e){}
+window.addEventListener('DOMContentLoaded', ()=>{
+  try{ initKpiShortcuts(); }catch(e){console.error(e)}
+  try{ initTabbar(); }catch(e){console.error(e)}
+  try{ load(false); }catch(e){console.error(e)}
+});
