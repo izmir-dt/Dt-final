@@ -2,8 +2,6 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8"/>
-  <meta name="description" content="İzmir Devlet Tiyatrosu • Repertuvar Kişi Takip Sistemi (İç Panel)"/>
-  <meta name="robots" content="noindex,nofollow"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
@@ -103,7 +101,7 @@ html[data-theme="dark"]{
       position:absolute;
       right:0;
       top:46px;
-      width:min(520px, 92vw);
+      width:min(420px, 92vw);
       background:var(--card);
       border:1px solid var(--line);
       border-radius:16px;
@@ -117,7 +115,7 @@ html[data-theme="dark"]{
       display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
-    .notifBd{max-height:60vh;overflow:auto;padding:12px}
+    .notifBd{max-height:52vh;overflow:auto;padding:10px}
 
     /* Mobilde bildirim paneli viewport dışına taşmasın */
     @media (max-width: 760px){
@@ -245,6 +243,12 @@ width:48px;
   border:1px solid rgba(255,255,255,.06);
 }
 .kpi > div:first-child{flex:1; min-width:0;}
+
+    /* KPI cards as shortcuts (Panel / Analiz / Figüran / Grafikler) */
+    .kpi[data-go]{cursor:pointer; user-select:none;}
+    .kpi[data-go]:hover{transform:translateY(-1px);}
+    .kpi[data-go]:active{transform:translateY(0);}
+    .kpi[data-go]:focus{outline:3px solid rgba(192,122,42,.35); outline-offset:2px;}
 
     .kpi.soft1{background:linear-gradient(135deg,var(--soft1), var(--card));}
     .kpi.soft2{background:linear-gradient(135deg,var(--soft2), var(--card));}
@@ -432,12 +436,30 @@ width:48px;
 
 
 /* --- Notifications (chat bubble) --- */
-.notif-bubble{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin:10px 0;border-radius:14px;background:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.06);box-shadow:0 8px 18px rgba(0,0,0,.06);cursor:pointer}
+.notif-bubble{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:8px 10px;
+  margin:8px 0;
+  border-radius:14px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+  cursor:pointer
+}
 .notif-bubble:hover{transform:translateY(-1px)}
 .notif-bubble.seen{opacity:.62}
-.notif-type{width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;border-radius:10px;background:rgba(0,0,0,.04);font-size:16px;flex:0 0 34px}
-.notif-title{font-weight:700;margin-bottom:2px}
-.notif-msg{margin:2px 0 6px 0}
+.notif-type{
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;
+  background:rgba(0,0,0,.05);
+  font-size:15px;
+  flex:0 0 28px
+}
+.notif-title{font-weight:800;margin-bottom:2px;font-size:13px;letter-spacing:.2px}
+.notif-msg{margin:2px 0 6px 0;font-size:13px;line-height:1.35}
 .notif-meta{font-size:12px;opacity:.8}
 .notif-ts{font-size:11px;opacity:.65;margin-top:6px}
 
@@ -757,17 +779,21 @@ select.q-scope{
   color: var(--card);
   background: var(--bad);
 }
-
-.notifBackdrop{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.35);
-  z-index:9998;
+#notifPanel{
+  position:absolute;
+  right:0;
+  top:calc(100% + 10px);
+  width:min(420px, calc(100vw - 24px));
+  max-height:420px;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  padding:10px;
+  z-index:999;
 }
-@media (max-width:720px){
-  
-}
-
 .notifItem{
   border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
   border-radius:12px;
@@ -792,7 +818,10 @@ select.q-scope{
 .notifItem div{ color: var(--text); }
 
 /* dark theme: ensure panel stays dark but text stays light */
-html[data-theme="dark"] 
+html[data-theme="dark"] #notifPanel{
+  background: color-mix(in srgb, var(--card) 92%, #000 8%);
+  border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
+}
 
 /* =========================
    NOTIF BUBBLES THEME FIX (v30)
@@ -824,7 +853,10 @@ html[data-theme="dark"]
 }
 
 /* Dark theme */
-html[data-theme="dark"] 
+html[data-theme="dark"] #notifPanel{
+  background: rgba(11,16,32,.96) !important;
+  color:#f8fafc !important;
+}
 html[data-theme="dark"] #notifPanel .notif-bubble{
   background: rgba(30,41,59,.92) !important;
   border-color: rgba(148,163,184,.18) !important;
@@ -849,8 +881,6 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
-#kpiCardActivePlay,#kpiCardTotalPeople,#kpiCardRows,#kpiCardFiguran{cursor:pointer}
-#kpiCardActivePlay:focus,#kpiCardTotalPeople:focus,#kpiCardRows:focus,#kpiCardFiguran:focus{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -879,13 +909,12 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
         <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
           🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
         </button>
-          <div id="notifBackdrop" class="notifBackdrop hidden" aria-hidden="true"></div>
-<div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
+        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
           <div class="notifHd">
             <div>
               <b>Bildirimler</b>
               <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
-</div>
+            </div>
             <div class="row" style="gap:8px">
               <button class="btn" id="notifRefresh">↻</button>
               <button class="btn" id="notifClose">✕</button>
@@ -896,7 +925,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
           </div>
         </div>
       </div>
-      <a class="btn primary" id="sheetBtn" href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit?gid=1233566992" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
+      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
     </div>
   </div>
 
@@ -911,10 +940,10 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
 
 <div class="wrap">
   <div class="kpis" id="kpis">
-    <div class="kpi soft1" id="kpiCardActivePlay" role="button" tabindex="0" title="Aktif oyunu panelde aç"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
-    <div class="kpi soft2" id="kpiCardTotalPeople" role="button" tabindex="0" title="Kişiler görünümüne git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
-    <div class="kpi soft3" id="kpiCardRows" role="button" tabindex="0" title="Atama listesine git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
-    <div class="kpi soft4" id="kpiCardFiguran" role="button" tabindex="0" title="Figüranlar sekmesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+    <div class="kpi soft1" data-go="panel" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
+    <div class="kpi soft2" data-go="analiz" role="button" tabindex="0" aria-label="Analize git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
+    <div class="kpi soft3" data-go="panel" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
+    <div class="kpi soft4" data-go="figuran" role="button" tabindex="0" aria-label="Figüran listesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
   </div>
 
   <!-- PANEL -->
@@ -2633,6 +2662,13 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
+
+  // URL hash (geri/ileri ve yenilemede aynı sekme)
+  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
+  const slug = slugMap[which] || "panel";
+  if (location.hash !== "#"+slug) {
+    history.replaceState(null, "", "#" + slug);
+  }
   if(which==="Charts" && rows.length){
     closeDrawer();
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
@@ -2645,6 +2681,39 @@ els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+
+function tabFromHash_(){
+  const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
+  if(h==="panel") return "Panel";
+  if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
+  if(h==="kesisim" || h==="intersection") return "Intersection";
+  if(h==="figuran" || h==="figüran") return "Figuran";
+  if(h==="grafikler" || h==="charts") return "Charts";
+  return null;
+}
+
+// KPI kartları: hızlı sekme geçişi
+document.querySelectorAll(".kpi[data-go]").forEach(card=>{
+  const target = String(card.getAttribute("data-go")||"").trim();
+  if(!target) return;
+  card.addEventListener("click", ()=>setActiveTab(target));
+  card.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter" || e.key===" "){
+      e.preventDefault();
+      setActiveTab(target);
+    }
+  });
+});
+
+// Browser geri/ileri
+window.addEventListener("hashchange", ()=>{
+  const t = tabFromHash_();
+  if(t) setActiveTab(t);
+});
+
+// İlk açılışta hash varsa onu aç
+const initTab = tabFromHash_();
+if(initTab) setActiveTab(initTab);
 /* ---------- events ---------- */
 els.reloadBtn.addEventListener("click", ()=>load(false));
 // Gelişmiş menü (Dağılım / Kesişim)
@@ -2673,31 +2742,6 @@ els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.cl
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
 els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
-// KPI kartları: hızlı gezinme (tıklanabilir)
-function kpiBind_(el, fn){
-  if(!el) return;
-  el.addEventListener("click", fn);
-  el.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fn(); }});
-}
-kpiBind_(document.getElementById("kpiCardActivePlay"), ()=>{
-  setActiveTab("Panel");
-  try { if(activePlayFilter) els.btnPeople.click(); else els.btnPlays.click(); } catch(e){}
-  renderList();
-});
-kpiBind_(document.getElementById("kpiCardTotalPeople"), ()=>{
-  setActiveTab("Panel");
-  try { els.btnPeople.click(); } catch(e){}
-  renderList();
-});
-kpiBind_(document.getElementById("kpiCardRows"), ()=>{
-  setActiveTab("Panel");
-  try { els.btnPlays.click(); } catch(e){}
-  renderList();
-});
-kpiBind_(document.getElementById("kpiCardFiguran"), ()=>{
-  setActiveTab("Figuran");
-});
-
 els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
 els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
 els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
@@ -3084,8 +3128,5 @@ document.addEventListener("DOMContentLoaded", ()=>{
     <div id="mobileContent" class="modalBody"></div>
   </div>
 
-
-<!-- build stamp -->
-<div id="buildStamp" style="position:fixed;bottom:8px;right:10px;font-size:11px;opacity:.55;pointer-events:none">build:2026-02-06T23:25Z</div>
 </body>
 </html>
