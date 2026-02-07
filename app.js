@@ -890,8 +890,6 @@ function renderList(){
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
 
 
-}
-
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
