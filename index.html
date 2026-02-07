@@ -910,7 +910,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   .tabbar{
     display:flex;
     position:fixed;
-    left:12px; right:12px; bottom:12px;
+    left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom));
     height:64px;
     border-radius:18px;
     border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
@@ -918,6 +918,7 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     box-shadow: 0 16px 40px rgba(0,0,0,.18);
     overflow:hidden;
     z-index:9999;
+    touch-action: manipulation;
     pointer-events:auto;
   }
   .tabbar .tb{
@@ -940,22 +941,24 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   }
 }
 
-/* --- Mobile: Liste yatay kaydırma (kart carousel) --- */
+/* --- Mobile: Liste tek kolon (yatay kaydırma yok) --- */
 @media (max-width: 980px){
+  .wrap{ padding:12px !important; }
   #list{
     display:flex;
     flex-direction:column;
     gap:12px;
     overflow:visible;
-}
-  #list .item{
-    min-width: 78vw;
-    max-width: 78vw;
-    scroll-snap-align:start;
   }
-  /* Detay kartı üstte kalsın, yatay listede seçim rahat */
+  #list .item{
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+  /* Mobilde Detay kartı altta (tek kolon) */
   .split{ grid-template-columns: 1fr !important; }
 }
+
 
 
 /* ----- Smooth theme transitions ----- */
@@ -1023,6 +1026,7 @@ body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
     width:auto;
     max-height:none;
     z-index:9999;
+    touch-action: manipulation;
   }
 }
 /* inline accordion panel under cards */
@@ -1040,6 +1044,7 @@ body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
 }
 .inlineTableWrap{ overflow:auto; -webkit-overflow-scrolling:touch; }
 .inlineTable{ min-width: 520px; }
+@media (max-width: 980px){ .inlineTable{ min-width:0; width:100%; } .inlineTableWrap{ overflow:visible; } }
 /* Figuran table: stack görünümünde daha düzenli */
 @media (max-width: 768px){
   #viewFiguran td{
@@ -1159,6 +1164,7 @@ body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
             <div class="hd">
               <h2>Detay</h2>
               <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
+              <button class="btn" id="copyTextBtn" title="Mesaj için düzenli metin kopyala">✉️ Metin Olarak Kopyala</button>
 </div>
             <div class="bd" id="details">
               <div class="empty">Soldan bir oyun veya kişi seç.</div>
@@ -1251,7 +1257,7 @@ body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
       <div class="card">
         <div class="hd">
           <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><button class="btn" id="chartDownloadBtn" title="Grafiği PDF olarak indir">🧾 PDF indir</button></div>
+          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><button class="btn" id="chartDownloadBtn" title="Yazdır / PDF olarak kaydet">🖨️ Yazdır / PDF</button></div>
         </div>
         <div class="bd">
           <canvas id="chartMain" width="900" height="340"></canvas>
@@ -1291,6 +1297,7 @@ body, .card, .item, .panel, .top, header, .btn, .tabs button, .tabbar button{
 </div>
 
 <script>
+
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -1371,6 +1378,7 @@ const els = {
   hint: el("hint"),
   details: el("details"),
   copyBtn: el("copyBtn"),
+  copyTextBtn: el("copyTextBtn"),
 
   btnPlays: el("btnPlays"),
   btnPeople: el("btnPeople"),
@@ -2087,9 +2095,9 @@ function inlinePanelHtml(it){
     : "<thead><tr><th>Oyun</th><th>Görev</th><th>Kategori</th></tr></thead>";
   const body = sorted.map(r=>{
     if(activeMode==="plays"){
-      return `<tr><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.person||"")}</td></tr>`;
+      return `<tr><td data-label="Kategori">${escapeHtml(r.category||"")}</td><td data-label="Görev">${escapeHtml(r.role||"")}</td><td data-label="Kişi">${escapeHtml(r.person||"")}</td></tr>`;
     }else{
-      return `<tr><td>${escapeHtml(r.play||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.category||"")}</td></tr>`;
+      return `<tr><td data-label="Oyun">${escapeHtml(r.play||"")}</td><td data-label="Görev">${escapeHtml(r.role||"")}</td><td data-label="Kategori">${escapeHtml(r.category||"")}</td></tr>`;
     }
   }).join("");
   return `<div class="inlinePanel"><div class="inlineHead">${escapeHtml(it.title)}</div><div class="inlineTableWrap"><table class="table inlineTable">${head}<tbody>${body}</tbody></table></div></div>`;
@@ -2108,9 +2116,19 @@ function renderList(){
 
   for(const it of filtered){
     const isActive = it.id===activeId;
-    const meta = (activeMode==="plays")
-      ? `${it.count} kişi • ${it.rows.length} satır`
-      : `${it.count} oyun • ${it.rows.length} satır`;
+    const meta = (()=> {
+      if(activeMode==="plays"){
+        // satır yerine daha anlaşılır: görev/kayıt
+        return `${it.count} kişi • ${it.rows.length} görev`;
+      }
+      // people mode
+      if(showAssignments){
+        const playsN = new Set((it.rows||[]).map(r=>r.play).filter(Boolean)).size;
+        const rolesN = new Set((it.rows||[]).map(r=>r.role).filter(Boolean)).size;
+        return `${playsN} oyun • ${rolesN} görev`;
+      }
+      return `${it.count} oyun • ${it.rows.length} görev`;
+    })();
 
     const chips = (it.cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
     const more = (it.cats||[]).length>6 ? `<span class="chip">+${it.cats.length-6}</span>` : "";
@@ -2134,11 +2152,18 @@ function renderList(){
       div.insertAdjacentHTML("beforeend", mobileExpandHtml(it));
     }
     div.addEventListener("click", ()=>{
+      // Toggle: aynı karta tekrar tıklandıysa kapat
+      if(activeId===it.id){
+        activeId=null;
+        selectedItem=null;
+        renderList();
+        renderDetails(null);
+        return;
+      }
       activeId=it.id;
       selectedItem = it;
       renderList();
       renderDetails(it);
-
     });
     els.list.appendChild(div);
   }
@@ -3089,7 +3114,52 @@ els.copyBtn.addEventListener("click", async ()=>{
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
   await copyText(tsv);
 });
+els.copyTextBtn && els.copyTextBtn.addEventListener("click", async ()=>{
+  const txt = toPlainTextFromSelected();
+  if(!txt){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
+  await copyText(txt);
+});
 
+
+
+function toPlainTextFromSelected(){
+  if(!selectedItem) return "";
+  const it = selectedItem;
+  const lines = [];
+  if(activeMode==="plays"){
+    lines.push(`Oyun: ${it.name}`);
+    lines.push(`${it.count} kişi • ${it.rows.length} görev`);
+    lines.push("");
+    for(const r of (it.rows||[])){
+      const cat = r.category||"";
+      const role = r.role||"";
+      const person = r.person||"";
+      lines.push(`- ${person} — ${role}${cat?` (${cat})`:``}`);
+    }
+  }else{
+    lines.push(`Kişi: ${it.name}`);
+    const plays = new Set((it.rows||[]).map(r=>r.play).filter(Boolean));
+    const roles = new Set((it.rows||[]).map(r=>r.role).filter(Boolean));
+    lines.push(`${plays.size} oyun • ${roles.size} görev`);
+    lines.push("");
+    // oyunlara göre grupla
+    const byPlay = new Map();
+    for(const r of (it.rows||[])){
+      const p = r.play||"";
+      if(!byPlay.has(p)) byPlay.set(p, []);
+      byPlay.get(p).push(r);
+    }
+    for(const [p,rows] of byPlay.entries()){
+      lines.push(`• ${p}`);
+      for(const r of rows){
+        const role = r.role||"";
+        const cat = r.category||"";
+        lines.push(`  - ${role}${cat?` (${cat})`:``}`);
+      }
+    }
+  }
+  return lines.join("\n");
+}
 function showManualCopy(text){
   // Minimal modal with textarea (manual copy)
   let modal = document.getElementById("copyModal");
@@ -3440,6 +3510,71 @@ document.addEventListener("DOMContentLoaded", ()=>{
     fix("2. Oyun",2);
   }catch(e){ console.error(e); }
 });
+
+/* --- Mobile + KPI binding (non-breaking) --- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  const fastTap = (el, fn)=>{
+    if(!el) return;
+    el.addEventListener("pointerup", (e)=>{ e.preventDefault(); fn(e); });
+    el.addEventListener("touchend", (e)=>{ e.preventDefault(); fn(e); }, {passive:false});
+  };
+
+  // Alt tabbar (mobil) - hash + setActiveTab
+  document.querySelectorAll(".tabbar .tb").forEach(btn=>{
+    fastTap(btn, ()=>{
+      const t = btn.getAttribute("data-tab");
+      if(!t) return;
+      location.hash = "#"+t;
+      if(typeof setActiveTab==="function") setActiveTab(t);
+    });
+  });
+
+  // Bildirimler (mobilde click yerine touch/pointer)
+  if(els && els.notifBtn){
+    fastTap(els.notifBtn, ()=> els.notifBtn.click());
+  }
+  if(els && els.notifClose){
+    fastTap(els.notifClose, ()=> els.notifClose.click());
+  }
+  // Panel dışına tıklayınca da kapansın
+  const panel = document.querySelector(".notifPanel");
+  if(panel){
+    panel.addEventListener("pointerdown", (e)=>{ e.stopPropagation(); });
+    document.addEventListener("pointerdown", (e)=>{
+      if(panel.classList.contains("open")){
+        // panel içi değilse kapat
+        if(!panel.contains(e.target) && e.target!==els.notifBtn){
+          panel.classList.remove("open");
+        }
+      }
+    });
+  }
+
+  // KPI kart tıklamaları: liste modunu doğru ayarla
+  const setScope = (scope)=>{
+    if(!els || !els.qScope) return;
+    els.qScope.value = scope;
+    els.qScope.dispatchEvent(new Event("change"));
+  };
+  fastTap(els && els.kpiPlays, ()=>{ setScope("play"); });
+  fastTap(els && els.kpiPeople, ()=>{ setScope("person"); });
+  fastTap(els && els.kpiRows, ()=>{ setScope("role"); }); // görev ataması modu
+  fastTap(els && els.kpiFiguran, ()=>{ 
+    location.hash="#figuran";
+    if(typeof setActiveTab==="function") setActiveTab("figuran");
+  });
+
+  // Grafik: Yazdır/PDF
+  const dl = document.getElementById("chartDownloadBtn");
+  if(dl){
+    dl.addEventListener("click", ()=>{
+      location.hash="#charts";
+      if(typeof setActiveTab==="function") setActiveTab("charts");
+      setTimeout(()=>window.print(), 250);
+    });
+  }
+});
+
 </script>
 
   <!-- Mobile detail modal -->
