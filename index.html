@@ -1064,6 +1064,62 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .cmdk-sub{ font-size: 12px; color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cmdk__footer{ padding: 10px 14px; border-top: 1px solid rgba(255,255,255,.10); }
 
+/* Embedded quick search (replaces modal cmdk) */
+.quick-search{ display:flex; align-items:center; gap:8px; position:relative; }
+.quick-search__input{
+  width: 260px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  outline: none;
+  transition: width .18s ease, border-color .18s ease, background .18s ease;
+}
+.quick-search__input:focus{ border-color: rgba(212,175,55,.45); background: rgba(255,255,255,.08); width: min(420px, 48vw); }
+.quick-search__results{
+  position:absolute;
+  top: 44px;
+  left: 0;
+  width: min(520px, 62vw);
+  max-height: 52vh;
+  overflow:auto;
+  border-radius: 16px;
+  background: rgba(18,18,18,.88);
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 24px 80px rgba(0,0,0,.65);
+  padding: 6px;
+  z-index: 220;
+}
+.quick-item{
+  display:flex; align-items:center; gap:10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  cursor:pointer;
+  border: 1px solid transparent;
+}
+.quick-item:hover, .quick-item[aria-selected="true"]{ background: rgba(255,255,255,.07); border-color: rgba(212,175,55,.35); }
+.quick-tag{
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: var(--muted);
+}
+.quick-main{ flex:1; min-width: 0; }
+.quick-title{ font-weight: 600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.quick-sub{ font-size: 12px; color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+@media (max-width: 720px){
+  .quick-search__input{ width: 0; padding: 0; border: 0; background: transparent; }
+  .quick-search.is-open .quick-search__input{ width: min(78vw, 420px); padding: 0 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); }
+  .quick-search__results{ width: min(92vw, 520px); }
+}
+
 /* Toasts */
 .toast-host{
   position: fixed;
@@ -1118,23 +1174,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .btn, button, input, select{ min-height: 44px; }
 }
 
-
-/* cmdk sizing + behavior tweaks */
-.cmdk{max-width:560px;}
-.cmdk-body{max-height:55vh; overflow:auto;}
-/* Desktop: no full-screen dim; show as popover under top bar */
-@media (min-width: 900px){
-  .cmdk-overlay{background:transparent; backdrop-filter:none; align-items:flex-start; padding-top:90px;}
-}
-/* Mobile: command palette kapalı (Ctrl+K yok), ama overlay açılırsa tam ekran olmasın */
-@media (max-width: 899.98px){
-  .cmdk{max-width:92vw;}
-  .cmdk-overlay{padding-top:70px;}
-}
-
-
-.cmdk-close{margin-left:auto;background:transparent;border:0;color:var(--text);opacity:.7;cursor:pointer;font-size:16px;padding:6px 8px;border-radius:8px}
-.cmdk-close:hover{opacity:1;background:rgba(255,255,255,.06)}
 </style>
 </head>
 <body>
@@ -3392,21 +3431,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
       <span class="pill" id="stickyFiguran">Figüran: -</span>
     </div>
     <div class="sticky-summary__right">
-      <button class="btn btn-ghost" id="cmdkBtn" title="Arama (Ctrl+K)">⌘K</button>
-      <button class="btn btn-ghost" id="stickyTopBtn" title="Yukarı">↑</button>
-    </div>
-  </div>
-
-  <!-- Command Palette -->
-  <div id="cmdkOverlay" class="cmdk-overlay" hidden>
-    <div class="cmdk" role="dialog" aria-modal="true" aria-label="Hızlı Arama">
-      <div class="cmdk__header">
-        <span class="cmdk__title">Hızlı Arama</span>
-        <span class="cmdk__hint">Ctrl + K</span>
+      <div class="quick-search" id="quickSearch" role="search" aria-label="Hızlı Arama">
+        <button class="btn btn-ghost quick-search__toggle" id="searchToggle" title="Ara (Ctrl+K)" aria-label="Ara">🔎</button>
+        <input id="globalSearchInput" class="quick-search__input" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off" spellcheck="false" />
+        <div id="globalSearchResults" class="quick-search__results" hidden></div>
       </div>
-      <input id="cmdkInput" class="cmdk__input" placeholder="Oyun, kişi veya görev ara…" autocomplete="off" />
-      <div id="cmdkResults" class="cmdk__results" role="listbox" aria-label="Arama sonuçları"></div>
-      <div class="cmdk__footer muted">Enter: git • Esc: kapat</div>
+      <button class="btn btn-ghost" id="stickyTopBtn" title="Yukarı">↑</button>
     </div>
   </div>
 
