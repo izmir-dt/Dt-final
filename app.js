@@ -1,13 +1,16 @@
-
-const CONFIG = {
+{
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
-  SHEET_NOTIFS: "BİLDİRİMLER",
+  // Bildirimler için en stabil kaynak: Apps Script'in otomatik oluşturduğu LOG sayfası
+  // (Eğer sende BİLDİRİMLER diye ayrı sayfa varsa, aşağıda fallback var.)
+  SHEET_NOTIFS: "LOG",
 
 
-  // Ana veri (genelde: "BÜTÜN OYUNLAR")
+    NOTIF_SHEET_NAME: "BİLDİRİMLER",
+  NOTIF_GVIZ_URL: "", // boş bırak (aşağıda otomatik oluşturulacak)
+// Ana veri (genelde: "BÜTÜN OYUNLAR")
   GID: "1233566992",
 
   // Apps Script'in oluşturduğu LOG sayfasının gid'sini buraya yaz (URL'den kopyala: ...?gid=XXXX)
@@ -21,63 +24,6 @@ const CONFIG = {
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
-
-// --- Fuzzy search (mobile-friendly) ---
-function isSubsequence(hay, needle){
-  let i=0,j=0;
-  while(i<hay.length && j<needle.length){
-    if(hay[i]===needle[j]) j++;
-    i++;
-  }
-  return j===needle.length;
-}
-function levenshtein(a,b){
-  a=String(a); b=String(b);
-  const m=a.length, n=b.length;
-  if(!m) return n;
-  if(!n) return m;
-  const dp = Array(n+1);
-  for(let j=0;j<=n;j++) dp[j]=j;
-  for(let i=1;i<=m;i++){
-    let prev=dp[0]; dp[0]=i;
-    for(let j=1;j<=n;j++){
-      const tmp=dp[j];
-      const cost = a[i-1]===b[j-1] ? 0 : 1;
-      dp[j]=Math.min(dp[j]+1, dp[j-1]+1, prev+cost);
-      prev=tmp;
-    }
-  }
-  return dp[n];
-}
-function fuzzyTokenMatch(hay, tok){
-  if(!tok) return true;
-  if(hay.includes(tok)) return true;
-  if(tok.length>=3 && isSubsequence(hay, tok)) return true;
-  if(tok.length<=6 && hay.length<=80){
-    const words = hay.split(/\s+/g).slice(0,40);
-    for(const w of words){
-      if(Math.abs(w.length - tok.length) <= 2 && levenshtein(w, tok) <= 1) return true;
-    }
-  }
-  return false;
-}
-function fuzzyMatch(hay, q){
-  const query = (q||"").trim().toLowerCase();
-  if(!query) return true;
-  const h = (hay||"").toLowerCase();
-  const toks = query.split(/\s+/g).filter(Boolean);
-  return toks.every(t=>fuzzyTokenMatch(h, t));
-}
-
-// Filtre eşleşmeleri: boşluk / büyük-küçük harf / görünmez karakter farklarını tolere et
-function normKey(s){
-  return String(s||"")
-    .trim()
-    .toLowerCase()
-    .normalize("NFKC")
-    .replace(/\s+/g, " ");
-}
-
 function openMobileModal(html){
   if(!isMobile()) return;
   els.mobileContent.innerHTML = html;
@@ -99,6 +45,10 @@ const els = {
   status: el("status"),
   sheetBtn: el("sheetBtn"),
   reloadBtn: el("reloadBtn"),
+  advBtn: el("advBtn"),
+  advMenu: el("advMenu"),
+  advDist: el("advDist"),
+  advInter: el("advInter"),
   notifBtn: el("notifBtn"),
   notifPanel: el("notifPanel"),
   notifCount: el("notifCount"),
@@ -120,6 +70,7 @@ const els = {
 
   q: el("q"),
   qScope: el("qScope"),
+  qClear: el("qClear"),
   category: el("category"),
   clearBtn: el("clearBtn"),
   list: el("list"),
@@ -140,21 +91,24 @@ const els = {
   intersectionBox: el("intersectionBox"),
 
   fq: el("fq"),
+  figDownloadAllBtn: el("figDownloadAllBtn"),
   fClear: el("fClear"),
   figuranBox: el("figuranBox"),
-  figDownloadAllBtn: el("figDownloadAllBtn"),
-  figDownloadFilteredBtn: el("figDownloadFilteredBtn"),
 
   chartTabRoles: el("chartTabRoles"),
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
-  chartDownloadBtn: el("chartDownloadBtn"),
+  chartMobileList: el("chartMobileList"),
 
   drawer: el("chartDrawer"),
   drawerTitle: el("drawerTitle"),
   drawerSub: el("drawerSub"),
   drawerClose: el("drawerClose"),
+  drawerBack: el("drawerBack"),
+  drawerCopyAll: el("drawerCopyAll"),
+  drawerCopyVisible: el("drawerCopyVisible"),
+  drawerCopyExpanded: el("drawerCopyExpanded"),
   drawerSearch: el("drawerSearch"),
   drawerList: el("drawerList"),
 
@@ -165,14 +119,23 @@ const els = {
 };
 els.sheetBtn.href = CONFIG.sheetUrl();
 
+// --- Chart canvas interactions (desktop) ---
+if(els.chartMain){
+  els.chartMain.addEventListener('click', onChartCanvasClick);
+  els.chartMain.addEventListener('mousemove', (ev)=>{
+    const hit = chartHitKeyFromEvent(ev);
+    els.chartMain.style.cursor = hit ? 'pointer' : 'default';
+  });
+}
+
+
 let rawRows = [];
 let rows = [];
+let ACTIVE_TAB = 'Panel';
 let plays = [];
 let people = [];
-let roles = [];
 let playsList = [];
 let activeMode = "plays";
-let showAssignments = false; // KPI "Görev Ataması" görünümü
 let activeId = null;
 let selectedItem = null;
 
@@ -184,6 +147,8 @@ let activePlayFilter = null; // mobilde: oyundan kişilere geçince filtre
 let chartMode = "roles"; // roles | cats
 let chartHits = []; // clickable regions
 let drawerData = [];
+let drawerStack = []; // for drill-down navigation
+let drawerMode = "items"; // 'items' or 'labels'
 
 /* ---------- Theme toggle ---------- */
 function applyTheme(theme){
@@ -193,42 +158,31 @@ function applyTheme(theme){
 (function initTheme(){
   const saved = localStorage.getItem("idt_theme");
   if(saved === "dark" || saved === "light") applyTheme(saved);
-  else applyTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  else applyTheme("light");
 })();
+/* ---------- UI state (search/mode) ---------- */
+(function initUiState(){
+  try{
+    const savedQ = localStorage.getItem("idt_q") || "";
+    const savedScope = localStorage.getItem("idt_qscope") || "all";
+    const savedMode = localStorage.getItem("idt_mode") || "plays";
+    if(els.q) els.q.value = savedQ;
+    if(els.qScope) els.qScope.value = savedScope;
+    if(savedMode==="people" || savedMode==="plays"){
+      activeMode = savedMode;
+      if(activeMode==="plays"){ els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active"); }
+      else { els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active"); }
+    }
+  }catch(_e){}
+})();
+
+
 els.themeBtn.addEventListener("click", ()=>{
   const cur = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
 });
 
-
-/* ---------- Mobile Tab Bar ---------- */
-function setTabbarActive(tabName){
-  const bar = document.getElementById("tabbar");
-  if(!bar) return;
-  bar.querySelectorAll(".tb").forEach(b=>b.classList.toggle("active", b.getAttribute("data-tab")===tabName));
-}
-function initTabbar(){
-  const bar = document.getElementById("tabbar");
-  if(!bar) return;
-
-  const go = (t)=>{
-    if(t==="Panel") els.tabPanel && els.tabPanel.click();
-    else if(t==="Analiz") els.tabIntersection && els.tabIntersection.click();
-    else if(t==="Figuran") els.tabFiguran && els.tabFiguran.click();
-    else if(t==="Grafikler") els.tabCharts && els.tabCharts.click();
-  };
-
-  const bind = (btn)=>{
-    const t = btn.getAttribute("data-tab");
-    const handler = (e)=>{ e.preventDefault(); e.stopPropagation(); go(t); setTabbarActive(t); };
-    btn.addEventListener("click", handler, {passive:false});
-    // Bazı mobil tarayıcılarda click gecikebiliyor → touchend ile garanti
-    btn.addEventListener("touchend", handler, {passive:false});
-  };
-
-  bar.querySelectorAll(".tb").forEach(bind);
-}
 /* ---------- helpers ---------- */
 function setStatus(text, tone="") {
   els.status.textContent = text;
@@ -269,64 +223,41 @@ function personTag(name){
 function normalizeHeader(h){ return (h||"").trim().toLowerCase().replace(/\s+/g," "); }
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
-
-/* ---------- state/cache ---------- */
-const DATA_CACHE_KEY = "idt_data_cache_v1";
-const DATA_CACHE_TTL_MS = 5 * 60 * 1000; // 5 dk
-
-function readCachedData(){
-  try{
-    const s = localStorage.getItem(DATA_CACHE_KEY);
-    if(!s) return null;
-    const obj = JSON.parse(s);
-    if(!obj || !Array.isArray(obj.data)) return null;
-    return obj;
-  }catch{ return null; }
+/* ---------- chart colors (canlı + kategori sabit renk) ---------- */
+// ---------- Grafik renkleri: her grafikte benzersiz / canlı ----------
+function currentTheme(){
+  return (document.documentElement.getAttribute("data-theme") || "light") === "dark" ? "dark" : "light";
 }
-function writeCachedData(data){
-  try{
-    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify({timestamp: Date.now(), data}));
-  }catch{}
-}
+// Golden-angle ile birbirinden uzak renkler
+function makeUniqueColors(n){
+  const N = Math.max(1, n|0);
+  const theme = currentTheme();
+  const L = theme === "dark" ? 62 : 50;
 
-function showSkeleton(){
-  if(els.list){
-    els.list.innerHTML = `
-      <div class="skeleton skel-row"></div>
-      <div class="skeleton skel-row"></div>
-      <div class="skeleton skel-row"></div>
-      <div class="skeleton skel-row"></div>
-      <div class="skeleton skel-row"></div>
-    `;
+  // First use a hand-picked distinct palette (good separation)
+  const base = [
+    "#e11d48","#f97316","#f59e0b","#84cc16","#22c55e","#10b981",
+    "#06b6d4","#0ea5e9","#3b82f6","#6366f1","#8b5cf6","#a855f7",
+    "#d946ef","#ec4899","#fb7185","#fda4af","#fdba74","#fde047",
+    "#bef264","#86efac","#67e8f9","#93c5fd","#a5b4fc","#c4b5fd"
+  ];
+  const out = [];
+  for(let i=0;i<N;i++){
+    if(i < base.length){ out.push(base[i]); continue; }
+    // Golden-angle fallback for large counts
+    const hue = (i * 137.508) % 360;
+    out.push(`hsl(${hue} 88% ${L}%)`);
   }
-  if(els.details){
-    els.details.innerHTML = `<div class="skeleton skel-card"></div>`;
-  }
+  return out;
 }
-async function getData(forceRefresh=false){
-  const cached = readCachedData();
-  if(cached && !forceRefresh){
-    if(Date.now() - cached.timestamp < DATA_CACHE_TTL_MS){
-      return { data: cached.data, source: "cache_fresh" };
-    }
-  }
-  // Online dene (aynı sırayla: API JSONP -> GViz -> CSV)
-  try{
-    let fresh;
-    try{ fresh = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ fresh = await tryLoadGviz(); }
-      catch(e2){ fresh = await tryLoadCsv(); }
-    }
-    writeCachedData(fresh);
-    return { data: fresh, source: "network" };
-  }catch(err){
-    // Offline fallback
-    if(cached && Array.isArray(cached.data) && cached.data.length){
-      return { data: cached.data, source: "cache_stale", error: err };
-    }
-    throw err;
-  }
+function makeChartColorGetter(keys){
+  const uniq = [...new Set((keys||[]).map(k=>String(k)))];
+  const cols = makeUniqueColors(uniq.length);
+  const map = new Map();
+  uniq.forEach((k,i)=> map.set(k, cols[i]));
+  // "Diğer" ayrı ve tıklanabilir bir toplamdır
+  const otherCol = cssVar("--accent2") || "#c07a2a";
+  return (key)=> (String(key)==="Diğer" ? otherCol : (map.get(String(key)) || otherCol));
 }
 
 
@@ -556,12 +487,11 @@ function computeFiguranFromRaw(){
     if(!selectedPeople.length) continue;
 
     for(const kisi of selectedPeople){
-      if(!map.has(kisi)) map.set(kisi, {games:new Set(), roles:new Set(), cats:new Set(), rows:0});
+      if(!map.has(kisi)) map.set(kisi, {games:new Set(), roles:new Set(), cats:new Set()});
       const obj = map.get(kisi);
       obj.cats.add(isRetiredArtist ? "Kurumdan Emekli Sanatçı" : "Figüran");
       if(oyun) obj.games.add(oyun);
       if(gorevRaw) obj.roles.add(gorevRaw);
-      obj.rows += 1;
     }
   }
 
@@ -569,9 +499,7 @@ function computeFiguranFromRaw(){
     person,
     cats:[...obj.cats].sort((a,b)=>a.localeCompare(b,"tr")),
     plays:[...obj.games].sort((a,b)=>a.localeCompare(b,"tr")),
-    roles:[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr")),
-    rows: obj.rows
-  }));
+    roles:[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr"))}));
   out.sort((a,b)=>a.person.localeCompare(b.person,"tr"));
   return out;
 }
@@ -606,36 +534,51 @@ function parseLogFromGviz(obj){
 async function loadNotifications(){
   if(!els.notifPanel) return;
 
-  // BİLDİRİMLER sheet'i yoksa / boşsa kibarca göster
   try{
-    const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
-    const data = await jsonp(url);
-    if(!data || data.ok !== true || !Array.isArray(data.rows)){
-      els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
-      els.notifCount.textContent = "";
-    els.notifCount.classList.add("hidden");
-      return;
-    }
+    // GVIZ (no JSONP) → BİLDİRİMLER sayfasını okur
+    const sheetName = CONFIG.NOTIF_SHEET_NAME || "BİLDİRİMLER";
+    const gvizUrl = CONFIG.NOTIF_GVIZ_URL && CONFIG.NOTIF_GVIZ_URL.trim()
+      ? CONFIG.NOTIF_GVIZ_URL.trim()
+      : `https://docs.google.com/spreadsheets/d/${encodeURIComponent(CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
 
-    // Beklenen kolonlar: Tarih, Tür, Başlık, Mesaj, Oyun, Kişi, Okundu
-    const rows = data.rows.map(r=>({
-      ts: String(r["Tarih"] ?? r["Tarih/Saat"] ?? r["Tarih Saat"] ?? "").trim(),
-      type: String(r["Tür"] ?? r["Tur"] ?? "🔔").trim() || "🔔",
-      title: String(r["Başlık"] ?? r["Baslik"] ?? "").trim(),
-      msg: String(r["Mesaj"] ?? r["Açıklama"] ?? r["Aciklama"] ?? "").trim(),
-      play: String(r["Oyun"] ?? "").trim(),
-      person: String(r["Kişi"] ?? r["Kisi"] ?? "").trim(),
-      read: String(r["Okundu"] ?? "").trim()
-    })).filter(x=>x.ts || x.title || x.msg);
+    const res = await fetch(gvizUrl, { cache: "no-store" });
+    const txt = await res.text();
 
-    // newest first (basit)
+    // gviz response: google.visualization.Query.setResponse({...});
+    const match = txt.match(/setResponse\((.*)\);\s*$/s);
+    if(!match) throw new Error("GVIZ parse failed");
+    const obj = JSON.parse(match[1]);
+
+    const table = obj?.table;
+    const cols = (table?.cols||[]).map(c=>(c.label||"").trim());
+    const rawRows = (table?.rows||[]);
+
+    const rows = rawRows.map(r=>{
+      const c = r.c || [];
+      const get = (name)=>{
+        const idx = cols.indexOf(name);
+        if(idx === -1) return "";
+        const cell = c[idx];
+        return cell ? (cell.f ?? cell.v ?? "") : "";
+      };
+      return {
+        ts: String(get("Tarih") || get("Tarih/Saat") || "").trim(),
+        action: String(get("İşlem") || get("Islem") || "").trim(),
+        play: String(get("Oyun") || "").trim(),
+        person: String(get("Kişi") || get("Kisi") || "").trim(),
+        role: String(get("Görev") || get("Gorev") || "").trim(),
+        msg: String(get("Açıklama") || get("Aciklama") || "").trim()
+      };
+    }).filter(x=>x.ts || x.action || x.msg || x.play || x.person);
+
+    // newest first
     rows.reverse();
 
     // local okundu (site tarafı): imza üzerinden
     const seen = JSON.parse(localStorage.getItem("idt_seen_notifs") || "{}");
-    const norm = (x)=> (x||"").toString().slice(0,120);
+    const norm = (x)=> (x||"").toString().slice(0,140);
     rows.forEach(n=>{
-      const key = `${norm(n.ts)}|${norm(n.type)}|${norm(n.title)}|${norm(n.msg)}|${norm(n.play)}|${norm(n.person)}`;
+      const key = `${norm(n.ts)}|${norm(n.action)}|${norm(n.play)}|${norm(n.person)}|${norm(n.role)}|${norm(n.msg)}`;
       n._key = key;
       n._seen = !!seen[key];
     });
@@ -650,33 +593,30 @@ async function loadNotifications(){
     }
 
     if(!rows.length){
-
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirim yok.</div>`;
       return;
     }
 
-    
-    const typeInfo = (t)=>{
-      const tt = (t||"").toString().trim().toUpperCase();
-      if(tt.includes("EKLEND")) return {icon:"✅", label:"EKLENDİ"};
-      if(tt.includes("SİL") || tt.includes("CIKAR")) return {icon:"❌", label:"SİLİNDİ"};
-      if(tt.includes("GÜNC") || tt.includes("GUNC")) return {icon:"✏️", label:"GÜNCELLENDİ"};
-      if(tt.includes("TOPLU")) return {icon:"🧹", label:"TOPLU"};
-      if(tt.includes("DEĞİŞ") || tt.includes("DEGIS")) return {icon:"🔔", label:"DEĞİŞİKLİK"};
-      if(tt.includes("DÜZEN") || tt.includes("DUZEN")) return {icon:"🔔", label:"DÜZENLENDİ"};
-      return {icon:"🔔", label:(t||"").toString().trim() || "BİLDİRİM"};
+    const iconBy = (a)=>{
+      const s = (a||"").toString().toLowerCase();
+      if(s.includes("ekl")) return "✅";
+      if(s.includes("çıkar") || s.includes("cikar") || s.includes("sil")) return "🗑️";
+      if(s.includes("güncel") || s.includes("guncel")) return "✏️";
+      return "🔔";
     };
-els.notifList.innerHTML = rows.map(n=>{
-      const info = typeInfo(n.type);
-      const meta = [n.play, n.person].filter(Boolean).join(" • ");
+
+    const show = rows.slice(0, 60);
+
+    els.notifList.innerHTML = show.map(n=>{
+      const meta = [n.play, n.person, n.role].filter(Boolean).join(" • ");
       const who = meta ? `<div class="notif-meta">${escapeHtml(meta)}</div>` : "";
-      const titleText = n.title || info.label;
-      const title = titleText ? `<div class="notif-title">${escapeHtml(titleText)}</div>` : "";
       const msg = n.msg ? `<div class="notif-msg">${escapeHtml(n.msg)}</div>` : "";
       const ts  = n.ts ? `<div class="notif-ts">${escapeHtml(n.ts)}</div>` : "";
+      const title = n.action ? `<div class="notif-title">${escapeHtml(n.action)}</div>` : "";
       const cls = n._seen ? "notif-bubble seen" : "notif-bubble";
+      const type = iconBy(n.action);
       return `<div class="${cls}" data-key="${escapeHtml(n._key)}">
-        <div class="notif-type">${escapeHtml(info.icon)}</div>
+        <div class="notif-type">${escapeHtml(type)}</div>
         <div class="notif-body">
           ${title}${msg}${who}${ts}
         </div>
@@ -692,22 +632,28 @@ els.notifList.innerHTML = rows.map(n=>{
         seen2[key]=true;
         localStorage.setItem("idt_seen_notifs", JSON.stringify(seen2));
         el.classList.add("seen");
-        // badge güncelle
-        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble")).filter(x=>!x.classList.contains("seen")).length;
-        if(left){ els.notifCount.classList.remove("hidden"); els.notifCount.textContent=String(left); } else { els.notifCount.textContent=""; els.notifCount.classList.add("hidden"); }
+        const left = Array.from(els.notifList.querySelectorAll(".notif-bubble"))
+          .filter(x=>!x.classList.contains("seen")).length;
+        if(left){
+          els.notifCount.classList.remove("hidden");
+          els.notifCount.textContent=String(left);
+        } else {
+          els.notifCount.textContent="";
+          els.notifCount.classList.add("hidden");
+        }
       });
     });
 
   }catch(err){
     console.error(err);
-    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi. (API/JSONP)
-<br><span class="small muted">Not: Apps Script doGet içinde JSONP (callback) açık olmalı.</span></div>`;
+    els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.<br><span class="small muted">Kontrol: Sheet "Bağlantıya sahip herkes görüntüleyebilir" olmalı.</span></div>`;
     els.notifCount.textContent = "";
     els.notifCount.classList.add("hidden");
   }
 }
 
 /* ---------- transforms ---------- */
+
 function groupByPlay(data){
   const map=new Map();
   for(const r of data){ if(!map.has(r.play)) map.set(r.play,[]); map.get(r.play).push(r); }
@@ -740,30 +686,6 @@ function uniqCategories(data){
   cats.sort((a,b)=>a.localeCompare(b,"tr"));
   return cats;
 }
-
-function groupByRole(rows){
-  const map=new Map();
-  for(const r of rows){
-    const role = (r.role||"").toString().trim();
-    if(!role) continue;
-    if(!map.has(role)) map.set(role, {title:role, rows:[], people:new Set(), plays:new Set(), cats:new Set()});
-    const o=map.get(role);
-    o.rows.push(r);
-    if(r.person) o.people.add(r.person);
-    if(r.play) o.plays.add(r.play);
-    if(r.category) o.cats.add(r.category);
-  }
-  const out=[...map.values()].map((o,i)=>({
-    id:"role_"+i,
-    title:o.title,
-    rows:o.rows,
-    count:o.people.size,
-    people:[...o.people].sort((a,b)=>a.localeCompare(b,"tr")),
-    plays:[...o.plays].sort((a,b)=>a.localeCompare(b,"tr")),
-    cats:[...o.cats].sort((a,b)=>a.localeCompare(b,"tr")),
-  })).sort((a,b)=>a.title.localeCompare(b.title,"tr"));
-  return out;
-}
 function chipTone(cat){
   const t=(cat||"").toLowerCase();
   if(t.includes("figüran") || t.includes("figuran")) return "warn";
@@ -771,48 +693,43 @@ function chipTone(cat){
   if(t.includes("oyuncu")) return "bad";
   return "";
 }
-
 function applyFilters(list){
-  const qRaw = (els.q?.value || "").trim();
-  const scope = (els.qScope?.value || "all");
+  const q=(els.q.value||"").trim().toLowerCase();
+  const scope = (els.qScope && els.qScope.value) ? els.qScope.value : "all";
+  const cat="";
   return list.filter(it=>{
-    // Mobil oyun->kişiler filtresi
-    if(activeMode==="people" && activePlayFilter){
-      const playKey = normKey(activePlayFilter);
-      if(!((it.plays||[]).some(p=>normKey(p)===playKey))) return false;
-    }
-
-    // Scope'a göre arama metni
     let hay = "";
     if(activeMode==="plays"){
-      hay = `${it.title} ${(it.cats||[]).join(" ")} ${(it.rows||[]).map(r=>`${r.person} ${r.role}`).join(" ")}`;
-      if(scope==="person") hay = (it.rows||[]).map(r=>r.person).join(" ");
-      else if(scope==="role") hay = (it.rows||[]).map(r=>r.role).join(" ");
-      else if(scope==="play") hay = it.title;
-    }else if(activeMode==="people"){
-      hay = `${it.title} ${(it.cats||[]).join(" ")} ${(it.roles||[]).join(" ")} ${(it.plays||[]).join(" ")}`;
+      if(scope==="play") hay = it.title;
+      else if(scope==="person") hay = it.rows.map(r=>r.person).join(" ");
+      else if(scope==="role") hay = it.rows.map(r=>r.role).join(" ");
+      else hay = it.title+" "+it.cats.join(" ")+" "+it.rows.map(r=>`${r.person} ${r.role}`).join(" ");
+    }else{
       if(scope==="play") hay = (it.plays||[]).join(" ");
-      else if(scope==="role") hay = (it.roles||[]).join(" ");
       else if(scope==="person") hay = it.title;
-    }else if(activeMode==="roles"){
-      // role list
-      hay = `${it.title} ${(it.plays||[]).join(" ")} ${(it.people||[]).join(" ")}`;
-      if(scope==="play") hay = (it.plays||[]).join(" ");
-      else if(scope==="person") hay = (it.people||[]).join(" ");
-      else if(scope==="role") hay = it.title;
+      else if(scope==="role") hay = (it.roles||[]).join(" ");
+      else hay = it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ");
     }
+    hay = (hay||"").toLowerCase();
 
-    return fuzzyMatch(hay, qRaw);
+    if(activeMode==="people" && activePlayFilter){
+      if(!((it.plays||[]).includes(activePlayFilter))) return false;
+    }
+    if(q && !hay.includes(q)) return false;
+    if(cat){
+      const cats=(it.cats||[]).map(x=>x.toLowerCase());
+      if(!cats.some(x=>x.includes(cat))) return false;
+    }
+    return true;
   });
 }
 
 /* ---------- UI render ---------- */
 function renderList(){
-  const source = (activeMode==="plays") ? plays : (activeMode==="people" ? people : roles);
+  const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
 
   els.list.innerHTML="";
-  const frag = document.createDocumentFragment();
   if(!filtered.length){
     els.list.innerHTML = `<div class="empty">Sonuç yok 😅</div>`;
     els.hint.textContent = "";
@@ -821,22 +738,9 @@ function renderList(){
 
   for(const it of filtered){
     const isActive = it.id===activeId;
-    let meta = "";
-    if(activeMode==="plays") meta = `${it.count} kişi • ${it.rows.length} satır`;
-    else if(activeMode==="people") meta = `${it.count} oyun • ${it.rows.length} satır`;
-    else meta = `${it.count} kişi • ${it.rows.length} satır`;
-    let meta2 = "";
-    if(activeMode==="people"){
-      const uniqPlays = [...new Set((it.rows||[]).map(r=>r.play).filter(Boolean))];
-      const uniqRoles = [...new Set((it.rows||[]).map(r=>r.role).filter(Boolean))];
-      const playsPreview = uniqPlays.slice(0,3);
-      if(showAssignments){
-        const rolesPreview = uniqRoles.slice(0,3);
-        meta2 = `Oyunlar: ${playsPreview.join(", ")}${uniqPlays.length>3?" …":""} • Görevler: ${rolesPreview.join(", ")}${uniqRoles.length>3?" …":""}`;
-      }else{
-        meta2 = playsPreview.length ? `Oyunlar: ${playsPreview.join(", ")}${uniqPlays.length>3?" …":""}` : "";
-      }
-    }
+    const meta = (activeMode==="plays")
+      ? `${it.count} kişi • ${it.rows.length} satır`
+      : `${it.count} oyun • ${it.rows.length} satır`;
 
     const chips = (it.cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
     const more = (it.cats||[]).length>6 ? `<span class="chip">+${it.cats.length-6}</span>` : "";
@@ -849,7 +753,7 @@ function renderList(){
       <div class="t">
         <div>
           <div class="name">${escapeHtml(it.title)}${retiredTag}</div>
-          <div class="meta">${escapeHtml(meta)}</div>${meta2?`<div class="meta" style="margin-top:2px">${escapeHtml(meta2)}</div>`:""}
+          <div class="meta">${escapeHtml(meta)}</div>
         </div>
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
@@ -862,39 +766,24 @@ function renderList(){
       renderDetails(it);
 
       if(isMobile() && activeMode==="plays"){
-        // Mobilde oyun seçince: oyun filtresi ile Kişiler listesine geç
+        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
         activePlayFilter = it.title;
-        activeMode="people";
-        els.btnPeople.classList.add("active");
-        els.btnPlays.classList.remove("active");
+        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
 
-        // Filtreli kişi listesi
-        renderList();
+        // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
+        // Modal içine aynı içeriği basıyoruz
+        openMobileModal(els.details.innerHTML);
 
-        setStatus(`📌 Oyun seçildi: ${activePlayFilter} • Kişiler listesi`, "ok");
-
-        // Geri tuşu ile tekrar Oyunlar'a dönsün
-        history.pushState({mode:"people", play:activePlayFilter}, "");
-        window.scrollTo({top:0, behavior:"smooth"});
+        // Geri tuşu: modal kapansın
+        history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
       }
 
     });
-    frag.appendChild(div);
-  }
-  els.list.appendChild(frag);
-
-
-  if(isMobile() && activeMode==="people" && activePlayFilter){
-    els.hint.innerHTML = `<div class="mobile-breadcrumb"><button class="btn sm" id="btnBackPlays">← Oyunlar</button><span class="mb-text">${escapeHtml(activePlayFilter)} ekibi • ${filtered.length} kişi</span></div>`;
-    setTimeout(()=>{
-      const b=document.getElementById("btnBackPlays");
-      if(b) b.onclick=()=>{ activePlayFilter=""; setActiveMode("plays"); render(); };
-    },0);
-  } else {
-    els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
+    els.list.appendChild(div);
   }
 
-
+  els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
+}
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
@@ -910,32 +799,9 @@ function renderDetails(it){
       <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
-          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
+          ${rowsSorted.map(r=>`<tr><td data-label="Kategori">${escapeHtml(r.category)}</td><td data-label="Görev">${escapeHtml(r.role)}</td><td data-label="Kişi">${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
-    `;
-
-  } else if(activeMode==="roles"){
-    const byPlay=new Map();
-    for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
-    const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    els.details.innerHTML = `
-      <h3 class="title">${escapeHtml(it.title)}</h3>
-      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
-      <div id="detailTable">
-      ${blocks.map(([p, rs])=>{
-        const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.person||"").localeCompare(b.person||"","tr"));
-        return `
-          <div style="margin:12px 0 10px">
-            <div style="font-weight:850;margin:0 0 8px">${escapeHtml(p)}</div>
-            <table class="table">
-              <thead><tr><th>Kişi</th><th>Kategori</th></tr></thead>
-              <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.person)}${personTag(r.person)}</td><td>${escapeHtml(r.category)}</td></tr>`).join("")}</tbody>
-            </table>
-          </div>
-        `;
-      }).join("")}
-      </div>
     `;
   } else {
     const byPlay=new Map();
@@ -973,8 +839,9 @@ function toTSVFromSelected(){
     );
     const playTitle = selectedItem.title || "";
     const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
-    for(const r of rowsSorted){
-      lines.push([playTitle, r.category||"", r.role||"", r.person||""].join("\t"));
+    for(let i=0;i<rowsSorted.length;i++){
+      const r = rowsSorted[i];
+      lines.push([i===0?playTitle:"", r.category||"", r.role||"", r.person||""].join("	"));
     }
     return lines.join("\n");
   } else {
@@ -991,24 +858,6 @@ function toTSVFromSelected(){
   }
 }
 
-
-/* ---------- distinct colors (unique per chart) ---------- */
-function makeDistinctColors(n){
-  const out = [];
-  const N = Math.max(1, n|0);
-  for(let i=0;i<N;i++){
-    const hue = (i * 360 / N);
-    out.push(`hsl(${hue} 85% 55%)`);
-  }
-  return out;
-}
-function makeColorGetter(keys){
-  const uniq = [...new Set((keys||[]).map(k=>String(k)))].sort((a,b)=>a.localeCompare(b,"tr"));
-  const cols = makeDistinctColors(uniq.length);
-  const map = new Map();
-  uniq.forEach((k,i)=>map.set(k, cols[i]));
-  return (key)=> map.get(String(key)) || "hsl(0 0% 60%)";
-}
 /* ---------- charts ---------- */
 function roundRect(ctx, x, y, w, h, r){
   const rr = Math.min(r, w/2, h/2);
@@ -1030,7 +879,6 @@ function drawBars(canvas, items, topN){
   ctx.setTransform(dpr,0,0,dpr,0,0);
 
   const data = items.slice(0, topN);
-  const getColor = makeColorGetter(data.map(d=>d.k));
 
   const card = cssVar("--card");
   const grid = cssVar("--line");
@@ -1066,11 +914,15 @@ function drawBars(canvas, items, topN){
     const y = padT + (h-bh);
     const bw = Math.max(barW-12, 14);
 
-    ctx.fillStyle = getColor(d.k);
-    ctx.globalAlpha = 0.78;
+    ctx.fillStyle = (window.__chartColorOf ? window.__chartColorOf(d.k) : accent);
+    ctx.globalAlpha = 0.90;
     roundRect(ctx, x, y, bw, bh, 12);
     ctx.fill();
     ctx.globalAlpha = 1;
+    // slice separator
+    ctx.strokeStyle = card;
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
     ctx.fillStyle = text;
     ctx.font = "12px system-ui";
@@ -1103,6 +955,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const top = sorted.slice(0, topN);
   const rest = sorted.slice(topN);
   if(rest.length){
+    window.__chartOtherItems = rest.slice();
     const other = rest.reduce((s,x)=>s+x.v,0);
     top.push({k:"Diğer", v:other});
   }
@@ -1114,12 +967,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const text = cssVar("--text");
   const muted = cssVar("--muted");
 
-  const palette = [
-    cssVar("--accent"), cssVar("--accent2"),
-    "#2E7D32","#1565C0","#6A1B9A","#EF6C00",
-    "#00838F","#C2185B","#5D4037","#455A64",
-    "#9E9D24","#AD1457"
-  ];
+  const colorOf = (label)=> (window.__chartColorOf ? window.__chartColorOf(label) : "#8e8e93");
 
   chartHits = [];
 
@@ -1131,7 +979,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const isM = isMobile();
   const cx = isM ? cssW*0.50 : cssW*0.34;
   const cy = cssH*0.52;
-  const rOuter = Math.min(cssW, cssH)*(isM ? 0.28 : 0.32);
+  const rOuter = Math.min(cssW, cssH)*(isM ? 0.34 : 0.40);
   const rInner = rOuter*0.60;
 
   let start = -Math.PI/2;
@@ -1144,7 +992,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
     ctx.moveTo(cx, cy);
     ctx.arc(cx, cy, rOuter, start, end);
     ctx.closePath();
-    ctx.fillStyle = getColor(d.k);
+    ctx.fillStyle = colorOf(d.k);
     ctx.globalAlpha = 0.92;
     ctx.fill();
     ctx.globalAlpha = 1;
@@ -1183,7 +1031,7 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   for(let i=0;i<Math.min(data.length, maxLegend);i++){
     const d=data[i];
     ly += 18;
-    ctx.fillStyle = getColor(d.k);
+    ctx.fillStyle = colorOf(d.k);
     roundRect(ctx, lx, ly-11, 10, 10, 3);
     ctx.fill();
     ctx.fillStyle = muted;
@@ -1200,151 +1048,94 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   ctx.strokeRect(0.5,0.5,cssW-1,cssH-1);
 }
 
-/* ---------- mobile chart list ---------- */
-function renderMobileChartList(items){
-  const box = document.getElementById("chartMobileList");
-  const wrap = document.querySelector(".mobileChartWrap");
-  if(!box || !wrap) return;
-
-  // sadece mobilde göster
-  if(!isMobile()){ box.innerHTML=""; wrap.style.display="none"; return; }
-  wrap.style.display="block";
-
-  const sorted = items.slice().sort((a,b)=>b.v-a.v);
-  const rows = sorted.slice(0, 24); // mobilde çok uzamasın
-
-  const getColor = makeColorGetter(rows.map(r=>r.k));
-
-  box.innerHTML = rows.map(it=>{
-    const c = getColor(it.k);
-    const rawK = String(it.k||"");
-    const safeK = escapeHtml(rawK);
-    const encK = encodeURIComponent(rawK);
-    return `
-      <div class="chipRow" data-key="${encK}">
-        <div class="chipLeft">
-          <div class="dot" style="background:${c}"></div>
-          <div class="chipTitle" title="${safeK}">${safeK}</div>
-        </div>
-        <div class="chipCount">${it.v}</div>
-      </div>
-    `;
-  }).join("");
-
-  // click: drawer aç (chart ile aynı filtre mantığı)
-  box.querySelectorAll(".chipRow").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      const key = decodeURIComponent(el.getAttribute("data-key") || "");
-      const map=new Map();
-      for(const r of rowsAll()){ // rows global
-        const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
-        if(match && r.person){
-          if(!map.has(r.person)) map.set(r.person, new Set());
-          map.get(r.person).add(r.play);
-        }
-      }
-      const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
-      items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
-      openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
-      // mobilde drawer açıkken sayfa kaymasın
-      document.body.classList.add("drawerOpen");
-    });
-  });
-}
-function rowsAll(){ return rows || []; }
-
-function drawChart(){
-  if(!rows.length) return;
-  if(chartMode==="roles"){
-    const counts=new Map();
-    for(const r of rows){
-      const k=((r.role||"Bilinmiyor").trim() || "Bilinmiyor");
-      if(!counts.has(k)) counts.set(k, new Set());
-      counts.get(k).add((r.person||"").trim());
-    }
-    const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
-    els.chartTitle.textContent = "Görevlere Göre Dağılım";
-    renderMobileChartList(items);
-    drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Görevler");
-  }else{
-    const counts=new Map();
-    for(const r of rows){
-      const k=((r.category||"Bilinmiyor").trim() || "Bilinmiyor");
-      if(!counts.has(k)) counts.set(k, new Set());
-      counts.get(k).add((r.person||"").trim());
-    }
-    const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
-    els.chartTitle.textContent = "Kategori Dağılımı";
-    renderMobileChartList(items);
-    drawDoughnut(els.chartMain, items, (isMobile()?10:14), "Top Kategoriler");
-  }
-}
-
-/* ---------- chart drawer ---------- */
-function openDrawer(title, subtitle, items){
-  els.drawerTitle.textContent = title;
-  els.drawerSub.textContent = subtitle;
-  drawerData = items.slice();
-  els.drawerSearch.value = "";
-  renderDrawerList();
-  els.drawer.classList.remove("hidden");
-  if(isMobile()) document.body.classList.add("drawerOpen");
-}
-function closeDrawer(){
-  els.drawer.classList.add("hidden");
-  document.body.classList.remove("drawerOpen");
-  drawerData = [];
-  els.drawerList.innerHTML = "";
-}
-els.drawerClose.addEventListener("click", closeDrawer);
-els.drawerSearch.addEventListener("input", renderDrawerList);
-
-function renderDrawerList(){
-  const q = els.drawerSearch.value.trim().toLowerCase();
-  const filtered = drawerData.filter(x=>{
-    if(!q) return true;
-    return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
-  });
-
-  if(!filtered.length){
-    els.drawerList.innerHTML = `<div class="empty">Sonuç yok.</div>`;
-    return;
-  }
-  els.drawerList.innerHTML = filtered.slice(0,250).map(x=>`
-    <div class="miniItem">
-      <b>${escapeHtml(x.person)}</b>
-      <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
-    </div>
-  `).join("");
-}
-
-function hitTestChart(evt){
-  const rect = els.chartMain.getBoundingClientRect();
-  const x = evt.clientX - rect.left;
-  const y = evt.clientY - rect.top;
+// --- Chart hit test (desktop) ---
+function chartHitKeyFromEvent(ev){
+  if(!chartHits || !chartHits.length) return null;
+  const canvas = ev.currentTarget || els.chartMain;
+  const rect = canvas.getBoundingClientRect();
+  const x = ev.clientX - rect.left;
+  const y = ev.clientY - rect.top;
 
   for(const h of chartHits){
-    if(h.type==="bar"){
-      if(x>=h.x && x<=h.x+h.w && y>=h.y && y<=h.y+h.h) return h;
-    }else if(h.type==="wedge"){
-      const dx=x-h.cx, dy=y-h.cy;
-      const rr=Math.sqrt(dx*dx+dy*dy);
-      if(rr < h.rInner || rr > h.rOuter) continue;
-      let ang=Math.atan2(dy,dx);
-      if(ang< -Math.PI/2) ang += Math.PI*2;
-      let s=h.start, e=h.end;
-      while(ang < s) ang += Math.PI*2;
-      if(ang >= s && ang <= e) return h;
-    }
+    if(h.type !== 'wedge') continue;
+    const dx = x - h.cx;
+    const dy = y - h.cy;
+    const r = Math.sqrt(dx*dx + dy*dy);
+    if(r < h.rInner || r > h.rOuter) continue;
+
+    // angle in [-PI, PI] -> normalize to [0, 2PI)
+    let a = Math.atan2(dy, dx);
+    if(a < -Math.PI/2) a += Math.PI*2;
+
+    // wedge angles are drawn starting at -PI/2 and increasing
+    // Normalize wedge start/end into [0, 2PI) relative to -PI/2
+    const norm = (t)=>{
+      let v = t;
+      while(v < -Math.PI/2) v += Math.PI*2;
+      while(v >= -Math.PI/2 + Math.PI*2) v -= Math.PI*2;
+      return v;
+    };
+    const s = norm(h.start);
+    const e = norm(h.end);
+    const aa = norm(a);
+
+    const inside = (s <= e) ? (aa >= s && aa <= e) : (aa >= s || aa <= e);
+    if(inside) return h.key;
   }
   return null;
 }
 
-els.chartMain.addEventListener("click", (evt)=>{
-  const h = hitTestChart(evt);
-  if(!h) return;
-  const key = h.key;
+function buildDrawerItemsForKey(key){
+  // returns [{person, role/roles, plays:[...]}]
+  const map = new Map();
 
+  for(const r of rows){
+    const rk = (chartMode === 'roles') ? ((r.role||'').trim() || 'Bilinmiyor') : ((r.category||'').trim() || 'Bilinmiyor');
+    if(rk !== key) continue;
+    const p = (r.person||'').trim();
+    if(!p) continue;
+    if(!map.has(p)) map.set(p, {plays:new Set(), roles:new Set()});
+    map.get(p).plays.add((r.play||'').trim());
+    if(r.role) map.get(p).roles.add((r.role||'').trim());
+  }
+
+  const out = [];
+  for(const [person, v] of map.entries()){
+    const plays = [...v.plays].filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    const roles = [...v.roles].filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    out.push({ person, plays, role: (chartMode==='roles' ? key : roles.join(' / ')) });
+  }
+  out.sort((a,b)=>a.person.localeCompare(b.person,'tr'));
+  return out;
+}
+
+function onChartCanvasClick(ev){
+  const key = chartHitKeyFromEvent(ev);
+  if(!key) return;
+
+  // "Diğer" -> drill-down into labels
+  if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
+    drawerStack.push({
+      title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
+      subtitle: els.drawerSub.textContent || '',
+      items: drawerData.slice(),
+      mode: drawerMode
+    });
+    const labels = window.__chartOtherItems
+      .slice()
+      .sort((a,b)=>b.v-a.v)
+      .map(x=>({label:x.k, value:x.v}));
+    openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
+    return;
+  }
+
+  const items = buildDrawerItemsForKey(String(key));
+  const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
+  openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
+}
+
+/* ---------- mobile chart list ---------- */
+function buildPeopleListForKey(key){
   const map=new Map();
   for(const r of rows){
     const match = (chartMode==="roles") ? ((r.role||"").trim()===key) : ((r.category||"").trim()===key);
@@ -1355,8 +1146,247 @@ els.chartMain.addEventListener("click", (evt)=>{
   }
   const items=[...map.entries()].map(([person, s])=>({person, plays:[...s].sort((a,b)=>a.localeCompare(b,"tr"))}));
   items.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
-  openDrawer(`${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`, `${items.length} kişi`, items);
+  return items;
+}
+
+function openMobilePeopleModal(title, subtitle, items){
+  const id = "chartMobileSearch";
+  const listId = "chartMobilePeopleList";
+  openMobileModal(`
+    <div class="modalTitle" style="font-weight:900">${escapeHtml(title)}</div>
+    <div class="small" style="margin:4px 0 10px">${escapeHtml(subtitle||"")}</div>
+    <div class="input" style="min-width:unset" title="Ara">🔎 <input id="${id}" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/></div>
+    <div class="miniList" id="${listId}" style="margin-top:10px"></div>
+  `);
+  const render = ()=>{
+    const q = (document.getElementById(id)?.value||"").trim().toLowerCase();
+    const filtered = items.filter(x=>{
+      if(!q) return true;
+      return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
+    });
+    const box = document.getElementById(listId);
+    if(!box) return;
+    box.innerHTML = filtered.length ? filtered.slice(0,250).map(x=>`
+      <div class="miniItem">
+        <b>${escapeHtml(x.person)}</b>
+        <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
+      </div>
+    `).join("") : `<div class="empty">Sonuç yok.</div>`;
+  };
+  // DOM hazır olunca bağla
+  setTimeout(()=>{
+    const inp = document.getElementById(id);
+    if(inp) inp.addEventListener("input", render);
+    render();
+  }, 0);
+}
+
+function renderMobileChartList(items){
+  if(!els.chartMobileList) return;
+  // Tam liste: büyükten küçüğe (mobilde seçilebilir)
+  const rows2 = items.slice().sort((a,b)=>b.v-a.v);
+  els.chartMobileList.innerHTML = rows2.map(d=>{
+    const c = (window.__chartColorOf ? window.__chartColorOf(d.k) : "#8e8e93");
+    return `
+      <div class="chipRow" data-key="${escapeHtml(d.k)}" style="background:linear-gradient(135deg, ${c}22, ${c}55)">
+        <div class="chipLeft">
+          <div class="dot" style="background:${c}"></div>
+          <div class="chipTitle" title="${escapeHtml(d.k)}">${escapeHtml(d.k)}</div>
+        </div>
+        <div class="chipCount">${Number(d.v||0)}</div>
+      </div>
+    `;
+  }).join("");
+
+  els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
+    elm.addEventListener("click", ()=>{
+      const key = elm.getAttribute("data-key");
+      if(!key || key==="Diğer") return;
+      const people = buildPeopleListForKey(key);
+      const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
+      openMobilePeopleModal(title, `${people.length} kişi`, people);
+    });
+  });
+}
+function drawChart(){
+  if(!rows.length) return;
+  if(chartMode==="roles"){
+    const counts=new Map();
+    for(const r of rows){
+      const k=((r.role||"Bilinmiyor").trim() || "Bilinmiyor");
+      if(!counts.has(k)) counts.set(k, new Set());
+      counts.get(k).add((r.person||"").trim());
+    }
+    const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
+    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
+    els.chartTitle.textContent = "Görevlere Göre Dağılım";
+    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
+    drawDoughnut(els.chartMain, items, 14, "Top Görevler");
+  }else{
+    const counts=new Map();
+    for(const r of rows){
+      const k=((r.category||"Bilinmiyor").trim() || "Bilinmiyor");
+      if(!counts.has(k)) counts.set(k, new Set());
+      counts.get(k).add((r.person||"").trim());
+    }
+    const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
+    window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
+    els.chartTitle.textContent = "Kategori Dağılımı";
+    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
+    drawDoughnut(els.chartMain, items, 14, "Top Kategoriler");
+  }
+}
+
+/* ---------- chart drawer ---------- */
+function openDrawer(title, subtitle, items, opts={}){
+  els.drawerTitle.textContent = title;
+  els.drawerSub.textContent = subtitle;
+  drawerData = items.slice();
+  drawerMode = opts.mode || ((drawerData[0] && ("label" in (drawerData[0]||{}))) ? "labels" : "items");
+  els.drawerSearch.value = "";
+  // copy buttons only make sense in item-list mode
+  const showCopy = (drawerMode === "items" && drawerData.length);
+  els.drawerCopyAll.style.display = showCopy ? "inline-flex" : "none";
+  els.drawerCopyVisible.style.display = showCopy ? "inline-flex" : "none";
+  els.drawerCopyExpanded.style.display = showCopy ? "inline-flex" : "none";
+  renderDrawerList();
+  els.drawer.classList.remove("hidden");
+  // back button
+  els.drawerBack.style.display = drawerStack.length ? "inline-flex" : "none";
+}
+function closeDrawer(){
+  els.drawer.classList.add("hidden");
+  drawerData = [];
+  drawerStack = [];
+  els.drawerBack.style.display = "none";
+  els.drawerCopyAll.style.display = "none";
+  els.drawerCopyVisible.style.display = "none";
+  els.drawerCopyExpanded.style.display = "none";
+  els.drawerList.innerHTML = "";
+}
+function getDrawerFilteredItems(){
+  const q = els.drawerSearch.value.trim().toLowerCase();
+  const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
+  if(labelMode) return drawerData.slice(); // copy only for items anyway
+  if(!q) return drawerData.slice();
+  return drawerData.filter(x=>{
+    const hay = (String(x.person||"") + " " + (Array.isArray(x.plays)?x.plays.join(" "):String(x.plays||""))).toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+function drawerItemsToTSVSummary(items, labelForRole=""){
+  const lines = [];
+  lines.push(["Kişi","Görev","Oyunlar"].join("\t"));
+  const fixedRole = (labelForRole||"").toString().trim();
+  for(const it of items){
+    const plays = Array.isArray(it.plays) ? it.plays.join(" • ") : (it.plays || "");
+    const role = (it.role || it.gorev || fixedRole || "");
+    lines.push([it.person || "", role, plays].join("\t"));
+  }
+  return lines.join("\n");
+}
+
+function drawerItemsToTSVExpanded(items, labelForRole=""){
+  const lines = [];
+  lines.push(["Kişi","Görev","Oyun"].join("\t"));
+  const fixedRole = (labelForRole||"").toString().trim();
+  for(const it of items){
+    const role = (it.role || it.gorev || fixedRole || "");
+    const playsArr = Array.isArray(it.plays) ? it.plays : (it.plays ? [String(it.plays)] : [""]);
+    for(const p of playsArr){
+      lines.push([it.person || "", role, p || ""].join("\t"));
+    }
+  }
+  return lines.join("\n");
+}
+els.drawerClose.addEventListener("click", closeDrawer);
+els.drawerCopyAll.addEventListener("click", ()=>{
+  if(drawerMode !== "items" || !drawerData.length) return;
+  const items = getDrawerFilteredItems();
+  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
 });
+els.drawerCopyVisible.addEventListener("click", ()=>{
+  if(drawerMode !== "items" || !drawerData.length) return;
+  const items = getDrawerFilteredItems();
+  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
+});
+els.drawerCopyExpanded.addEventListener("click", ()=>{
+  if(drawerMode !== "items" || !drawerData.length) return;
+  const items = getDrawerFilteredItems();
+  copyText(drawerItemsToTSVExpanded(items, els.drawerTitle.textContent));
+});
+els.drawerBack.addEventListener("click", ()=>{
+  const prev = drawerStack.pop();
+  if(!prev){
+    els.drawerBack.style.display = "none";
+    return;
+  }
+  openDrawer(prev.title, prev.subtitle, prev.items, {mode: prev.mode});
+});
+els.drawerSearch.addEventListener("input", renderDrawerList);
+// label list tıkla -> ilgili label için kişi listesi aç (drill-down)
+els.drawerList.addEventListener("click", (e)=>{
+  const item = e.target.closest(".miniItem[data-label]");
+  if(!item) return;
+  const label = item.getAttribute("data-label");
+  if(!label) return;
+
+  // mevcut state'i stack'e it
+  drawerStack.push({
+    title: els.drawerTitle.textContent,
+    subtitle: els.drawerSub.textContent,
+    items: drawerData.slice(),
+    mode: drawerMode
+  });
+
+  // label -> kişiler
+  const key = String(label);
+  const items = (key === "Diğer" && Array.isArray(window.__chartOtherItems))
+    ? []
+    : buildDrawerItemsForKey(key);
+
+  const title = `${chartMode === "roles" ? "Görev" : "Kategori"}: ${key}`;
+  openDrawer(title, `${items.length} kişi`, items, {mode:"items"});
+});
+
+
+function renderDrawerList(){
+  const q = els.drawerSearch.value.trim().toLowerCase();
+  const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
+
+  const filtered = drawerData.filter(x=>{
+    if(!q) return true;
+    if(labelMode){
+      return String(x.label||"").toLowerCase().includes(q);
+    }
+    return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
+  });
+
+  if(!filtered.length){
+    els.drawerList.innerHTML = `<div class="empty">Sonuç yok.</div>`;
+    return;
+  }
+
+  if(labelMode){
+    els.drawerList.innerHTML = filtered.slice(0,400).map(x=>`
+      <div class="miniItem" role="button" tabindex="0" data-label="${escapeHtml(String(x.label||""))}">
+        <b>${escapeHtml(String(x.label||""))}</b>
+        <div class="small">${escapeHtml(String(x.value ?? ""))} kişi</div>
+      </div>
+    `).join("");
+    return;
+  }
+
+  els.drawerList.innerHTML = filtered.slice(0,250).map(x=>`
+    <div class="miniItem">
+      <b>${escapeHtml(x.person)}</b>
+      ${x.role ? `<div class="small muted">Görev: ${escapeHtml(String(x.role))}</div>` : ""}
+      <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
+    </div>
+  `).join("");
+}
+
 
 /* ---------- distribution ---------- */
 function computeDistribution(){
@@ -1432,6 +1462,7 @@ function renderFiguran(){
             <td>${escapeHtml((f.cats||[]).join(", "))}</td>
             <td>${escapeHtml(f.plays.join(" • "))}</td>
             <td>${escapeHtml(f.roles.join(", "))}</td>
+            
           </tr>
         `).join("")}
       </tbody>
@@ -1513,45 +1544,23 @@ function renderIntersection(){
 function setActiveTab(which){
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
-    const tb = el(t);
-    const vw = el(v);
-    if(tb){ tb.classList.remove("active"); tb.setAttribute("aria-selected","false"); }
-    if(vw) vw.style.display="none";
+    el(t).classList.remove("active");
+    el(v).style.display="none";
   }
-  const activeTb = el("tab"+which);
-  const activeVw = el("view"+which);
-  if(activeTb){ activeTb.classList.add("active"); activeTb.setAttribute("aria-selected","true"); }
-  if(activeVw) activeVw.style.display="block";
+  el("tab"+which).classList.add("active");
+  el("view"+which).style.display="block";
 
-  // URL hash: geri/ileri tuşu + yenilemede aynı sekme
-  const slugMap = {
-    Panel: "panel",
-    Distribution: "analiz",
-    Intersection: "kesisim",
-    Figuran: "figuran",
-    Charts: "grafikler",
-  };
+  // URL hash (geri/ileri ve yenilemede aynı sekme)
+  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
   const slug = slugMap[which] || "panel";
-  const newHash = "#" + slug;
-  if (location.hash !== newHash) {
-    // hash değiştirirken sayfanın scroll zıplamasını önle
-    history.replaceState(null, "", newHash);
+  if (location.hash !== "#"+slug) {
+    history.replaceState(null, "", "#" + slug);
   }
   if(which==="Charts" && rows.length){
     closeDrawer();
-    drawChart();
+    // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
+    setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
   }
-}
-
-function tabFromHash_(){
-  const h = String(location.hash || "").replace(/^#/, "").toLowerCase();
-  if (!h) return null;
-  if (["panel"].includes(h)) return "Panel";
-  if (["analiz","analysis","dagilim","distribution"].includes(h)) return "Distribution";
-  if (["kesisim","intersection"].includes(h)) return "Intersection";
-  if (["figuran","figüran"].includes(h)) return "Figuran";
-  if (["grafikler","charts","chart"].includes(h)) return "Charts";
-  return null;
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
@@ -1560,89 +1569,73 @@ els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
+function tabFromHash_(){
+  const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
+  if(h==="panel") return "Panel";
+  if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
+  if(h==="kesisim" || h==="intersection") return "Intersection";
+  if(h==="figuran" || h==="figüran") return "Figuran";
+  if(h==="grafikler" || h==="charts") return "Charts";
+  return null;
+}
+
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const target = String(card.getAttribute("data-go")||"").trim();
-  const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
-
-  const afterGo = ()=>{
-    // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
-    if(target === "Panel"){
-      if(mode === "people" && els.btnPeople) els.btnPeople.click();
-      if(mode === "plays" && els.btnPlays) els.btnPlays.click();
-
-      // Liste alanına otomatik kaydır
-      const panelList = document.getElementById('viewPanel');
-      if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
-    }
-    if(target === "Figuran"){
-      const fig = document.getElementById('viewFiguran');
-      if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
-    }
-  };
-
-  const goNow = ()=>{
-    setActiveTab(target);
-    // DOM görünürlüğü güncellensin diye küçük gecikme
-    setTimeout(afterGo, 50);
-  };
-
-  card.addEventListener("click", goNow);
+  card.addEventListener("click", ()=>setActiveTab(target));
   card.addEventListener("keydown", (e)=>{
-    if(e.key === "Enter" || e.key === " "){
+    if(e.key==="Enter" || e.key===" "){
       e.preventDefault();
-      goNow();
+      setActiveTab(target);
     }
   });
 });
 
-// URL hash değişince sekmeyi güncelle (geri/ileri tuşları)
+// Browser geri/ileri
 window.addEventListener("hashchange", ()=>{
   const t = tabFromHash_();
   if(t) setActiveTab(t);
 });
 
 // İlk açılışta hash varsa onu aç
-(function(){
-  const t = tabFromHash_();
-  if(t) setActiveTab(t);
-})();
-
+const initTab = tabFromHash_();
+if(initTab) setActiveTab(initTab);
 /* ---------- events ---------- */
-els.reloadBtn.addEventListener("click", ()=>load(false, true));
+els.reloadBtn.addEventListener("click", ()=>load(false));
+// Gelişmiş menü (Dağılım / Kesişim)
+if(els.advBtn && els.advMenu){
+  els.advBtn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    els.advMenu.classList.toggle("hidden");
+  });
+  const closeAdv = ()=> els.advMenu.classList.add("hidden");
+  document.addEventListener("click", closeAdv);
+  els.advMenu.addEventListener("click", (e)=> e.stopPropagation());
+
+  els.advDist && els.advDist.addEventListener("click", ()=>{ closeAdv(); setActiveTab("Distribution"); });
+  els.advInter && els.advInter.addEventListener("click", ()=>{ closeAdv(); setActiveTab("Intersection"); });
+}
+
 
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
   els.notifPanel.classList.toggle("hidden");
   if(!els.notifPanel.classList.contains("hidden")){
     await loadNotifications();
-    // panel açılınca "görüldü" say (sayaç sıfırlansın)
-    localStorage.setItem("idt_log_seen_ts", String(Date.now()));
-    els.notifCount.classList.add("hidden");
   }
 });
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn.addEventListener("click", ()=>{ els.q.value="";
-renderList(); });
-
-els.q.addEventListener("input", ()=>renderList());
-if(els.qScope){
-  els.qScope.addEventListener("change", ()=>{
-    const v=els.qScope.value;
-    if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
-    else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=false; activeMode="roles"; activePlayFilter=null; }
-    // all: mode değiştirme
-    activeId=null; selectedItem=null;
-    renderList(); renderDetails(null);
-  });
-}
-
+els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
+els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
+els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
+els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
+  try{ localStorage.setItem("idt_mode","plays"); }catch(_e){}
+
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
@@ -1650,6 +1643,8 @@ els.btnPlays.addEventListener("click", ()=>{
 });
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
+  try{ localStorage.setItem("idt_mode","people"); }catch(_e){}
+
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
   activeId=null; selectedItem=null;
@@ -1673,87 +1668,90 @@ window.addEventListener("popstate", ()=>{
 els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  try{
-    await navigator.clipboard.writeText(tsv);
-    setStatus("📋 Excel formatında kopyalandı", "ok");
-    setTimeout(()=>setStatus("✅ Hazır", "ok"), 1000);
-  }catch{ alert("Kopyalama engellendi."); }
+  await copyText(tsv);
 });
 
-
-async function copyText(text){
-  const value = String(text ?? "");
-  // Modern Clipboard API (secure context)
-  if(navigator.clipboard && window.isSecureContext){
-    try{
-      await navigator.clipboard.writeText(value);
-      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
-      setStatus("📋 Kopyalandı", "ok");
-      return true;
-    }catch(e){
-      // fall through to legacy
-    }
+function showManualCopy(text){
+  // Minimal modal with textarea (manual copy)
+  let modal = document.getElementById("copyModal");
+  if(!modal){
+    modal = document.createElement("div");
+    modal.id = "copyModal";
+    modal.innerHTML = `
+      <div class="overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;margin-left:auto;margin-right:auto;z-index:9999;">
+        <div class="card" style="max-width:720px;width:min(92vw,720px);padding:14px 14px 12px;">
+          <div style="display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:8px">
+            <div><div class="small" style="line-height:1.25;margin-bottom:6px">İzmir Devlet Tiyatrosu Müdürlüğü<br>Repertuvar Kişi Takip Sistemi<br>Sanat Teknik Bürosu</div><b>📋 Kopyala</b><div class="small">Ctrl+C / Kopyala → Excel’de Ctrl+V</div></div>
+            <button class="btn" id="copyModalClose">✕</button>
+          </div>
+          <textarea id="copyModalTa" style="width:100%;height:260px;font:12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card);color:var(--text)"></textarea>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector("#copyModalClose").addEventListener("click", ()=> modal.remove());
+    modal.addEventListener("click", (e)=>{ if(e.target.classList.contains("overlay")) modal.remove(); });
   }
-  // Legacy fallback
+  const ta = modal.querySelector("#copyModalTa");
+  ta.value = String(text ?? "");
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, ta.value.length);
+}
+
+function copyText(text){
+  const value = String(text ?? "");
+  // 1) Synchronous execCommand first (keeps user gesture; works more reliably)
   try{
     const ta = document.createElement("textarea");
     ta.value = value;
-    ta.setAttribute("readonly", "");
-    ta.style.position="fixed";
-    ta.style.top="-1000px";
-    ta.style.left="-1000px";
+    ta.setAttribute("readonly","readonly");
+    ta.style.position = "fixed";
+    ta.style.top = "-1000px";
+    ta.style.left = "-1000px";
     document.body.appendChild(ta);
+    ta.focus();
     ta.select();
     ta.setSelectionRange(0, ta.value.length);
     const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
+    ta.remove();
     if(ok){
       toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
       setStatus("📋 Kopyalandı", "ok");
-      return true;
+      return Promise.resolve(true);
     }
   }catch(e){}
-  alert("Kopyalama engellendi. Tarayıcı izinlerini kontrol et.");
-  return false;
-}
-function downloadText(filename, text){
-  // Mobil/Safari uyumu için: önce Blob dene, gerekirse data: URI fallback
-  const ua = navigator.userAgent || "";
-  const isIOS = /iPad|iPhone|iPod/.test(ua);
-  const useDataUrl = isIOS; // iOS Safari'de Blob+download sık sık sorun çıkarıyor
-  try{
-    const a = document.createElement("a");
-    a.style.display = "none";
-    if(useDataUrl){
-      a.href = "data:text/tab-separated-values;charset=utf-8," + encodeURIComponent(text);
-    }else{
-      const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
-      a.href = URL.createObjectURL(blob);
-    }
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ try{ if(!useDataUrl) URL.revokeObjectURL(a.href); }catch{} a.remove(); }, 100);
-  }catch(e){
-    // Son çare: yeni sekmede aç
-    try{ window.open("data:text/plain;charset=utf-8," + encodeURIComponent(text), "_blank"); }catch{}
+
+  // 2) Async clipboard as fallback
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(value).then(()=>{
+      toast("📋 Excel için kopyalandı (Ctrl+V / Yapıştır)");
+      setStatus("📋 Kopyalandı", "ok");
+      return true;
+    }).catch(()=>{
+      showManualCopy(value);
+      setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
+      return false;
+    });
   }
+
+  // 3) Manual fallback
+  showManualCopy(value);
+  setStatus("⚠️ Kopyalama için manuel ekran açıldı.", "warn");
+  return Promise.resolve(false);
+}
+
+
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:"text/tab-separated-values;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
 }
 function safeFileName(s){
   return String(s||"").trim().replace(/[\\\/:*?"<>|]+/g,"-").slice(0,80) || "liste";
-}
-
-function toFiguranTSV(figList){
-  const out = [["Kişi","Kategori","Görevler","Oyunlar"]];
-  (figList||[]).forEach(f=>{
-    out.push([
-      f.person,
-      (f.cats||[]).join(", "),
-      (f.roles||[]).join(", "),
-      (f.plays||[]).join(" • ")
-    ]);
-  });
-  return out.map(line=>line.map(v=>String(v??"").replace(/\t/g," ")).join("\t")).join("\n");
 }
 function toFiguranTSVFromSelected(){
   if(!selectedItem) return "";
@@ -1788,28 +1786,27 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
   toast("Figüran listesi indiriliyor…");
 });
 
-
-// Figüranlar sekmesinden indirme
-els.figDownloadAllBtn && els.figDownloadAllBtn.addEventListener("click", ()=>{
-  if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
-  const tsv = toFiguranTSV(figuran);
-  copyText(tsv);
-});
-els.figDownloadFilteredBtn && els.figDownloadFilteredBtn.addEventListener("click", ()=>{
-  const q=els.fq.value.trim().toLowerCase();
-  const filtered = (figuran||[]).filter(f=>{
-    if(!q) return true;
-    const hay=(f.person+" "+(f.cats||[]).join(" ")+" "+f.plays.join(" ")+" "+f.roles.join(" ")).toLowerCase();
-    return hay.includes(q);
-  });
-  if(!filtered.length){ setStatus("⚠️ Filtre sonucu yok.", "warn"); return; }
-  const tsv = toFiguranTSV(filtered);
-  copyText(tsv);
-});
 els.dq.addEventListener("input", renderDistribution);
 els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution(); });
 
 els.fq.addEventListener("input", renderFiguran);
+
+// Figüran sekmesi: Excel’e Kopyala
+if(els.figDownloadAllBtn){
+  els.figDownloadAllBtn.addEventListener("click", async ()=>{
+    if(!figuran || !figuran.length){ setStatus("⚠️ Figüran verisi yok.", "warn"); return; }
+    const rows = [["S.N","Kişi","Kategori","Oyunlar","Görevler"]];
+    figuran.forEach((f,i)=>rows.push([i+1, f.person, (f.cats||[]).join(", "), (f.plays||[]).join(" • "), (f.roles||[]).join(", ")]));
+    const tsv = rows
+      .map(r => r
+        .map(v => String(v ?? "")
+          .replace(/\t/g, " ")
+          .replace(/\r?\n/g, " ")
+        ).join("\t")
+      ).join("\n");
+    await copyText(tsv);
+  });
+}
 els.fClear.addEventListener("click", ()=>{ els.fq.value=""; renderFiguran(); });
 
 els.p1.addEventListener("change", renderIntersection);
@@ -1848,18 +1845,52 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false, forceRefresh=false){
+async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
-  showSkeleton();
   activeId=null; selectedItem=null;
   try{
-    const res = await getData(!!forceRefresh);
-    rawRows = res.data;
+    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
+    if(!isAuto){
+      try{
+        const cached = localStorage.getItem("idt_cache_v1");
+        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
+        if(cached){
+          const ageMin = (Date.now()-cachedAt)/60000;
+          rawRows = JSON.parse(cached);
+          rows = expandRowsByPeople(rawRows);
+          plays = groupByPlay(rows);
+          people = groupByPerson(rows);
+          playsList = plays.map(p=>p.title);
+          renderList();
+          renderDetails(null);
+          distribution = computeDistribution();
+          renderDistribution();
+          retiredSet = computeRetiredSetFromRaw();
+          figuran = computeFiguranFromRaw();
+          renderFiguran();
+          renderPlayOptions();
+          renderIntersection();
+          renderKpis();
+          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
+        }
+      }catch(_){/* cache bozuksa görmezden gel */}
+    }
+
+    try{ rawRows = await tryLoadApiJsonp(); }
+    catch(e1){
+      try{ rawRows = await tryLoadGviz(); }
+      catch(e2){ rawRows = await tryLoadCsv(); }
+    }
+
+    // Cache (bir sonraki açılışta hızlı render için)
+    try{
+      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
+      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
+    }catch(_){/* localStorage doluysa sorun değil */}
 
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
-    roles = groupByRole(rows);
     playsList = plays.map(p=>p.title);
 
 
@@ -1870,6 +1901,7 @@ async function load(isAuto=false, forceRefresh=false){
     renderDistribution();
 
     retiredSet = computeRetiredSetFromRaw();
+    retiredSet = computeRetiredSetFromRaw();
     figuran = computeFiguranFromRaw();
     renderFiguran();
 
@@ -1878,12 +1910,14 @@ async function load(isAuto=false, forceRefresh=false){
 
     renderKpis();
 
-    const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
-    let badge = "";
-    if(res && res.source==="cache_fresh") badge = " (cache)";
-    else if(res && res.source==="cache_stale") badge = " (offline cache)";
-    setStatus(`✅ Hazır${badge} • ${when}`, res && res.source==="cache_stale" ? "warn" : "ok");
+    // cache'e yaz
+    try{
+      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
+      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
+    }catch(_){/* storage dolu olabilir */}
 
+    const when = new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+    setStatus(`✅ Hazır • ${when}`, "ok");
     // Bildirimleri (BİLDİRİMLER) yükle
     loadNotifications();
   }catch(err){
@@ -1904,84 +1938,71 @@ Hata: ${escapeHtml(err.message || String(err))}
   }
 }
 
-
-/* ---------- KPI shortcuts (stabil veri çekmeyi BOZMADAN) ---------- */
-function initKpiShortcuts(){
-  // KPI kartlarının tamamı tıklanabilir
-  document.querySelectorAll(".kpi[data-go]").forEach(card=>{
-    const act = ()=>{
-      const go = card.getAttribute("data-go");
-      const mode = card.getAttribute("data-mode");
-      if(go==="Figuran"){ els.tabFiguran && els.tabFiguran.click(); return; }
-      if(go==="Panel"){ els.tabPanel && els.tabPanel.click(); }
-      if(mode==="plays"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
-      else if(mode==="people"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-      else if(mode==="rows" || mode==="assignments"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
-      try{ if(els.qScope){ els.qScope.value = (activeMode==="plays"?"play":(activeMode==="people"?"person":(activeMode==="roles"?"role":"all"))); } }catch{};
-    renderList(); renderDetails(null);
-      window.scrollTo({top:0, behavior:"smooth"});
-    };
-    card.addEventListener("click", act);
-    card.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); } });
-  });
-
-  if(els.kpiPlays){
-    els.kpiPlays.addEventListener("click", ()=>{
-      showAssignments = false;
-      els.btnPlays && els.btnPlays.click();
-    });
-  }
-  if(els.kpiPeople){
-    els.kpiPeople.addEventListener("click", ()=>{
-      showAssignments = false;
-      els.btnPeople && els.btnPeople.click();
-    });
-  }
-  if(els.kpiRows){
-    els.kpiRows.addEventListener("click", ()=>{
-      showAssignments = true;
-      els.btnPeople && els.btnPeople.click();
-      // Liste meta satırında oyun+görev özetini göster
-      renderList();
-    });
-  }
-  if(els.kpiFiguran){
-    els.kpiFiguran.addEventListener("click", ()=>{
-      els.tabFiguran && els.tabFiguran.click();
-    });
-  }
-  if(els.chartDownloadBtn){
-    els.chartDownloadBtn.addEventListener("click", ()=>{
-      // PDF indir: en stabil yöntem = grafiği yeni pencerede açıp yazdır (PDF olarak kaydet)
-      els.tabCharts && els.tabCharts.click();
-
-      const canvas = els.chartMain;
-      try{
-        if(canvas && canvas.toDataURL && getComputedStyle(canvas).display !== "none"){
-          const dataUrl = canvas.toDataURL("image/png");
-          const w = window.open("", "_blank");
-          if(w){
-            w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>İDT Grafik</title>
-              <style>body{margin:0;font-family:Arial,sans-serif} img{max-width:100%;height:auto;display:block;margin:16px auto}</style>
-              </head><body><img src="${dataUrl}" alt="Grafik"></body></html>`);
-            w.document.close();
-            w.focus();
-            setStatus("🧾 PDF indir: Açılan sekmede Yazdır → PDF olarak kaydet.", "ok");
-            setTimeout(()=>{ try{ w.print(); }catch{} }, 250);
-            return;
-          }
-        }
-      }catch(err){
-        console.warn(err);
-      }
-
-      // Fallback
-      setStatus("🧾 PDF indir: Yazdır ekranında 'PDF olarak kaydet' seç.", "ok");
-      requestAnimationFrame(()=>{ window.print(); });
-    });
-  }
-}
-initKpiShortcuts();
-initTabbar();
-
 load(false);
+/* --- Fallback init: ensure data load runs --- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    if(typeof boot === "function") boot();
+    else if(typeof loadAll === "function") loadAll();
+    else if(typeof load === "function") load();
+    else if(typeof init === "function") init();
+  }catch(e){ console.error(e); }
+});
+
+/* --- Nav polish: Ek Araçlar sekmeye taşınır + ikonlar --- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    const nav = document.querySelector(".nav");
+    const advBtn = document.getElementById("advBtn");
+    if(nav && advBtn){
+      advBtn.classList.add("tab");
+      advBtn.classList.remove("btn");
+      nav.appendChild(advBtn);
+    }
+    const iconMap = [
+      ["tabPanel","🏠 "],
+      ["tabDistribution","🎭 "],
+      ["tabIntersection","🔁 "],
+      ["tabFiguran","👥 "],
+      ["tabCharts","📊 "],
+      ["advBtn","🧰 "],
+    ];
+    iconMap.forEach(([id,ico])=>{
+      const el = document.getElementById(id);
+      if(el && !el.dataset.iconed){
+        el.dataset.iconed="1";
+        el.textContent = ico + el.textContent.replace(/^(🧰|📊|👥|🔁|🎭|🏠)\s+/,"");
+      }
+    });
+  }catch(e){ console.error(e); }
+});
+
+/* v26: Intersection badge replace (emoji -> span) */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    const makeBadge = (n)=>{
+      const s=document.createElement("span");
+      s.className="numBadge";
+      s.textContent=String(n);
+      return s;
+    };
+    const fix = (title,n)=>{
+      const box = document.querySelector(`#viewIntersection .input[title="${title}"]`);
+      if(!box) return;
+      // Remove leading emoji text nodes (1️⃣/2️⃣) if present
+      for(const node of Array.from(box.childNodes)){
+        if(node.nodeType===Node.TEXT_NODE && node.textContent.includes("️⃣")){
+          node.textContent = node.textContent.replace(/\s*\d️⃣\s*/g,"");
+        }
+      }
+      if(!box.querySelector(".numBadge")){
+        box.insertBefore(makeBadge(n), box.firstChild);
+      }
+    };
+    fix("1. Oyun",1);
+    fix("2. Oyun",2);
+  }catch(e){ console.error(e); }
+});
+</script>
+
+  <!-- Mobile detail modal -->
