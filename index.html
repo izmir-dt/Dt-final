@@ -939,6 +939,28 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
   }
 }
+
+/* --- Mobile: Liste yatay kaydırma (kart carousel) --- */
+@media (max-width: 980px){
+  #list{
+    display:flex !important;
+    flex-direction:row !important;
+    gap:12px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom:10px;
+  }
+  #list .item{
+    min-width: 78vw;
+    max-width: 78vw;
+    scroll-snap-align:start;
+  }
+  /* Detay kartı üstte kalsın, yatay listede seçim rahat */
+  .split{ grid-template-columns: 1fr !important; }
+}
+
 </style>
 </head>
 <body>
