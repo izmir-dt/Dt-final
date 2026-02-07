@@ -1521,11 +1521,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1558,8 +1558,8 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
       // Liste alanına otomatik kaydır
       const panelList = document.getElementById('viewPanel');
       if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
-    }}
-    if(target === "Figuran"){
+    }
+    else if(target === "Figuran"){
       const fig = document.getElementById('viewFiguran');
       if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
     }
