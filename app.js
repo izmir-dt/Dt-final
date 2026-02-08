@@ -51,14 +51,17 @@ const els = {
   msRoles: el("msRoles"),
   msRolesList: el("msRolesList"),
   msRolesTxt: el("msRolesTxt"),
+  msRolesClear: el("msRolesClear"),
   msRolesBadge: el("msRolesBadge"),
   msPlays: el("msPlays"),
   msPlaysList: el("msPlaysList"),
   msPlaysTxt: el("msPlaysTxt"),
+  msPlaysClear: el("msPlaysClear"),
   msPlaysBadge: el("msPlaysBadge"),
   msPeople: el("msPeople"),
   msPeopleList: el("msPeopleList"),
   msPeopleTxt: el("msPeopleTxt"),
+  msPeopleClear: el("msPeopleClear"),
   msPeopleBadge: el("msPeopleBadge"),
   assignFilterMeta: el("assignFilterMeta"),
   assignFilterTbody: el("assignFilterTbody"),
@@ -1466,8 +1469,11 @@ function renderDistribution(){
     return;
   }
   els.distributionBox.innerHTML = `
-    <table class="table">
-      <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+    <table class="table distTable">
+            <thead>
+              <tr>
+                <th>Kişi</th>
+                <th>Oyun Sayısı</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map(d=>`
           <tr>
@@ -1498,7 +1504,7 @@ function renderFiguran(){
   }
 
   els.figuranBox.innerHTML = `
-    <table class="table">
+    <table class="table figuranTable">
       <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
@@ -2227,6 +2233,17 @@ function renderAssignFilter_(){
   renderMsSummary_(els.msPlaysTxt, els.msPlaysBadge, assignState.plays);
   renderMsSummary_(els.msPeopleTxt, els.msPeopleBadge, assignState.people);
 
+  if(els.msRolesClear){
+    els.msRolesClear.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); assignState.roles.clear(); assignState.qRole=""; renderAssignTool(); };
+  }
+  if(els.msPlaysClear){
+    els.msPlaysClear.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); assignState.plays.clear(); assignState.qPlay=""; renderAssignTool(); };
+  }
+  if(els.msPeopleClear){
+    els.msPeopleClear.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); assignState.people.clear(); assignState.qPerson=""; renderAssignTool(); };
+  }
+
+
   const out = getAssignFilterRows_();
   const limited = out.slice(0, 500);
   const srcCount = (rawRows||[]).length;
@@ -2385,4 +2402,20 @@ function renderAssignTool(){
   else renderCompare_();
 }
 
+
+
+
+/* --- Sticky offset helper: keep panels visible under header --- */
+function _idtSetHeaderHeightVar(){
+  const header = document.querySelector("header");
+  if(!header) return;
+  const h = Math.round(header.getBoundingClientRect().height || 72);
+  document.documentElement.style.setProperty("--hdrH", h+"px");
+}
+window.addEventListener("resize", _idtSetHeaderHeightVar);
+document.addEventListener("DOMContentLoaded", ()=>{
+  _idtSetHeaderHeightVar();
+  setTimeout(_idtSetHeaderHeightVar, 250);
+  setTimeout(_idtSetHeaderHeightVar, 900);
+});
 
