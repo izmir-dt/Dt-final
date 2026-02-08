@@ -1567,16 +1567,15 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabAssign","viewAssign"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabAssign","viewAssign"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
-    el(t).classList.remove("active");
-    el(v).style.display="none";
+    const tt = el(t); const vv = el(v);
+    if(tt) tt.classList.remove("active");
+    if(vv){ vv.style.display="none"; vv.hidden=true; }
   }
-  el("tab"+which).classList.add("active");
-  el("view"+which).style.display="block";
-
-  if(which==="Assign"){ try{ renderAssign(); }catch(e){ console.error(e); } }
-
+  const tNow = el("tab"+which); const vNow = el("view"+which);
+  if(tNow) tNow.classList.add("active");
+  if(vNow){ vNow.style.display="block"; vNow.hidden=false; }
 
   // URL hash (geri/ileri ve yenilemede aynı sekme)
   const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
@@ -1586,6 +1585,7 @@ function setActiveTab(which){
   if (location.hash !== "#"+slug) {
     history.replaceState(null, "", "#" + slug);
   }
+  if(which==="Assign"){ try{ renderAssign(); }catch(e){ console.error(e);} }
   if(which==="Charts" && rows.length){
     closeDrawer();
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
@@ -1600,15 +1600,6 @@ els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assign"));
 
-// Sidebar (yeni UI) uyumluluğu: varsa #sideRows Görev Ataması'nı açsın
-try{
-  const sideRows = document.getElementById("sideRows");
-  if(sideRows){
-    sideRows.addEventListener("click", ()=>setActiveTab("Assign"));
-  }
-}catch(e){console.warn(e);}
-
-
 function tabFromHash_(){
   const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
   if(h==="panel") return "Panel";
@@ -1616,7 +1607,7 @@ function tabFromHash_(){
   if(h==="kesisim" || h==="intersection") return "Intersection";
   if(h==="figuran" || h==="figüran") return "Figuran";
   if(h==="grafikler" || h==="charts") return "Charts";
-  if(h==="gorev" || h==="görev" || h==="gorevatamasi" || h==="görevataması" || h==="gorev-atamasi" || h==="görev-ataması" || h==="assign") return "Assign";
+  if(h==="gorev" || h==="görev" || h==="assign") return "Assign";
   return null;
 }
 
