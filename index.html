@@ -25,6 +25,11 @@
       --shadow:0 10px 30px rgba(24,16,8,.12);
       --radius:18px;
       --radius2:14px;
+
+      /* Layout system (v7.21) */
+      --contentMax: 1320px;
+      --pagePad: 22px;
+      --gap: 16px;
     }
 
 
@@ -1471,13 +1476,31 @@ body{
 }
 
 /* Content area */
-.idt-content{ flex:1; overflow:auto; padding:22px; }
+.idt-content{ flex:1; overflow:auto; padding: var(--pagePad); }
 
 /* ===== Map old app layout to this theme ===== */
 /* Hide old chrome that clashes, keep DOM for logic */
 #tabbar{ display:none !important; }
-/* Many old wrappers have their own padding; soften */
-.wrap{ max-width: 1240px !important; margin:0 auto !important; }
+/* Many old wrappers have their own padding; normalize */
+.wrap{
+  max-width: var(--contentMax) !important;
+  margin: 0 auto !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+}
+
+/* Primary content cards should align visually */
+.panel, .kpi{ margin-left:auto; margin-right:auto; }
+
+/* Global page grid helpers */
+.idt-page{ max-width: var(--contentMax); margin:0 auto; }
+.idt-row{ display:flex; gap: var(--gap); align-items:stretch; }
+.idt-col{ min-width:0; }
+.idt-col.left{ flex: 0 0 58%; }
+.idt-col.right{ flex: 0 0 42%; }
+
+/* Consistent card padding */
+.panel{ padding: 18px !important; }
 
 /* KPI cards: use existing #kpis / .kpi if present */
 #kpis, .kpis{ gap:14px !important; }
