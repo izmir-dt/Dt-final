@@ -2,112 +2,38 @@
 <html lang="tr">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>İDT Yönetim Sistemi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>İDT Repertuvar Yönetimi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #fdfaf7; --card: #ffffff; --text: #1a1c1e; --primary: #7a1e2c; --gold: #c07a2a;
-            --border: #e8e0d5; --shadow: 0 8px 30px rgba(0,0,0,0.05);
+            --bg: #e9ded1; --card: #fbf7f1; --text: #16161a; --muted: #5a5560; --line: #dccbb7;
+            --accent: #7a1e2c; --accent2: #c07a2a; --ok: #18794e; --bad: #b42318;
+            --radius: 18px; --shadow: 0 10px 30px rgba(24,16,8,0.12);
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 70px; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
 
-        /* UI Elements */
+        /* Header */
         header { 
-            background: var(--primary); color: white; padding: 1.5rem; 
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow);
+            background: var(--card); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--accent); box-shadow: var(--shadow);
         }
-        .logo { font-family: 'Playfair Display', serif; font-size: 1.2rem; letter-spacing: 1px; }
-        
-        .status-dot { width: 10px; height: 10px; background: #4caf50; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; padding: 1.5rem; }
-        .stat-card { background: var(--card); padding: 1.2rem; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-        .stat-card small { color: #888; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; }
-        .stat-card div { font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-top: 4px; }
+        .brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--accent); }
+        .btn-sheet { 
+            background: #1d6f42; color: white; padding: 8px 12px; border-radius: 12px; 
+            text-decoration: none; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 5px;
+        }
 
-        .search-container { padding: 0 1.5rem; margin-bottom: 1.5rem; }
-        #searchInput { 
-            width: 100%; padding: 15px 25px; border-radius: 30px; border: 1px solid var(--border); 
+        /* Dash Controls */
+        .controls { padding: 1.5rem; max-width: 1200px; margin: auto; }
+        .search-wrapper { position: relative; width: 100%; }
+        #q { 
+            width: 100%; padding: 16px 20px; border-radius: var(--radius); border: 1px solid var(--line); 
             background: var(--card); box-shadow: var(--shadow); outline: none; font-size: 1rem;
         }
 
-        /* Data List */
-        .list-container { padding: 0 1.5rem; }
-        .data-item { 
-            background: var(--card); padding: 1.2rem; border-radius: 18px; margin-bottom: 1rem;
-            border: 1px solid var(--border); box-shadow: var(--shadow);
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .data-item h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
-        .data-item .meta { display: flex; gap: 10px; flex-wrap: wrap; }
-        .badge { background: #f0f0f0; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
-        .badge-kisi { background: rgba(192, 122, 42, 0.1); color: var(--gold); }
-
-        /* Notification Panel */
-        #notifPanel {
-            position: fixed; top: 0; right: -100%; width: 100%; height: 100%;
-            background: var(--bg); z-index: 2000; transition: 0.3s; padding: 1.5rem;
-            overflow-y: auto;
-        }
-        #notifPanel.open { right: 0; }
-        .notif-item { border-left: 4px solid var(--gold); background: white; padding: 12px; margin-bottom: 10px; border-radius: 8px; font-size: 0.85rem; }
-
-        /* Bottom Nav */
-        .bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; background: var(--card); 
-            display: flex; justify-content: space-around; padding: 12px;
-            border-top: 1px solid var(--border); box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
-        }
-        .nav-btn { background: none; border: none; font-size: 0.7rem; font-weight: 600; color: #aaa; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-btn.active { color: var(--primary); }
-        .nav-btn i { font-size: 1.4rem; }
-
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="logo">İZMİR <strong>DT</strong></div>
-    <div style="font-size: 0.8rem;"><span class="status-dot"></span> Canlı Veri</div>
-</header>
-
-<div class="stats-grid">
-    <div class="stat-card">
-        <small>Aktif Oyunlar</small>
-        <div id="statOyun">-</div>
-    </div>
-    <div class="stat-card">
-        <small>Figüran Kadrosu</small>
-        <div id="statFiguran">-</div>
-    </div>
-</div>
-
-<div class="search-container">
-    <input type="text" id="searchInput" placeholder="Oyun, kişi veya görev ara...">
-</div>
-
-<main id="mainView" class="list-container">
-    <div id="loader" style="text-align: center; padding: 2rem;">⏳ Veriler yükleniyor...</div>
-</main>
-
-<aside id="notifPanel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h2 style="font-family: 'Playfair Display'; margin:0">Bildirimler</h2>
-        <button onclick="toggleNotifs()" style="border:none; background:none; font-size:1.5rem">✕</button>
-    </div>
-    <div id="notifList"></div>
-</aside>
-
-<nav class="bottom-nav">
-    <button class="nav-btn active" onclick="switchTab('all')"><i>📋</i>PANEL</button>
-    <button class="nav-btn" onclick="switchTab('figuran')"><i>👥</i>FİGÜRAN</button>
-    <button class="nav-btn" onclick="toggleNotifs()"><i>🔔</i>BİLDİRİM</button>
-</nav>
-
-<script src="app.js"></script>
-</body>
-</html>
+        /* KPI Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 0 1.5rem; margin-bottom: 2rem; }
+        .kpi { background: var(--card); padding: 1.2rem; border-radius: var(--radius); border-left: 5px solid var(--accent); box-
