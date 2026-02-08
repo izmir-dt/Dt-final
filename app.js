@@ -1696,7 +1696,7 @@ els.copyBtn.addEventListener("click", ()=>{
   }
   // Seçim kolaylığı
   setTimeout(()=>{
-    try{ els.copyTextArea.focus(); els.copyTextArea.select(); }catch(e){}
+    try{ els.copyTextArea.focus(); /* editable: otomatik seçme yok */ }catch(e){}
   }, 30);
   setStatus("📋 Pano açıldı: Ctrl+A → Ctrl+C", "ok");
 });
