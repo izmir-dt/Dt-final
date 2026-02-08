@@ -67,7 +67,8 @@ html[data-theme="dark"]{
     }
 
     *{box-sizing:border-box}
-    body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;color:var(--text);background:var(--bg);}
+    html{color-scheme: light;}
+body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;color:var(--text);background:var(--bg);}
     a{color:inherit}
     header{
       position:sticky;top:0;z-index:40;
@@ -1010,14 +1011,13 @@ header{ margin-bottom: 0 !important; }
 #viewPanel .filters .btn, #viewPanel .filters button{white-space:nowrap;}
 
 
-/* ===== Sidebar count wrapping fix ===== */
-.idt-item b{ max-width: 150px; }
-.idt-item .idt-count{ flex:0 0 auto; }
-@media (max-width: 860px){
-  .idt-item b{ max-width: unset; }
-}
+/* ===== Stabil v6.1 UI-only patch (no logic changes) ===== */
+/* Sidebar count overflow fix */
+.idt-item{ gap:10px; }
+.idt-item b{ min-width: 0; }
+.idt-count{ flex:0 0 auto; }
 
-/* ===== Notif panel themed ===== */
+/* Notif panel themed (UI-only) */
 #notifPanel{
   background: var(--card) !important;
   border: 1px solid var(--line) !important;
@@ -1031,33 +1031,16 @@ header{ margin-bottom: 0 !important; }
   background: linear-gradient(180deg, rgba(122,30,44,.06), rgba(255,255,255,.96)) !important;
   backdrop-filter: blur(8px) !important;
   border-bottom: 1px solid var(--line) !important;
-  padding: 12px 14px !important;
-}
-#notifPanel .title{ font-weight: 900 !important; letter-spacing: .2px !important; }
-#notifPanel .sub{ color: var(--muted) !important; }
-#notifPanel .row{
-  padding: 12px 14px !important;
 }
 #notifPanel .card, #notifPanel .n{
-  background: #fff !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 16px !important;
+  background:#fff !important;
+  border:1px solid var(--line) !important;
+  border-radius:16px !important;
   box-shadow: 0 10px 22px rgba(16,24,40,.08) !important;
 }
 #notifPanel .n{ margin: 10px 14px !important; padding: 12px 12px !important; }
-#notifPanel .n .t{ font-weight: 900 !important; }
-#notifPanel .n .meta{ color: var(--muted) !important; }
-#notifPanel .n .when{ color: var(--muted) !important; }
-#notifPanel .btn{
-  border-radius: 12px !important;
-  border: 1px solid var(--line) !important;
-  background: #fff !important;
-}
 #notifPanel::-webkit-scrollbar{ width: 10px; }
 #notifPanel::-webkit-scrollbar-thumb{ background: rgba(16,24,40,.16); border-radius: 999px; }
-#topNotif.is-open{
-  box-shadow: 0 0 0 3px rgba(192,122,42,.20);
-}
 
 </style>
 
@@ -1510,15 +1493,10 @@ body{
     const el=document.getElementById(id); if(el) el.classList.add('active');
   };
 
-  function ensurePanel(){
-    // legacy router uses these hidden buttons; clicking tabPanel brings the panel area
-    click('tabPanel');
-  }
-
   function clickKpiMode(mode){
-    // KPI elements exist even if hidden via CSS; clicking them preserves original logic
     const el = document.querySelector('.kpi[data-mode="'+mode+'"]');
     if(el) el.click();
+    else click('tabPanel');
   }
 
   // --- Move notif panel to body so it can open even if legacy header is hidden
@@ -1535,8 +1513,6 @@ body{
     const p = document.getElementById('notifPanel');
     if(!p) return;
     p.classList.toggle('hidden');
-    const btn = document.getElementById('topNotif');
-    if(btn) btn.classList.toggle('is-open', !p.classList.contains('hidden'));
     // open -> refresh list
     if(!p.classList.contains('hidden')){
       const r = document.getElementById('notifRefresh');
@@ -1544,20 +1520,22 @@ body{
     }
   }
 
-  // Sidebar (counts)
-  on('sidePlays',  ()=>{ activate('sidePlays');  ensurePanel(); clickKpiMode('plays'); });
-  on('sidePeople', ()=>{ activate('sidePeople'); ensurePanel(); clickKpiMode('people'); });
-  on('sideRows',   ()=>{ activate('sideRows');   ensurePanel(); clickKpiMode('rows'); });
+  // Sidebar
+  on('sidePlays',  ()=>{ activate('sidePlays');  clickKpiMode('plays'); });
+  on('sidePeople', ()=>{ activate('sidePeople'); clickKpiMode('people'); });
+  on('sideRows',   ()=>{ activate('sideRows');   clickKpiMode('rows'); });
 
   on('sideDist', ()=>{ activate('sideDist'); const mi=document.getElementById('advDist'); if(mi) mi.click(); else click('tabDistribution'); });
   on('sideCharts', ()=>{ activate('sideCharts'); click('tabCharts'); });
   on('sideIntersect', ()=>{ activate('sideIntersect'); click('tabIntersection'); });
   on('sideFiguran', ()=>{ activate('sideFiguran'); click('tabFiguran'); });
+  on('sideNotifs', ()=>{ activate('sideNotifs'); toggleNotifs(); });
 
   // Top actions
   on('topReload', ()=> click('reloadBtn'));
   on('topNotif',  ()=> toggleNotifs());
   on('topSheet',  ()=> click('sheetBtn'));
+  on('topPdf',    ()=> { const b=document.getElementById('chartDownloadBtn'); if(b) b.click(); else alert('PDF indir sadece Grafikler ekranında aktif.'); });
 
   // Mirror status text (from legacy #status pill)
   const syncStatus = ()=>{
@@ -1567,37 +1545,22 @@ body{
   };
   setInterval(syncStatus, 500); syncStatus();
 
-  // Mirror counts into sidebar (avoid sudden drops during refresh)
-  const last = {plays:null, people:null, rows:null, fig:null};
-  const toInt = (t)=>{
-    const n = parseInt(String(t||'').replace(/[^\d]/g,''), 10);
-    return Number.isFinite(n) ? n : null;
-  };
-  const setCount = (id, n)=>{
-    const dst = document.getElementById(id);
-    if(dst) dst.textContent = (n==null) ? '-' : String(n);
-  };
-  const shouldAccept = (prev, next)=>{
-    
-
+  // Mirror counts into sidebar
   const syncCounts = ()=>{
-    const plays = toInt(document.getElementById('kpiPlays')?.textContent);
-    const people= toInt(document.getElementById('kpiPeople')?.textContent);
-    const rows  = toInt(document.getElementById('kpiRows')?.textContent);
-    const fig   = toInt(document.getElementById('kpiFiguran')?.textContent);
+    const plays = document.getElementById('kpiPlays');
+    const people= document.getElementById('kpiPeople');
+    const rows  = document.getElementById('kpiRows');
+    const fig   = document.getElementById('kpiFiguran');
 
-    // If we get 0 while previously nonzero, keep previous for a bit (common during refresh)
-    const smooth = (key, val)=>{
-      const prev = last[key];
-      if(val === 0 && prev && prev > 0) return prev;
-      if(val != null) last[key] = val;
-      return last[key] ?? val;
+    const set = (id, el)=>{
+      const t = el ? (el.textContent||'-').trim() : '-';
+      const dst = document.getElementById(id);
+      if(dst) dst.textContent = t;
     };
-
-    setCount('sidePlaysCount',  smooth('plays', plays));
-    setCount('sidePeopleCount', smooth('people', people));
-    setCount('sideRowsCount',   smooth('rows', rows));
-    setCount('sideFigCount',    smooth('fig', fig));
+    set('sidePlaysCount', plays);
+    set('sidePeopleCount', people);
+    set('sideRowsCount', rows);
+    set('sideFigCount', fig);
   };
   setInterval(syncCounts, 700); syncCounts();
 
@@ -1642,6 +1605,6 @@ body{
 })();
 </script>
 
-<script src="app.js?v=7"></script>
+<script src="app.js?v=61"></script>
 </body>
 </html>
