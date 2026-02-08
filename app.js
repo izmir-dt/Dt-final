@@ -186,14 +186,10 @@ function applyTheme(theme){
     const savedMode = localStorage.getItem("idt_mode") || "plays";
     if(els.q) els.q.value = savedQ;
     if(els.qScope) els.qScope.value = savedScope;
-    if(savedMode==="people" || savedMode==="plays" || savedMode==="assign"){
+    if(savedMode==="people" || savedMode==="plays"){
       activeMode = savedMode;
       if(activeMode==="plays"){ els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active"); }
-      else if(activeMode==="people") { els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active"); }
-      else { // assign
-        els.btnPeople.classList.remove("active");
-        els.btnPlays.classList.remove("active");
-      }
+      else { els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active"); }
     }
   }catch(_e){}
 })();
@@ -812,9 +808,9 @@ function renderList(){
 }
 
 function renderAssignList(){
-  // Görev Ataması ekranı: satır mantığını koruyup, kişiye göre gruplayarak
-  // bir kişinin birden fazla görevi/oyunu varsa tek yerde görünsün.
   const q = (els.qSearch?.value || "").toLowerCase().trim();
+  // Build rows (Oyun, Kategori, Görev, Kişi) from the main sheet
+  // (we intentionally don’t touch how "rows" is fetched/parsed.)
   let list = rows || [];
   if(q){
     list = list.filter(r => {
@@ -823,50 +819,45 @@ function renderAssignList(){
     });
   }
 
-  // Group by person
-  const byPerson = new Map();
-  for(const r of list){
-    const person = (r.person || "-").trim();
-    if(!byPerson.has(person)){
-      byPerson.set(person, { id: `assign:${person}`, title: person, kind: "assign", rows: [], plays: new Set(), roles: new Set(), categories: new Set() });
-    }
-    const g = byPerson.get(person);
-    g.rows.push(r);
-    if(r.play) g.plays.add(r.play);
-    if(r.role) g.roles.add(r.role);
-    if(r.category) g.categories.add(r.category);
-  }
+  // Render a compact table (fast + scannable)
+  const html = [
+    '<div class="assign-table-wrap">',
+    '<table class="assign-table">',
+    '<thead><tr><th>Oyun</th><th>Kişi</th><th>Kategori</th><th>Görev</th></tr></thead>',
+    '<tbody>',
+    ...list.slice(0, 2000).map((r, i) => {
+      const play = escapeHtml(r.play || "-");
+      const person = escapeHtml(r.person || "-");
+      const cat = escapeHtml(r.category || "-");
+      const role = escapeHtml(r.role || "-");
+      return `<tr class="assign-row" data-idx="${i}"><td>${play}</td><td><b>${person}</b></td><td>${cat}</td><td>${role}</td></tr>`;
+    }),
+    '</tbody></table></div>'
+  ].join('');
 
-  const groups = [...byPerson.values()].sort((a,b)=>a.title.localeCompare(b.title,'tr'));
+  els.list.innerHTML = html;
 
-  // Render list items (same card style)
-  els.list.innerHTML = groups.map(g => {
-    const roleChips = [...g.roles].slice(0,6).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join('');
-    const more = g.roles.size > 6 ? `<span class="chip">+${g.roles.size-6}</span>` : '';
-    return `
-      <div class="item" data-id="${escapeHtml(g.id)}" data-kind="assign">
-        <div class="itemHead">
-          <div class="itemTitle">${escapeHtml(g.title)}${personTag(g.title)}</div>
-          <div class="itemMeta">${g.plays.size} oyun • ${g.rows.length} satır</div>
-        </div>
-        <div class="chips">${roleChips}${more}</div>
-      </div>
-    `;
-  }).join("");
-
-  // Click -> details
-  els.list.querySelectorAll('.item').forEach(el => {
-    el.addEventListener('click', () => {
-      const id = el.getAttribute('data-id');
-      const it = groups.find(x=>x.id===id);
-      if(!it) return;
-      selectedId = it.id;
-      selectedKind = it.kind;
-      selectedItem = it;
-      renderDetails(it);
-      // highlight
-      els.list.querySelectorAll('.item').forEach(n=>n.classList.remove('active'));
-      el.classList.add('active');
+  // Clicking a row shows the same content in the Detail panel (so it stays useful)
+  const trs = els.list.querySelectorAll('.assign-row');
+  trs.forEach(tr => {
+    tr.addEventListener('click', () => {
+      const idx = parseInt(tr.getAttribute('data-idx') || '0', 10);
+      const r = list[idx];
+      if(!r) return;
+      renderDetailBox({
+        title: r.person || '-',
+        subtitle: (r.play ? `Oyun: ${r.play}` : ''),
+        meta: [
+          r.category ? `Kategori: ${r.category}` : '',
+          r.role ? `Görev: ${r.role}` : ''
+        ].filter(Boolean).join(' • '),
+        rows: [
+          {label:'Oyun', value:r.play||'-'},
+          {label:'Kişi', value:r.person||'-'},
+          {label:'Kategori', value:r.category||'-'},
+          {label:'Görev', value:r.role||'-'}
+        ]
+      });
     });
   });
 }
@@ -889,35 +880,6 @@ function renderDetails(it){
           ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
-    `;
-  } else if(activeMode==="assign"){
-    // Kişiye göre gruplanmış görev atamaları: oyun bazında görevleri birleştir.
-    const byPlay=new Map();
-    for(const r of it.rows){
-      const p = r.play || "-";
-      if(!byPlay.has(p)) byPlay.set(p, {categories:new Set(), roles:new Set(), rows:[]});
-      const b = byPlay.get(p);
-      b.rows.push(r);
-      if(r.category) b.categories.add(r.category);
-      if(r.role) b.roles.add(r.role);
-    }
-    const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    els.details.innerHTML = `
-      <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.plays.size} oyun • ${it.rows.length} satır</p>
-      <div id="detailTable">
-      ${blocks.map(([p, b])=>{
-        const roles = [...b.roles].sort((a,b)=>a.localeCompare(b,'tr')).join(", ");
-        const cats = [...b.categories].sort((a,b)=>a.localeCompare(b,'tr')).join(", ");
-        return `
-          <div style="margin:12px 0 12px">
-            <div style="font-weight:850;margin:0 0 6px">${escapeHtml(p)}</div>
-            <div class="smallMuted" style="margin:0 0 8px"><b>Görevler:</b> ${escapeHtml(roles || "-")}</div>
-            <div class="smallMuted" style="margin:0 0 2px"><b>Kategoriler:</b> ${escapeHtml(cats || "-")}</div>
-          </div>
-        `;
-      }).join("")}
-      </div>
     `;
   } else {
     const byPlay=new Map();
@@ -958,18 +920,6 @@ function toTSVFromSelected(){
     for(let i=0;i<rowsSorted.length;i++){
       const r = rowsSorted[i];
       lines.push([i===0?playTitle:"", r.category||"", r.role||"", r.person||""].join("	"));
-    }
-    return lines.join("\n");
-  } else if(activeMode==="assign"){
-    const rs=[...selectedItem.rows].sort((a,b)=>
-      (a.person||"").localeCompare(b.person||"","tr") ||
-      (a.play||"").localeCompare(b.play||"","tr") ||
-      (a.category||"").localeCompare(b.category||"","tr") ||
-      (a.role||"").localeCompare(b.role||"","tr")
-    );
-    const lines=[["Kişi","Oyun","Kategori","Görev"].join("\t")];
-    for(const r of rs){
-      lines.push([r.person||"", r.play||"", r.category||"", r.role||""].join("\t"));
     }
     return lines.join("\n");
   } else {
@@ -1059,8 +1009,7 @@ function drawBars(canvas, items, topN){
     ctx.save();
     ctx.fillStyle = muted;
     ctx.font = "12px system-ui";
-    // Kullanıcı isteği: hiçbir yerde kısaltma / "..." olmasın
-    const label = d.k;
+    const label = d.k.length>26 ? d.k.slice(0,26)+"…" : d.k;
     // etiketleri yatay yaz (mobilde okunur)
     const yLabel = padT + h + 18;
     ctx.textAlign = "center";
@@ -1108,11 +1057,10 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const isM = isMobile();
   // Legend’i alta taşımak için alan ayır
   const legendH = isM ? 120 : 96;
-  const plotH = Math.max(240, cssH - legendH);
+  const plotH = Math.max(220, cssH - legendH);
   const cx = cssW * 0.50;
-  const cy = plotH * 0.52;
-  /* donut biraz daha büyüsün ve ortalansın */
-  const rOuter = Math.min(cssW, plotH) * (isM ? 0.36 : 0.48);
+  const cy = plotH * 0.55;
+  const rOuter = Math.min(cssW, plotH) * (isM ? 0.34 : 0.42);
   const rInner = rOuter * 0.60;
 
   let start = -Math.PI/2;
@@ -1178,25 +1126,14 @@ function drawDoughnut(canvas, items, topN, legendTitle){
     ctx.fillStyle = text;
     const label = `${String(d.k || d.key || d.name || d.label)} (${d.v})`;
     ctx.fillText(label, x+16, y);
-    // Ellipsis istemiyoruz: çok uzunsa 2 satıra kır
+    // fazla uzunsa kes
     const maxW = colW - 22;
     if (ctx.measureText(label).width > maxW){
-      const parts = String(label).split(' ');
-      let l1 = "", l2 = "";
-      for(const p of parts){
-        const candidate = (l1 ? l1 + " " : "") + p;
-        if(ctx.measureText(candidate).width <= maxW) l1 = candidate;
-        else l2 = (l2 ? l2 + " " : "") + p;
-      }
-      // ikinci satır çok uzunsa yine kır (ama ... yok)
-      while(l2 && ctx.measureText(l2).width > maxW) l2 = l2.slice(0, -1);
-      ctx.clearRect(x+16, y-14, maxW, 28);
+      let s = label;
+      while (s.length>6 && ctx.measureText(s+"…").width > maxW) s = s.slice(0,-1);
+      ctx.clearRect(x+16, y-14, maxW, 16);
       ctx.fillStyle = text;
-      ctx.fillText(l1, x+16, y);
-      if(l2){
-        ctx.fillStyle = muted;
-        ctx.fillText(l2, x+16, y+12);
-      }
+      ctx.fillText(s+"…", x+16, y);
     }
   }
 
@@ -1325,7 +1262,7 @@ function openMobilePeopleModal(title, subtitle, items){
     box.innerHTML = filtered.length ? filtered.slice(0,250).map(x=>`
       <div class="miniItem">
         <b>${escapeHtml(x.person)}</b>
-        <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? ` • +${(x.plays||[]).length-10} daha` : ""}</div>
+        <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
       </div>
     `).join("") : `<div class="empty">Sonuç yok.</div>`;
   };
@@ -1538,7 +1475,7 @@ function renderDrawerList(){
     <div class="miniItem">
       <b>${escapeHtml(x.person)}</b>
       ${x.role ? `<div class="small muted">Görev: ${escapeHtml(String(x.role))}</div>` : ""}
-      <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? ` • +${(x.plays||[]).length-10} daha` : ""}</div>
+      <div class="small">${escapeHtml((x.plays||[]).slice(0,10).join(" • "))}${(x.plays||[]).length>10 ? " • …" : ""}</div>
     </div>
   `).join("");
 }
