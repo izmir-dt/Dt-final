@@ -1567,7 +1567,7 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabAssign","viewAssign"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
     el(v).style.display="none";
@@ -1588,7 +1588,13 @@ function setActiveTab(which){
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
     setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
   }
+
+  if(which==="Assign" && rows.length){
+    closeDrawer();
+    setTimeout(()=>{ try{ renderAssign(); }catch(e){ console.error(e); } }, 0);
+  }
 }
+
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
@@ -1604,6 +1610,7 @@ function tabFromHash_(){
   if(h==="kesisim" || h==="intersection") return "Intersection";
   if(h==="figuran" || h==="figüran") return "Figuran";
   if(h==="grafikler" || h==="charts") return "Charts";
+  if(h==="gorev" || h==="görev" || h==="assign" || h==="atama") return "Assign";
   return null;
 }
 
