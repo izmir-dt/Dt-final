@@ -1079,6 +1079,8 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   const data = top;
   const total = data.reduce((s,x)=>s+x.v,0) || 1;
 
+  const getColor = makeColorGetter(data.map(d=>d.k));
+
   const card = cssVar("--card");
   const line = cssVar("--line");
   const text = cssVar("--text");
@@ -1696,7 +1698,7 @@ els.copyBtn.addEventListener("click", ()=>{
   }
   // Seçim kolaylığı
   setTimeout(()=>{
-    try{ els.copyTextArea.focus(); /* editable: otomatik seçme yok */ }catch(e){}
+    try{ els.copyTextArea.focus(); els.copyTextArea.select(); }catch(e){}
   }, 30);
   setStatus("📋 Pano açıldı: Ctrl+A → Ctrl+C", "ok");
 });
