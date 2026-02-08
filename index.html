@@ -959,6 +959,20 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
     background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
   }
 }
+
+/* ===== UI cleanup: remove duplicate original header/nav (keep DOM for logic) ===== */
+.idt-side-sub{ margin: 4px 0 18px; padding: 0 10px 12px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.idt-side-sub .t1{ font-weight:900; letter-spacing:.3px; }
+.idt-side-sub .t2{ font-size:12px; opacity:.82; margin-top:2px; }
+
+/* Original header inside content (from legacy app) - hide its chrome */
+header .actions{ display:none !important; }
+header .nav{ display:none !important; }
+header .brand-box{ display:none !important; } /* hide "İDT PANEL | SANAT TEKNİK BÜROSU" duplicate */
+
+/* Keep content spacing nice after hiding nav */
+header{ margin-bottom: 0 !important; }
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1118,7 +1132,13 @@ body{
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
       <div class="idt-logo">İZMİR DT</div>
+<div class="idt-side-sub">
+  <div class="t1">İDT PANEL</div>
+  <div class="t2">Sanat Teknik Bürosu</div>
+</div>
       <div class="idt-item active" id="sidePanel"><span>🏠</span><b>Oyun Listesi</b></div>
+<div class="idt-item" id="sideDash"><span>🧾</span><b>Panel</b></div>
+<div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
       <div class="idt-item" id="sideCharts"><span>📊</span><b>Grafikler</b></div>
       <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
       <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b></div>
@@ -1405,6 +1425,10 @@ body{
   on('sideCharts', ()=>{ activate('sideCharts'); click('tabCharts'); });
   on('sideIntersect', ()=>{ activate('sideIntersect'); click('tabIntersection'); });
   on('sideFiguran', ()=>{ activate('sideFiguran'); click('tabFiguran'); });
+
+  on('sideDash', ()=>{ activate('sideDash'); click('tabPanel'); });
+  on('sideDist', ()=>{ activate('sideDist'); const el=document.getElementById('tabDistribution')||document.getElementById('tabDistribution'); if(el) el.click(); else click('tabDistribution'); });
+
   on('sideNotifs', ()=>{ activate('sideNotifs'); click('notifBtn'); }); // keeps existing logic
 
   // top actions -> existing buttons
