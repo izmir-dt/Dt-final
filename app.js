@@ -41,6 +41,16 @@ function closeMobileModal(){
 
 const el = (id)=>document.getElementById(id);
 const els = {
+  tabAssign: el("tabAssign"),
+  viewAssign: el("viewAssign"),
+  assignSearch: el("assignSearch"),
+  assignClear: el("assignClear"),
+  assignCopy: el("assignCopy"),
+  assignList: el("assignList"),
+  assignDetail: el("assignDetail"),
+  assignDetailBody: el("assignDetailBody"),
+  assignDetailCopy: el("assignDetailCopy"),
+
   themeBtn: el("themeBtn"),
   status: el("status"),
   sheetBtn: el("sheetBtn"),
@@ -134,10 +144,8 @@ let rows = [];
 let ACTIVE_TAB = 'Panel';
 let plays = [];
 let people = [];
-let assignGroups = []; // Görev Ataması: Oyun + Görev Seti bazlı gruplar
 let playsList = [];
 let activeMode = "plays";
-let panelSub = "default"; // "default" | "assign" (Görev Ataması)
 let activeId = null;
 let selectedItem = null;
 
@@ -683,74 +691,6 @@ function groupByPerson(data){
   out.sort((a,b)=>a.title.localeCompare(b.title,"tr"));
   return out;
 }
-
-// Görev Ataması (default A): Oyun + Görev seti
-// - Kaynak: BÜTÜN OYUNLAR satırları
-// - "Görev" sütunu ana kaynaktır, ama stratejik olarak Oyun Adı da anahtarın parçasıdır.
-// - Aynı (Oyun, Görev Seti) olan kişiler aynı grupta listelenir.
-function buildAssignGroups(data){
-  // (play||person) -> {roles:Set, cats:Set, rows:[]}
-  const byPlayPerson = new Map();
-  for(const r of data){
-    const play = (r.play||"").trim();
-    const person = (r.person||"").trim();
-    const role = (r.role||"").trim();
-    const category = (r.category||"").trim();
-    if(!play || !person || !role) continue;
-    const key = play + "||" + person;
-    let rec = byPlayPerson.get(key);
-    if(!rec){
-      rec = { play, person, roles:new Set(), cats:new Set(), rows:[] };
-      byPlayPerson.set(key, rec);
-    }
-    rec.roles.add(role);
-    if(category) rec.cats.add(category);
-    rec.rows.push(r);
-  }
-
-  // (play||roleSet) -> group
-  const byGroup = new Map();
-  for(const rec of byPlayPerson.values()){
-    const roleSet = [...rec.roles].sort((a,b)=>a.localeCompare(b,"tr")).join(" • ");
-    const gkey = rec.play + "||" + roleSet;
-    let g = byGroup.get(gkey);
-    if(!g){
-      g = {
-        id: "assign:" + gkey,
-        play: rec.play,
-        roleSet,
-        people: [],
-        rowCount: 0,
-      };
-      byGroup.set(gkey, g);
-    }
-    g.people.push({
-      person: rec.person,
-      cats: [...rec.cats].sort((a,b)=>a.localeCompare(b,"tr")),
-      roles: [...rec.roles].sort((a,b)=>a.localeCompare(b,"tr")),
-      rows: rec.rows,
-    });
-    g.rowCount += rec.rows.length;
-  }
-
-  const out = [...byGroup.values()];
-  // oyun, sonra görev seti
-  out.sort((a,b)=>{
-    const p = a.play.localeCompare(b.play,"tr");
-    if(p) return p;
-    return a.roleSet.localeCompare(b.roleSet,"tr");
-  });
-
-  // kişi adını da stabil sırala
-  for(const g of out){
-    g.people.sort((x,y)=>x.person.localeCompare(y.person,"tr"));
-    g.count = g.people.length;
-    g.title = g.play + " — " + g.roleSet;
-    // chips için ilk 6 görev
-    g.roles = g.roleSet ? g.roleSet.split(" • ").slice(0,6) : [];
-  }
-  return out;
-}
 function uniqCategories(data){
   const cats=[...new Set(data.map(x=>x.category).filter(Boolean))];
   cats.sort((a,b)=>a.localeCompare(b,"tr"));
@@ -763,28 +703,13 @@ function chipTone(cat){
   if(t.includes("oyuncu")) return "bad";
   return "";
 }
-
-function mapScope(raw){
-  const v = (raw||"").toString().trim().toLowerCase();
-  // UI TR -> internal
-  if(v==="oyun"||v==="play") return "play";
-  if(v==="kişi"||v==="kisi"||v==="person") return "person";
-  if(v==="görev"||v==="gorev"||v==="role") return "role";
-  if(v==="tümü"||v==="tum"||v==="all") return "all";
-  return v || "all";
-}
 function applyFilters(list){
   const q=(els.q.value||"").trim().toLowerCase();
-  const scope = mapScope((els.qScope && els.qScope.value) ? els.qScope.value : "all");
+  const scope = (els.qScope && els.qScope.value) ? els.qScope.value : "all";
   const cat="";
   return list.filter(it=>{
     let hay = "";
-    if(activeMode==="assign"){
-      if(scope==="play") hay = it.play;
-      else if(scope==="person") hay = it.people.map(p=>p.person).join(" ");
-      else if(scope==="role") hay = it.roleSet;
-      else hay = it.play+" "+it.roleSet+" "+it.people.map(p=>p.person).join(" ");
-    } else if(activeMode==="plays"){
+    if(activeMode==="plays"){
       if(scope==="play") hay = it.title;
       else if(scope==="person") hay = it.rows.map(r=>r.person).join(" ");
       else if(scope==="role") hay = it.rows.map(r=>r.role).join(" ");
@@ -811,16 +736,7 @@ function applyFilters(list){
 
 /* ---------- UI render ---------- */
 function renderList(){
-  // Görev Ataması görünümü: panel içi özel mod
-  if(panelSub==="assign" && activeMode!=="assign"){
-    activeMode = "assign";
-    try{ localStorage.setItem("idt_mode","assign"); }catch(_e){}
-    els.btnPlays && els.btnPlays.classList.remove("active");
-    els.btnPeople && els.btnPeople.classList.remove("active");
-    activePlayFilter = null;
-    activeId=null; selectedItem=null;
-  }
-  const source = (activeMode==="assign") ? assignGroups : ((activeMode==="plays") ? plays : people);
+  const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
 
   els.list.innerHTML="";
@@ -834,13 +750,10 @@ function renderList(){
     const isActive = it.id===activeId;
     const meta = (activeMode==="plays")
       ? `${it.count} kişi • ${it.rows.length} satır`
-      : (activeMode==="people")
-        ? `${it.count} oyun • ${it.rows.length} satır`
-        : `${it.personCount} kişi • ${it.rowCount} satır`;
+      : `${it.count} oyun • ${it.rows.length} satır`;
 
-    const cats = (activeMode==="assign") ? (it.roles||[]) : (it.cats||[]);
-    const chips = (cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
-    const more = (cats||[]).length>6 ? `<span class="chip">+${cats.length-6}</span>` : "";
+    const chips = (it.cats||[]).slice(0,6).map(c=>`<span class="chip ${chipTone(c)}">${escapeHtml(c)}</span>`).join("");
+    const more = (it.cats||[]).length>6 ? `<span class="chip">+${it.cats.length-6}</span>` : "";
     const retiredTag = (activeMode==="people" && retiredSet.has(it.title)) ? `<span class="tag retired">Kurumdan Emekli Sanatçı</span>` : "";
 
     const div=document.createElement("div");
@@ -883,40 +796,6 @@ function renderList(){
 }
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
-
-  if(activeMode==="assign"){
-    const rowsSorted=[...it.rows].sort((a,b)=>
-      (a.person||"").localeCompare(b.person||"","tr") ||
-      (a.category||"").localeCompare(b.category||"","tr") ||
-      (a.role||"").localeCompare(b.role||"","tr")
-    );
-    const byPerson=new Map();
-    for(const r of rowsSorted){
-      const k=r.person||"";
-      if(!byPerson.has(k)) byPerson.set(k,{cats:new Set(), roles:new Set(), rows:0});
-      const obj=byPerson.get(k);
-      if(r.category) obj.cats.add(r.category);
-      if(r.role) obj.roles.add(r.role);
-      obj.rows++;
-    }
-    const peopleBlocks=[...byPerson.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    els.details.innerHTML = `
-      <h3 class="title">${escapeHtml(it.play)} • ${escapeHtml(it.roleSet)}</h3>
-      <p class="subtitle">${it.personCount} kişi • ${it.rowCount} satır</p>
-      <table class="table" id="detailTable">
-        <thead><tr><th>Kişi</th><th>Kategori(ler)</th><th>Görev(ler)</th><th>Satır</th></tr></thead>
-        <tbody>
-          ${peopleBlocks.map(([name, obj])=>{
-            const cats=[...obj.cats].sort((a,b)=>a.localeCompare(b,"tr")).join(", ")||"—";
-            const roles=[...obj.roles].sort((a,b)=>a.localeCompare(b,"tr")).join(", ")||"—";
-            return `<tr><td>${escapeHtml(name)}${personTag(name)}</td><td>${escapeHtml(cats)}</td><td>${escapeHtml(roles)}</td><td>${obj.rows}</td></tr>`;
-          }).join("")}
-        </tbody>
-      </table>
-      <div style="margin-top:10px" class="muted">Not: Kopyala (Excel) = satır dökümü (Oyun Adı/Kategori/Görev/Kişi) üretir.</div>
-    `;
-    return;
-  }
 
   if(activeMode==="plays"){
     const rowsSorted=[...it.rows].sort((a,b)=>
@@ -962,18 +841,6 @@ function renderDetails(it){
 /* ---------- Copy as Excel-friendly (TSV) ---------- */
 function toTSVFromSelected(){
   if(!selectedItem) return "";
-  if(activeMode==="assign"){
-    const rs=[...selectedItem.rows].sort((a,b)=>
-      (a.person||"").localeCompare(b.person||"","tr") ||
-      (a.category||"").localeCompare(b.category||"","tr") ||
-      (a.role||"").localeCompare(b.role||"","tr")
-    );
-    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
-    for(const r of rs){
-      lines.push([r.play||"", r.category||"", r.role||"", r.person||""].join("\t"));
-    }
-    return lines.join("\n");
-  }
   if(activeMode==="plays"){
     const rowsSorted=[...selectedItem.rows].sort((a,b)=>
       (a.category||"").localeCompare(b.category||"","tr") ||
@@ -1700,7 +1567,6 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  if(which !== "Panel") panelSub = "default";
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
@@ -1710,9 +1576,10 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
 
   // URL hash (geri/ileri ve yenilemede aynı sekme)
-  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
-  let slug = slugMap[which] || "panel";
-  if(which==="Panel" && panelSub==="assign") slug = "atama";
+  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
+    Assign:"gorev"
+  };
+  const slug = slugMap[which] || "panel";
   if (location.hash !== "#"+slug) {
     history.replaceState(null, "", "#" + slug);
   }
@@ -1728,13 +1595,10 @@ els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assign"));
 
 function tabFromHash_(){
   const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
-  if(h==="atama" || h==="gorev-atamasi" || h==="gorevatamasi"){
-    panelSub = "assign";
-    return "Panel";
-  }
   if(h==="panel") return "Panel";
   if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
   if(h==="kesisim" || h==="intersection") return "Intersection";
@@ -2024,7 +1888,6 @@ async function load(isAuto=false){
           rows = expandRowsByPeople(rawRows);
           plays = groupByPlay(rows);
           people = groupByPerson(rows);
-          assignGroups = buildAssignGroups(rows);
           playsList = plays.map(p=>p.title);
           renderList();
           renderDetails(null);
@@ -2056,7 +1919,6 @@ async function load(isAuto=false){
     rows = expandRowsByPeople(rawRows);
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
-    assignGroups = buildAssignGroups(rows);
     playsList = plays.map(p=>p.title);
 
 
@@ -2179,4 +2041,112 @@ try {
 } catch (e) {
   console.warn("CONFIG override skipped:", e);
 }
+
+function buildAssignGroups_(query){
+  const rows = rawRows || [];
+  const norm = (s)=>String(s||"").trim();
+  const q = norm(query).toLowerCase();
+
+  const per = new Map(); // play||person -> roleset + row dump
+  for(const r of rows){
+    const play = norm(r.play);
+    const person = norm(r.person);
+    const role = norm(r.role);
+    const category = norm(r.category);
+    if(!play || !person || !role) continue;
+    const k = play + "||" + person;
+    if(!per.has(k)) per.set(k,{play, person, roles:new Set(), rows:[]});
+    const o = per.get(k);
+    o.roles.add(role);
+    o.rows.push({play, category, role, person});
+  }
+
+  const groups = new Map(); // play||roleset -> group
+  for(const o of per.values()){
+    const roleSet = Array.from(o.roles).sort((a,b)=>a.localeCompare(b,"tr")).join(" + ");
+    const key = o.play + "||" + roleSet;
+    if(!groups.has(key)) groups.set(key,{play:o.play, roleSet, persons:[], dump:[], rowCount:0});
+    const g = groups.get(key);
+    g.persons.push(o.person);
+    g.dump.push(...o.rows);
+    g.rowCount += o.rows.length;
+  }
+
+  let out = Array.from(groups.values());
+  for(const g of out) g.persons.sort((a,b)=>a.localeCompare(b,"tr"));
+
+  if(q){
+    out = out.filter(g=>{
+      if(g.play.toLowerCase().includes(q)) return true;
+      if(g.roleSet.toLowerCase().includes(q)) return true;
+      return g.persons.some(p=>p.toLowerCase().includes(q));
+    });
+  }
+
+  out.sort((a,b)=> b.rowCount - a.rowCount || a.play.localeCompare(b.play,"tr") || a.roleSet.localeCompare(b.roleSet,"tr"));
+  return out;
+}
+
+function renderAssign(){
+  if(!els.viewAssign) return;
+
+  const q = els.assignSearch ? els.assignSearch.value : "";
+  const groups = buildAssignGroups_(q);
+
+  if(els.assignList){
+    els.assignList.innerHTML = groups.map((g,i)=>{
+      const sample = g.persons.slice(0,6).join(" • ") + (g.persons.length>6 ? ` • +${g.persons.length-6}` : "");
+      return `<div class="rowCard" data-idx="${i}">
+        <div class="rowTop">
+          <div class="rowTitle">${escapeHtml(g.play)} <span class="muted">•</span> <span class="muted">${escapeHtml(g.roleSet)}</span></div>
+          <div class="rowMeta">${g.persons.length} kişi • ${g.rowCount} satır</div>
+        </div>
+        <div class="chips"><span class="chip">${escapeHtml(sample)}</span></div>
+      </div>`;
+    }).join("") || '<div class="emptyHint">Sonuç yok.</div>';
+
+    els.assignList.querySelectorAll(".rowCard").forEach(card=>{
+      card.addEventListener("click", ()=>{
+        const g = groups[Number(card.dataset.idx)];
+        if(!g) return;
+        const dump = g.dump.slice().sort((a,b)=>a.person.localeCompare(b.person,"tr") || a.role.localeCompare(b.role,"tr"));
+        const tsv = dump.map(r=>[r.play, r.category, r.role, r.person].join("\t")).join("\n");
+        if(els.assignDetailBody){
+          els.assignDetailBody.dataset.tsv = tsv;
+          els.assignDetailBody.innerHTML = `
+            <div class="kpiLine"><b>${escapeHtml(g.play)}</b> <span class="muted">•</span> ${escapeHtml(g.roleSet)}</div>
+            <div class="muted small">${g.persons.length} kişi • ${g.rowCount} satır</div>
+            <div class="tableWrap">
+              <table class="tbl">
+                <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
+                <tbody>
+                  ${dump.map(r=>`<tr><td>${escapeHtml(r.play)}</td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}</td></tr>`).join("")}
+                </tbody>
+              </table>
+            </div>`;
+        }
+      });
+    });
+  }
+
+  if(els.assignCopy){
+    els.assignCopy.onclick = ()=>{
+      const tsv = groups.map(g=>[g.play, g.roleSet, g.persons.join(", "), String(g.rowCount)].join("\t")).join("\n");
+      openCopyModal(tsv, "Görev Ataması");
+    };
+  }
+  if(els.assignDetailCopy){
+    els.assignDetailCopy.onclick = ()=>{
+      const tsv = els.assignDetailBody?.dataset?.tsv || "";
+      if(tsv) openCopyModal(tsv, "Görev Ataması Detay");
+    };
+  }
+  if(els.assignClear){
+    els.assignClear.onclick = ()=>{ if(els.assignSearch){ els.assignSearch.value=""; renderAssign(); } };
+  }
+  if(els.assignSearch){
+    els.assignSearch.oninput = ()=>renderAssign();
+  }
+}
+
 
