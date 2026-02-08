@@ -4,7 +4,14 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
   <title>İDT | Yönetim Paneli</title>
+
+  <meta name="description" content="İzmir Devlet Tiyatrosu repertuvar takip sistemi: oyun, görev ve kişi yönetimi; analiz ve bildirimler." />
+  <link rel="canonical" href="https://izmir-dt.github.io/Dt-final/" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#7a1e2c" />
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --idt-bordo: #7a1e2c;
@@ -12,128 +19,515 @@
       --bg: #f4f1ee;
       --card: #ffffff;
       --text: #1a1a1a;
+      --muted:#6b7280;
+      --line: rgba(0,0,0,.08);
+      --shadow: 0 10px 25px rgba(0,0,0,0.10);
+      --r: 20px;
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
-    
-    header { 
-      background: var(--idt-bordo); color: white; padding: 40px 20px; 
-      text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+    *{ box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding-bottom: 84px;
+      color: var(--text);
     }
 
-    /* Ana Sayfa 4'lü Bar Yapısı */
-    .menu-grid {
-      display: grid; grid-template-columns: 1fr; gap: 15px; padding: 20px; margin-top: -30px;
+    header {
+      background: var(--idt-bordo);
+      color: white;
+      padding: 34px 18px 28px;
+      text-align: center;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    header h1{ font-size: 1.12rem; margin: 0; letter-spacing:.4px; }
+    header p{ font-size: .82rem; opacity: .85; margin: 8px 0 0; }
+
+    #status{
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      font-size: 11px;
+      background: #18794e;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 1000;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    }
+    #status.ok{ background:#18794e; }
+    #status.warn{ background:#b45309; }
+    #status.bad{ background:#b42318; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 18px 18px;
+      margin-top: -16px;
+    }
+    .stat-mini {
+      background: var(--idt-altin);
+      color: white;
+      padding: 14px 12px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 18px rgba(0,0,0,.08);
+    }
+    .stat-mini b { display:block; font-size: 22px; }
+    .stat-mini span { font-size: 10px; font-weight: 800; letter-spacing:.6px; opacity:.95; }
+
+    #mainMenu.menu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 18px;
+      margin-top: -8px;
     }
     .menu-bar {
-      background: var(--card); padding: 25px; border-radius: 20px;
-      display: flex; align-items: center; gap: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--r);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow);
       border-left: 6px solid var(--idt-altin);
-      transition: transform 0.2s; cursor: pointer;
+      transition: transform 0.18s ease;
+      cursor: pointer;
+      user-select: none;
     }
-    .menu-bar:active { transform: scale(0.98); }
+    .menu-bar:active { transform: scale(0.985); }
     .menu-bar .icon { font-size: 30px; }
     .menu-bar .info h2 { margin: 0; font-size: 18px; color: var(--idt-bordo); }
-    .menu-bar .info p { margin: 5px 0 0; font-size: 13px; color: #666; }
+    .menu-bar .info p { margin: 6px 0 0; font-size: 13px; color: #666; line-height:1.3; }
 
-    /* İstatistikler */
-    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px; }
-    .stat-mini { background: var(--idt-altin); color: white; padding: 15px; border-radius: 15px; text-align: center; }
-    .stat-mini b { display: block; font-size: 20px; }
-    .stat-mini span { font-size: 10px; font-weight: bold; }
-
-    /* Bölümler (Varsayılan kapalı, JS ile açılacak) */
-    .section-content { display: none; padding: 20px; }
+    .section-content { display: none; padding: 18px; }
     .section-content.active { display: block; }
 
-    /* Orijinal Liste ve Tabbar Uyumu */
-    #list { margin-top: 10px; }
-    .tabbar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; }
-    .tb { background: none; border: none; font-size: 12px; color: #888; display: flex; flex-direction: column; align-items: center; }
-    .tb.active { color: var(--idt-bordo); font-weight: bold; }
-    
-    #status { position: fixed; top: 10px; right: 10px; font-size: 10px; background: #18794e; color: white; padding: 3px 8px; border-radius: 5px; z-index: 1000; }
+    .card{
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .card h3{ margin: 0 0 10px; font-size: 15px; color: var(--idt-bordo); }
+    .muted{ color: var(--muted); }
+
+    .inputRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .input{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(0,0,0,.04);
+    }
+    .input input, .input select{
+      width:100%;
+      border:0;
+      outline:0;
+      background:transparent;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .seg button{
+      border:0;
+      background:transparent;
+      padding: 12px 14px;
+      font-weight:800;
+      color:#666;
+      cursor:pointer;
+      font-family: inherit;
+    }
+    .seg button.active{
+      color: var(--idt-bordo);
+      background: rgba(122,30,44,.08);
+    }
+
+    #list{ margin-top: 10px; }
+    .item{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.05);
+      margin-bottom: 10px;
+      cursor:pointer;
+    }
+    .item .name{ font-weight: 800; }
+    .meta{ color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top: 10px; }
+    .chip{
+      border:1px solid var(--line);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:#444;
+      background: rgba(192,122,42,.10);
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    #details{ margin-top: 12px; }
+
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      border:1px solid var(--line);
+      border-radius: 16px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .table th,.table td{
+      padding:10px 10px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      font-size:13px;
+      vertical-align:top;
+    }
+    .table th{
+      background: rgba(122,30,44,.06);
+      color: #333;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing:.2px;
+    }
+    .table tr:last-child td{ border-bottom:0; }
+
+    #notifPanel{
+      display:block;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .notifHd{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px;
+      background: rgba(122,30,44,.08);
+    }
+    .notifHd b{ color: var(--idt-bordo); }
+    .notifBd{ padding: 12px; max-height: 62vh; overflow:auto; }
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 800;
+      cursor:pointer;
+      font-family: inherit;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: #b42318;
+      color:#fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .hidden{ display:none !important; }
+
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid #ddd;
+      z-index: 60;
+    }
+    .tb {
+      background: none;
+      border: none;
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor:pointer;
+      font-family: inherit;
+    }
+    .tb.active { color: var(--idt-bordo); font-weight: 900; }
+
+    canvas{ width:100%; height: 300px; display:block; border-radius: 16px; border:1px solid var(--line); background:#fff; }
+
+    @media (min-width: 900px){
+      body{ max-width: 720px; margin: 0 auto; }
+      header{ border-radius: 0 0 30px 30px; }
+      .tabbar{ max-width: 720px; left:50%; transform:translateX(-50%); }
+    }
   </style>
 </head>
-<body>
 
-  <div id="status">BAĞLI</div>
+<body>
+  <div id="status" class="ok">BAĞLI</div>
 
   <header>
-    <h1 style="font-size: 1.2rem; margin: 0;">İZMİR DEVLET TİYATROSU</h1>
-    <p style="font-size: 0.8rem; opacity: 0.8;">Repertuvar Takip Sistemi</p>
+    <h1>İZMİR DEVLET TİYATROSU</h1>
+    <p>Repertuvar Takip Sistemi</p>
   </header>
 
   <div class="stats-row">
-    <div class="stat-mini"><b id="valOyun">0</b><span>AKTİF OYUN</span></div>
-    <div class="stat-mini"><b id="valFiguran">0</b><span>TOPLAM KİŞİ</span></div>
+    <div class="stat-mini"><b id="kpiPlays">0</b><span>AKTİF OYUN</span></div>
+    <div class="stat-mini"><b id="kpiPeople">0</b><span>TOPLAM KİŞİ</span></div>
   </div>
 
   <div id="mainMenu" class="menu-grid">
-    <div class="menu-bar" onclick="showTab('Panel')">
+    <div class="menu-bar" id="goPanel">
       <div class="icon">🎭</div>
       <div class="info"><h2>Oyun Takibi</h2><p>Tüm oyunları ve kadroları incele</p></div>
     </div>
-    <div class="menu-bar" onclick="showTab('Analiz')">
+    <div class="menu-bar" id="goAnaliz">
       <div class="icon">📊</div>
-      <div class="info"><h2>Veri Analizi</h2><p>Grafikler ve istatistiksel raporlar</p></div>
+      <div class="info"><h2>Veri Analizi</h2><p>Grafikler ve raporlar</p></div>
     </div>
-    <div class="menu-bar" onclick="showTab('Bildirim')">
+    <div class="menu-bar" id="goNotifs">
       <div class="icon">🔔</div>
       <div class="info"><h2>Bildirimler</h2><p>Son değişiklikler ve güncellemeler</p></div>
     </div>
-    <div class="menu-bar" onclick="showTab('Ayarlar')">
+    <div class="menu-bar" id="goSettings">
       <div class="icon">⚙️</div>
-      <div class="info"><h2>Sistem Ayarları</h2><p>Veri kaynağı ve uygulama yönetimi</p></div>
+      <div class="info"><h2>Sistem Ayarları</h2><p>Bağlantı ve araçlar</p></div>
     </div>
   </div>
 
   <div id="section-Panel" class="section-content">
-    <input type="text" id="searchInput" placeholder="Ara..." style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; margin-bottom:15px;">
+    <div class="card">
+      <h3>Arama</h3>
+      <div class="inputRow">
+        <div class="input" title="Ara">🔎
+          <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off">
+        </div>
+        <div class="input" style="width:auto" title="Kapsam">
+          <select id="qScope">
+            <option value="all">Hepsi</option>
+            <option value="play">Oyun</option>
+            <option value="person">Kişi</option>
+            <option value="role">Görev</option>
+          </select>
+        </div>
+        <button class="btn" id="qClear" type="button">Temizle</button>
+      </div>
+      <div class="inputRow" style="margin-top:10px">
+        <div class="seg" title="Görünüm">
+          <button id="btnPlays" type="button" class="active">Oyunlar</button>
+          <button id="btnPeople" type="button">Kişiler</button>
+        </div>
+        <div class="input" style="flex:1" title="Kategori filtresi">
+          <select id="category">
+            <option value="">Tüm kategoriler</option>
+          </select>
+        </div>
+        <button class="btn" id="clearBtn" type="button">Filtreyi Sıfırla</button>
+      </div>
+      <div id="hint" class="muted" style="margin-top:10px; font-size:12px"></div>
+    </div>
+
     <div id="list"></div>
+
+    <div id="details" class="card"></div>
+
+    <button class="btn" id="copyBtn" type="button" style="width:100%; margin-top:12px">📋 Excel için Kopyala</button>
   </div>
 
   <div id="section-Analiz" class="section-content">
-    <canvas id="chartMain" style="width:100%; height:300px;"></canvas>
+    <div class="card">
+      <h3>Analiz</h3>
+      <p class="muted" style="margin:0 0 12px">Grafiğe dokun / tıkla → kişi listesi.</p>
+
+      <div class="inputRow" style="justify-content:space-between">
+        <div class="seg">
+          <button id="chartTabRoles" type="button" class="active">Görev</button>
+          <button id="chartTabCats" type="button">Kategori</button>
+        </div>
+        <button class="btn" id="chartDownloadBtn" type="button">⬇️ İndir</button>
+      </div>
+
+      <div class="muted" id="chartTitle" style="margin-top:10px; font-weight:800"></div>
+    </div>
+
+    <canvas id="chartMain"></canvas>
+
+    <div id="chartMobileList" class="card" style="display:none"></div>
+
+    <div id="chartDrawer" class="card hidden">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center">
+        <div>
+          <div id="drawerTitle" style="font-weight:900"></div>
+          <div id="drawerSub" class="muted" style="font-size:12px"></div>
+        </div>
+        <button id="drawerClose" class="btn" type="button">Kapat</button>
+      </div>
+      <div class="input" style="margin-top:10px">🔎 <input id="drawerSearch" type="search" placeholder="Ara…"></div>
+      <div id="drawerList" style="margin-top:10px"></div>
+    </div>
+
+    <div id="viewDistribution" style="display:none"><div id="distributionBox"></div></div>
+    <div id="viewIntersection" style="display:none">
+      <select id="p1"></select>
+      <select id="p2"></select>
+      <button id="swapBtn" type="button" class="btn">↔️</button>
+      <div id="intersectionBox"></div>
+    </div>
   </div>
 
   <div id="section-Bildirim" class="section-content">
-    <div id="notifList"></div>
+    <div id="notifPanel">
+      <div class="notifHd">
+        <div style="display:flex; gap:10px; align-items:center">
+          <b>Bildirimler</b>
+          <span id="notifCount" class="badge hidden">0</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <button id="notifRefresh" class="btn" type="button">Yenile</button>
+          <button id="notifClose" class="btn" type="button">Kapat</button>
+        </div>
+      </div>
+      <div class="notifBd" id="notifList"></div>
+    </div>
+    <button id="notifBtn" class="hidden" type="button">notif</button>
   </div>
 
   <div id="section-Ayarlar" class="section-content">
-    <h3>Sistem Bilgileri</h3>
-    <p>Bağlantı: Aktif</p>
-    <button onclick="location.reload()" style="width:100%; padding:15px; background:var(--idt-bordo); color:white; border:none; border-radius:10px;">Verileri Yenile</button>
+    <div class="card">
+      <h3>Sistem</h3>
+      <p class="muted" style="margin:0 0 12px">Bağlantı ve hızlı araçlar.</p>
+
+      <div class="inputRow">
+        <a id="sheetBtn" class="btn" href="#" target="_blank" rel="noopener">📄 Google Sheet’i Aç</a>
+        <button id="reloadBtn" class="btn" type="button">🔄 Yenile</button>
+      </div>
+
+      <button id="themeBtn" class="hidden" type="button">theme</button>
+      <button id="advBtn" class="hidden" type="button">adv</button>
+      <div id="advMenu" class="hidden"></div>
+      <button id="advDist" class="hidden" type="button">dist</button>
+      <button id="advInter" class="hidden" type="button">inter</button>
+    </div>
+
+    <div class="card">
+      <h3>Figüran</h3>
+      <p class="muted" style="margin:0 0 10px">Figüran listesi ve dışa aktarma.</p>
+      <div class="input">🔎 <input id="fq" type="search" placeholder="Figüran ara…"></div>
+      <div class="inputRow" style="margin-top:10px">
+        <button id="figDownloadAllBtn" class="btn" type="button">⬇️ Tümü (TSV)</button>
+        <button id="figDownloadFilteredBtn" class="btn" type="button">⬇️ Filtreli</button>
+        <button id="fClear" class="btn" type="button">Temizle</button>
+      </div>
+      <div id="figuranBox" style="margin-top:10px"></div>
+    </div>
   </div>
 
-  <nav class="tabbar">
-    <button class="tb active" onclick="showTab('Home')"><span>🏠</span>Ana Sayfa</button>
-    <button class="tb" onclick="showTab('Panel')"><span>📋</span>Liste</button>
-    <button class="tb" onclick="showTab('Analiz')"><span>📈</span>Grafik</button>
-    <button class="tb" onclick="showTab('Bildirim')"><span>🔔</span>Notif</button>
+  <button id="tabPanel" class="hidden" type="button">tabPanel</button>
+  <button id="tabDistribution" class="hidden" type="button">tabDistribution</button>
+  <button id="tabIntersection" class="hidden" type="button">tabIntersection</button>
+  <button id="tabFiguran" class="hidden" type="button">tabFiguran</button>
+  <button id="tabCharts" class="hidden" type="button">tabCharts</button>
+
+  <div id="viewPanel" style="display:none"></div>
+  <div id="viewFiguran" style="display:none"></div>
+  <div id="viewCharts" style="display:none"></div>
+
+  <div id="mobileOverlay" class="hidden"></div>
+  <div id="mobileModal" class="hidden"><div id="mobileContent"></div></div>
+
+  <nav class="tabbar" aria-label="Alt Menü">
+    <button class="tb active" data-tab="Home" type="button"><span>🏠</span>Ana Sayfa</button>
+    <button class="tb" data-tab="Panel" type="button"><span>📋</span>Liste</button>
+    <button class="tb" data-tab="Analiz" type="button"><span>📈</span>Grafik</button>
+    <button class="tb" data-tab="Bildirim" type="button"><span>🔔</span>Notif</button>
+    <button class="tb" data-tab="Ayarlar" type="button"><span>⚙️</span>Ayar</button>
   </nav>
 
   <script>
-    // Basit Tab Yönetimi (app.js fonksiyonlarını tetikler)
-    function showTab(tabName) {
-      // Tüm bölümleri gizle
-      document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-      document.getElementById('mainMenu').style.display = 'none';
-      
-      if(tabName === 'Home') {
-        document.getElementById('mainMenu').style.display = 'grid';
-      } else {
-        const target = document.getElementById('section-' + tabName);
-        if(target) target.classList.add('active');
+    (function(){
+      const $$ = (s)=>document.querySelectorAll(s);
+      const $ = (s)=>document.querySelector(s);
+
+      function setTb(tab){
+        $$(".tb").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
       }
 
-      // Tabbar butonlarını güncelle
-      document.querySelectorAll('.tb').forEach(b => b.classList.remove('active'));
-      event.currentTarget.classList.add('active');
-    }
+      function showSection(name){
+        $$(".section-content").forEach(s=>s.classList.remove("active"));
+        const menu = document.getElementById("mainMenu");
+        if(name==="Home"){
+          menu.style.display = "grid";
+          setTb("Home");
+          return;
+        }
+        menu.style.display = "none";
+        const sec = document.getElementById("section-"+name);
+        if(sec) sec.classList.add("active");
+        setTb(name);
+      }
+
+      function go(tab){
+        showSection(tab);
+        try{
+          if(tab==="Panel" && window.setActiveTab) window.setActiveTab("Panel");
+          if(tab==="Analiz" && window.setActiveTab) window.setActiveTab("Charts");
+        }catch(e){}
+      }
+
+      document.getElementById("goPanel")?.addEventListener("click", ()=>go("Panel"));
+      document.getElementById("goAnaliz")?.addEventListener("click", ()=>go("Analiz"));
+      document.getElementById("goNotifs")?.addEventListener("click", ()=>go("Bildirim"));
+      document.getElementById("goSettings")?.addEventListener("click", ()=>go("Ayarlar"));
+
+      $$(".tb").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const t = btn.dataset.tab;
+          go(t);
+        });
+      });
+
+      document.getElementById("notifClose")?.addEventListener("click", ()=>go("Home"));
+
+      showSection("Home");
+    })();
   </script>
 
+  <script src="app.js" defer></script>
 </body>
 </html>
