@@ -725,7 +725,7 @@ function chipTone(cat){
   return "";
 }
 function applyFilters(list){
-  const q=(els.q.value||"").trim().toLowerCase();
+  const q=foldTr_((els.q.value||"").trim());
   const scope = (els.qScope && els.qScope.value) ? els.qScope.value : "all";
   const cat="";
   return list.filter(it=>{
@@ -741,7 +741,7 @@ function applyFilters(list){
       else if(scope==="role") hay = (it.roles||[]).join(" ");
       else hay = it.title+" "+it.cats.join(" ")+" "+(it.roles||[]).join(" ")+" "+(it.plays||[]).join(" ");
     }
-    hay = (hay||"").toLowerCase();
+    hay = foldTr_(hay||"");
 
     if(activeMode==="people" && activePlayFilter){
       if(!((it.plays||[]).includes(activePlayFilter))) return false;
@@ -1208,7 +1208,7 @@ function openMobilePeopleModal(title, subtitle, items){
     const q = (document.getElementById(id)?.value||"").trim().toLowerCase();
     const filtered = items.filter(x=>{
       if(!q) return true;
-      return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
+      return foldTr_(x.person+" "+(x.plays||[]).join(" ")).includes(q);
     });
     const box = document.getElementById(listId);
     if(!box) return;
@@ -1398,15 +1398,15 @@ els.drawerList.addEventListener("click", (e)=>{
 
 
 function renderDrawerList(){
-  const q = els.drawerSearch.value.trim().toLowerCase();
+  const q = foldTr_(els.drawerSearch.value.trim());
   const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
 
   const filtered = drawerData.filter(x=>{
     if(!q) return true;
     if(labelMode){
-      return String(x.label||"").toLowerCase().includes(q);
+      return foldTr_(String(x.label||"")).includes(q);
     }
-    return (x.person+" "+(x.plays||[]).join(" ")).toLowerCase().includes(q);
+    return foldTr_(x.person+" "+(x.plays||[]).join(" ")).includes(q);
   });
 
   if(!filtered.length){
@@ -1454,10 +1454,10 @@ function computeDistribution(){
   return out;
 }
 function renderDistribution(){
-  const q=els.dq.value.trim().toLowerCase();
+  const q=foldTr_(els.dq.value.trim());
   const filtered = distribution.filter(d=>{
     if(!q) return true;
-    const hay=(d.person+" "+d.plays.join(" ")+" "+d.roles.join(" ")).toLowerCase();
+    const hay=foldTr_(d.person+" "+d.plays.join(" ")+" "+d.roles.join(" "));
     return hay.includes(q);
   });
 
@@ -1485,10 +1485,10 @@ function renderDistribution(){
 
 /* ---------- figuran render ---------- */
 function renderFiguran(){
-  const q=els.fq.value.trim().toLowerCase();
+  const q=foldTr_(els.fq.value.trim());
   const filtered = figuran.filter(f=>{
     if(!q) return true;
-    const hay=(f.person+" "+(f.cats||[]).join(" ")+" "+f.plays.join(" ")+" "+f.roles.join(" ")).toLowerCase();
+    const hay=foldTr_(f.person+" "+(f.cats||[]).join(" ")+" "+f.plays.join(" ")+" "+f.roles.join(" "));
     return hay.includes(q);
   });
 
@@ -2095,6 +2095,7 @@ const assignState = {
   qRole: "",
   qPlay: "",
   qPerson: "",
+  _cmpOpen: "",
 };
 
 function normTxt_(s){ return String(s||"").trim(); }
@@ -2172,14 +2173,16 @@ function initAssignToolOnce(){
   if(els.assignPersonA){
     els.assignPersonA.addEventListener("input", ()=>renderAssignTool());
     els.assignPersonA.addEventListener("change", ()=>renderAssignTool());
-    els.assignPersonA.addEventListener("focus", ()=>renderAssignTool());
-    els.assignPersonA.addEventListener("blur", ()=>setTimeout(()=>renderAssignTool(), 0));
+    els.assignPersonA.addEventListener("focus", ()=>{ assignState._cmpOpen="A"; renderAssignTool(); });
+    els.assignPersonA.addEventListener("click", ()=>{ assignState._cmpOpen="A"; renderAssignTool(); });
+    els.assignPersonA.addEventListener("blur", ()=>setTimeout(()=>{ assignState._cmpOpen=""; renderAssignTool(); }, 0));
   }
   if(els.assignPersonB){
     els.assignPersonB.addEventListener("input", ()=>renderAssignTool());
     els.assignPersonB.addEventListener("change", ()=>renderAssignTool());
-    els.assignPersonB.addEventListener("focus", ()=>renderAssignTool());
-    els.assignPersonB.addEventListener("blur", ()=>setTimeout(()=>renderAssignTool(), 0));
+    els.assignPersonB.addEventListener("focus", ()=>{ assignState._cmpOpen="B"; renderAssignTool(); });
+    els.assignPersonB.addEventListener("click", ()=>{ assignState._cmpOpen="B"; renderAssignTool(); });
+    els.assignPersonB.addEventListener("blur", ()=>setTimeout(()=>{ assignState._cmpOpen=""; renderAssignTool(); }, 0));
   }
 
   // Search inside multi-selects (case-insensitive)
@@ -2232,7 +2235,7 @@ function renderAssignFilter_(){
     els.assignRowCount.textContent = `Kaynak satır: ${srcCount} • Ayrıştırılmış kayıt: ${expandedCount}`;
   }
   if(els.assignFilterMeta){
-    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}` + (out.length>500?` • ilk 500 gösteriliyor`:``);
+    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}`);
   }
   if(els.assignFilterTbody){
     if(!assignState.roles.size && !assignState.plays.size && !assignState.people.size){
@@ -2274,7 +2277,7 @@ function renderCompare_(){
     const limited = list.slice(0, 60);
 
     // show when focused or when there is a query
-    const shouldShow = document.activeElement === input && (limited.length > 0);
+    const shouldShow = (assignState._cmpOpen===which || document.activeElement===input) && (limited.length > 0);
     box.hidden = !shouldShow;
     if(!shouldShow){ box.innerHTML = ""; return; }
 
@@ -2362,10 +2365,10 @@ function buildCompareTsv_(){
   const onlyB = Array.from(playsB).filter(x=>!playsA.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
   const lines = [];
   // Header includes selected person names (more human-readable in Excel)
-  lines.push(["TIP","OYUN", `${a} (Görevler)`, `${b} (Görevler)`].join("\t"));
-  for(const p of common) lines.push(["ORTAK", p, fmtRoles_(mA.get(p)), fmtRoles_(mB.get(p))].join("\t"));
-  for(const p of onlyA) lines.push(["SADECE_A", p, fmtRoles_(mA.get(p)), ""].join("\t"));
-  for(const p of onlyB) lines.push(["SADECE_B", p, "", fmtRoles_(mB.get(p))].join("\t"));
+  lines.push(["BÖLÜM","OYUN", `${a} (Görevler)`, `${b} (Görevler)`].join("\t"));
+  for(const p of common) lines.push(["ORTAK OYUN", p, fmtRoles_(mA.get(p)), fmtRoles_(mB.get(p))].join("\t"));
+  for(const p of onlyA) lines.push(["SADECE A", p, fmtRoles_(mA.get(p)), ""].join("\t"));
+  for(const p of onlyB) lines.push(["SADECE B", p, "", fmtRoles_(mB.get(p))].join("\t"));
   return lines.join("\n");
 }
 
