@@ -3,90 +3,72 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-  <title>İDT Yönetim Sistemi</title>
+  <title>İDT | Hızlı Erişim Paneli</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --idt-bordo: #7a1e2c;
-      --idt-altin: #c07a2a;
-      --bg: #f8f5f2;
-      --card: #ffffff;
-      --text: #1a1a1a;
-      --subtext: #5a5a5a;
+      --idt-bordo: #7a1e2c; --idt-altin: #c07a2a;
+      --bg: #f8f5f2; --card: #ffffff; --text: #1a1a1a; --muted: #666;
     }
-
     @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #121212; --card: #1e1e1e; --text: #f5f5f7; --subtext: #a1a1a6;
-      }
+      :root { --bg: #121212; --card: #1e1e1e; --text: #f5f5f7; --muted: #a1a1a6; }
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
 
-    /* ÜST BİLDİRİM PANELİ (Açılır Kapanır) */
-    .notif-accordion {
-      background: var(--idt-bordo); color: white;
-      margin: 0; border-bottom: 2px solid var(--idt-altin);
-    }
-    .notif-header {
-      padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-    }
-    .notif-header b { font-size: 14px; letter-spacing: 1px; }
-    .notif-content { 
-      max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; 
-      background: var(--card); color: var(--text);
-    }
-    .notif-content.open { max-height: 400px; overflow-y: auto; }
-    .notif-item { padding: 12px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; line-height: 1.4; }
+    /* Üst Bildirim Paneli (Accordion) */
+    .notif-bar { background: var(--idt-bordo); color: white; border-bottom: 2px solid var(--idt-altin); }
+    .notif-trigger { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; font-size: 13px; }
+    .notif-body { max-height: 0; overflow: hidden; transition: 0.4s ease-out; background: var(--card); color: var(--text); }
+    .notif-body.active { max-height: 300px; overflow-y: auto; }
+    .notif-item { padding: 12px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; line-height: 1.4; border-left: 3px solid var(--idt-altin); }
 
     header { padding: 30px 20px; text-align: center; }
-    header h1 { margin: 0; font-size: 1.2rem; color: var(--idt-bordo); font-weight: 800; }
+    header h1 { margin: 0; font-size: 1.2rem; color: var(--idt-bordo); font-weight: 800; letter-spacing: 1px; }
     @media (prefers-color-scheme: dark) { header h1 { color: var(--idt-altin); } }
 
-    /* ANA MENÜ BARLARI */
-    .menu-container { display: grid; gap: 12px; padding: 0 18px; }
-    .menu-bar {
-      background: var(--card); padding: 20px; border-radius: 18px;
-      display: flex; align-items: center; gap: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-left: 5px solid var(--idt-altin);
+    /* Ana Paneller (4 Büyük Bar) */
+    .panel-grid { display: grid; gap: 12px; padding: 0 18px; }
+    .bar {
+      background: var(--card); padding: 22px; border-radius: 20px;
+      display: flex; align-items: center; gap: 18px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-left: 6px solid var(--idt-altin);
       cursor: pointer; transition: 0.2s;
     }
-    .menu-bar:active { transform: scale(0.97); }
-    .menu-bar .icon { font-size: 24px; }
-    .menu-bar b { display: block; font-size: 16px; color: var(--idt-bordo); }
-    @media (prefers-color-scheme: dark) { .menu-bar b { color: var(--idt-altin); } }
-    .menu-bar span { font-size: 12px; color: var(--subtext); }
+    .bar:active { transform: scale(0.97); }
+    .bar .icon { font-size: 26px; }
+    .bar b { display: block; font-size: 17px; color: var(--idt-bordo); }
+    @media (prefers-color-scheme: dark) { .bar b { color: var(--idt-altin); } }
+    .bar span { font-size: 12px; color: var(--muted); font-weight: 500; }
 
-    /* Google Sheets'e Git Butonu */
-    .btn-sheet {
-      margin: 20px 18px; padding: 15px; border-radius: 15px;
+    /* Manuel Excel Erişimi */
+    .btn-excel {
+      margin: 20px 18px; padding: 18px; border-radius: 18px;
       background: #1d6f42; color: white; text-align: center;
-      text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px;
-      font-weight: 700; font-size: 14px; box-shadow: 0 4px 12px rgba(29,111,66,0.2);
+      text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 12px;
+      font-weight: 800; box-shadow: 0 5px 15px rgba(29,111,66,0.2);
     }
 
-    /* Tabbar */
-    .tabbar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 25px; border-top: 1px solid rgba(0,0,0,0.05); }
-    .tb { background: none; border: none; color: #888; display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; }
+    /* Alt Tabbar */
+    .tabbar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 30px; border-top: 1px solid rgba(0,0,0,0.08); z-index: 1000; }
+    .tb { background: none; border: none; color: #888; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 700; font-size: 10px; }
     .tb.active { color: var(--idt-bordo); }
     @media (prefers-color-scheme: dark) { .tb.active { color: var(--idt-altin); } }
 
-    #status { position: fixed; top: 15px; right: 15px; font-size: 9px; padding: 3px 8px; border-radius: 8px; background: #18794e; color: white; z-index: 1000; }
+    #status { position: fixed; top: 10px; right: 10px; font-size: 9px; padding: 3px 8px; border-radius: 8px; background: #18794e; color: white; z-index: 1001; }
   </style>
 </head>
 <body>
 
-  <div id="status">BAĞLANDI</div>
+  <div id="status">SİSTEM AKTİF</div>
 
-  <div class="notif-accordion">
-    <div class="notif-header" onclick="toggleNotifs()">
-      <b>🔔 SİSTEM BİLDİRİMLERİ</b>
+  <div class="notif-bar">
+    <div class="notif-trigger" onclick="toggleNotifs()">
+      <span>🔔 SON GÜNCELLEMELER</span>
       <span id="notif-arrow">▼</span>
     </div>
-    <div id="notif-panel" class="notif-content">
-      <div id="notifList">
-        <div class="notif-item">Bildirimler yükleniyor...</div>
-      </div>
+    <div id="notif-panel" class="notif-body">
+      <div id="notifList"><div class="notif-item">Veriler senkronize ediliyor...</div></div>
     </div>
   </div>
 
@@ -94,51 +76,51 @@
     <h1>İZMİR DEVLET TİYATROSU</h1>
   </header>
 
-  <div class="menu-container">
-    <div class="menu-bar" onclick="showSection('Panel')">
+  <div class="panel-grid">
+    <div class="bar" onclick="showTab('Panel')">
       <div class="icon">🎭</div>
-      <div><b>Oyun Takibi</b><span>Repertuvar kadro listesi</span></div>
+      <div class="info"><b>Oyun Takibi</b><span>Hızlı kadro ve liste erişimi</span></div>
     </div>
-    <div class="menu-bar" onclick="showSection('Analiz')">
+    
+    <div class="bar" onclick="showTab('Analiz')">
       <div class="icon">📈</div>
-      <div><b>Veri Analizi</b><span>Kategori bazlı grafikler</span></div>
+      <div class="info"><b>Kesişim Analizi</b><span>Kategori bazlı yoğunluk verileri</span></div>
     </div>
-    <div class="menu-bar" onclick="showSection('Figuran')">
+
+    <div class="bar" onclick="showTab('Figuran')">
       <div class="icon">🎟️</div>
-      <div><b>Figüran Listesi</b><span>Emekli ve figüran kadrosu</span></div>
+      <div class="info"><b>Figüran Listesi</b><span>Kişi bazlı görev dağılımı</span></div>
     </div>
+
+    <a href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit" target="_blank" class="bar" style="text-decoration:none;">
+      <div class="icon">📁</div>
+      <div class="info"><b>Google Sheets</b><span>Manuel veri kopyalama ve düzenleme</span></div>
+    </a>
   </div>
 
-  <a href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit" target="_blank" class="btn-sheet">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg" width="20" alt="Sheets">
-    GOOGLE SHEETS'TE AÇ
-  </a>
-
-  <main id="main-content" style="padding: 0 18px;">
+  <main style="padding:20px 18px;">
     <div id="list"></div>
     <canvas id="chartMain" style="display:none;"></canvas>
   </main>
 
   <nav class="tabbar">
     <button class="tb active" onclick="location.reload()"><span>🏠</span>ANA SAYFA</button>
-    <button class="tb" onclick="showSection('Panel')"><span>📋</span>LİSTE</button>
-    <button class="tb" onclick="showSection('Analiz')"><span>📊</span>GRAFİK</button>
+    <button class="tb" onclick="showTab('Panel')"><span>📋</span>LİSTE</button>
+    <button class="tb" onclick="showTab('Analiz')"><span>📊</span>ANALİZ</button>
   </nav>
 
   <script>
     function toggleNotifs() {
-      const panel = document.getElementById('notif-panel');
-      const arrow = document.getElementById('notif-arrow');
-      panel.classList.toggle('open');
-      arrow.textContent = panel.classList.contains('open') ? '▲' : '▼';
+      const p = document.getElementById('notif-panel');
+      const a = document.getElementById('notif-arrow');
+      p.classList.toggle('active');
+      a.textContent = p.classList.contains('active') ? '▲' : '▼';
     }
-
-    function showSection(name) {
-      // app.js'deki orijinal sekmeleri tetiklemek için mevcut mantığı kullanır
-      const btn = document.querySelector(`[data-tab="${name}"]`);
-      if(btn) btn.click();
+    function showTab(name) {
+      // app.js'deki sekme butonlarını tetikler
+      const target = document.querySelector(`[data-tab="${name}"]`);
+      if(target) target.click();
     }
   </script>
-
 </body>
 </html>
