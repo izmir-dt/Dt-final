@@ -1,25 +1,111 @@
-const CONFIG = {
-  SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  // Kendi yeni 'exec' linkini buraya yapıştır
-  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
-  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
-  
-  SHEET_MAIN: "BÜTÜN OYUNLAR",
-  GID: "1233566992",
-};
-
-// Veri alma fonksiyonunu manuel tetiklemek için iyileştirme
-async function fetchData() {
-  try {
-    const response = await fetch(CONFIG.API_BASE);
-    const data = await response.json();
-    if(data && data.rows) {
-       // Veriyi yerel hafızaya al ve arayüzü çiz
-       window.fullData = data.rows;
-       renderHome(); 
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+  <title>İDT | Yönetim Paneli</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --idt-bordo: #7a1e2c; --idt-altin: #c07a2a; --bg: #f8f5f2;
+      --card: #ffffff; --text: #1a1a1a; --muted: #6b7280;
     }
-  } catch (err) {
-    console.error("Veri alınamadı:", err);
-    document.getElementById('status').innerText = "HATA: VERİ ALINAMADI";
-  }
-}
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #121212; --card: #1e1e1e; --text: #f3f4f6; --muted: #9ca3af; }
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; }
+
+    /* ÜST BİLDİRİM PANELİ */
+    .notif-section { background: var(--idt-bordo); color: white; padding: 15px 20px; border-bottom: 3px solid var(--idt-altin); }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .notif-header h4 { margin: 0; font-size: 13px; letter-spacing: 1px; }
+    .notif-list { margin-top: 10px; max-height: 100px; overflow-y: auto; font-size: 12px; opacity: 0.9; display: none; }
+    .notif-list.active { display: block; }
+
+    /* ANA KONTEYNER */
+    .main-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+
+    /* DASHBOARD BARLARI */
+    .dashboard-grid { display: grid; gap: 12px; margin-bottom: 25px; }
+    .bar {
+      background: var(--card); padding: 18px; border-radius: 20px;
+      display: flex; align-items: center; gap: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-left: 6px solid var(--idt-altin);
+      text-decoration: none; color: inherit; cursor: pointer; transition: 0.2s;
+    }
+    .bar:active { transform: scale(0.97); }
+    .bar .icon { font-size: 24px; width: 40px; text-align: center; }
+    .bar b { display: block; font-size: 16px; color: var(--idt-bordo); }
+    @media (prefers-color-scheme: dark) { .bar b { color: var(--idt-altin); } }
+    .bar span { font-size: 11px; color: var(--muted); }
+
+    /* EXCEL BUTONU (ÖZEL) */
+    .btn-excel { background: #1d6f42 !important; border-left: 6px solid #107c10 !important; }
+    .btn-excel b { color: white !important; }
+    .btn-excel span { color: rgba(255,255,255,0.8) !important; }
+
+    /* PANEL (ARAMA VE LİSTE) */
+    .panel-box { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    .search-box { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid var(--bg); background: var(--bg); color: var(--text); font-size: 16px; outline: none; margin-bottom: 20px; }
+
+    .item { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .item h3 { margin: 0; font-size: 15px; }
+    .item p { margin: 5px 0 0; font-size: 12px; color: var(--muted); }
+
+    #status-badge { position: fixed; top: 12px; right: 20px; font-size: 9px; padding: 4px 10px; border-radius: 20px; background: #18794e; color: white; font-weight: 800; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+  <div id="status-badge">SİSTEM ÇEVRİMİÇİ</div>
+
+  <div class="notif-section">
+    <div class="notif-header" onclick="document.getElementById('notif-list').classList.toggle('active')">
+      <h4>🔔 SİSTEM BİLDİRİMLERİ</h4>
+      <span>▼</span>
+    </div>
+    <div id="notif-list" class="notif-list">
+      • Veriler Google Sheets üzerinden anlık olarak çekiliyor...<br>
+      • Son güncelleme: Şimdi
+    </div>
+  </div>
+
+  <div class="main-container">
+    <header style="text-align:center; margin-bottom:25px;">
+      <h2 style="color:var(--idt-bordo); margin:0; font-size: 1.2rem;">İZMİR DEVLET TİYATROSU</h2>
+    </header>
+
+    <div class="dashboard-grid">
+      <a href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit" target="_blank" class="bar btn-excel">
+        <div class="icon">📊</div>
+        <div><b>Google Sheets'e Git</b><span>Manuel kopyalama ve veri girişi yap</span></div>
+      </a>
+
+      <div class="bar" onclick="alert('Kesişim Analizi Modülü: Oyuncu çakışmaları hesaplanıyor...')">
+        <div class="icon">🧩</div>
+        <div><b>Kesişim Analizi</b><span>Kadro çakışmalarını ve yoğunluğu incele</span></div>
+      </div>
+
+      <div class="bar" onclick="alert('Figüran listesi yükleniyor...')">
+        <div class="icon">🎟️</div>
+        <div><b>Figüran & Emekli</b><span>Dış kadro ve görev dağılımı</span></div>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <h3 style="margin-top:0; font-size: 16px;">🎭 Hızlı Erişim Paneli</h3>
+      <input type="text" class="search-box" id="searchInput" placeholder="Oyun, sanatçı veya teknik personel ara...">
+      
+      <div id="list">
+        <div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">
+          Veriler yükleniyor, lütfen bekleyin...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // app.js ile entegre çalışacak tetikleyiciler buraya gelecek
+  </script>
+</body>
+</html>
