@@ -51,17 +51,14 @@ const els = {
   msRoles: el("msRoles"),
   msRolesList: el("msRolesList"),
   msRolesTxt: el("msRolesTxt"),
-  msRolesClear: el("msRolesClear"),
   msRolesBadge: el("msRolesBadge"),
   msPlays: el("msPlays"),
   msPlaysList: el("msPlaysList"),
   msPlaysTxt: el("msPlaysTxt"),
-  msPlaysClear: el("msPlaysClear"),
   msPlaysBadge: el("msPlaysBadge"),
   msPeople: el("msPeople"),
   msPeopleList: el("msPeopleList"),
   msPeopleTxt: el("msPeopleTxt"),
-  msPeopleClear: el("msPeopleClear"),
   msPeopleBadge: el("msPeopleBadge"),
   assignFilterMeta: el("assignFilterMeta"),
   assignFilterTbody: el("assignFilterTbody"),
@@ -194,6 +191,38 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme("light");
 })();
+
+/* ---------- Topnav notifications (attach dropdown to bell button) ---------- */
+(function initTopNotif(){
+  const bell = document.getElementById('topNotif');
+  const panel = document.getElementById('notifPanel');
+  if(!bell || !panel) return;
+
+  function place(){
+    const r = bell.getBoundingClientRect();
+    const top = Math.round(r.bottom + 10);
+    const right = Math.round(window.innerWidth - r.right);
+    panel.style.top = `${top}px`;
+    panel.style.right = `${right}px`;
+    panel.style.left = "auto";
+  }
+
+  let open = false;
+  function close(){
+    open = false;
+    panel.style.display = "none";
+  }
+  function toggle(){
+    open = !open;
+    if(open){ place(); panel.style.display = "block"; }
+    else close();
+  }
+
+  bell.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggle(); });
+  window.addEventListener('resize', ()=>{ if(open) place(); });
+  window.addEventListener('scroll', ()=>{ if(open) place(); }, {passive:true});
+  document.addEventListener('click', ()=>{ if(open) close(); });
+})();
 /* ---------- UI state (search/mode) ---------- */
 (function initUiState(){
   try{
@@ -238,6 +267,22 @@ function setStatus(text, tone="") {
   } else {
     els.status.style.borderColor = "var(--line)";
     els.status.style.background = "var(--card)";
+  }
+
+  // Mirror status into the new top navigation (if present)
+  const mirror = document.getElementById('statusMirror');
+  if (mirror) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const label = (tone === 'ok') ? 'Hazır' : (tone === 'bad') ? 'Hata' : (tone === 'warn') ? 'Yükleniyor' : (text || '');
+
+    // Small spinner while loading; green dot when ready
+    const icon = (tone === 'warn')
+      ? '<span class="idtSpin" aria-hidden="true"></span>'
+      : '<span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--good)"></span>';
+
+    mirror.innerHTML = `${icon}<span class="idtStatusText">${escapeHtml(label)} • ${hh}:${mm}</span>`;
   }
 }
 function escapeHtml(s) {
@@ -1469,11 +1514,8 @@ function renderDistribution(){
     return;
   }
   els.distributionBox.innerHTML = `
-    <table class="table distTable">
-            <thead>
-              <tr>
-                <th>Kişi</th>
-                <th>Oyun Sayısı</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+    <table class="table">
+      <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map(d=>`
           <tr>
@@ -1504,7 +1546,7 @@ function renderFiguran(){
   }
 
   els.figuranBox.innerHTML = `
-    <table class="table figuranTable">
+    <table class="table">
       <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
@@ -2233,17 +2275,6 @@ function renderAssignFilter_(){
   renderMsSummary_(els.msPlaysTxt, els.msPlaysBadge, assignState.plays);
   renderMsSummary_(els.msPeopleTxt, els.msPeopleBadge, assignState.people);
 
-  if(els.msRolesClear){
-    els.msRolesClear.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); assignState.roles.clear(); assignState.qRole=""; renderAssignTool(); };
-  }
-  if(els.msPlaysClear){
-    els.msPlaysClear.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); assignState.plays.clear(); assignState.qPlay=""; renderAssignTool(); };
-  }
-  if(els.msPeopleClear){
-    els.msPeopleClear.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); assignState.people.clear(); assignState.qPerson=""; renderAssignTool(); };
-  }
-
-
   const out = getAssignFilterRows_();
   const limited = out.slice(0, 500);
   const srcCount = (rawRows||[]).length;
@@ -2402,20 +2433,4 @@ function renderAssignTool(){
   else renderCompare_();
 }
 
-
-
-
-/* --- Sticky offset helper: keep panels visible under header --- */
-function _idtSetHeaderHeightVar(){
-  const header = document.querySelector("header");
-  if(!header) return;
-  const h = Math.round(header.getBoundingClientRect().height || 72);
-  document.documentElement.style.setProperty("--hdrH", h+"px");
-}
-window.addEventListener("resize", _idtSetHeaderHeightVar);
-document.addEventListener("DOMContentLoaded", ()=>{
-  _idtSetHeaderHeightVar();
-  setTimeout(_idtSetHeaderHeightVar, 250);
-  setTimeout(_idtSetHeaderHeightVar, 900);
-});
 
