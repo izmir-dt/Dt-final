@@ -1,100 +1,95 @@
-/**
- * İzmir DT - Repertuvar Takip Sistemi v2.0
- * UX/UI ve Bildirim Yönetimi
- */
-
-// 1. SELECTORS
-const els = {
-    notifTrigger: document.getElementById('notifTrigger'),
-    notifPanel: document.getElementById('notifSidePanel'),
-    closeNotif: document.getElementById('closeNotif'),
-    notifList: document.getElementById('notifList'),
-    notifBadge: document.getElementById('notifBadge'),
-    themeToggle: document.getElementById('themeToggle'),
-    tabBtns: document.querySelectorAll('.tab-btn'),
-    tableBody: document.getElementById('tableBody'),
-    tableHead: document.getElementById('tableHead'),
-    globalSearch: document.getElementById('globalSearch')
+// --- CONFIG (SENİN ORİJİNAL VERİLERİN - DEĞİŞTİRİLMEDİ) ---
+const CONFIG = {
+  SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
+  GID: "1233566992",
+  SHEET_MAIN: "BÜTÜN OYUNLAR",
+  SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
+  SHEET_NOTIFS: "BİLDİRİMLER",
+  // Google Sheet URL'si (Aç butonu için)
+  get sheetUrl() { return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/edit#gid=${this.GID}`; }
 };
 
-// 2. STATE MANAGEMENT
-let appState = {
-    currentTab: 'panel',
-    data: [],
-    notifications: [],
-    isDark: false
-};
+// --- GLOBAL STATE ---
+let RAW_DATA = [];
 
-// 3. INITIALIZATION
+// --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
-    initApp();
-});
+    // Sheet'i Aç butonunu bağla
+    document.getElementById('sheetLink').href = CONFIG.sheetUrl;
+    
+    // Veriyi çek
+    loadInitialData();
 
-function initApp() {
-    // Bildirim Paneli Aç/Kapat
-    els.notifTrigger.onclick = () => els.notifPanel.classList.toggle('open');
-    els.closeNotif.onclick = () => els.notifPanel.classList.remove('open');
-
-    // Tema Değiştirici
-    els.themeToggle.onclick = () => {
-        appState.isDark = !appState.isDark;
-        document.documentElement.setAttribute('data-theme', appState.isDark ? 'dark' : 'light');
-    };
-
-    // Tab Yönetimi
-    els.tabBtns.forEach(btn => {
-        btn.onclick = (e) => {
-            if(!btn.dataset.tab) return;
-            els.tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            appState.currentTab = btn.dataset.tab;
-            renderView();
-        };
+    // Arama motoru
+    document.getElementById('q').addEventListener('input', (e) => {
+        filterTable(e.target.value);
     });
 
-    // Arama Fonksiyonu
-    els.globalSearch.oninput = (e) => {
-        const term = e.target.value.toLowerCase();
-        filterData(term);
-    };
+    document.getElementById('refreshBtn').onclick = () => loadInitialData();
+});
 
-    // Mevcut veri çekme fonksiyonunu çağır (Bozulmayacak dediğiniz kısım)
-    if (typeof loadAllData === 'function') loadAllData();
-}
-
-// 4. UI RENDERING (Yeni Görünüm Motoru)
-function renderNotifications(notifs) {
-    els.notifList.innerHTML = '';
-    if (notifs.length > 0) {
-        els.notifBadge.style.display = 'block';
-        els.notifBadge.innerText = notifs.length;
-        
-        notifs.forEach(n => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.style.marginBottom = '0.75rem';
-            div.style.padding = '0.8rem';
-            div.style.fontSize = '0.85rem';
-            div.innerHTML = `
-                <div style="color:var(--primary); font-weight:600; margin-bottom:4px;">${n.type || 'BİLGİ'}</div>
-                <div>${n.message}</div>
-                <div style="color:var(--muted); font-size:0.7rem; margin-top:5px;">${n.time || ''}</div>
-            `;
-            els.notifList.appendChild(div);
-        });
+// --- VERİ ÇEKME ÇEKİRDEĞİ (ASLA BOZULMAYACAK) ---
+async function loadInitialData() {
+    setStatus("Veriler çekiliyor...", "info");
+    const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&gid=${CONFIG.GID}`;
+    
+    try {
+        const resp = await fetch(url);
+        const text = await resp.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        processGviz(json);
+        setStatus("Veriler güncellendi", "ok");
+    } catch (e) {
+        setStatus("Veri çekme hatası!", "err");
+        console.error(e);
     }
 }
 
-// 5. DATA BRIDGE (Mevcut veriyi yeni tabloya basar)
-function updateTableUI(headers, rows) {
-    els.tableHead.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
-    els.tableBody.innerHTML = rows.map(row => `
-        <tr>
-            ${row.map(cell => `<td>${cell}</td>`).join('')}
-        </tr>
+function processGviz(json) {
+    const rows = json.table.rows;
+    const cols = json.table.cols;
+    
+    // Tablo Başlıkları
+    const headHtml = cols.map(c => `<th>${c.label || ''}</th>`).join('');
+    document.getElementById('mainHead').innerHTML = `<tr>${headHtml}</tr>`;
+    
+    // Tablo Verisi
+    RAW_DATA = rows.map(r => r.c.map(cell => cell ? (cell.v || '') : ''));
+    renderTable(RAW_DATA);
+    
+    // KPI Güncelle
+    document.getElementById('countOyun').innerText = [...new Set(RAW_DATA.map(r => r[0]))].length;
+}
+
+// --- UI YARDIMCILARI ---
+function renderTable(data) {
+    const body = document.getElementById('mainBody');
+    body.innerHTML = data.map(row => `
+        <tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>
     `).join('');
 }
 
-// NOT: Veri çekme (fetchGviz) ve processGviz kısımları 
-// sizin mevcut kodunuzdan aynen devam edeceği için buraya eklemedim.
-// Sadece UI'yı bu fonksiyonlarla beslemeniz yeterli olacaktır.
+function filterTable(term) {
+    const filtered = RAW_DATA.filter(row => 
+        row.some(cell => String(cell).toLowerCase().includes(term.toLowerCase()))
+    );
+    renderTable(filtered);
+}
+
+function showTab(target, btn) {
+    // Tab butonlarını güncelle
+    document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Seksiyonları güncelle
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(`section-${target}`).classList.add('active');
+}
+
+function setStatus(msg, type) {
+    const s = document.getElementById('status');
+    s.innerText = msg;
+    s.className = `status-${type}`;
+    s.style.display = 'block';
+    setTimeout(() => s.style.display = 'none', 3000);
+}
