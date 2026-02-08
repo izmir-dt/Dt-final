@@ -112,7 +112,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
     .notifPanel{
       position:absolute;
       right:0;
-      top:calc(100% + 6px);
+      top:46px;
       width:min(420px, 92vw);
       background:var(--card);
       border:1px solid var(--line);
@@ -120,7 +120,6 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       box-shadow:var(--shadow);
       overflow:hidden;
       z-index:80;
-      max-height:360px; /* 3-4 bildirim görünür, kalan scroll */
     }
     .notifHd{
       padding:12px;
@@ -128,7 +127,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
-    .notifBd{max-height:300px;overflow:auto;padding:10px}
+    .notifBd{max-height:52vh;overflow:auto;padding:10px}
 
     /* Mobilde bildirim paneli viewport dışına taşmasın */
     @media (max-width: 760px){
@@ -1215,9 +1214,9 @@ body.scope-person .qScopeBox{ display:none !important; }
 #notifPanel{
   width: 420px !important;
   max-width: min(92vw, 420px) !important;
-  max-height: 360px !important;
+  max-height: 72vh !important;
 }
-#notifPanel .notifBd{ max-height: 290px !important; overflow:auto !important; }
+#notifPanel .notifBd{ max-height: calc(72vh - 64px) !important; overflow:auto !important; }
 #notifPanel .notif-bubble{ padding: 10px 12px !important; border-radius: 16px !important; }
 #notifPanel .notif-bubble .t{ font-size: 12px !important; }
 #notifPanel .notif-bubble .when{ font-size: 11px !important; }
@@ -1250,31 +1249,28 @@ select{
 .grid, .twoCol, .panelGrid{ align-items: start !important; }
 
 
-/* === Patch: Bildirim panelini butona yapışık + daha küçük === */
-.notif{ position:relative; }
-#notifPanel{
-  right:0 !important;
-  top:calc(100% - 2px) !important;   /* butona yapışık */
-  width:min(360px, calc(100vw - 20px)) !important;
-  max-height:320px !important;       /* 3-4 bildirim görünür */
-  padding:10px !important;
-}
-#notifPanel .notif-bubble{ padding:10px !important; }
-#notifPanel .notif-title{ font-size:12.5px !important; }
-#notifPanel .notif-msg{ font-size:12px !important; }
-#notifPanel .notif-who{ font-size:11.5px !important; }
-#notifPanel .notif-ts{ font-size:11.5px !important; }
+/* ===== v7.0 Görev Ataması UI ===== */
+.seg{ display:flex; background:rgba(0,0,0,.04); padding:4px; border-radius:999px; border:1px solid rgba(0,0,0,.08); }
+.segBtn{ border:none; background:transparent; padding:7px 12px; border-radius:999px; font-weight:800; font-size:12px; cursor:pointer; color:var(--muted); }
+.segBtn.active{ background:#fff; color:var(--text); box-shadow:0 6px 16px rgba(24,16,8,.10); }
+#assignRoot{ display:flex; flex-direction:column; gap:10px; }
+.asgGroup{ border:1px solid rgba(0,0,0,.08); border-radius:16px; overflow:hidden; background:#fff; }
+.asgHead{ width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:12px 12px; background:linear-gradient(180deg, rgba(122,30,44,.06), rgba(122,30,44,0)); border:none; cursor:pointer; text-align:left; }
+.asgTitle{ font-weight:900; font-size:13px; line-height:1.25; }
+.asgMeta{ font-size:12px; color:var(--muted); font-weight:800; white-space:nowrap; }
+.asgBody{ padding:10px 12px 12px; border-top:1px solid rgba(0,0,0,.06); }
+.asgPersons{ display:flex; flex-direction:column; gap:8px; }
+.asgPerson{ display:flex; justify-content:space-between; gap:10px; padding:10px 10px; border-radius:14px; background:rgba(0,0,0,.03); }
+.asgPerson b{ font-size:13px; line-height:1.2; }
+.asgPerson span{ font-size:12px; color:var(--muted); font-weight:800; white-space:nowrap; }
+.asgActions{ display:flex; justify-content:flex-end; margin-top:10px; }
 
-/* === Patch: Detay panelini her tarayıcıda sabit tut === */
-.detail-sticky{
-  position:sticky;
-  top:92px; /* üst bar + padding */
-  max-height:calc(100vh - 120px);
-  overflow:auto;
-  align-self:start;
-}
-@media (max-width: 980px){
-  .detail-sticky{ position:static; max-height:none; overflow:visible; }
+/* No ellipsis (… yok) */
+.name, .asgTitle, .notif-bubble .t, .notif-bubble .meta, .notif-bubble .when,
+.chip, .kpi .label, .idt-item .label{
+  text-overflow:clip !important;
+  overflow:visible !important;
+  white-space:normal !important;
 }
 
 </style>
@@ -1512,6 +1508,7 @@ body{
 
   <div class="nav">
     <button class="tab active" id="tabPanel">Panel</button>
+    <button class="tab" id="tabAssign" style="display:none">Görev Ataması</button>
     <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
@@ -1557,7 +1554,7 @@ body{
             <div class="list" id="list"></div>
             <div class="small" id="hint" style="margin-top:10px"></div>
           </div>
-          <div class="card detail-sticky" style="box-shadow:none">
+          <div class="card" style="box-shadow:none">
             <div class="hd">
               <h2>Detay</h2>
               <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
@@ -1575,7 +1572,31 @@ body{
     </div>
   </section>
 
-  <!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
+  
+  <!-- GÖREV ATAMASI (BÜTÜN OYUNLAR satırları üstünden, UI-only) -->
+  <section id="viewAssign" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Görev Ataması</h2>
+        <div class="filters" style="gap:10px; flex-wrap:wrap;">
+          <div class="seg" role="tablist" aria-label="Görünüm">
+            <button class="segBtn active" id="assignSegGroup" type="button">Görev setine göre</button>
+            <button class="segBtn" id="assignSegPerson" type="button">Kişiye göre</button>
+          </div>
+          <button class="btn" id="assignCopyRows">📋 Satır Dökümü (Excel)</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="input" style="margin-bottom:12px;">
+          🔎 <input id="assignQ" type="search" placeholder="Oyun, kişi veya görev ara..." autocomplete="off">
+          <button class="x" id="assignClear" type="button" aria-label="Temizle">✕</button>
+        </div>
+
+        <div id="assignRoot"></div>
+      </div>
+    </div>
+  </section>
+<!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
   <section id="viewDistribution" style="display:none">
     <div class="card">
       <div class="hd">
@@ -1655,7 +1676,7 @@ body{
           <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
         </div>
         <div class="bd">
-          <canvas id="chartMain" width="980" height="390" style="display:block;margin:0 auto;"></canvas>
+          <canvas id="chartMain" width="900" height="340"></canvas>
           <div class="mobileChartWrap">
             <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
             <div class="mobileChartList" id="chartMobileList"></div>
@@ -1860,7 +1881,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=691"></script>
+<script src="app.js?v=700"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -1893,11 +1914,6 @@ body{
       clearQ();
       setScopeValue(scopeVal);
       setBodyScope(bodyScope);
-      // Also switch the actual render mode (app.js) so menu items don't show the same list
-      try{
-        const m = (bodyScope === 'play') ? 'plays' : (bodyScope === 'rows') ? 'assign' : 'people';
-        if(window.IDT && typeof window.IDT.setMode === 'function') window.IDT.setMode(m);
-      }catch(_e){}
     }, true);
   }
 
