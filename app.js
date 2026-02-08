@@ -1350,17 +1350,17 @@ els.drawerClose.addEventListener("click", closeDrawer);
 els.drawerCopyAll.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
   const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
+  openCopyModal(drawerItemsToTSVSummary(items, els.drawerTitle.textContent), "Excel");
 });
 els.drawerCopyVisible.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
   const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVSummary(items, els.drawerTitle.textContent));
+  openCopyModal(drawerItemsToTSVSummary(items, els.drawerTitle.textContent), "Excel");
 });
 els.drawerCopyExpanded.addEventListener("click", ()=>{
   if(drawerMode !== "items" || !drawerData.length) return;
   const items = getDrawerFilteredItems();
-  copyText(drawerItemsToTSVExpanded(items, els.drawerTitle.textContent));
+  openCopyModal(drawerItemsToTSVExpanded(items, els.drawerTitle.textContent), "Excel");
 });
 els.drawerBack.addEventListener("click", ()=>{
   const prev = drawerStack.pop();
@@ -1723,7 +1723,7 @@ window.addEventListener("popstate", ()=>{
 els.copyBtn.addEventListener("click", async ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  await copyText(tsv);
+  openCopyModal(tsv, "Excel");
 });
 
 function showManualCopy(text){
@@ -1753,6 +1753,13 @@ function showManualCopy(text){
   ta.setSelectionRange(0, ta.value.length);
 }
 
+
+function openCopyModal(text, title){
+  // Use existing manual copy modal (reliable on GitHub Pages)
+  // Title is optional; we keep the UI minimal.
+  showManualCopy(text);
+  setStatus("📋 Kopyalamak için Ctrl+C (veya sağ tık > Kopyala)", "ok");
+}
 function copyText(text){
   const value = String(text ?? "");
   // 1) Synchronous execCommand first (keeps user gesture; works more reliably)
@@ -1859,7 +1866,7 @@ if(els.figDownloadAllBtn){
           .replace(/\r?\n/g, " ")
         ).join("\t")
       ).join("\n");
-    await copyText(tsv);
+    openCopyModal(tsv, "Excel");
   });
 }
 els.fClear.addEventListener("click", ()=>{ els.fq.value=""; renderFiguran(); });
@@ -2085,9 +2092,19 @@ const assignState = {
   people: new Set(),
   personA: "",
   personB: "",
+  qRole: "",
+  qPlay: "",
+  qPerson: "",
 };
 
 function normTxt_(s){ return String(s||"").trim(); }
+function foldTr_(s){
+  // case-insensitive + TR-friendly normalize (İ/ı etc.)
+  return String(s||"")
+    .toLocaleLowerCase("tr")
+    .replace(/İ/g,"i").replace(/I/g,"ı")
+    .normalize("NFD").replace(/\p{Diacritic}/gu,"");
+}
 function uniqSorted_(arr){
   const s = new Set(arr.filter(Boolean).map(x=>normTxt_(x)).filter(Boolean));
   return Array.from(s).sort((a,b)=>a.localeCompare(b,"tr"));
@@ -2101,9 +2118,11 @@ function renderMsSummary_(txtEl, badgeEl, set){
   txtEl.textContent = set.size<=2 ? sample : `${sample} +${set.size-2}`;
 }
 
-function buildMsList_(listEl, values, selectedSet, onChange){
+function buildMsList_(listEl, values, selectedSet, onChange, query){
   if(!listEl) return;
-  listEl.innerHTML = values.map(v=>{
+  const q = foldTr_(query||"");
+  const filtered = !q ? values : values.filter(v=>foldTr_(v).includes(q));
+  listEl.innerHTML = filtered.map(v=>{
     const id = `ms_${listEl.id}_${Math.random().toString(36).slice(2)}`;
     const checked = selectedSet.has(v) ? "checked" : "";
     const enc = encodeURIComponent(v);
@@ -2135,7 +2154,7 @@ function initAssignToolOnce(){
   if(els.assignFilterCopy) els.assignFilterCopy.addEventListener("click", ()=>{
     const out = getAssignFilterRows_();
     const tsv = out.map(r=>[r.play,r.category||"",r.role,r.person].join("\t")).join("\n");
-    openCopyModal(tsv, "Görev Ataması – Filtre");
+    openCopyModal(tsv, "Sorgu – Filtre");
   });
 
   if(els.assignCompareSwap) els.assignCompareSwap.addEventListener("click", ()=>{
@@ -2147,11 +2166,19 @@ function initAssignToolOnce(){
   });
   if(els.assignCompareCopy) els.assignCompareCopy.addEventListener("click", ()=>{
     const tsv = buildCompareTsv_();
-    openCopyModal(tsv, "Görev Ataması – Karşılaştır");
+    openCopyModal(tsv, "Sorgu – Karşılaştır");
   });
 
   if(els.assignPersonA) els.assignPersonA.addEventListener("change", ()=>renderAssignTool());
   if(els.assignPersonB) els.assignPersonB.addEventListener("change", ()=>renderAssignTool());
+
+  // Search inside multi-selects (case-insensitive)
+  const rS = document.getElementById("msRolesSearch");
+  const pS = document.getElementById("msPlaysSearch");
+  const kS = document.getElementById("msPeopleSearch");
+  if(rS) rS.addEventListener("input", ()=>{ assignState.qRole = rS.value || ""; renderAssignTool(); });
+  if(pS) pS.addEventListener("input", ()=>{ assignState.qPlay = pS.value || ""; renderAssignTool(); });
+  if(kS) kS.addEventListener("input", ()=>{ assignState.qPerson = kS.value || ""; renderAssignTool(); });
 }
 
 function getAllAssignValues_(){
@@ -2179,9 +2206,9 @@ function getAssignFilterRows_(){
 function renderAssignFilter_(){
   const vals = getAllAssignValues_();
 
-  buildMsList_(els.msRolesList, vals.roles, assignState.roles, ()=>renderAssignTool());
-  buildMsList_(els.msPlaysList, vals.plays, assignState.plays, ()=>renderAssignTool());
-  buildMsList_(els.msPeopleList, vals.people, assignState.people, ()=>renderAssignTool());
+  buildMsList_(els.msRolesList, vals.roles, assignState.roles, ()=>renderAssignTool(), assignState.qRole);
+  buildMsList_(els.msPlaysList, vals.plays, assignState.plays, ()=>renderAssignTool(), assignState.qPlay);
+  buildMsList_(els.msPeopleList, vals.people, assignState.people, ()=>renderAssignTool(), assignState.qPerson);
 
   renderMsSummary_(els.msRolesTxt, els.msRolesBadge, assignState.roles);
   renderMsSummary_(els.msPlaysTxt, els.msPlaysBadge, assignState.plays);
