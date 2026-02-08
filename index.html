@@ -8,6 +8,116 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
+    /* =========================
+   PRO UI PATCH v1 (SAFE)
+   - Sadece CSS/tema/layout
+   - Veri/bildirim mantığına dokunmaz
+   ========================= */
+
+/* 1) Global tipografi + kırılma düzeltmeleri */
+body{
+  font-family: Inter, Arial, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif !important;
+}
+*{
+  word-break: normal !important;
+  overflow-wrap: anywhere; /* uzun metinler taşmasın */
+}
+h1,h2,h3,.tab,.btn,.homeBar h3{
+  letter-spacing: .1px;
+}
+
+/* 2) Sayfa genişliği ve merkezleme (desktop) */
+.wrap{
+  max-width: 1240px !important;
+  margin: 0 auto !important;
+}
+
+/* 3) Üst barı incelt + düzenle */
+header{
+  padding-bottom: 10px !important;
+}
+.top{
+  gap: 12px !important;
+  padding: 10px 14px !important;
+}
+.actions{
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+}
+.nav{
+  gap: 10px !important;
+  padding: 0 14px 12px !important;
+}
+
+/* 4) KPI’ları profesyonel dashboard gibi yap */
+.kpis{
+  grid-template-columns: repeat(4, minmax(220px, 1fr)) !important;
+  align-items: stretch !important;
+}
+.kpi{
+  min-height: 96px !important;
+  padding: 16px 16px !important;
+  border-radius: 18px !important;
+}
+.kpi .value{ font-size: 22px !important; }
+.kpi .label{ font-size: 12px !important; }
+
+/* Mobil KPI */
+@media (max-width: 980px){
+  .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+}
+@media (max-width: 520px){
+  .kpis{ grid-template-columns: 1fr !important; }
+}
+
+/* 5) ANA MENÜ kartları: dar sol sütun yerine grid */
+#homeMenu{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 12px !important;
+}
+.homeBar{
+  width: 100% !important;
+  min-height: 92px;
+  padding: 18px 18px !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,.08) !important;
+}
+.homeBar h3{
+  font-size: 16px !important;
+  white-space: nowrap; /* başlık tek satır */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.homeBar p{
+  margin-top: 6px !important;
+  font-size: 12px !important;
+  color: #667085 !important;
+}
+
+/* Mobilde menü tek kolon */
+@media (max-width: 820px){
+  #homeMenu{ grid-template-columns: 1fr !important; }
+  .homeBar h3{ white-space: normal; }
+}
+
+/* 6) Resimdeki “harf harf kırılma” sorunu için güvenlik */
+.homeBar, .homeBar *{
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+/* 7) Bildirim paneli ve butonu daha profesyonel görünsün */
+#notifBtn{
+  border-radius: 14px !important;
+}
+#notifPanel{
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
 
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
