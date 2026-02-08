@@ -1351,6 +1351,38 @@ select{
 /* Segmented control no wrap */
 .seg{flex-wrap:nowrap;gap:8px;}
 .segBtn{white-space:nowrap;}
+
+.compareMidBtn{
+  align-self:end;
+  height: 38px;
+  width: 46px;
+  border-radius: 12px;
+  font-size: 18px;
+  line-height: 1;
+  display:grid;
+  place-items:center;
+  margin-bottom: 2px;
+}
+@media (max-width: 860px){
+  .compareMidBtn{ display:none; }
+}
+
+/* Tool right card should stay visible and scroll internally */
+.toolCardSticky{
+  position: sticky;
+  top: 98px;
+  align-self: start;
+  max-height: calc(100vh - 130px);
+  overflow: auto;
+}
+
+
+/* Ensure detail pane scrolls inside (sticky) */
+#detailBox .bd, .detailBox .bd{
+  max-height: calc(100vh - 180px);
+  overflow: auto;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1731,8 +1763,7 @@ body{
               </div>
               <div id="cmpSuggestA" class="cmpSuggest" hidden></div>
             </div>
-            <div class="compareMid">↔</div>
-            <div class="comparePick">
+<div class="comparePick">
               <div class="toolLabel">Kişi B</div>
               <div class="input toolInput" title="Kişi B ara">
                 🔎 <input id="assignPersonB" type="text" placeholder="Kişi B seç…" autocomplete="off" />
