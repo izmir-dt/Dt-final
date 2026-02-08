@@ -2354,7 +2354,10 @@ body{
   // 3) Görev Ataması -> dedicated Assign view (görev kombinasyonuna göre gruplu)
   if(rows) rows.addEventListener('click', function(){
     activateSidebar(rows);
-    if($('tabAssign')) clickHidden('tabAssign');
+    // Robust: force hash + call app tab switcher directly (prevents fallback to #analiz)
+    try{ location.hash = '#gorev'; }catch(_e){}
+    if(window.IDT_setActiveTab) window.IDT_setActiveTab('Assign');
+    else if($('tabAssign')) clickHidden('tabAssign');
     else clickHidden('tabDistribution'); // fallback
   });
 
