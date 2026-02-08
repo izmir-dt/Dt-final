@@ -1433,6 +1433,35 @@ body{
 })();
 </script>
 
-<script src="app.js"></script>
+
+<script>
+/* UI-only Diagnostics (mantığa dokunmaz) */
+(function(){
+  const pill = document.createElement('div');
+  pill.id = 'bootDiag';
+  pill.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:999999;background:#111;color:#fff;padding:8px 10px;border-radius:12px;font:12px/1.2 Inter,system-ui;opacity:.9';
+  pill.textContent = 'JS yükleniyor...';
+  document.addEventListener('DOMContentLoaded', ()=>document.body.appendChild(pill));
+  window.addEventListener('error', (e)=>{
+    pill.textContent = 'JS HATA: ' + (e.message || 'bilinmiyor');
+  });
+  setTimeout(()=>{
+    const list = document.getElementById('list');
+    if(list){
+      const t = (list.textContent||'').trim();
+      if(t && /yükleniyor/i.test(t)){
+        pill.textContent = 'Uyarı: Liste hâlâ "Yükleniyor..." (app.js çalışmıyor olabilir). Ctrl+F5 dene.';
+      } else {
+        pill.textContent = 'OK: UI canlı';
+        setTimeout(()=>pill.remove(), 2500);
+      }
+    } else {
+      pill.textContent = 'Uyarı: #list bulunamadı (HTML/ID uyumsuzluğu).';
+    }
+  }, 5000);
+})();
+</script>
+
+<script src="app.js?v=3"></script>
 </body>
 </html>
