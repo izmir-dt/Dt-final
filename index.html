@@ -166,14 +166,13 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       color: color-mix(in srgb, var(--text) 60%, var(--accent) 40%);
     }
 
-    /* Ellipsis istemiyoruz: metin gerekirse satır atsın */
     .pill{
       padding:8px 10px;border-radius:999px;
       border:1px solid var(--line);
       background:var(--card);
       font-size:12px;color:var(--muted);
       display:flex;gap:8px;align-items:center;
-      max-width:60vw; white-space:normal; overflow:visible; text-overflow:clip;
+      max-width:60vw; overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     }
     .btn{
       border:1px solid var(--line);
@@ -328,8 +327,7 @@ width:48px;
       border:1px solid var(--line);
       background:var(--chip);
       font-size:12px;color:var(--muted);
-      /* Ellipsis yok: metin tam görünsün */
-      max-width:none;overflow:visible;text-overflow:clip;white-space:normal;
+      max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     }
     .chip.warn{border-color:color-mix(in srgb, var(--warn) 30%, var(--line) 70%);background:color-mix(in srgb, var(--warn) 10%, var(--chip) 90%);color:color-mix(in srgb, var(--warn) 65%, var(--text) 35%)}
     .chip.good{border-color:color-mix(in srgb, var(--good) 30%, var(--line) 70%);background:color-mix(in srgb, var(--good) 10%, var(--chip) 90%);color:var(--good)}
@@ -808,8 +806,7 @@ select.q-scope{
   right:0;
   top:calc(100% + 10px);
   width:min(420px, calc(100vw - 24px));
-  /* daha kompakt: 3-4 bildirim görünür */
-  max-height:min(260px, 40vh);
+  max-height:min(320px, 46vh);
   overflow:auto;
   border:1px solid var(--line);
   border-radius:14px;
@@ -819,8 +816,6 @@ select.q-scope{
   padding:10px;
   z-index:999;
 }
-.notifItem{font-size:12px}
-.notifItem .muted{font-size:11px}
 .notifItem{
   border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
   border-radius:12px;
@@ -1254,6 +1249,34 @@ select{
 /* If the detail container is a column inside grid, ensure grid can align */
 .grid, .twoCol, .panelGrid{ align-items: start !important; }
 
+
+/* === Patch: Bildirim panelini butona yapışık + daha küçük === */
+.notif{ position:relative; }
+#notifPanel{
+  right:0 !important;
+  top:calc(100% - 2px) !important;   /* butona yapışık */
+  width:min(360px, calc(100vw - 20px)) !important;
+  max-height:320px !important;       /* 3-4 bildirim görünür */
+  padding:10px !important;
+}
+#notifPanel .notif-bubble{ padding:10px !important; }
+#notifPanel .notif-title{ font-size:12.5px !important; }
+#notifPanel .notif-msg{ font-size:12px !important; }
+#notifPanel .notif-who{ font-size:11.5px !important; }
+#notifPanel .notif-ts{ font-size:11.5px !important; }
+
+/* === Patch: Detay panelini her tarayıcıda sabit tut === */
+.detail-sticky{
+  position:sticky;
+  top:92px; /* üst bar + padding */
+  max-height:calc(100vh - 120px);
+  overflow:auto;
+  align-self:start;
+}
+@media (max-width: 980px){
+  .detail-sticky{ position:static; max-height:none; overflow:visible; }
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1534,7 +1557,7 @@ body{
             <div class="list" id="list"></div>
             <div class="small" id="hint" style="margin-top:10px"></div>
           </div>
-          <div class="card" style="box-shadow:none">
+          <div class="card detail-sticky" style="box-shadow:none">
             <div class="hd">
               <h2>Detay</h2>
               <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
@@ -2308,37 +2331,26 @@ body{
   var rows = $('sideRows');        // Görev Ataması
   var dist = $('sideDistribution'); // Oyunlara Göre Dağılım
 
-  // 1) Aktif Oyun -> Panel + mode PLAYS
+  // 1) Aktif Oyun -> Panel + scope OYUN (not Kişi)
   if(plays) plays.addEventListener('click', function(){
     activateSidebar(plays);
     clickHidden('tabPanel');
-    setTimeout(function(){
-      clearQ();
-      if(window.IDT && typeof window.IDT.setMode==='function') window.IDT.setMode('plays');
-      else setScopeLike('oyun');
-    }, 0);
+    // give UI a tick before scope change so list rerenders correctly
+    setTimeout(function(){ clearQ(); setScopeLike('oyun'); }, 0);
   });
 
-  // 2) Toplam Personel -> Panel + mode PEOPLE
+  // 2) Toplam Personel -> Panel + scope KİŞİ
   if(people) people.addEventListener('click', function(){
     activateSidebar(people);
     clickHidden('tabPanel');
-    setTimeout(function(){
-      clearQ();
-      if(window.IDT && typeof window.IDT.setMode==='function') window.IDT.setMode('people');
-      else setScopeLike('kişi');
-    }, 0);
+    setTimeout(function(){ clearQ(); setScopeLike('kişi'); }, 0);
   });
 
-  // 3) Görev Ataması -> Panel + mode ASSIGN (satır bütünlüğü kontrol ekranı)
+  // 3) Görev Ataması -> Panel + scope GÖREV (different from dağılım)
   if(rows) rows.addEventListener('click', function(){
     activateSidebar(rows);
     clickHidden('tabPanel');
-    setTimeout(function(){
-      clearQ();
-      if(window.IDT && typeof window.IDT.setMode==='function') window.IDT.setMode('assign');
-      else setScopeLike('görev');
-    }, 0);
+    setTimeout(function(){ clearQ(); setScopeLike('görev'); }, 0);
   });
 
   // 4) Oyunlara Göre Dağılım -> dedicated distribution view
