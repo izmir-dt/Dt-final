@@ -805,7 +805,7 @@ select.q-scope{
   right:0;
   top:calc(100% + 10px);
   width:min(420px, calc(100vw - 24px));
-  max-height:420px;
+  max-height:min(320px, 46vh);
   overflow:auto;
   border:1px solid var(--line);
   border-radius:14px;
@@ -976,7 +976,7 @@ header{ margin-bottom: 0 !important; }
 
 
 /* ===== Sidebar header & counts ===== */
-.idt-side-head{display:flex;align-items:center;gap:12px;margin:2px 0 16px;padding:10px 10px 14px;border-bottom:1px solid rgba(255,255,255,.12);}
+.idt-side-head{display:flex;align-items:center;gap:12px;height:70px;margin:0 0 16px;padding:0 10px;border-bottom:1px solid rgba(255,255,255,.12);}
 .idt-mini-logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;letter-spacing:.6px;box-shadow:0 12px 28px rgba(0,0,0,.35);}
 .idt-head-txt .h1{font-weight:900;letter-spacing:.2px;}
 .idt-head-txt .h2{font-size:12px;font-weight:500;opacity:.78;margin-top:2px;}
