@@ -1,126 +1,25 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-  <title>İDT | Hızlı Erişim Paneli</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --idt-bordo: #7a1e2c; --idt-altin: #c07a2a;
-      --bg: #f8f5f2; --card: #ffffff; --text: #1a1a1a; --muted: #666;
+const CONFIG = {
+  SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
+  // Kendi yeni 'exec' linkini buraya yapıştır
+  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
+  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
+  
+  SHEET_MAIN: "BÜTÜN OYUNLAR",
+  GID: "1233566992",
+};
+
+// Veri alma fonksiyonunu manuel tetiklemek için iyileştirme
+async function fetchData() {
+  try {
+    const response = await fetch(CONFIG.API_BASE);
+    const data = await response.json();
+    if(data && data.rows) {
+       // Veriyi yerel hafızaya al ve arayüzü çiz
+       window.fullData = data.rows;
+       renderHome(); 
     }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: #121212; --card: #1e1e1e; --text: #f5f5f7; --muted: #a1a1a6; }
-    }
-
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
-
-    /* Üst Bildirim Paneli (Accordion) */
-    .notif-bar { background: var(--idt-bordo); color: white; border-bottom: 2px solid var(--idt-altin); }
-    .notif-trigger { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 800; font-size: 13px; }
-    .notif-body { max-height: 0; overflow: hidden; transition: 0.4s ease-out; background: var(--card); color: var(--text); }
-    .notif-body.active { max-height: 300px; overflow-y: auto; }
-    .notif-item { padding: 12px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; line-height: 1.4; border-left: 3px solid var(--idt-altin); }
-
-    header { padding: 30px 20px; text-align: center; }
-    header h1 { margin: 0; font-size: 1.2rem; color: var(--idt-bordo); font-weight: 800; letter-spacing: 1px; }
-    @media (prefers-color-scheme: dark) { header h1 { color: var(--idt-altin); } }
-
-    /* Ana Paneller (4 Büyük Bar) */
-    .panel-grid { display: grid; gap: 12px; padding: 0 18px; }
-    .bar {
-      background: var(--card); padding: 22px; border-radius: 20px;
-      display: flex; align-items: center; gap: 18px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-left: 6px solid var(--idt-altin);
-      cursor: pointer; transition: 0.2s;
-    }
-    .bar:active { transform: scale(0.97); }
-    .bar .icon { font-size: 26px; }
-    .bar b { display: block; font-size: 17px; color: var(--idt-bordo); }
-    @media (prefers-color-scheme: dark) { .bar b { color: var(--idt-altin); } }
-    .bar span { font-size: 12px; color: var(--muted); font-weight: 500; }
-
-    /* Manuel Excel Erişimi */
-    .btn-excel {
-      margin: 20px 18px; padding: 18px; border-radius: 18px;
-      background: #1d6f42; color: white; text-align: center;
-      text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 12px;
-      font-weight: 800; box-shadow: 0 5px 15px rgba(29,111,66,0.2);
-    }
-
-    /* Alt Tabbar */
-    .tabbar { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px 0 30px; border-top: 1px solid rgba(0,0,0,0.08); z-index: 1000; }
-    .tb { background: none; border: none; color: #888; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 700; font-size: 10px; }
-    .tb.active { color: var(--idt-bordo); }
-    @media (prefers-color-scheme: dark) { .tb.active { color: var(--idt-altin); } }
-
-    #status { position: fixed; top: 10px; right: 10px; font-size: 9px; padding: 3px 8px; border-radius: 8px; background: #18794e; color: white; z-index: 1001; }
-  </style>
-</head>
-<body>
-
-  <div id="status">SİSTEM AKTİF</div>
-
-  <div class="notif-bar">
-    <div class="notif-trigger" onclick="toggleNotifs()">
-      <span>🔔 SON GÜNCELLEMELER</span>
-      <span id="notif-arrow">▼</span>
-    </div>
-    <div id="notif-panel" class="notif-body">
-      <div id="notifList"><div class="notif-item">Veriler senkronize ediliyor...</div></div>
-    </div>
-  </div>
-
-  <header>
-    <h1>İZMİR DEVLET TİYATROSU</h1>
-  </header>
-
-  <div class="panel-grid">
-    <div class="bar" onclick="showTab('Panel')">
-      <div class="icon">🎭</div>
-      <div class="info"><b>Oyun Takibi</b><span>Hızlı kadro ve liste erişimi</span></div>
-    </div>
-    
-    <div class="bar" onclick="showTab('Analiz')">
-      <div class="icon">📈</div>
-      <div class="info"><b>Kesişim Analizi</b><span>Kategori bazlı yoğunluk verileri</span></div>
-    </div>
-
-    <div class="bar" onclick="showTab('Figuran')">
-      <div class="icon">🎟️</div>
-      <div class="info"><b>Figüran Listesi</b><span>Kişi bazlı görev dağılımı</span></div>
-    </div>
-
-    <a href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit" target="_blank" class="bar" style="text-decoration:none;">
-      <div class="icon">📁</div>
-      <div class="info"><b>Google Sheets</b><span>Manuel veri kopyalama ve düzenleme</span></div>
-    </a>
-  </div>
-
-  <main style="padding:20px 18px;">
-    <div id="list"></div>
-    <canvas id="chartMain" style="display:none;"></canvas>
-  </main>
-
-  <nav class="tabbar">
-    <button class="tb active" onclick="location.reload()"><span>🏠</span>ANA SAYFA</button>
-    <button class="tb" onclick="showTab('Panel')"><span>📋</span>LİSTE</button>
-    <button class="tb" onclick="showTab('Analiz')"><span>📊</span>ANALİZ</button>
-  </nav>
-
-  <script>
-    function toggleNotifs() {
-      const p = document.getElementById('notif-panel');
-      const a = document.getElementById('notif-arrow');
-      p.classList.toggle('active');
-      a.textContent = p.classList.contains('active') ? '▲' : '▼';
-    }
-    function showTab(name) {
-      // app.js'deki sekme butonlarını tetikler
-      const target = document.querySelector(`[data-tab="${name}"]`);
-      if(target) target.click();
-    }
-  </script>
-</body>
-</html>
+  } catch (err) {
+    console.error("Veri alınamadı:", err);
+    document.getElementById('status').innerText = "HATA: VERİ ALINAMADI";
+  }
+}
