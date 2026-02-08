@@ -3,104 +3,137 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-  <title>İDT | Takip Sistemi</title>
+  <title>İDT | Yönetim Paneli</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --idt-bordo: #7a1e2c;
       --idt-altin: #c07a2a;
-      --bg: #f8f5f2;
+      --bg: #f4f1ee;
       --card: #ffffff;
       --text: #1a1a1a;
-      --shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text); line-height: 1.6; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
     
     header { 
-      background: var(--idt-bordo); color: white; 
-      padding: 30px 20px 60px; text-align: center; 
-      border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
-    }
-    header h1 { margin: 0; font-size: 1.1rem; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; }
-
-    .stats { 
-      display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
-      margin: -35px 20px 20px; 
-    }
-    .stat-card { 
-      background: var(--card); padding: 20px; border-radius: 20px; 
-      box-shadow: var(--shadow); text-align: center; border-bottom: 3px solid var(--idt-altin);
-    }
-    .stat-card b { display: block; font-size: 2rem; color: var(--idt-bordo); }
-    .stat-card span { font-size: 0.7rem; color: #666; font-weight: 700; text-transform: uppercase; }
-
-    .search-box { padding: 0 20px; margin-bottom: 20px; }
-    #searchInput { 
-      width: 100%; padding: 16px 25px; border-radius: 30px; border: 1px solid rgba(0,0,0,0.1); 
-      background: var(--card); box-shadow: var(--shadow); font-size: 16px; outline: none;
+      background: var(--idt-bordo); color: white; padding: 40px 20px; 
+      text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
     }
 
-    .list-container { padding: 0 20px 100px; }
-    .item-card { 
-      background: var(--card); margin-bottom: 12px; padding: 18px; 
-      border-radius: 18px; box-shadow: var(--shadow);
-      display: flex; justify-content: space-between; align-items: center;
-      transition: all 0.2s;
+    /* Ana Sayfa 4'lü Bar Yapısı */
+    .menu-grid {
+      display: grid; grid-template-columns: 1fr; gap: 15px; padding: 20px; margin-top: -30px;
     }
-    .item-card:active { transform: scale(0.97); }
-    .item-info h3 { margin: 0; font-size: 15px; color: var(--idt-bordo); }
-    .item-info p { margin: 4px 0 0; font-size: 13px; color: #777; }
+    .menu-bar {
+      background: var(--card); padding: 25px; border-radius: 20px;
+      display: flex; align-items: center; gap: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-left: 6px solid var(--idt-altin);
+      transition: transform 0.2s; cursor: pointer;
+    }
+    .menu-bar:active { transform: scale(0.98); }
+    .menu-bar .icon { font-size: 30px; }
+    .menu-bar .info h2 { margin: 0; font-size: 18px; color: var(--idt-bordo); }
+    .menu-bar .info p { margin: 5px 0 0; font-size: 13px; color: #666; }
 
-    .tabbar { 
-      position: fixed; bottom: 0; width: 100%; 
-      background: rgba(255,255,255,0.95); backdrop-filter: blur(15px);
-      display: flex; justify-content: space-around; 
-      padding: 12px 0 calc(env(safe-area-inset-bottom) + 12px); 
-      border-top: 1px solid #eee; z-index: 1000;
-    }
-    .tb { 
-      background: none; border: none; display: flex; flex-direction: column; 
-      align-items: center; color: #888; font-weight: 600; font-size: 10px;
-    }
-    .tb.active { color: var(--idt-bordo); }
-    .tb span.ico { font-size: 20px; margin-bottom: 4px; }
+    /* İstatistikler */
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px; }
+    .stat-mini { background: var(--idt-altin); color: white; padding: 15px; border-radius: 15px; text-align: center; }
+    .stat-mini b { display: block; font-size: 20px; }
+    .stat-mini span { font-size: 10px; font-weight: bold; }
 
-    #status { position: fixed; top: 10px; right: 10px; font-size: 10px; padding: 4px 10px; border-radius: 10px; background: #18794e; color: white; font-weight: bold; z-index: 2000; }
+    /* Bölümler (Varsayılan kapalı, JS ile açılacak) */
+    .section-content { display: none; padding: 20px; }
+    .section-content.active { display: block; }
+
+    /* Orijinal Liste ve Tabbar Uyumu */
+    #list { margin-top: 10px; }
+    .tabbar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; }
+    .tb { background: none; border: none; font-size: 12px; color: #888; display: flex; flex-direction: column; align-items: center; }
+    .tb.active { color: var(--idt-bordo); font-weight: bold; }
+    
+    #status { position: fixed; top: 10px; right: 10px; font-size: 10px; background: #18794e; color: white; padding: 3px 8px; border-radius: 5px; z-index: 1000; }
   </style>
 </head>
 <body>
 
-  <div id="status">SİSTEM BAĞLANDI</div>
+  <div id="status">BAĞLI</div>
 
   <header>
-    <h1>İzmir Devlet Tiyatrosu</h1>
+    <h1 style="font-size: 1.2rem; margin: 0;">İZMİR DEVLET TİYATROSU</h1>
+    <p style="font-size: 0.8rem; opacity: 0.8;">Repertuvar Takip Sistemi</p>
   </header>
 
-  <div class="stats">
-    <div class="stat-card" id="kpiOyun">
-      <b id="valOyun">0</b>
-      <span>AKTİF OYUN</span>
+  <div class="stats-row">
+    <div class="stat-mini"><b id="valOyun">0</b><span>AKTİF OYUN</span></div>
+    <div class="stat-mini"><b id="valFiguran">0</b><span>TOPLAM KİŞİ</span></div>
+  </div>
+
+  <div id="mainMenu" class="menu-grid">
+    <div class="menu-bar" onclick="showTab('Panel')">
+      <div class="icon">🎭</div>
+      <div class="info"><h2>Oyun Takibi</h2><p>Tüm oyunları ve kadroları incele</p></div>
     </div>
-    <div class="stat-card" id="kpiFiguran">
-      <b id="valFiguran">0</b>
-      <span>FİGÜRAN</span>
+    <div class="menu-bar" onclick="showTab('Analiz')">
+      <div class="icon">📊</div>
+      <div class="info"><h2>Veri Analizi</h2><p>Grafikler ve istatistiksel raporlar</p></div>
+    </div>
+    <div class="menu-bar" onclick="showTab('Bildirim')">
+      <div class="icon">🔔</div>
+      <div class="info"><h2>Bildirimler</h2><p>Son değişiklikler ve güncellemeler</p></div>
+    </div>
+    <div class="menu-bar" onclick="showTab('Ayarlar')">
+      <div class="icon">⚙️</div>
+      <div class="info"><h2>Sistem Ayarları</h2><p>Veri kaynağı ve uygulama yönetimi</p></div>
     </div>
   </div>
 
-  <div class="search-box">
-    <input type="search" id="searchInput" placeholder="Oyun veya kişi ismi ara...">
+  <div id="section-Panel" class="section-content">
+    <input type="text" id="searchInput" placeholder="Ara..." style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; margin-bottom:15px;">
+    <div id="list"></div>
   </div>
 
-  <main id="list" class="list-container">
-    <div style="text-align: center; color: #999; margin-top: 40px;">Veriler yükleniyor...</div>
-  </main>
+  <div id="section-Analiz" class="section-content">
+    <canvas id="chartMain" style="width:100%; height:300px;"></canvas>
+  </div>
 
-  <nav class="tabbar" id="tabbar">
-    <button class="tb active" data-tab="Panel"><span class="ico">🏠</span>PANEL</button>
-    <button class="tb" data-tab="Analiz"><span class="ico">📊</span>ANALİZ</button>
-    <button class="tb" data-tab="Bildirim"><span class="ico">🔔</span>BİLDİRİM</button>
+  <div id="section-Bildirim" class="section-content">
+    <div id="notifList"></div>
+  </div>
+
+  <div id="section-Ayarlar" class="section-content">
+    <h3>Sistem Bilgileri</h3>
+    <p>Bağlantı: Aktif</p>
+    <button onclick="location.reload()" style="width:100%; padding:15px; background:var(--idt-bordo); color:white; border:none; border-radius:10px;">Verileri Yenile</button>
+  </div>
+
+  <nav class="tabbar">
+    <button class="tb active" onclick="showTab('Home')"><span>🏠</span>Ana Sayfa</button>
+    <button class="tb" onclick="showTab('Panel')"><span>📋</span>Liste</button>
+    <button class="tb" onclick="showTab('Analiz')"><span>📈</span>Grafik</button>
+    <button class="tb" onclick="showTab('Bildirim')"><span>🔔</span>Notif</button>
   </nav>
+
+  <script>
+    // Basit Tab Yönetimi (app.js fonksiyonlarını tetikler)
+    function showTab(tabName) {
+      // Tüm bölümleri gizle
+      document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+      document.getElementById('mainMenu').style.display = 'none';
+      
+      if(tabName === 'Home') {
+        document.getElementById('mainMenu').style.display = 'grid';
+      } else {
+        const target = document.getElementById('section-' + tabName);
+        if(target) target.classList.add('active');
+      }
+
+      // Tabbar butonlarını güncelle
+      document.querySelectorAll('.tb').forEach(b => b.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+  </script>
 
 </body>
 </html>
