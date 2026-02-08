@@ -1,6 +1,6 @@
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  // SENİN VERDİĞİN ÇALIŞAN GÜNCEL LİNK
+  // SENİN GÜNCEL ÇALIŞAN LİNKİN
   API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
   NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
   
@@ -10,4 +10,4 @@ const CONFIG = {
   GID: "1233566992",
   LOG_GID: ""
 };
-// Geri kalan tüm renderList, setStatus, handleSearch fonksiyonları orijinal v3 dosyanla aynıdır.
+// Orijinal dosyadaki tüm mantık (renderList, handleSearch vb.) aynen devam eder.
