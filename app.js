@@ -61,14 +61,20 @@ const els = {
   tabIntersection: el("tabIntersection"),
   tabFiguran: el("tabFiguran"),
   tabCharts: el("tabCharts"),
-  tabAssign: el("tabAssign"),
+  tabAssignment: el("tabAssignment"),
 
   viewPanel: el("viewPanel"),
   viewDistribution: el("viewDistribution"),
   viewIntersection: el("viewIntersection"),
   viewFiguran: el("viewFiguran"),
   viewCharts: el("viewCharts"),
-  viewAssign: el("viewAssign"),
+  viewAssignment: el("viewAssignment"),
+
+  assignModeGroup: el("assignModeGroup"),
+  assignModePerson: el("assignModePerson"),
+  assignQ: el("assignQ"),
+  assignCopyRows: el("assignCopyRows"),
+  assignRoot: el("assignRoot"),
 
   q: el("q"),
   qScope: el("qScope"),
@@ -98,12 +104,6 @@ const els = {
   figuranBox: el("figuranBox"),
 
   chartTabRoles: el("chartTabRoles"),
-  assignRoot: el("assignRoot"),
-  assignQ: el("assignQ"),
-  assignClear: el("assignClear"),
-  assignSegGroup: el("assignSegGroup"),
-  assignSegPerson: el("assignSegPerson"),
-  assignCopyRows: el("assignCopyRows"),
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
@@ -1565,7 +1565,7 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabAssign","viewAssign"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabAssignment","viewAssignment"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
     el(v).style.display="none";
@@ -1574,10 +1574,13 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
 
   // URL hash (geri/ileri ve yenilemede aynı sekme)
-  const slugMap = { Panel:"panel", Assign:"atama", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
+  const slugMap = { Panel:"panel", Assignment:"atama", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
   const slug = slugMap[which] || "panel";
   if (location.hash !== "#"+slug) {
     history.replaceState(null, "", "#" + slug);
+  }
+  if(which==="Assignment" && rows.length){
+    try{ renderAssignmentView(); }catch(e){ console.error(e); }
   }
   if(which==="Charts" && rows.length){
     closeDrawer();
@@ -1587,10 +1590,10 @@ function setActiveTab(which){
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabAssign.addEventListener("click", ()=>{ setActiveTab("Assign"); try{ renderAssign(); }catch(e){ console.error(e);} });
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabAssignment.addEventListener("click", ()=>setActiveTab("Assignment"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 function tabFromHash_(){
@@ -2040,12 +2043,200 @@ try {
 
 
 
-/* ===== Görev Ataması UI listeners ===== */
-document.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    if(els.assignSegGroup) els.assignSegGroup.addEventListener("click", ()=>{ assignMode="group"; renderAssign(); });
-    if(els.assignSegPerson) els.assignSegPerson.addEventListener("click", ()=>{ assignMode="person"; renderAssign(); });
-    if(els.assignQ) els.assignQ.addEventListener("input", ()=>renderAssign());
-    if(els.assignClear) els.assignClear.addEventListener("click", ()=>{ if(els.assignQ){ els.assignQ.value=""; renderAssign(); els.assignQ.focus(); }});
-  }catch(e){ console.error(e); }
-});
+
+// ===== v7.0 Görev Ataması (UI-only aggregation; fetch/process untouched) =====
+let assignMode = "group"; // default A
+
+function buildPersonAggFromRows_Assign(rowsIn){
+  const map = new Map();
+  for(const r of rowsIn){
+    const name = (r.person||"").toString().trim();
+    const role = (r.role||"").toString().trim(); // ONLY role for set
+    if(!name) continue;
+    if(!map.has(name)){
+      map.set(name,{ name, roles:new Set(), rowCount:0, rows:[] });
+    }
+    const p = map.get(name);
+    if(role) p.roles.add(role);
+    p.rowCount++;
+    p.rows.push(r);
+  }
+  return [...map.values()].map(p=>{
+    const rolesArr = [...p.roles].sort((a,b)=>a.localeCompare(b,'tr'));
+    return { ...p, rolesArr, roleKey: (rolesArr.join(' + ')||'Görev Yok') };
+  });
+}
+
+// grouping key includes PLAY (strategic: game matters) + role set
+function groupByPlayAndRoleSet_Assign(persons){
+  const g = new Map();
+  for(const p of persons){
+    // collect plays from rows (for grouping we split by play)
+    const playMap = new Map();
+    for(const r of p.rows){
+      const play = (r.play||"").toString().trim() || "Oyun Yok";
+      if(!playMap.has(play)) playMap.set(play, []);
+      playMap.get(play).push(r);
+    }
+    for(const [play, rowsOfPlay] of playMap.entries()){
+      const key = play + " — " + p.roleKey;
+      if(!g.has(key)){
+        g.set(key,{ key, play, roleKey:p.roleKey, persons:[], totalRows:0, rows:[] });
+      }
+      const group = g.get(key);
+      group.persons.push({ name:p.name, rowCount: rowsOfPlay.length, rows: rowsOfPlay });
+      group.totalRows += rowsOfPlay.length;
+      group.rows.push(...rowsOfPlay);
+    }
+  }
+  return [...g.values()].sort((a,b)=> b.totalRows - a.totalRows);
+}
+
+function esc(s){
+  return String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
+
+function tsvRowDump_Assign(rowsIn){
+  const head = ["Oyun Adı","Kategori","Görev","Kişi"];
+  const lines = [head.join("\t")];
+  for(const r of rowsIn){
+    lines.push([
+      r.play||"",
+      r.category||"",
+      r.role||"",
+      r.person||""
+    ].map(x=>String(x??"").replace(/\t/g," ")).join("\t"));
+  }
+  return lines.join("\n");
+}
+
+function renderAssignmentGrouped(groups){
+  const q = (els.assignQ?.value||"").toLowerCase().trim();
+  const filtered = !q ? groups : groups.filter(g=>{
+    if((g.key||"").toLowerCase().includes(q)) return true;
+    return g.persons.some(p=> (p.name||"").toLowerCase().includes(q));
+  });
+
+  els.assignRoot.innerHTML = filtered.map((g,i)=>`
+    <div class="asgGroup">
+      <button class="asgHead" data-i="${i}">
+        <div style="min-width:0">
+          <div class="asgTitle">${esc(g.play)} — ${esc(g.roleKey)}</div>
+          <div style="font-size:12px;color:rgba(24,16,8,.55);margin-top:4px">${g.persons.length} kişi • ${g.totalRows} satır</div>
+        </div>
+        <div class="asgMeta">Aç/Kapat</div>
+      </button>
+      <div class="asgBody" id="asgBody${i}">
+        ${g.persons.map(p=>`
+          <div class="asgPerson">
+            <b>${esc(p.name)}</b>
+            <span>${p.rowCount} satır</span>
+          </div>
+        `).join("")}
+        <div class="asgActions">
+          <button class="btn" data-copy="${i}">📋 Satır Dökümü (Excel)</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  els.assignRoot.querySelectorAll(".asgHead").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = btn.getAttribute("data-i");
+      const body = document.getElementById("asgBody"+i);
+      if(body) body.style.display = (body.style.display==="none" || !body.style.display) ? "block" : "none";
+    });
+  });
+
+  els.assignRoot.querySelectorAll("[data-copy]").forEach(b=>{
+    b.addEventListener("click", (e)=>{
+      e.preventDefault();
+      const i = +b.getAttribute("data-copy");
+      const g = filtered[i];
+      const tsv = tsvRowDump_Assign(g.rows);
+      if(window.openManualCopyModal) window.openManualCopyModal(tsv);
+      else alert("Manuel kopyalama penceresi yok.");
+    });
+  });
+}
+
+function renderAssignmentPersons(persons){
+  const q = (els.assignQ?.value||"").toLowerCase().trim();
+  const filtered = !q ? persons : persons.filter(p=>{
+    return (p.name||"").toLowerCase().includes(q) || (p.roleKey||"").toLowerCase().includes(q);
+  });
+
+  els.assignRoot.innerHTML = filtered.map((p,i)=>`
+    <div class="asgGroup">
+      <button class="asgHead" data-i="${i}">
+        <div style="min-width:0">
+          <div class="asgTitle">${esc(p.name)}</div>
+          <div style="font-size:12px;color:rgba(24,16,8,.55);margin-top:4px">${esc(p.roleKey)} • ${p.rowCount} satır</div>
+        </div>
+        <div class="asgMeta">Aç/Kapat</div>
+      </button>
+      <div class="asgBody" id="asgBody${i}">
+        <div class="asgActions">
+          <button class="btn" data-copy-person="${i}">📋 Satır Dökümü (Excel)</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  els.assignRoot.querySelectorAll(".asgHead").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = btn.getAttribute("data-i");
+      const body = document.getElementById("asgBody"+i);
+      if(body) body.style.display = (body.style.display==="none" || !body.style.display) ? "block" : "none";
+    });
+  });
+
+  els.assignRoot.querySelectorAll("[data-copy-person]").forEach(b=>{
+    b.addEventListener("click",(e)=>{
+      e.preventDefault();
+      const i=+b.getAttribute("data-copy-person");
+      const p=filtered[i];
+      const tsv=tsvRowDump_Assign(p.rows);
+      if(window.openManualCopyModal) window.openManualCopyModal(tsv);
+      else alert("Manuel kopyalama penceresi yok.");
+    });
+  });
+}
+
+function renderAssignmentView(){
+  if(!els.assignRoot) return;
+
+  // bind toggles once
+  if(!renderAssignmentView._bound){
+    renderAssignmentView._bound = true;
+
+    els.assignModeGroup?.addEventListener("click", ()=>{
+      assignMode="group";
+      els.assignModeGroup.classList.add("active");
+      els.assignModePerson?.classList.remove("active");
+      renderAssignmentView();
+    });
+    els.assignModePerson?.addEventListener("click", ()=>{
+      assignMode="person";
+      els.assignModePerson.classList.add("active");
+      els.assignModeGroup?.classList.remove("active");
+      renderAssignmentView();
+    });
+    els.assignQ?.addEventListener("input", ()=>renderAssignmentView());
+    els.assignCopyRows?.addEventListener("click", ()=>{
+      const tsv = tsvRowDump_Assign(rows);
+      if(window.openManualCopyModal) window.openManualCopyModal(tsv);
+      else alert("Manuel kopyalama penceresi yok.");
+    });
+  }
+
+  const persons = buildPersonAggFromRows_Assign(rows);
+  if(assignMode==="group"){
+    const groups = groupByPlayAndRoleSet_Assign(persons);
+    renderAssignmentGrouped(groups);
+  } else {
+    renderAssignmentPersons(persons);
+  }
+}
+
+console.log('BUILD v7.0 loaded');
