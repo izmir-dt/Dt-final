@@ -378,11 +378,12 @@ width:48px;
       box-shadow:var(--shadow);
       overflow:hidden;
       position:sticky; top:98px;
-      height: fit-content;
+      align-self: start;
+      max-height: calc(100vh - 130px);
       min-height: 140px;
     }
     .drawer .hd{padding:12px;border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;gap:10px;align-items:center}
-    .drawer .bd{padding:12px}
+    .drawer .bd{padding:12px; max-height: calc(100vh - 200px); overflow:auto;}
     .drawer.hidden{display:none}
     .drawerTitle{font-weight:900}
     .drawerSub{color:var(--muted);font-size:12px;margin-top:2px}
@@ -1265,6 +1266,10 @@ select{
 .toolLabel{ font-weight:800; color: var(--text); font-size: 13px; padding-top: 8px; }
 .toolActions{ display:flex; gap:10px; margin-top: 12px; }
 
+/* Compare inputs should look like the rest of inputs */
+.toolInput{ min-width: unset !important; width: 100%; }
+.toolInput input{ width: 100%; }
+
 .ms{ border:1px solid rgba(0,0,0,.10); background: rgba(255,255,255,.7); border-radius: 14px; overflow: hidden; }
 .ms[open]{ box-shadow: 0 12px 28px rgba(24,16,8,.10); }
 .msSum{ list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; }
@@ -1283,7 +1288,10 @@ select{
 .compareActions{ display:flex; gap:10px; align-items:center; justify-content:flex-end; padding-bottom: 2px; }
 @media (max-width: 860px){ .compareActions{ justify-content:flex-start; } }
 
-.compareGrid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+.compareGrid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; grid-template-areas:"common onlyA onlyB"; }
+.cmpCommonCard{ grid-area: common; }
+.cmpOnlyACard{ grid-area: onlyA; }
+.cmpOnlyBCard{ grid-area: onlyB; }
 @media (max-width: 980px){ .compareGrid{ grid-template-columns: 1fr; } }
 .cmpCard{ border:1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.55); border-radius: 18px; padding: 12px; }
 .cmpTitle{ font-weight: 900; }
@@ -1300,7 +1308,7 @@ select{
 @media (max-width: 980px){ .compareTop{ grid-template-columns: 1fr; } .compareMid{ display:none; } .compareActions{ display:flex; gap:10px; } }
 .compareMid{ text-align:center; font-weight: 900; color: var(--muted); padding-bottom: 6px; }
 .compareActions{ display:flex; gap:10px; justify-content:flex-end; }
-.compareGrid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top: 14px; }
+.compareGrid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top: 14px; grid-template-areas:"common onlyA onlyB"; }
 @media (max-width: 980px){ .compareGrid{ grid-template-columns: 1fr; } }
 .cmpCard{ border:1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.60); border-radius: 18px; padding: 12px; }
 .cmpTitle{ font-weight: 900; margin-bottom: 8px; }
@@ -1699,12 +1707,16 @@ body{
           <div class="compareTop">
             <div class="comparePick">
               <div class="toolLabel">Kişi A</div>
-              <select id="assignPersonA" class="select"></select>
+              <div class="input toolInput" title="Kişi A ara">
+                🔎 <input id="assignPersonA" type="search" placeholder="Kişi A seç…" autocomplete="off" list="assignPeopleDatalist"/>
+              </div>
             </div>
             <div class="compareMid">↔</div>
             <div class="comparePick">
               <div class="toolLabel">Kişi B</div>
-              <select id="assignPersonB" class="select"></select>
+              <div class="input toolInput" title="Kişi B ara">
+                🔎 <input id="assignPersonB" type="search" placeholder="Kişi B seç…" autocomplete="off" list="assignPeopleDatalist"/>
+              </div>
             </div>
             <div class="compareActions">
               <button id="assignCompareSwap" class="btnGhost" title="Değiştir">⇄</button>
@@ -1712,16 +1724,18 @@ body{
             </div>
           </div>
 
+          <datalist id="assignPeopleDatalist"></datalist>
+
           <div class="compareGrid">
-            <div class="cmpCard">
+            <div class="cmpCard cmpCommonCard">
               <div class="cmpTitle">Ortak Oyunlar</div>
               <div id="cmpCommon" class="cmpBody"><div class="emptyHint">İki kişi seç.</div></div>
             </div>
-            <div class="cmpCard">
+            <div class="cmpCard cmpOnlyACard">
               <div class="cmpTitle">Sadece A</div>
               <div id="cmpOnlyA" class="cmpBody"><div class="emptyHint">—</div></div>
             </div>
-            <div class="cmpCard">
+            <div class="cmpCard cmpOnlyBCard">
               <div class="cmpTitle">Sadece B</div>
               <div id="cmpOnlyB" class="cmpBody"><div class="emptyHint">—</div></div>
             </div>
