@@ -1588,6 +1588,8 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
+  // Track active tab so we can safely re-render after data load
+  try{ window.__idtActiveTab = which; }catch(_e){}
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
@@ -1962,6 +1964,13 @@ async function load(isAuto=false){
     renderIntersection();
 
     renderKpis();
+
+    // If the page was opened directly on #gorev (Assign tab), the tool UI
+    // may have been rendered before rows were loaded. Re-render now with data.
+    try{
+      const active = (window.__idtActiveTab || "") === "Assign" || (el("tabAssign") && el("tabAssign").classList.contains("active"));
+      if(active){ initAssignToolOnce(); renderAssignTool(); }
+    }catch(e){ console.error(e); }
 
     // cache'e yaz
     try{
