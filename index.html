@@ -1153,6 +1153,24 @@ header > *{ display:none !important; }
 /* .hidden yine kazansın */
 #notifPanel.hidden, .hidden#notifPanel{ display:none !important; }
 
+
+/* --- Notifications drawer (UI-only, robust) --- */
+#notifPanel{
+  position: fixed !important;
+  top: 72px !important;
+  right: 16px !important;
+  width: min(420px, 92vw) !important;
+  max-height: 70vh !important;
+  overflow: auto !important;
+  z-index: 100000 !important;
+  border: 1px solid var(--idt-line) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--idt-shadow) !important;
+  background: var(--idt-card) !important;
+  color: var(--idt-text) !important;
+}
+#notifPanel.hidden, .hidden#notifPanel{ display:none !important; }
+
 </style>
 </head>
 
@@ -1189,6 +1207,10 @@ header > *{ display:none !important; }
           <span class="ic">🔔</span>
           <div><b>Bildirimler</b><small>Son değişiklikler</small></div>
         </div>
+                <div class="idt-item" id="sideReload" role="button" tabindex="0">
+          <span class="ic">⟳</span>
+          <div><b>Yenile</b><small>Verileri güncelle</small></div>
+        </div>
         <div class="idt-item" id="sideSheets" role="button" tabindex="0">
           <span class="ic">📄</span>
           <div><b>Google Sheets</b><small>Kaynağı aç</small></div>
@@ -1209,10 +1231,10 @@ header > *{ display:none !important; }
         </div>
         <div class="right">
           <button class="idt-pill" id="topReload" type="button">⟳ Yenile</button>
-          <button class="idt-pill primary" id="topNotif" type="button">
+          <button class="idt-pill primary" id="topNotif" style="display:none" type="button">
             🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span>
           </button>
-          <button class="idt-pill" id="topSheet" type="button">📄 Google Sheets</button>
+          <button class="idt-pill" id="topSheet" style="display:none" type="button">📄 Google Sheets</button>
         </div>
       </div>
 
@@ -3479,6 +3501,18 @@ document.addEventListener("DOMContentLoaded", ()=>{
   <script>
     // UI-only: yeni header butonları -> mevcut butonlara tıkla (mantık değişmez)
     (function(){
+      // UI-only: notifPanel'i header içinden çıkar (display:none sorunlarını bitir)
+      const relocateNotifPanel = ()=>{
+        const p=document.getElementById('notifPanel');
+        if(p && p.parentElement !== document.body){
+          document.body.appendChild(p);
+        }
+      };
+      relocateNotifPanel();
+      // küçük gecikme ile tekrar (bazı tarayıcılarda DOM geç hazır)
+      setTimeout(relocateNotifPanel, 50);
+      setTimeout(relocateNotifPanel, 250);
+
       const clickId = (id)=>{ const el=document.getElementById(id); if(el) el.click(); };
       const on = (id, fn)=>{
         const el=document.getElementById(id);
