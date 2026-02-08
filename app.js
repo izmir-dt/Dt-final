@@ -2042,11 +2042,3 @@ window.addEventListener('DOMContentLoaded', ()=>{
   try{ initTabbar(); }catch(e){console.error(e)}
   try{ load(false); }catch(e){console.error(e)}
 });
-
-
-
-// === MOBİL GERİ TUŞU DAVRANIŞI (UI PATCH) ===
-window.addEventListener("popstate", () => {
-  const panel = document.querySelector(".panel-detail, .drawer, .detail");
-  if (panel) panel.classList.remove("open", "active");
-});
