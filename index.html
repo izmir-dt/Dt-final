@@ -1143,6 +1143,19 @@ button, a{touch-action:manipulation;}
 .notif-item .msg{opacity:.95;line-height:1.25}
 
 </style>
+
+<!-- HOTFIX: mobil hizalama (KPI + detay tabloları) -->
+<style>
+@media (max-width: 720px){
+  /* KPI kutuları: metin/numara solda */
+  .kpi, .kpi *{ text-align: left !important; }
+  .kpi{ justify-content: flex-start !important; align-items: flex-start !important; }
+  .kpi .icon{ margin-left: auto !important; }
+
+  /* Detay tabloları: sağa yaslanmayı kapat */
+  table th, table td{ text-align: left !important; }
+}
+</style>
 </head>
 <body>
 <header>
