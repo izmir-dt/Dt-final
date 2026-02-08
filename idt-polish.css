@@ -1,0 +1,84 @@
+/* IDT v8.0 Overlay – Polish layer (non-invasive)
+   Focus: sticky right panels, internal scroll, consistent spacing & borders.
+   IMPORTANT: Does not alter data fetching or business logic.
+*/
+
+:root{
+  --idtHeaderH: 64px;            /* adjust if your header height differs */
+  --idtPanelGap: 14px;
+  --idtPanelRadius: 16px;
+}
+
+/* A11y: focus ring */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline: 2px solid rgba(122,30,44,.55);
+  outline-offset: 2px;
+}
+
+/* Standard right panel behavior: sticky + internal scroll */
+.idt-sticky-panel,
+[data-idt-sticky="1"]{
+  position: sticky;
+  top: calc(var(--idtHeaderH) + 14px);
+  max-height: calc(100vh - var(--idtHeaderH) - 28px);
+  overflow: auto;
+  border-radius: var(--idtPanelRadius);
+}
+
+/* Make panel headers stick inside their panel if marked */
+[data-idt-panel-header="1"]{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(6px);
+}
+
+/* Consistent panel borders/padding when background is light */
+.idt-panel,
+[data-idt-panel="1"]{
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--idtPanelRadius);
+}
+
+/* Table polish (only if tables exist) */
+table.idt-table,
+[data-idt-table="1"]{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+table.idt-table thead th,
+[data-idt-table="1"] thead th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(0,0,0,.10);
+}
+table.idt-table th, table.idt-table td,
+[data-idt-table="1"] th, [data-idt-table="1"] td{
+  padding: 12px 12px;
+  vertical-align: middle;
+}
+table.idt-table tbody tr:hover,
+[data-idt-table="1"] tbody tr:hover{
+  background: rgba(122,30,44,.04);
+}
+
+/* Make long lists smoother inside panels */
+.idt-scroll-smooth,
+[data-idt-scroll="1"]{
+  overscroll-behavior: contain;
+  scroll-behavior: auto;
+}
+
+/* Mobile: reduce sticky top and allow full height */
+@media (max-width: 820px){
+  :root{ --idtHeaderH: 56px; }
+  .idt-sticky-panel,
+  [data-idt-sticky="1"]{
+    top: calc(var(--idtHeaderH) + 10px);
+    max-height: calc(100vh - var(--idtHeaderH) - 20px);
+  }
+}

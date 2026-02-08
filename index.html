@@ -1383,44 +1383,6 @@ select{
   overflow: auto;
 }
 
-
-/* ===== Step7: Badges / Empty States / Micro Interactions ===== */
-.badge{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:4px 10px; border-radius:999px;
-  font-weight:700; font-size:12px; line-height:1;
-  border:1px solid rgba(0,0,0,.08);
-  background:rgba(255,255,255,.55);
-  color:var(--text);
-  white-space:nowrap;
-}
-.badge--art{ background:rgba(122,30,44,.10); border-color:rgba(122,30,44,.25); color:var(--accent); }
-.badge--fig{ background:rgba(192,122,42,.12); border-color:rgba(192,122,42,.28); color:#8a4d14; }
-.badge--tech{ background:rgba(14,116,144,.12); border-color:rgba(14,116,144,.28); color:#0b5569; }
-.badge--admin{ background:rgba(99,102,241,.12); border-color:rgba(99,102,241,.25); color:#3730a3; }
-.badge--muted{ background:rgba(90,85,96,.10); border-color:rgba(90,85,96,.20); color:var(--muted); }
-
-.emptyState{
-  border:1px dashed var(--line);
-  background:rgba(251,247,241,.55);
-  border-radius:var(--radius2);
-  padding:14px 14px;
-  color:var(--muted);
-}
-.emptyState strong{ color:var(--text); }
-
-.card, .panel, .drawer, .view, .box{
-  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-}
-.card:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(24,16,8,.12); }
-
-.btn{ transition: transform .12s ease, filter .12s ease; }
-.btn:active{ transform: translateY(1px); filter: brightness(.98); }
-
-.table tbody tr{ transition: background .12s ease; }
-.table tbody tr:hover{ background: rgba(122,30,44,.06); }
-/* ===== End Step7 ===== */
-
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1575,6 +1537,10 @@ body{
 }
 </style>
 
+
+  <link rel="stylesheet" href="idt-polish.css">
+  <script defer src="idt-performance.js"></script>
+
 </head>
 <body>
   <div class="idt-shell">
@@ -1702,8 +1668,8 @@ body{
             <div class="list" id="list"></div>
             <div class="small" id="hint" style="margin-top:10px"></div>
           </div>
-          <div class="card" style="box-shadow:none">
-            <div class="hd">
+          <div class="card idt-sticky-panel" style="box-shadow:none" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
+            <div class="hd" data-idt-panel-header="1">
               <h2>Detay</h2>
               <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
 </div>
@@ -1773,11 +1739,11 @@ body{
           </div>
         </div>
 
-        <div class="toolCard toolCardSticky">
+        <div class="toolCard toolCardSticky" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
           <div class="toolTitle">Sonuç</div>
           <div class="toolSub" id="assignFilterMeta">—</div>
           <div class="tableWrap" style="margin-top:10px">
-            <table class="tbl" id="assignFilterTable">
+            <table class="tbl" data-idt-table="1" data-idt-table="1" id="assignFilterTable">
               <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
               <tbody id="assignFilterTbody"><tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr></tbody>
             </table>
@@ -1922,8 +1888,8 @@ body{
         </div>
       </div>
 
-      <aside class="drawer hidden" id="chartDrawer">
-        <div class="hd">
+      <aside class="drawer hidden" id="chartDrawer" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
+        <div class="hd" data-idt-panel-header="1">
           <div>
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
             <div class="drawerSub" id="drawerSub">—</div>
