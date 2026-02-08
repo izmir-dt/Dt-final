@@ -92,11 +92,6 @@ const els = {
   btnPeople: el("btnPeople"),
 
   dq: el("dq"),
-  distCopyBtn: el("distCopyBtn"),
-  distModeDist: el("distModeDist"),
-  distModeAssign: el("distModeAssign"),
-  distTitle: el("distTitle"),
-  distDesc: el("distDesc"),
   dClear: el("dClear"),
   distributionBox: el("distributionBox"),
 
@@ -155,7 +150,6 @@ let activeId = null;
 let selectedItem = null;
 
 let distribution = [];
-let distMode = 'distribution'; // 'distribution' | 'assign'
 let figuran = [];
 let retiredSet = new Set();
 let activePlayFilter = null; // mobilde: oyundan kişilere geçince filtre
@@ -1438,92 +1432,8 @@ function computeDistribution(){
   out.sort((a,b)=>b.plays.length-a.plays.length || a.person.localeCompare(b.person,"tr"));
   return out;
 }
-function updateDistHeader_(){
-  if(els.distTitle){
-    els.distTitle.textContent = (distMode==="assign") ? "Görev Ataması" : "Oyunlara Göre Personel Dağılımı";
-  }
-  if(els.distDesc){
-    els.distDesc.textContent = (distMode==="assign")
-      ? "Aynı görev kombinasyonuna sahip personeli, oyun bazında gruplar. (Kaynak: BÜTÜN OYUNLAR)"
-      : "Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.";
-  }
-  if(els.distModeDist && els.distModeAssign){
-    els.distModeDist.classList.toggle("active", distMode==="distribution");
-    els.distModeAssign.classList.toggle("active", distMode==="assign");
-  }
-}
-
-function setDistMode_(mode){
-  const next = (mode==="assign") ? "assign" : "distribution";
-  if(distMode===next) return;
-  distMode = next;
-  // hash da moda göre güncellensin (geri/ileri için)
-  const slug = (distMode==="assign") ? "gorev" : "analiz";
-  if(location.hash !== "#"+slug){
-    history.replaceState(null, "", "#"+slug);
-  }
-  renderDistribution();
-}
-
-function assignToTSV_(groups){
-  const out = [["Oyun","Görev Kombinasyonu","Kişi"]];
-  for(const g of groups){
-    for(const p of g.persons){
-      out.push([g.play, g.roleSet, p]);
-    }
-  }
-  return out.map(r=>r.map(v=>String(v??"").replace(/\t/g," ").replace(/\r?\n/g," ")).join("\t")).join("\n");
-}
-
-function distributionToTSV_(filtered){
-  const out = [["Kişi","Oyun Sayısı","Oyunlar","Görevler"]];
-  filtered.forEach(d=>{
-    out.push([d.person, d.plays.length, d.plays.join(" • "), d.roles.join(", ")]);
-  });
-  return out.map(r=>r.map(v=>String(v??"").replace(/\t/g," ").replace(/\r?\n/g," ")).join("\t")).join("\n");
-}
-
 function renderDistribution(){
-  updateDistHeader_();
-
-  const q = (els.dq?.value || "").trim().toLowerCase();
-
-  // --- MODE: Görev Ataması (oyun + görev kombinasyonu) ---
-  if(distMode==="assign"){
-    const groups = buildAssignGroups_(q);
-
-    if(!groups.length){
-      els.distributionBox.innerHTML = `<div class="empty">Kayıt yok (veya filtre çok dar).</div>`;
-      return;
-    }
-
-    els.distributionBox.innerHTML = `
-      <table class="table">
-        <thead><tr><th>Oyun</th><th>Görev Kombinasyonu</th><th>Kişiler</th><th>Satır</th></tr></thead>
-        <tbody>
-          ${groups.map(g=>{
-            const people = g.persons.join(" • ");
-            return `<tr>
-              <td><b>${escapeHtml(g.play)}</b></td>
-              <td>${escapeHtml(g.roleSet)}</td>
-              <td>${escapeHtml(people)}</td>
-              <td>${g.rowCount}</td>
-            </tr>`;
-          }).join("")}
-        </tbody>
-      </table>
-      <div class="small" style="margin-top:10px">Toplam: ${groups.length} grup</div>
-    `;
-
-    // Copy button
-    if(els.distCopyBtn){
-      els.distCopyBtn.onclick = ()=>copyText(assignToTSV_(groups));
-      els.distCopyBtn.title = "Görev Ataması listesini Excel’e kopyala";
-    }
-    return;
-  }
-
-  // --- MODE: Dağılım (kişiye göre) ---
+  const q=els.dq.value.trim().toLowerCase();
   const filtered = distribution.filter(d=>{
     if(!q) return true;
     const hay=(d.person+" "+d.plays.join(" ")+" "+d.roles.join(" ")).toLowerCase();
@@ -1550,11 +1460,6 @@ function renderDistribution(){
     </table>
     <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
   `;
-
-  if(els.distCopyBtn){
-    els.distCopyBtn.onclick = ()=>copyText(distributionToTSV_(filtered));
-    els.distCopyBtn.title = "Filtreli dağılım listesini Excel’e kopyala";
-  }
 }
 
 /* ---------- figuran render ---------- */
@@ -1662,36 +1567,30 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabAssign","viewAssign"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
-    el(t).classList.remove("active");
-    el(v).style.display="none";
+    const te = el(t);
+    const ve = el(v);
+    if(te) te.classList.remove("active");
+    if(ve) ve.style.display="none";
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
 
-  // URL hash (geri/ileri ve yenilemede aynı sekme)
-  // #gorev -> Distribution içinde "assign" modu
-  if(which==="Distribution"){
-    if(window.__distModeFromHash){
-      distMode = window.__distModeFromHash;
-      window.__distModeFromHash = null;
-    }
+  // Görev Ataması sekmesi: listeyi sekme açıldığında render et
+  if(which==="Assign"){
+    try{ setTimeout(()=>{ try{ renderAssign(); }catch(e){ console.error(e); } }, 0); }catch(e){ console.error(e); }
   }
 
-  const slugMap = { Panel:"panel", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
-  let slug = slugMap[which] || "panel";
-  if(which==="Distribution"){
-    slug = (distMode==="assign") ? "gorev" : "analiz";
-  }
+  // URL hash (geri/ileri ve yenilemede aynı sekme)
+  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
+    Assign:"gorev"
+  };
+  const slug = slugMap[which] || "panel";
   if (location.hash !== "#"+slug) {
     history.replaceState(null, "", "#" + slug);
   }
-    if(which==="Distribution" && rows.length){
-    setTimeout(()=>{ try{ renderDistribution(); }catch(e){ console.error(e); } }, 0);
-  }
-
-if(which==="Charts" && rows.length){
+  if(which==="Charts" && rows.length){
     closeDrawer();
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
     setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
@@ -1699,7 +1598,7 @@ if(which==="Charts" && rows.length){
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution.addEventListener("click", ()=>{ distMode="distribution"; setActiveTab("Distribution"); renderDistribution(); });
+els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
@@ -1708,14 +1607,8 @@ els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assig
 function tabFromHash_(){
   const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
   if(h==="panel") return "Panel";
-  if(h==="gorev" || h==="görev"){
-    window.__distModeFromHash = "assign";
-    return "Distribution";
-  }
-  if(h==="analiz" || h==="analysis" || h==="distribution"){
-    window.__distModeFromHash = "distribution";
-    return "Distribution";
-  }
+  if(h==="gorev" || h==="görev" || h==="assign") return "Assign";
+  if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
   if(h==="kesisim" || h==="intersection") return "Intersection";
   if(h==="figuran" || h==="figüran") return "Figuran";
   if(h==="grafikler" || h==="charts") return "Charts";
@@ -1929,8 +1822,6 @@ els.figuranBtn && els.figuranBtn.addEventListener("click", ()=>{
   toast("Figüran listesi indiriliyor…");
 });
 
-if(els.distModeDist) els.distModeDist.addEventListener("click", ()=>setDistMode_("distribution"));
-if(els.distModeAssign) els.distModeAssign.addEventListener("click", ()=>setDistMode_("assign"));
 els.dq.addEventListener("input", renderDistribution);
 els.dClear.addEventListener("click", ()=>{ els.dq.value=""; renderDistribution(); });
 
