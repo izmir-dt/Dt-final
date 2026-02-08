@@ -1335,3 +1335,27 @@ button, a{touch-action:manipulation;}
 <script defer="" src="app.js"></script>
 </body>
 </html>
+/* Mobil: Kesişim kartları tamamen sola yaslı, wrap düzgün */
+@media (max-width: 720px){
+  .intersectionCard, .intersectionCard *{
+    text-align: left !important;
+  }
+
+  .intersectionCard{
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+
+  .intersectionCard .person,
+  .intersectionCard .meta,
+  .intersectionCard .roles{
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+
+  .intersectionCard .roles{
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+}
