@@ -1042,6 +1042,56 @@ header{ margin-bottom: 0 !important; }
 #notifPanel::-webkit-scrollbar{ width: 10px; }
 #notifPanel::-webkit-scrollbar-thumb{ background: rgba(16,24,40,.16); border-radius: 999px; }
 
+
+/* ===== Notif panel v6.2 (theme + compact) ===== */
+#notifPanel{
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 60px rgba(24,16,8,.20) !important;
+}
+#notifPanel .head{
+  background: linear-gradient(180deg, rgba(122,30,44,.10), rgba(255,255,255,.94)) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+#notifPanel .head .title{ font-weight: 900 !important; }
+#notifPanel .head .sub{ color: var(--muted) !important; }
+#notifPanel .n{
+  background:#fff !important;
+  border:1px solid var(--line) !important;
+  border-radius:16px !important;
+  padding: 12px 12px !important;
+}
+#notifPanel .n .t{ font-weight: 900 !important; }
+#notifPanel .n .meta, #notifPanel .n .when{ color: var(--muted) !important; }
+
+
+/* ===== Single-line rows + compact controls ===== */
+.card .t, .card .sub, .row .t, .row .sub,
+.item .name, .item .meta, .detail .line,
+#list .card .t, #list .card .sub{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Filter row controls */
+.filters input, .filters select, .filters button, .filters .btn{
+  height: 40px !important;
+  border-radius: 12px !important;
+}
+.filters input{ padding: 0 12px !important; }
+.filters{ align-items: center !important; }
+.filters .input{ flex: 1 1 auto !important; }
+.filters .input input{ width: 100% !important; }
+
+/* Sticky detail pane so it stays visible while scrolling */
+#detailPane{
+  position: sticky !important;
+  top: 110px !important;
+  align-self: start !important;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1417,7 +1467,7 @@ body{
       <div class="card">
         <div class="hd">
           <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><button class="btn" id="chartDownloadBtn" title="Grafiği PDF olarak indir">🧾 PDF indir</button></div>
+          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
         </div>
         <div class="bd">
           <canvas id="chartMain" width="900" height="340"></canvas>
@@ -1605,6 +1655,47 @@ body{
 })();
 </script>
 
-<script src="app.js?v=61"></script>
+<script src="app.js?v=62"></script>
+
+<script>
+/* v6.2 UI-only: Sidebar mode fixes + Excel copy in dağılım (mantığa dokunmaz) */
+(function(){
+  const setScope = (val)=>{
+    const s = document.getElementById('qScope');
+    if(!s) return;
+    // try match by option text/value
+    const opts = Array.from(s.options||[]);
+    const hit = opts.find(o => (o.value||'').toLowerCase()===val.toLowerCase() || (o.textContent||'').toLowerCase().includes(val.toLowerCase()));
+    if(hit){ s.value = hit.value; s.dispatchEvent(new Event('change', {bubbles:true})); }
+  };
+  const clearSearch = ()=>{
+    const q = document.getElementById('q');
+    if(q){ q.value=''; q.dispatchEvent(new Event('input',{bubbles:true})); }
+  };
+  const bind = (id, scope)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', ()=>{
+      // ensure panel is visible
+      const tab = document.getElementById('tabPanel'); if(tab) tab.click();
+      clearSearch();
+      setScope(scope);
+    });
+  };
+  bind('sidePlays', 'oyun');
+  bind('sidePeople', 'kişi');
+  bind('sideRows', 'görev');
+
+  // Dağılım: Excel'e kopyala button -> existing manual copy (copyBtn) uses current filtered result.
+  const dc = document.getElementById('distCopyBtn');
+  if(dc){
+    dc.addEventListener('click', ()=>{
+      const b = document.getElementById('copyBtn');
+      if(b) b.click();
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
