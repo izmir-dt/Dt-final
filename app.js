@@ -1030,13 +1030,14 @@ function drawDoughnut(canvas, items, topN, legendTitle){
 
   // öğeleri altta çok sütunlu göster
   ctx.font = "12px system-ui";
-  const items = data.slice(0, data.length);
+  // "items" is already a function parameter in drawDonut; avoid redeclaring.
+  const legendItems = data.slice(0, data.length);
   const cols = isM ? 2 : 3;
   const colW = (cssW - pad*2) / cols;
   const rowH = 18;
   let x = pad, y = legendY0 + 16;
-  for (let i=0;i<items.length;i++){
-    const d = items[i];
+  for (let i=0;i<legendItems.length;i++){
+    const d = legendItems[i];
     const col = i % cols;
     const row = Math.floor(i / cols);
     x = pad + col * colW;
