@@ -973,6 +973,42 @@ header .brand-box{ display:none !important; } /* hide "İDT PANEL | SANAT TEKNİ
 /* Keep content spacing nice after hiding nav */
 header{ margin-bottom: 0 !important; }
 
+
+/* ===== Sidebar header & counts ===== */
+.idt-side-head{display:flex;align-items:center;gap:12px;margin:2px 0 16px;padding:10px 10px 14px;border-bottom:1px solid rgba(255,255,255,.12);}
+.idt-mini-logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;letter-spacing:.6px;box-shadow:0 12px 28px rgba(0,0,0,.35);}
+.idt-head-txt .h1{font-weight:900;letter-spacing:.2px;}
+.idt-head-txt .h2{font-size:12px;font-weight:500;opacity:.78;margin-top:2px;}
+.idt-count{margin-left:auto;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);padding:4px 9px;border-radius:999px;font-weight:900;font-size:12px;color:#fff;}
+
+/* ===== Remove legacy chrome in content (we use shell header/sidebar) ===== */
+.idt-content > header{display:none !important;}     /* hides inner "IDT PANEL / butonlar" */
+.idt-content .tabs{display:none !important;}        /* hides inner tab bar */
+#kpis{display:none !important;}                     /* hides 4 KPI cards on right */
+
+/* ===== Make notification panel always visible when toggled ===== */
+#notifPanel{
+  position: fixed !important;
+  top: 78px !important;
+  right: 18px !important;
+  width: min(460px, 92vw) !important;
+  max-height: 72vh !important;
+  overflow:auto !important;
+  z-index: 99999 !important;
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--shadow) !important;
+}
+#notifPanel.hidden{ display:none !important; }
+
+/* ===== Search row layout: wider input, tighter controls ===== */
+#viewPanel .filters{gap:12px !important;}
+#viewPanel .filters .input{flex:1 1 auto !important; min-width: 340px;}
+#viewPanel .filters .input input{width:100% !important;}
+#viewPanel .filters .qScopeBox{flex:0 0 auto;}
+#viewPanel .filters .btn, #viewPanel .filters button{white-space:nowrap;}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1131,18 +1167,24 @@ body{
 <body>
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
-      <div class="idt-logo">İZMİR DT</div>
-<div class="idt-side-sub">
-  <div class="t1">İDT PANEL</div>
-  <div class="t2">Sanat Teknik Bürosu</div>
-</div>
-      <div class="idt-item active" id="sidePanel"><span>🏠</span><b>Oyun Listesi</b></div>
-<div class="idt-item" id="sideDash"><span>🧾</span><b>Panel</b></div>
-<div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
-      <div class="idt-item" id="sideCharts"><span>📊</span><b>Grafikler</b></div>
+      <div class="idt-side-head">
+        <div class="idt-mini-logo" aria-hidden="true">IDT</div>
+        <div class="idt-head-txt">
+          <div class="h1">İDT Panel</div>
+          <div class="h2">Sanat Teknik Bürosu</div>
+        </div>
+      </div>
+
+      <div class="idt-item active" id="sidePlays"><span>🎭</span><b>Aktif Oyun</b><span class="idt-count" id="sidePlaysCount">-</span></div>
+      <div class="idt-item" id="sidePeople"><span>👥</span><b>Toplam Personel</b><span class="idt-count" id="sidePeopleCount">-</span></div>
+      <div class="idt-item" id="sideRows"><span>🧾</span><b>Görev Ataması</b><span class="idt-count" id="sideRowsCount">-</span></div>
+
+      <div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
+      <div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
       <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
-      <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b></div>
+      <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
       <div class="idt-item" id="sideNotifs"><span>🔔</span><b>Bildirimler</b></div>
+
     </aside>
 
     <main class="idt-main">
@@ -1151,6 +1193,7 @@ body{
         <div class="idt-top-actions">
           <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
           <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
+          <button class="idt-pill" id="topPdf" type="button">🧾 PDF</button>
           <a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
         </div>
       </header>
@@ -1420,29 +1463,76 @@ body{
     const el=document.getElementById(id); if(el) el.classList.add('active');
   };
 
-  // sidebar -> existing tabs
-  on('sidePanel', ()=>{ activate('sidePanel'); click('tabPanel'); });
+  function clickKpiMode(mode){
+    const el = document.querySelector('.kpi[data-mode="'+mode+'"]');
+    if(el) el.click();
+    else click('tabPanel');
+  }
+
+  // --- Move notif panel to body so it can open even if legacy header is hidden
+  function ensureNotifPanel(){
+    const p = document.getElementById('notifPanel');
+    if(p && p.parentElement !== document.body){
+      document.body.appendChild(p);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', ensureNotifPanel);
+
+  function toggleNotifs(){
+    ensureNotifPanel();
+    const p = document.getElementById('notifPanel');
+    if(!p) return;
+    p.classList.toggle('hidden');
+    // open -> refresh list
+    if(!p.classList.contains('hidden')){
+      const r = document.getElementById('notifRefresh');
+      if(r) r.click();
+    }
+  }
+
+  // Sidebar
+  on('sidePlays',  ()=>{ activate('sidePlays');  clickKpiMode('plays'); });
+  on('sidePeople', ()=>{ activate('sidePeople'); clickKpiMode('people'); });
+  on('sideRows',   ()=>{ activate('sideRows');   clickKpiMode('rows'); });
+
+  on('sideDist', ()=>{ activate('sideDist'); const mi=document.getElementById('advDist'); if(mi) mi.click(); else click('tabDistribution'); });
   on('sideCharts', ()=>{ activate('sideCharts'); click('tabCharts'); });
   on('sideIntersect', ()=>{ activate('sideIntersect'); click('tabIntersection'); });
   on('sideFiguran', ()=>{ activate('sideFiguran'); click('tabFiguran'); });
+  on('sideNotifs', ()=>{ activate('sideNotifs'); toggleNotifs(); });
 
-  on('sideDash', ()=>{ activate('sideDash'); click('tabPanel'); });
-  on('sideDist', ()=>{ activate('sideDist'); const el=document.getElementById('tabDistribution')||document.getElementById('tabDistribution'); if(el) el.click(); else click('tabDistribution'); });
-
-  on('sideNotifs', ()=>{ activate('sideNotifs'); click('notifBtn'); }); // keeps existing logic
-
-  // top actions -> existing buttons
+  // Top actions
   on('topReload', ()=> click('reloadBtn'));
-  on('topNotif',  ()=> click('notifBtn'));
+  on('topNotif',  ()=> toggleNotifs());
   on('topSheet',  ()=> click('sheetBtn'));
+  on('topPdf',    ()=> { const b=document.getElementById('chartDownloadBtn'); if(b) b.click(); else alert('PDF indir sadece Grafikler ekranında aktif.'); });
 
-  // Mirror status text
+  // Mirror status text (from legacy #status pill)
   const syncStatus = ()=>{
     const s=document.getElementById('status');
     const dst=document.getElementById('statusMirror');
     if(s && dst) dst.textContent = s.textContent || '●';
   };
   setInterval(syncStatus, 500); syncStatus();
+
+  // Mirror counts into sidebar
+  const syncCounts = ()=>{
+    const plays = document.getElementById('kpiPlays');
+    const people= document.getElementById('kpiPeople');
+    const rows  = document.getElementById('kpiRows');
+    const fig   = document.getElementById('kpiFiguran');
+
+    const set = (id, el)=>{
+      const t = el ? (el.textContent||'-').trim() : '-';
+      const dst = document.getElementById(id);
+      if(dst) dst.textContent = t;
+    };
+    set('sidePlaysCount', plays);
+    set('sidePeopleCount', people);
+    set('sideRowsCount', rows);
+    set('sideFigCount', fig);
+  };
+  setInterval(syncCounts, 700); syncCounts();
 
   // Badge mirror
   const syncBadge = ()=>{
@@ -1454,8 +1544,7 @@ body{
     else{ b.style.display='none'; }
   };
   setInterval(syncBadge, 700); syncBadge();
-})();
-</script>
+})();</script>
 
 
 <script>
@@ -1486,6 +1575,6 @@ body{
 })();
 </script>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
