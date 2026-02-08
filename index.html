@@ -2016,9 +2016,27 @@ body{
     var people = byId('sidePeople');
     var rows = byId('sideRows');
 
-    if(plays) plays.addEventListener('click', function(){ goPanel(); clearSearch(); setScope('play'); });
-    if(people) people.addEventListener('click', function(){ goPanel(); clearSearch(); setScope('person'); });
-    if(rows) rows.addEventListener('click', function(){ goPanel(); clearSearch(); setScope('role'); });
+    if(plays) plays.addEventListener('click', function(){
+      goPanel();
+      clearSearch();
+      // Force Panel list to "Oyun" mode
+      var bp = byId('btnPlays'); if(bp) bp.click();
+      setScope('play');
+    });
+    if(people) people.addEventListener('click', function(){
+      goPanel();
+      clearSearch();
+      // Force Panel list to "Kişi" mode
+      var bk = byId('btnPeople'); if(bk) bk.click();
+      setScope('person');
+    });
+    if(rows) rows.addEventListener('click', function(){
+      goPanel();
+      clearSearch();
+      // Görev Ataması: keep "Kişi" list but scope search to role
+      var bk = byId('btnPeople'); if(bk) bk.click();
+      setScope('role');
+    });
   }
 
   // ---- Distribution: open MANUAL copy modal with filtered table TSV
