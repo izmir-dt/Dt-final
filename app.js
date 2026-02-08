@@ -61,12 +61,14 @@ const els = {
   tabIntersection: el("tabIntersection"),
   tabFiguran: el("tabFiguran"),
   tabCharts: el("tabCharts"),
+  tabAssign: el("tabAssign"),
 
   viewPanel: el("viewPanel"),
   viewDistribution: el("viewDistribution"),
   viewIntersection: el("viewIntersection"),
   viewFiguran: el("viewFiguran"),
   viewCharts: el("viewCharts"),
+  viewAssign: el("viewAssign"),
 
   q: el("q"),
   qScope: el("qScope"),
@@ -96,6 +98,12 @@ const els = {
   figuranBox: el("figuranBox"),
 
   chartTabRoles: el("chartTabRoles"),
+  assignRoot: el("assignRoot"),
+  assignQ: el("assignQ"),
+  assignClear: el("assignClear"),
+  assignSegGroup: el("assignSegGroup"),
+  assignSegPerson: el("assignSegPerson"),
+  assignCopyRows: el("assignCopyRows"),
   chartTabCats: el("chartTabCats"),
   chartTitle: el("chartTitle"),
   chartMain: el("chartMain"),
@@ -135,25 +143,7 @@ let ACTIVE_TAB = 'Panel';
 let plays = [];
 let people = [];
 let playsList = [];
-let activeMode = "plays"; // "plays" | "people" | "assign"
-
-// Allow the sidebar (index.html UI bridge) to switch modes deterministically.
-// Keep this tiny: do NOT touch the Sheets fetch logic.
-function setMode(mode){
-  activeMode = (mode === "people" || mode === "assign") ? mode : "plays";
-
-  // In "assign" view, we show raw assignments table; scope dropdown isn't meaningful.
-  if (els.qScope) {
-    els.qScope.style.display = (activeMode === "assign") ? "none" : "";
-  }
-
-  clearDetail();
-  renderList();
-}
-
-// Expose for index.html bridge
-window.IDT = window.IDT || {};
-window.IDT.setMode = setMode;
+let activeMode = "plays";
 let activeId = null;
 let selectedItem = null;
 
@@ -744,10 +734,6 @@ function applyFilters(list){
 
 /* ---------- UI render ---------- */
 function renderList(){
-  if(activeMode === "assign"){
-    renderAssignList();
-    return;
-  }
   const source = (activeMode==="plays") ? plays : people;
   const filtered = applyFilters(source);
 
@@ -806,62 +792,6 @@ function renderList(){
 
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
 }
-
-function renderAssignList(){
-  const q = (els.qSearch?.value || "").toLowerCase().trim();
-  // Build rows (Oyun, Kategori, Görev, Kişi) from the main sheet
-  // (we intentionally don’t touch how "rows" is fetched/parsed.)
-  let list = rows || [];
-  if(q){
-    list = list.filter(r => {
-      const hay = `${r.play||""} ${r.person||""} ${r.role||""} ${r.category||""}`.toLowerCase();
-      return hay.includes(q);
-    });
-  }
-
-  // Render a compact table (fast + scannable)
-  const html = [
-    '<div class="assign-table-wrap">',
-    '<table class="assign-table">',
-    '<thead><tr><th>Oyun</th><th>Kişi</th><th>Kategori</th><th>Görev</th></tr></thead>',
-    '<tbody>',
-    ...list.slice(0, 2000).map((r, i) => {
-      const play = escapeHtml(r.play || "-");
-      const person = escapeHtml(r.person || "-");
-      const cat = escapeHtml(r.category || "-");
-      const role = escapeHtml(r.role || "-");
-      return `<tr class="assign-row" data-idx="${i}"><td>${play}</td><td><b>${person}</b></td><td>${cat}</td><td>${role}</td></tr>`;
-    }),
-    '</tbody></table></div>'
-  ].join('');
-
-  els.list.innerHTML = html;
-
-  // Clicking a row shows the same content in the Detail panel (so it stays useful)
-  const trs = els.list.querySelectorAll('.assign-row');
-  trs.forEach(tr => {
-    tr.addEventListener('click', () => {
-      const idx = parseInt(tr.getAttribute('data-idx') || '0', 10);
-      const r = list[idx];
-      if(!r) return;
-      renderDetailBox({
-        title: r.person || '-',
-        subtitle: (r.play ? `Oyun: ${r.play}` : ''),
-        meta: [
-          r.category ? `Kategori: ${r.category}` : '',
-          r.role ? `Görev: ${r.role}` : ''
-        ].filter(Boolean).join(' • '),
-        rows: [
-          {label:'Oyun', value:r.play||'-'},
-          {label:'Kişi', value:r.person||'-'},
-          {label:'Kategori', value:r.category||'-'},
-          {label:'Görev', value:r.role||'-'}
-        ]
-      });
-    });
-  });
-}
-
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
@@ -1635,7 +1565,7 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabAssign","viewAssign"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
     el(v).style.display="none";
@@ -1644,7 +1574,7 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
 
   // URL hash (geri/ileri ve yenilemede aynı sekme)
-  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
+  const slugMap = { Panel:"panel", Assign:"atama", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler" };
   const slug = slugMap[which] || "panel";
   if (location.hash !== "#"+slug) {
     history.replaceState(null, "", "#" + slug);
@@ -1657,6 +1587,7 @@ function setActiveTab(which){
 }
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabAssign.addEventListener("click", ()=>{ setActiveTab("Assign"); try{ renderAssign(); }catch(e){ console.error(e);} });
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
@@ -2107,3 +2038,14 @@ try {
   console.warn("CONFIG override skipped:", e);
 }
 
+
+
+/* ===== Görev Ataması UI listeners ===== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    if(els.assignSegGroup) els.assignSegGroup.addEventListener("click", ()=>{ assignMode="group"; renderAssign(); });
+    if(els.assignSegPerson) els.assignSegPerson.addEventListener("click", ()=>{ assignMode="person"; renderAssign(); });
+    if(els.assignQ) els.assignQ.addEventListener("input", ()=>renderAssign());
+    if(els.assignClear) els.assignClear.addEventListener("click", ()=>{ if(els.assignQ){ els.assignQ.value=""; renderAssign(); els.assignQ.focus(); }});
+  }catch(e){ console.error(e); }
+});
