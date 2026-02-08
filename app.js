@@ -564,7 +564,11 @@ async function loadNotifications(){
   // BİLDİRİMLER sheet'i yoksa / boşsa kibarca göster
   try{
     const notifBase = CONFIG.NOTIF_API_BASE || CONFIG.API_BASE;
-    const url = `${notifBase}?sheet=${encodeURIComponent(CONFIG.SHEET_NOTIFS)}`;
+    const sheet = encodeURIComponent(CONFIG.SHEET_NOTIFS);
+    const limit = encodeURIComponent(CONFIG.NOTIF_LIMIT || 120);
+    // Cache buster: tarayıcı cache yüzünden eski cevapların kalmaması için
+    const ts = Date.now();
+    const url = `${notifBase}?sheet=${sheet}&limit=${limit}&_ts=${ts}`;
     const data = await jsonp(url);
     if(!data || data.ok !== true || !Array.isArray(data.rows)){
       els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.</div>`;
@@ -656,8 +660,11 @@ els.notifList.innerHTML = rows.map(n=>{
 
   }catch(err){
     console.error(err);
+    const msg = (err && err.message) ? err.message : String(err||"");
     els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler yüklenemedi. (API/JSONP)
-<br><span class="small muted">Not: Apps Script doGet içinde JSONP (callback) açık olmalı.</span></div>`;
+<br><span class="small muted">Not: Apps Script doGet içinde JSONP (callback) açık olmalı.</span>
+${msg ? `<br><span class="small muted">Hata: ${escapeHtml(msg)}</span>` : ""}
+</div>`;
     els.notifCount.textContent = "";
     els.notifCount.classList.add("hidden");
   }
