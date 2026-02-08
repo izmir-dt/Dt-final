@@ -1388,6 +1388,46 @@ select{
   overflow: auto;
 }
 
+
+
+
+/* ===== Step 3: Sticky right panels (Grafikler / Panel Detay / Sorgu Sonuç) ===== */
+:root{ --stickyTop: 92px; }
+@media (max-width: 860px){ :root{ --stickyTop: 76px; } }
+
+/* generic sticky pane */
+.stickyPane{
+  position: sticky;
+  top: var(--stickyTop);
+  align-self: start;
+  max-height: calc(100vh - var(--stickyTop) - 14px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.stickyPane > .bd, .stickyPane .bd{ overflow:auto; flex:1 1 auto; }
+.stickyPane footer{ flex:0 0 auto; }
+
+/* Sorgu Sonuç: tablo kısmı kendi içinde scroll (toolCardSticky mevcut) */
+.toolCardSticky{
+  position: sticky;
+  top: var(--stickyTop);
+  align-self: start;
+  max-height: calc(100vh - var(--stickyTop) - 14px);
+  overflow: hidden;
+  display:flex;
+  flex-direction: column;
+}
+.toolCardSticky .tableWrap{ flex:1 1 auto; overflow:auto; }
+
+/* Grafikler sağ drawer */
+#chartDrawer.stickyPane .hd{ flex:0 0 auto; }
+#chartDrawer.stickyPane .bd{ flex:1 1 auto; overflow:auto; }
+
+/* Panel Detay */
+#panelDetailCard.stickyPane .hd{ flex:0 0 auto; }
+#panelDetailCard.stickyPane #details{ flex:1 1 auto; overflow:auto; }
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1948,7 +1988,7 @@ body{
         </div>
       </div>
 
-      <aside class="drawer hidden" id="chartDrawer">
+      <aside class="drawer hidden stickyPane" id="chartDrawer">
         <div class="hd">
           <div>
             <div class="drawerTitle" id="drawerTitle">Seçim</div>
