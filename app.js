@@ -191,38 +191,6 @@ function applyTheme(theme){
   if(saved === "dark" || saved === "light") applyTheme(saved);
   else applyTheme("light");
 })();
-
-/* ---------- Topnav notifications (attach dropdown to bell button) ---------- */
-(function initTopNotif(){
-  const bell = document.getElementById('topNotif');
-  const panel = document.getElementById('notifPanel');
-  if(!bell || !panel) return;
-
-  function place(){
-    const r = bell.getBoundingClientRect();
-    const top = Math.round(r.bottom + 10);
-    const right = Math.round(window.innerWidth - r.right);
-    panel.style.top = `${top}px`;
-    panel.style.right = `${right}px`;
-    panel.style.left = "auto";
-  }
-
-  let open = false;
-  function close(){
-    open = false;
-    panel.style.display = "none";
-  }
-  function toggle(){
-    open = !open;
-    if(open){ place(); panel.style.display = "block"; }
-    else close();
-  }
-
-  bell.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggle(); });
-  window.addEventListener('resize', ()=>{ if(open) place(); });
-  window.addEventListener('scroll', ()=>{ if(open) place(); }, {passive:true});
-  document.addEventListener('click', ()=>{ if(open) close(); });
-})();
 /* ---------- UI state (search/mode) ---------- */
 (function initUiState(){
   try{
@@ -267,22 +235,6 @@ function setStatus(text, tone="") {
   } else {
     els.status.style.borderColor = "var(--line)";
     els.status.style.background = "var(--card)";
-  }
-
-  // Mirror status into the new top navigation (if present)
-  const mirror = document.getElementById('statusMirror');
-  if (mirror) {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    const label = (tone === 'ok') ? 'Hazır' : (tone === 'bad') ? 'Hata' : (tone === 'warn') ? 'Yükleniyor' : (text || '');
-
-    // Small spinner while loading; green dot when ready
-    const icon = (tone === 'warn')
-      ? '<span class="idtSpin" aria-hidden="true"></span>'
-      : '<span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--good)"></span>';
-
-    mirror.innerHTML = `${icon}<span class="idtStatusText">${escapeHtml(label)} • ${hh}:${mm}</span>`;
   }
 }
 function escapeHtml(s) {
