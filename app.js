@@ -1,11 +1,11 @@
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  // Sizin verdiğiniz çalışan linki buraya kopyalayın
-  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
-  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
+  // BURAYA YENİ KOPYALADIĞIN EXEC LİNKİNİ YAPIŞTIR
+  API_BASE: "BURAYA_YENI_LINKI_YAPISTIR",
+  NOTIF_API_BASE: "BURAYA_YENI_LINKI_YAPISTIR",
   
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
   SHEET_NOTIFS: "BİLDİRİMLER",
-  GID: "1233566992"
+  GID: "1233566992",
 };
