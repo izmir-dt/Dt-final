@@ -2172,10 +2172,14 @@ function initAssignToolOnce(){
   if(els.assignPersonA){
     els.assignPersonA.addEventListener("input", ()=>renderAssignTool());
     els.assignPersonA.addEventListener("change", ()=>renderAssignTool());
+    els.assignPersonA.addEventListener("focus", ()=>renderAssignTool());
+    els.assignPersonA.addEventListener("blur", ()=>setTimeout(()=>renderAssignTool(), 0));
   }
   if(els.assignPersonB){
     els.assignPersonB.addEventListener("input", ()=>renderAssignTool());
     els.assignPersonB.addEventListener("change", ()=>renderAssignTool());
+    els.assignPersonB.addEventListener("focus", ()=>renderAssignTool());
+    els.assignPersonB.addEventListener("blur", ()=>setTimeout(()=>renderAssignTool(), 0));
   }
 
   // Search inside multi-selects (case-insensitive)
@@ -2228,7 +2232,7 @@ function renderAssignFilter_(){
     els.assignRowCount.textContent = `Kaynak satır: ${srcCount} • Ayrıştırılmış kayıt: ${expandedCount}`;
   }
   if(els.assignFilterMeta){
-    els.assignFilterMeta.textContent = `Sonuç: ${out.length} satır` + (out.length>500?` • ilk 500 gösteriliyor`:``);
+    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}` + (out.length>500?` • ilk 500 gösteriliyor`:``);
   }
   if(els.assignFilterTbody){
     if(!assignState.roles.size && !assignState.plays.size && !assignState.people.size){
@@ -2259,11 +2263,38 @@ function fmtRoles_(set){
 
 function renderCompare_(){
   const vals = getAllAssignValues_();
-  // Build datalist once-ish (searchable input)
-  const dl = document.getElementById("assignPeopleDatalist");
-  if(dl && dl.childElementCount===0){
-    dl.innerHTML = vals.people.map(p=>`<option value="${escapeHtml(p)}"></option>`).join("");
-  }
+  // Custom suggestion dropdowns (click-to-select)
+  const renderSuggest = (which)=>{
+    const input = which === "A" ? els.assignPersonA : els.assignPersonB;
+    const box = document.getElementById(which === "A" ? "cmpSuggestA" : "cmpSuggestB");
+    if(!input || !box) return;
+
+    const q = foldTr_(input.value || "");
+    const list = !q ? vals.people : vals.people.filter(p=>foldTr_(p).includes(q));
+    const limited = list.slice(0, 60);
+
+    // show when focused or when there is a query
+    const shouldShow = document.activeElement === input && (limited.length > 0);
+    box.hidden = !shouldShow;
+    if(!shouldShow){ box.innerHTML = ""; return; }
+
+    box.innerHTML = limited.map(p=>`<div class="cmpOpt" data-v="${encodeURIComponent(p)}">${escapeHtml(p)}</div>`).join("")
+      || `<div class="cmpOpt" style="opacity:.7">Sonuç yok</div>`;
+
+    box.querySelectorAll(".cmpOpt[data-v]").forEach(el=>{
+      el.addEventListener("mousedown", (e)=>{
+        // mousedown so blur doesn't close before we select
+        e.preventDefault();
+        const val = decodeURIComponent(el.getAttribute("data-v")||"");
+        input.value = val;
+        box.hidden = true;
+        renderAssignTool();
+      });
+    });
+  };
+
+  renderSuggest("A");
+  renderSuggest("B");
 
   const resolve = (v)=>{
     const t = (v||"").toString().trim();
@@ -2330,7 +2361,8 @@ function buildCompareTsv_(){
   const onlyA = Array.from(playsA).filter(x=>!playsB.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
   const onlyB = Array.from(playsB).filter(x=>!playsA.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
   const lines = [];
-  lines.push(["TIP","OYUN","A_GOREVLER","B_GOREVLER"].join("\t"));
+  // Header includes selected person names (more human-readable in Excel)
+  lines.push(["TIP","OYUN", `${a} (Görevler)`, `${b} (Görevler)`].join("\t"));
   for(const p of common) lines.push(["ORTAK", p, fmtRoles_(mA.get(p)), fmtRoles_(mB.get(p))].join("\t"));
   for(const p of onlyA) lines.push(["SADECE_A", p, fmtRoles_(mA.get(p)), ""].join("\t"));
   for(const p of onlyB) lines.push(["SADECE_B", p, "", fmtRoles_(mB.get(p))].join("\t"));
