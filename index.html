@@ -1248,6 +1248,67 @@ select{
 /* If the detail container is a column inside grid, ensure grid can align */
 .grid, .twoCol, .panelGrid{ align-items: start !important; }
 
+/* ===== Görev Ataması (Araçlar) - estetik segmented + tool layout ===== */
+.seg{ display:inline-flex; padding:4px; gap:4px; background:rgba(0,0,0,.04); border:1px solid rgba(0,0,0,.06); border-radius:999px; }
+.segBtn{ border:0; background:transparent; padding:9px 12px; border-radius:999px; font-weight:800; cursor:pointer; color:var(--muted); transition:transform .08s ease, background .12s ease, color .12s ease; }
+.segBtn:hover{ transform: translateY(-1px); }
+.segBtn.active{ background: var(--accent); color:#fff; box-shadow: 0 8px 18px rgba(122,30,44,.20); }
+
+.assignPane{ margin-top: 10px; }
+.toolGrid{ display:grid; grid-template-columns: .95fr 1.05fr; gap:12px; }
+@media (max-width: 980px){ .toolGrid{ grid-template-columns: 1fr; } }
+.toolCard{ border:1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.55); border-radius: 18px; padding: 14px; box-shadow: 0 10px 28px rgba(24,16,8,.08); }
+.toolTitle{ font-weight: 900; font-size: 16px; }
+.toolSub{ margin-top:4px; color: var(--muted); font-size: 12.5px; }
+.toolRow{ display:grid; grid-template-columns: 110px 1fr; gap:10px; align-items: start; margin-top: 12px; }
+@media (max-width: 560px){ .toolRow{ grid-template-columns: 1fr; } }
+.toolLabel{ font-weight:800; color: var(--text); font-size: 13px; padding-top: 8px; }
+.toolActions{ display:flex; gap:10px; margin-top: 12px; }
+
+.ms{ border:1px solid rgba(0,0,0,.10); background: rgba(255,255,255,.7); border-radius: 14px; overflow: hidden; }
+.ms[open]{ box-shadow: 0 12px 28px rgba(24,16,8,.10); }
+.msSum{ list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; }
+.msSum::-webkit-details-marker{ display:none; }
+.msTxt{ color: var(--muted); font-weight:700; }
+.msBadge{ min-width: 26px; height: 22px; display:inline-flex; align-items:center; justify-content:center; border-radius: 999px; background: rgba(122,30,44,.12); color: var(--accent); font-weight:900; font-size: 12px; padding: 0 8px; }
+.msPanel{ padding: 10px 12px; border-top:1px solid rgba(0,0,0,.08); max-height: 260px; overflow:auto; }
+.msList{ display:grid; gap:8px; }
+.msItem{ display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid rgba(0,0,0,.06); border-radius: 14px; background: rgba(255,255,255,.75); cursor:pointer; }
+.msItem:hover{ border-color: rgba(122,30,44,.22); }
+.msItem input{ width: 16px; height: 16px; accent-color: var(--accent); }
+
+.compareTop{ display:grid; grid-template-columns: 1fr auto 1fr auto; gap:10px; align-items:end; margin-top: 10px; }
+@media (max-width: 860px){ .compareTop{ grid-template-columns: 1fr; } .compareMid{ display:none; } }
+.compareMid{ padding-bottom: 12px; font-size: 18px; opacity:.7; }
+.compareActions{ display:flex; gap:10px; align-items:center; justify-content:flex-end; padding-bottom: 2px; }
+@media (max-width: 860px){ .compareActions{ justify-content:flex-start; } }
+
+.compareGrid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 980px){ .compareGrid{ grid-template-columns: 1fr; } }
+.cmpCard{ border:1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.55); border-radius: 18px; padding: 12px; }
+.cmpTitle{ font-weight: 900; }
+.cmpBody{ margin-top: 8px; display:grid; gap:8px; }
+.cmpRow{ border:1px solid rgba(0,0,0,.06); border-radius: 16px; padding: 10px 12px; background: rgba(255,255,255,.75); }
+.cmpPlay{ margin-bottom: 6px; }
+.cmpRoles{ color: var(--text); font-size: 13px; }
+.msItem{ display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border-radius:12px; border:1px solid rgba(0,0,0,.06); background: rgba(255,255,255,.6); }
+.msItem:hover{ border-color: rgba(122,30,44,.20); }
+.msItem input{ margin-top: 3px; }
+.msItem b{ font-weight: 800; }
+
+.compareTop{ display:grid; grid-template-columns: 1fr 40px 1fr auto; gap:10px; align-items:end; margin-top: 12px; }
+@media (max-width: 980px){ .compareTop{ grid-template-columns: 1fr; } .compareMid{ display:none; } .compareActions{ display:flex; gap:10px; } }
+.compareMid{ text-align:center; font-weight: 900; color: var(--muted); padding-bottom: 6px; }
+.compareActions{ display:flex; gap:10px; justify-content:flex-end; }
+.compareGrid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-top: 14px; }
+@media (max-width: 980px){ .compareGrid{ grid-template-columns: 1fr; } }
+.cmpCard{ border:1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.60); border-radius: 18px; padding: 12px; }
+.cmpTitle{ font-weight: 900; margin-bottom: 8px; }
+.cmpBody{ display:grid; gap:8px; }
+.cmpLine{ padding:10px 10px; border-radius:14px; border:1px solid rgba(0,0,0,.06); background: rgba(255,255,255,.65); }
+.cmpLine .p{ font-weight: 900; }
+.cmpLine .r{ margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1552,32 +1613,102 @@ body{
     <div class="secHead">
       <div>
         <h2 class="h2">Görev Ataması</h2>
-        <div class="muted small">Aynı görev setine sahip personeli, oyun bazında gruplar. (Kaynak: BÜTÜN OYUNLAR)</div>
+        <div class="muted small">Atama / sorgulama / karşılaştırma aracı. (Kaynak: <b>BÜTÜN OYUNLAR</b>)</div>
       </div>
       <div class="toolbar">
-        <div class="searchWrap">
-          <span class="sIco">🔎</span>
-          <input id="assignSearch" class="searchInput" placeholder="Oyun / kişi / görev ara..." />
-          <button id="assignClear" class="btnGhost" title="Temizle">✕</button>
+        <div class="seg" role="tablist" aria-label="Görev Ataması Modu">
+          <button id="assignModeFilter" class="segBtn active" role="tab" aria-selected="true">🔍 Filtrele & Listele</button>
+          <button id="assignModeCompare" class="segBtn" role="tab" aria-selected="false">🔄 Karşılaştır</button>
         </div>
-        <button id="assignCopy" class="btnSoft">📋 Excel’e Kopyala</button>
       </div>
     </div>
 
-    <div class="panelGrid">
-      <div class="panelLeft">
-        <div class="panelTitle">Gruplar</div>
-        <div id="assignList" class="listBox"></div>
-      </div>
+    <!-- MODE: FILTER & LIST -->
+    <div id="assignPaneFilter" class="assignPane">
+      <div class="toolGrid">
+        <div class="toolCard">
+          <div class="toolTitle">Filtreler</div>
+          <div class="toolSub">Birden fazla seçim yapabilirsin. Seçim yaptıkça tablo anında güncellenir.</div>
 
-      <div class="panelRight">
-        <div id="assignDetail" class="detailBox stickyDetail">
-          <div class="detailHead">
-            <div class="detailTitle">Detay</div>
-            <button id="assignDetailCopy" class="btnSoft">📋 Kopyala (Excel)</button>
+          <div class="toolRow">
+            <div class="toolLabel">Görevler</div>
+            <details class="ms" id="msRoles">
+              <summary class="msSum"><span class="msTxt" id="msRolesTxt">Seç…</span><span class="msBadge" id="msRolesBadge">0</span></summary>
+              <div class="msPanel"><div class="msList" id="msRolesList"></div></div>
+            </details>
           </div>
-          <div id="assignDetailBody" class="detailBody">
-            <div class="emptyHint">Soldan bir grup seç.</div>
+
+          <div class="toolRow">
+            <div class="toolLabel">Oyunlar</div>
+            <details class="ms" id="msPlays">
+              <summary class="msSum"><span class="msTxt" id="msPlaysTxt">Seç…</span><span class="msBadge" id="msPlaysBadge">0</span></summary>
+              <div class="msPanel"><div class="msList" id="msPlaysList"></div></div>
+            </details>
+          </div>
+
+          <div class="toolRow">
+            <div class="toolLabel">Kişiler</div>
+            <details class="ms" id="msPeople">
+              <summary class="msSum"><span class="msTxt" id="msPeopleTxt">Seç…</span><span class="msBadge" id="msPeopleBadge">0</span></summary>
+              <div class="msPanel"><div class="msList" id="msPeopleList"></div></div>
+            </details>
+          </div>
+
+          <div class="toolActions">
+            <button id="assignFilterCopy" class="btnSoft">📋 Excel’e Kopyala</button>
+            <button id="assignFilterClear" class="btnGhost">Temizle</button>
+          </div>
+        </div>
+
+        <div class="toolCard">
+          <div class="toolTitle">Sonuç</div>
+          <div class="toolSub" id="assignFilterMeta">—</div>
+          <div class="tableWrap" style="margin-top:10px">
+            <table class="tbl" id="assignFilterTable">
+              <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
+              <tbody id="assignFilterTbody"><tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODE: COMPARE -->
+    <div id="assignPaneCompare" class="assignPane" hidden>
+      <div class="toolGrid" style="grid-template-columns: 1fr">
+        <div class="toolCard">
+          <div class="toolTitle">Karşılaştır</div>
+          <div class="toolSub">İki kişiyi seç — ortak oyunlar ve farklılıklar otomatik gelir.</div>
+
+          <div class="compareTop">
+            <div class="comparePick">
+              <div class="toolLabel">Kişi A</div>
+              <select id="assignPersonA" class="select"></select>
+            </div>
+            <div class="compareMid">↔</div>
+            <div class="comparePick">
+              <div class="toolLabel">Kişi B</div>
+              <select id="assignPersonB" class="select"></select>
+            </div>
+            <div class="compareActions">
+              <button id="assignCompareSwap" class="btnGhost" title="Değiştir">⇄</button>
+              <button id="assignCompareCopy" class="btnSoft">📋 Excel’e Kopyala</button>
+            </div>
+          </div>
+
+          <div class="compareGrid">
+            <div class="cmpCard">
+              <div class="cmpTitle">Ortak Oyunlar</div>
+              <div id="cmpCommon" class="cmpBody"><div class="emptyHint">İki kişi seç.</div></div>
+            </div>
+            <div class="cmpCard">
+              <div class="cmpTitle">Sadece A</div>
+              <div id="cmpOnlyA" class="cmpBody"><div class="emptyHint">—</div></div>
+            </div>
+            <div class="cmpCard">
+              <div class="cmpTitle">Sadece B</div>
+              <div id="cmpOnlyB" class="cmpBody"><div class="emptyHint">—</div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -2237,9 +2368,9 @@ body{
     });
 
     if(rows) rows.addEventListener('click', function(){
-      // Oyunlara göre dağılım sayfasına götür
-      clickHidden('tabDistribution'); // exists in some builds; fallback to tabAnalysis
-      if(!$('tabDistribution')) clickHidden('tabAnalysis');
+      // Görev Ataması: ayrı araç ekranı
+      if($('tabAssign')) clickHidden('tabAssign');
+      else clickHidden('tabPanel');
     });
   }
 
@@ -2351,14 +2482,12 @@ body{
     setTimeout(function(){ clearQ(); setScopeLike('kişi'); }, 0);
   });
 
-  // 3) Görev Ataması -> dedicated Assign view (görev kombinasyonuna göre gruplu)
+  // 3) Görev Ataması -> Panel + scope GÖREV (different from dağılım)
   if(rows) rows.addEventListener('click', function(){
     activateSidebar(rows);
-    // Robust: force hash + call app tab switcher directly (prevents fallback to #analiz)
-    try{ location.hash = '#gorev'; }catch(_e){}
-    if(window.IDT_setActiveTab) window.IDT_setActiveTab('Assign');
-    else if($('tabAssign')) clickHidden('tabAssign');
-    else clickHidden('tabDistribution'); // fallback
+    // Görev Ataması artık ayrı bir araç ekranı (Panel değil)
+    if($('tabAssign')) clickHidden('tabAssign');
+    else if(window.setActiveTab) window.setActiveTab('Assign');
   });
 
   // 4) Oyunlara Göre Dağılım -> dedicated distribution view
