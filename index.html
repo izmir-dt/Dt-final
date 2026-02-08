@@ -112,7 +112,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
     .notifPanel{
       position:absolute;
       right:0;
-      top:46px;
+      top:calc(100% + 6px);
       width:min(420px, 92vw);
       background:var(--card);
       border:1px solid var(--line);
@@ -120,6 +120,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       box-shadow:var(--shadow);
       overflow:hidden;
       z-index:80;
+      max-height:360px; /* 3-4 bildirim görünür, kalan scroll */
     }
     .notifHd{
       padding:12px;
@@ -127,7 +128,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
-    .notifBd{max-height:52vh;overflow:auto;padding:10px}
+    .notifBd{max-height:300px;overflow:auto;padding:10px}
 
     /* Mobilde bildirim paneli viewport dışına taşmasın */
     @media (max-width: 760px){
@@ -1214,9 +1215,9 @@ body.scope-person .qScopeBox{ display:none !important; }
 #notifPanel{
   width: 420px !important;
   max-width: min(92vw, 420px) !important;
-  max-height: 72vh !important;
+  max-height: 360px !important;
 }
-#notifPanel .notifBd{ max-height: calc(72vh - 64px) !important; overflow:auto !important; }
+#notifPanel .notifBd{ max-height: 290px !important; overflow:auto !important; }
 #notifPanel .notif-bubble{ padding: 10px 12px !important; border-radius: 16px !important; }
 #notifPanel .notif-bubble .t{ font-size: 12px !important; }
 #notifPanel .notif-bubble .when{ font-size: 11px !important; }
@@ -1626,7 +1627,7 @@ body{
           <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
         </div>
         <div class="bd">
-          <canvas id="chartMain" width="900" height="340"></canvas>
+          <canvas id="chartMain" width="980" height="390" style="display:block;margin:0 auto;"></canvas>
           <div class="mobileChartWrap">
             <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
             <div class="mobileChartList" id="chartMobileList"></div>
@@ -1864,6 +1865,11 @@ body{
       clearQ();
       setScopeValue(scopeVal);
       setBodyScope(bodyScope);
+      // Also switch the actual render mode (app.js) so menu items don't show the same list
+      try{
+        const m = (bodyScope === 'play') ? 'plays' : (bodyScope === 'rows') ? 'assign' : 'people';
+        if(window.IDT && typeof window.IDT.setMode === 'function') window.IDT.setMode(m);
+      }catch(_e){}
     }, true);
   }
 
