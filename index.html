@@ -1235,6 +1235,19 @@ select{
 /* Filter bars: same height + symmetric */
 .filters input, .filters select, .filters button{ height: 38px !important; border-radius: 12px !important; }
 
+
+/* ===== v6.9 priority fixes ===== */
+/* Keep detail panel visible while scrolling */
+#detailPane, .detailPane, #detailBox, .detailBox{
+  position: sticky !important;
+  top: 92px !important;
+  align-self: start !important;
+  max-height: calc(100vh - 112px) !important;
+  overflow: auto !important;
+}
+/* If the detail container is a column inside grid, ensure grid can align */
+.grid, .twoCol, .panelGrid{ align-items: start !important; }
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1818,7 +1831,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=67"></script>
+<script src="app.js?v=69"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -2231,6 +2244,70 @@ body{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+
+
+<script>
+/* ===== v6.9 sidebar mode mapping (priority) ===== */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function clickHidden(id){ var el=$(id); if(el) el.click(); }
+  function clearQ(){
+    var q = $('q') || $('searchInput') || $('distQ');
+    if(q){ q.value=''; q.dispatchEvent(new Event('input',{bubbles:true})); }
+  }
+  function setScopeLike(txt){
+    var s = $('qScope'); 
+    if(!s) return;
+    var t = (txt||'').toLowerCase();
+    var opts = Array.from(s.options||[]);
+    var hit = opts.find(function(o){
+      var v=(o.value||'').toLowerCase(), tt=(o.textContent||'').toLowerCase();
+      return v===t || tt===t || tt.indexOf(t)!==-1;
+    });
+    if(hit){ s.value = hit.value; s.dispatchEvent(new Event('change',{bubbles:true})); }
+  }
+  function activateSidebar(btn){
+    document.querySelectorAll('.idt-item').forEach(function(x){ x.classList.remove('active'); });
+    if(btn) btn.classList.add('active');
+  }
+
+  // IDs used in our sidebar build
+  var plays = $('sidePlays');      // Aktif Oyun
+  var people = $('sidePeople');    // Toplam Personel
+  var rows = $('sideRows');        // Görev Ataması
+  var dist = $('sideDistribution'); // Oyunlara Göre Dağılım
+
+  // 1) Aktif Oyun -> Panel + scope OYUN (not Kişi)
+  if(plays) plays.addEventListener('click', function(){
+    activateSidebar(plays);
+    clickHidden('tabPanel');
+    // give UI a tick before scope change so list rerenders correctly
+    setTimeout(function(){ clearQ(); setScopeLike('oyun'); }, 0);
+  });
+
+  // 2) Toplam Personel -> Panel + scope KİŞİ
+  if(people) people.addEventListener('click', function(){
+    activateSidebar(people);
+    clickHidden('tabPanel');
+    setTimeout(function(){ clearQ(); setScopeLike('kişi'); }, 0);
+  });
+
+  // 3) Görev Ataması -> Panel + scope GÖREV (different from dağılım)
+  if(rows) rows.addEventListener('click', function(){
+    activateSidebar(rows);
+    clickHidden('tabPanel');
+    setTimeout(function(){ clearQ(); setScopeLike('görev'); }, 0);
+  });
+
+  // 4) Oyunlara Göre Dağılım -> dedicated distribution view
+  if(dist) dist.addEventListener('click', function(){
+    activateSidebar(dist);
+    if($('tabDistribution')) clickHidden('tabDistribution');
+    else if($('tabAnalysis')) clickHidden('tabAnalysis');
+    // distribution view has its own search; don't touch qScope here
+  });
 })();
 </script>
 
