@@ -43,13 +43,34 @@ const el = (id)=>document.getElementById(id);
 const els = {
   tabAssign: el("tabAssign"),
   viewAssign: el("viewAssign"),
-  assignSearch: el("assignSearch"),
-  assignClear: el("assignClear"),
-  assignCopy: el("assignCopy"),
-  assignList: el("assignList"),
-  assignDetail: el("assignDetail"),
-  assignDetailBody: el("assignDetailBody"),
-  assignDetailCopy: el("assignDetailCopy"),
+  // Assign tool (new)
+  assignModeFilter: el("assignModeFilter"),
+  assignModeCompare: el("assignModeCompare"),
+  assignPaneFilter: el("assignPaneFilter"),
+  assignPaneCompare: el("assignPaneCompare"),
+  msRoles: el("msRoles"),
+  msRolesList: el("msRolesList"),
+  msRolesTxt: el("msRolesTxt"),
+  msRolesBadge: el("msRolesBadge"),
+  msPlays: el("msPlays"),
+  msPlaysList: el("msPlaysList"),
+  msPlaysTxt: el("msPlaysTxt"),
+  msPlaysBadge: el("msPlaysBadge"),
+  msPeople: el("msPeople"),
+  msPeopleList: el("msPeopleList"),
+  msPeopleTxt: el("msPeopleTxt"),
+  msPeopleBadge: el("msPeopleBadge"),
+  assignFilterMeta: el("assignFilterMeta"),
+  assignFilterTbody: el("assignFilterTbody"),
+  assignFilterCopy: el("assignFilterCopy"),
+  assignFilterClear: el("assignFilterClear"),
+  assignPersonA: el("assignPersonA"),
+  assignPersonB: el("assignPersonB"),
+  assignCompareSwap: el("assignCompareSwap"),
+  assignCompareCopy: el("assignCompareCopy"),
+  cmpCommon: el("cmpCommon"),
+  cmpOnlyA: el("cmpOnlyA"),
+  cmpOnlyB: el("cmpOnlyB"),
 
   themeBtn: el("themeBtn"),
   status: el("status"),
@@ -1567,20 +1588,13 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
-  const tabs=[["tabPanel","viewPanel"],["tabAssign","viewAssign"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"]];
+  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
   for(const [t,v] of tabs){
-    const te = el(t);
-    const ve = el(v);
-    if(te) te.classList.remove("active");
-    if(ve) ve.style.display="none";
+    el(t).classList.remove("active");
+    el(v).style.display="none";
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
-
-  // Görev Ataması sekmesi: listeyi sekme açıldığında render et
-  if(which==="Assign"){
-    try{ setTimeout(()=>{ try{ renderAssign(); }catch(e){ console.error(e); } }, 0); }catch(e){ console.error(e); }
-  }
 
   // URL hash (geri/ileri ve yenilemede aynı sekme)
   const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
@@ -1595,12 +1609,10 @@ function setActiveTab(which){
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
     setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
   }
+  if(which==="Assign"){
+    try{ initAssignToolOnce(); renderAssignTool(); }catch(e){ console.error(e); }
+  }
 }
-
-// Expose a safe tab switcher for inline sidebar handlers (prevents hash/router desync)
-try{
-  window.IDT_setActiveTab = setActiveTab;
-}catch(_e){}
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
@@ -1612,11 +1624,11 @@ els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assig
 function tabFromHash_(){
   const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
   if(h==="panel") return "Panel";
-  if(h==="gorev" || h==="görev" || h==="assign") return "Assign";
   if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
   if(h==="kesisim" || h==="intersection") return "Intersection";
   if(h==="figuran" || h==="figüran") return "Figuran";
   if(h==="grafikler" || h==="charts") return "Charts";
+  if(h==="gorev" || h==="görev" || h==="assign") return "Assign";
   return null;
 }
 
@@ -2055,111 +2067,224 @@ try {
   console.warn("CONFIG override skipped:", e);
 }
 
-function buildAssignGroups_(query){
-  const rows = rawRows || [];
-  const norm = (s)=>String(s||"").trim();
-  const q = norm(query).toLowerCase();
+/* ===== Görev Ataması: Araç ekranı (Filtrele & Listele / Karşılaştır) ===== */
+const assignState = {
+  inited: false,
+  mode: "filter",
+  roles: new Set(),
+  plays: new Set(),
+  people: new Set(),
+  personA: "",
+  personB: "",
+};
 
-  const per = new Map(); // play||person -> roleset + row dump
-  for(const r of rows){
-    const play = norm(r.play);
-    const person = norm(r.person);
-    const role = norm(r.role);
-    const category = norm(r.category);
-    if(!play || !person || !role) continue;
-    const k = play + "||" + person;
-    if(!per.has(k)) per.set(k,{play, person, roles:new Set(), rows:[]});
-    const o = per.get(k);
-    o.roles.add(role);
-    o.rows.push({play, category, role, person});
-  }
-
-  const groups = new Map(); // play||roleset -> group
-  for(const o of per.values()){
-    const roleSet = Array.from(o.roles).sort((a,b)=>a.localeCompare(b,"tr")).join(" + ");
-    const key = o.play + "||" + roleSet;
-    if(!groups.has(key)) groups.set(key,{play:o.play, roleSet, persons:[], dump:[], rowCount:0});
-    const g = groups.get(key);
-    g.persons.push(o.person);
-    g.dump.push(...o.rows);
-    g.rowCount += o.rows.length;
-  }
-
-  let out = Array.from(groups.values());
-  for(const g of out) g.persons.sort((a,b)=>a.localeCompare(b,"tr"));
-
-  if(q){
-    out = out.filter(g=>{
-      if(g.play.toLowerCase().includes(q)) return true;
-      if(g.roleSet.toLowerCase().includes(q)) return true;
-      return g.persons.some(p=>p.toLowerCase().includes(q));
-    });
-  }
-
-  out.sort((a,b)=> b.rowCount - a.rowCount || a.play.localeCompare(b.play,"tr") || a.roleSet.localeCompare(b.roleSet,"tr"));
-  return out;
+function normTxt_(s){ return String(s||"").trim(); }
+function uniqSorted_(arr){
+  const s = new Set(arr.filter(Boolean).map(x=>normTxt_(x)).filter(Boolean));
+  return Array.from(s).sort((a,b)=>a.localeCompare(b,"tr"));
 }
 
-function renderAssign(){
-  if(!els.viewAssign) return;
+function renderMsSummary_(txtEl, badgeEl, set){
+  if(badgeEl) badgeEl.textContent = String(set.size||0);
+  if(!txtEl) return;
+  if(!set.size){ txtEl.textContent = "Seç…"; return; }
+  const sample = Array.from(set).slice(0,2).join(", ");
+  txtEl.textContent = set.size<=2 ? sample : `${sample} +${set.size-2}`;
+}
 
-  const q = els.assignSearch ? els.assignSearch.value : "";
-  const groups = buildAssignGroups_(q);
-
-  if(els.assignList){
-    els.assignList.innerHTML = groups.map((g,i)=>{
-      const sample = g.persons.slice(0,6).join(" • ") + (g.persons.length>6 ? ` • +${g.persons.length-6}` : "");
-      return `<div class="rowCard" data-idx="${i}">
-        <div class="rowTop">
-          <div class="rowTitle">${escapeHtml(g.play)} <span class="muted">•</span> <span class="muted">${escapeHtml(g.roleSet)}</span></div>
-          <div class="rowMeta">${g.persons.length} kişi • ${g.rowCount} satır</div>
-        </div>
-        <div class="chips"><span class="chip">${escapeHtml(sample)}</span></div>
-      </div>`;
-    }).join("") || '<div class="emptyHint">Sonuç yok.</div>';
-
-    els.assignList.querySelectorAll(".rowCard").forEach(card=>{
-      card.addEventListener("click", ()=>{
-        const g = groups[Number(card.dataset.idx)];
-        if(!g) return;
-        const dump = g.dump.slice().sort((a,b)=>a.person.localeCompare(b.person,"tr") || a.role.localeCompare(b.role,"tr"));
-        const tsv = dump.map(r=>[r.play, r.category, r.role, r.person].join("\t")).join("\n");
-        if(els.assignDetailBody){
-          els.assignDetailBody.dataset.tsv = tsv;
-          els.assignDetailBody.innerHTML = `
-            <div class="kpiLine"><b>${escapeHtml(g.play)}</b> <span class="muted">•</span> ${escapeHtml(g.roleSet)}</div>
-            <div class="muted small">${g.persons.length} kişi • ${g.rowCount} satır</div>
-            <div class="tableWrap">
-              <table class="tbl">
-                <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
-                <tbody>
-                  ${dump.map(r=>`<tr><td>${escapeHtml(r.play)}</td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}</td></tr>`).join("")}
-                </tbody>
-              </table>
-            </div>`;
-        }
-      });
+function buildMsList_(listEl, values, selectedSet, onChange){
+  if(!listEl) return;
+  listEl.innerHTML = values.map(v=>{
+    const id = `ms_${listEl.id}_${Math.random().toString(36).slice(2)}`;
+    const checked = selectedSet.has(v) ? "checked" : "";
+    const enc = encodeURIComponent(v);
+    return `<label class="msItem" for="${id}"><input id="${id}" type="checkbox" ${checked} data-v="${enc}"/><span>${escapeHtml(v)}</span></label>`;
+  }).join("");
+  listEl.querySelectorAll("input[type=checkbox]").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const v = cb.getAttribute("data-v") || "";
+      const val = decodeURIComponent(v);
+      if(cb.checked) selectedSet.add(val); else selectedSet.delete(val);
+      onChange && onChange();
     });
+  });
+}
+
+function initAssignToolOnce(){
+  if(assignState.inited) return;
+  assignState.inited = true;
+
+  // Mode switching
+  if(els.assignModeFilter) els.assignModeFilter.addEventListener("click", ()=>{ assignState.mode="filter"; renderAssignTool(); });
+  if(els.assignModeCompare) els.assignModeCompare.addEventListener("click", ()=>{ assignState.mode="compare"; renderAssignTool(); });
+
+  // Clear & copy
+  if(els.assignFilterClear) els.assignFilterClear.addEventListener("click", ()=>{
+    assignState.roles.clear(); assignState.plays.clear(); assignState.people.clear();
+    renderAssignTool();
+  });
+  if(els.assignFilterCopy) els.assignFilterCopy.addEventListener("click", ()=>{
+    const out = getAssignFilterRows_();
+    const tsv = out.map(r=>[r.play,r.category||"",r.role,r.person].join("\t")).join("\n");
+    openCopyModal(tsv, "Görev Ataması – Filtre");
+  });
+
+  if(els.assignCompareSwap) els.assignCompareSwap.addEventListener("click", ()=>{
+    const a = els.assignPersonA?.value || "";
+    const b = els.assignPersonB?.value || "";
+    if(els.assignPersonA) els.assignPersonA.value = b;
+    if(els.assignPersonB) els.assignPersonB.value = a;
+    renderAssignTool();
+  });
+  if(els.assignCompareCopy) els.assignCompareCopy.addEventListener("click", ()=>{
+    const tsv = buildCompareTsv_();
+    openCopyModal(tsv, "Görev Ataması – Karşılaştır");
+  });
+
+  if(els.assignPersonA) els.assignPersonA.addEventListener("change", ()=>renderAssignTool());
+  if(els.assignPersonB) els.assignPersonB.addEventListener("change", ()=>renderAssignTool());
+}
+
+function getAllAssignValues_(){
+  const src = rows || [];
+  return {
+    roles: uniqSorted_(src.map(r=>r.role)),
+    plays: uniqSorted_(src.map(r=>r.play)),
+    people: uniqSorted_(src.map(r=>r.person)),
+  };
+}
+
+function getAssignFilterRows_(){
+  const src = rows || [];
+  const hasR = assignState.roles.size>0;
+  const hasP = assignState.plays.size>0;
+  const hasK = assignState.people.size>0;
+  return src.filter(r=>{
+    if(hasR && !assignState.roles.has(r.role)) return false;
+    if(hasP && !assignState.plays.has(r.play)) return false;
+    if(hasK && !assignState.people.has(r.person)) return false;
+    return true;
+  });
+}
+
+function renderAssignFilter_(){
+  const vals = getAllAssignValues_();
+
+  buildMsList_(els.msRolesList, vals.roles, assignState.roles, ()=>renderAssignTool());
+  buildMsList_(els.msPlaysList, vals.plays, assignState.plays, ()=>renderAssignTool());
+  buildMsList_(els.msPeopleList, vals.people, assignState.people, ()=>renderAssignTool());
+
+  renderMsSummary_(els.msRolesTxt, els.msRolesBadge, assignState.roles);
+  renderMsSummary_(els.msPlaysTxt, els.msPlaysBadge, assignState.plays);
+  renderMsSummary_(els.msPeopleTxt, els.msPeopleBadge, assignState.people);
+
+  const out = getAssignFilterRows_();
+  const limited = out.slice(0, 500);
+  if(els.assignFilterMeta) els.assignFilterMeta.textContent = `${out.length} satır` + (out.length>500?` • ilk 500 gösteriliyor`:``);
+  if(els.assignFilterTbody){
+    if(!assignState.roles.size && !assignState.plays.size && !assignState.people.size){
+      els.assignFilterTbody.innerHTML = `<tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr>`;
+    }else if(!out.length){
+      els.assignFilterTbody.innerHTML = `<tr><td colspan="4"><div class="emptyHint">Sonuç yok.</div></td></tr>`;
+    }else{
+      els.assignFilterTbody.innerHTML = limited.map(r=>`<tr><td>${escapeHtml(r.play)}</td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`).join("");
+    }
+  }
+}
+
+function personPlayMap_(){
+  const mp = new Map(); // person -> Map(play -> Set(role))
+  for(const r of rows||[]){
+    if(!r.person || !r.play || !r.role) continue;
+    if(!mp.has(r.person)) mp.set(r.person, new Map());
+    const pm = mp.get(r.person);
+    if(!pm.has(r.play)) pm.set(r.play, new Set());
+    pm.get(r.play).add(r.role);
+  }
+  return mp;
+}
+
+function fmtRoles_(set){
+  return Array.from(set||[]).sort((a,b)=>a.localeCompare(b,"tr")).join(", ");
+}
+
+function renderCompare_(){
+  const vals = getAllAssignValues_();
+  // build selects once-ish: keep selected if exists
+  if(els.assignPersonA && els.assignPersonA.options.length===0){
+    els.assignPersonA.innerHTML = `<option value="">Seç…</option>` + vals.people.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+  }
+  if(els.assignPersonB && els.assignPersonB.options.length===0){
+    els.assignPersonB.innerHTML = `<option value="">Seç…</option>` + vals.people.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
   }
 
-  if(els.assignCopy){
-    els.assignCopy.onclick = ()=>{
-      const tsv = groups.map(g=>[g.play, g.roleSet, g.persons.join(", "), String(g.rowCount)].join("\t")).join("\n");
-      openCopyModal(tsv, "Görev Ataması");
-    };
+  const a = els.assignPersonA?.value || "";
+  const b = els.assignPersonB?.value || "";
+  if(!a || !b){
+    if(els.cmpCommon) els.cmpCommon.innerHTML = `<div class="emptyHint">İki kişi seç.</div>`;
+    if(els.cmpOnlyA) els.cmpOnlyA.innerHTML = `<div class="emptyHint">—</div>`;
+    if(els.cmpOnlyB) els.cmpOnlyB.innerHTML = `<div class="emptyHint">—</div>`;
+    return;
   }
-  if(els.assignDetailCopy){
-    els.assignDetailCopy.onclick = ()=>{
-      const tsv = els.assignDetailBody?.dataset?.tsv || "";
-      if(tsv) openCopyModal(tsv, "Görev Ataması Detay");
-    };
-  }
-  if(els.assignClear){
-    els.assignClear.onclick = ()=>{ if(els.assignSearch){ els.assignSearch.value=""; renderAssign(); } };
-  }
-  if(els.assignSearch){
-    els.assignSearch.oninput = ()=>renderAssign();
-  }
+
+  const mp = personPlayMap_();
+  const mA = mp.get(a) || new Map();
+  const mB = mp.get(b) || new Map();
+
+  const playsA = new Set(mA.keys());
+  const playsB = new Set(mB.keys());
+  const common = Array.from(playsA).filter(x=>playsB.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
+  const onlyA = Array.from(playsA).filter(x=>!playsB.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
+  const onlyB = Array.from(playsB).filter(x=>!playsA.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
+
+  const renderList = (list, mapLeft, mapRight)=>{
+    if(!list.length) return `<div class="emptyHint">—</div>`;
+    return list.map(play=>{
+      const rolesL = fmtRoles_(mapLeft.get(play));
+      const rolesR = mapRight ? fmtRoles_(mapRight.get(play)) : "";
+      return `<div class="cmpRow"><div class="cmpPlay"><b>${escapeHtml(play)}</b></div>`
+        + (mapRight ? `<div class="cmpRoles"><span class="muted small">A:</span> ${escapeHtml(rolesL)}<br><span class="muted small">B:</span> ${escapeHtml(rolesR)}</div>`
+                    : `<div class="cmpRoles">${escapeHtml(rolesL)}</div>`)
+        + `</div>`;
+    }).join("");
+  };
+
+  if(els.cmpCommon) els.cmpCommon.innerHTML = renderList(common, mA, mB);
+  if(els.cmpOnlyA) els.cmpOnlyA.innerHTML = renderList(onlyA, mA, null);
+  if(els.cmpOnlyB) els.cmpOnlyB.innerHTML = renderList(onlyB, mB, null);
+}
+
+function buildCompareTsv_(){
+  const a = els.assignPersonA?.value || "";
+  const b = els.assignPersonB?.value || "";
+  if(!a || !b) return "";
+  const mp = personPlayMap_();
+  const mA = mp.get(a) || new Map();
+  const mB = mp.get(b) || new Map();
+  const playsA = new Set(mA.keys());
+  const playsB = new Set(mB.keys());
+  const common = Array.from(playsA).filter(x=>playsB.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
+  const onlyA = Array.from(playsA).filter(x=>!playsB.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
+  const onlyB = Array.from(playsB).filter(x=>!playsA.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
+  const lines = [];
+  lines.push(["TIP","OYUN","A_GOREVLER","B_GOREVLER"].join("\t"));
+  for(const p of common) lines.push(["ORTAK", p, fmtRoles_(mA.get(p)), fmtRoles_(mB.get(p))].join("\t"));
+  for(const p of onlyA) lines.push(["SADECE_A", p, fmtRoles_(mA.get(p)), ""].join("\t"));
+  for(const p of onlyB) lines.push(["SADECE_B", p, "", fmtRoles_(mB.get(p))].join("\t"));
+  return lines.join("\n");
+}
+
+function renderAssignTool(){
+  if(!els.viewAssign) return;
+  // segmented state
+  const isFilter = assignState.mode === "filter";
+  if(els.assignModeFilter){ els.assignModeFilter.classList.toggle("active", isFilter); els.assignModeFilter.setAttribute("aria-selected", String(isFilter)); }
+  if(els.assignModeCompare){ els.assignModeCompare.classList.toggle("active", !isFilter); els.assignModeCompare.setAttribute("aria-selected", String(!isFilter)); }
+  if(els.assignPaneFilter) els.assignPaneFilter.hidden = !isFilter;
+  if(els.assignPaneCompare) els.assignPaneCompare.hidden = isFilter;
+
+  if(isFilter) renderAssignFilter_();
+  else renderCompare_();
 }
 
 
