@@ -1139,85 +1139,66 @@ body.scope-person .qScopeBox{ display:none !important; }
 .idt-count{ max-width: 56px; display:inline-flex; justify-content:center; }
 
 
-/* ===== v6.5 UI polish ===== */
+/* ===== v6.6 UI patches ===== */
 
-/* Sidebar: single line + smaller */
-.idt-item b{
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  font-size: 13px !important;
-}
-.idt-item .sub{
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  font-size: 11px !important;
-}
+/* Sidebar: avoid truncation like "Toplam Perso..." */
+.idt-sidebar{ width: 290px !important; }
+.idt-item b{ font-size: 13px !important; max-width: 190px !important; }
+#sidePeople b{ max-width: 220px !important; } /* ensure full text */
 
-/* Controls: uniform height */
+/* Counts: never drop under line */
+.idt-count{ flex: 0 0 auto !important; white-space: nowrap !important; }
+
+/* Panel filter: hide scope dropdown (still programmatically settable) */
+.qScopeBox{ display:none !important; }
+
+/* Make all search/action controls same height and a bit shorter */
 .filters input, .filters select, .filters button, .filters .btn,
-.top .btn, .top a.btn{
+.distTools input, .distTools button, .distTools .btn{
   height: 38px !important;
   border-radius: 12px !important;
 }
-.filters .input{ min-height: 38px !important; }
 .filters input{ padding: 0 12px !important; }
+.filters{ gap: 10px !important; }
+.filters .input{ flex: 1 1 auto !important; }
+.filters .input input{ width: 100% !important; }
 
-/* Notif panel: style real classes */
-#notifPanel{
-  border-radius: 20px !important;
-  border: 1px solid var(--line) !important;
-  box-shadow: 0 24px 70px rgba(24,16,8,.26) !important;
-  overflow: hidden !important;
+/* Single-line everywhere in sidebar */
+.idt-item b{ white-space: nowrap !important; overflow:hidden !important; text-overflow: ellipsis !important; }
+
+/* Sticky detail card (JS will set on the card) */
+
+
+/* Manual copy modal (v6.6) */
+.mc.hidden{ display:none !important; }
+.mc{ position:fixed; inset:0; z-index:9999; display:block; }
+.mcBack{ position:absolute; inset:0; background: rgba(22,22,26,.35); backdrop-filter: blur(4px); }
+.mcCard{ position:absolute; right:20px; top:90px; width:min(680px, calc(100vw - 40px));
+  background: var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:0 24px 70px rgba(24,16,8,.26); overflow:hidden;
 }
-#notifPanel .notifHd{
-  padding: 14px 14px !important;
-  background: linear-gradient(180deg, rgba(122,30,44,.10), rgba(255,255,255,.94)) !important;
-  border-bottom: 1px solid var(--line) !important;
+.mcHd{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px;
+  background: linear-gradient(180deg, rgba(122,30,44,.10), rgba(255,255,255,.96)); border-bottom:1px solid var(--line);
 }
-#notifPanel .notifHd b{
-  font-size: 15px !important;
-  letter-spacing: .2px;
+.mcT{ font-weight: 900; letter-spacing:.2px; }
+.mcX{ border:none; background:#fff; width:34px; height:34px; border-radius:12px; cursor:pointer; border:1px solid var(--line); }
+.mcBd{ padding:14px; }
+.mcHint{ margin:0 0 10px; color: var(--muted); font-size:12px; }
+#distManualText{ width:100%; height:240px; resize:vertical; border-radius:14px; border:1px solid var(--line); padding:12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; box-sizing:border-box; }
+.mcBtns{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
+
+
+/* Notif premium (v6.6) */
+#notifPanel{ border-radius:20px !important; box-shadow:0 24px 70px rgba(24,16,8,.26) !important; }
+#notifPanel .notifHd{ background: linear-gradient(180deg, rgba(122,30,44,.10), rgba(255,255,255,.96)) !important; border-bottom:1px solid var(--line) !important; }
+#notifPanel .notifHd .title{ font-weight:900 !important; }
+#notifPanel .notifBd > *{
+  background:#fff !important;
+  border:1px solid var(--line) !important;
+  border-radius:16px !important;
+  padding:12px 12px !important;
+  margin:10px 0 !important;
 }
-#notifPanel .notifBd{
-  padding: 10px !important;
-}
-#notifPanel .notif-bubble{
-  display:flex;
-  gap: 10px;
-  background: #fff !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 18px !important;
-  padding: 12px 12px !important;
-  box-shadow: 0 10px 22px rgba(16,24,40,.08) !important;
-  margin-bottom: 10px !important;
-}
-#notifPanel .notif-bubble.seen{
-  opacity: .88;
-}
-#notifPanel .notif-type{
-  width: 30px; height: 30px;
-  border-radius: 12px;
-  display:grid; place-items:center;
-  background: rgba(122,30,44,.10);
-  border:1px solid rgba(122,30,44,.18);
-  flex: 0 0 auto;
-}
-#notifPanel .notif-title{
-  font-weight: 900;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#notifPanel .notif-msg, #notifPanel .notif-meta, #notifPanel .notif-ts{
-  color: var(--muted) !important;
-  font-size: 12px !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+#notifPanel .notifBd *{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 </style>
 
@@ -1656,7 +1637,27 @@ body{
 
 
       </div>
-    </main>
+    
+<!-- ===== Distribution Manual Copy Modal (v6.6, UI-only) ===== -->
+<div id="distManualModal" class="mc hidden" role="dialog" aria-modal="true" aria-label="Manuel Kopyalama">
+  <div class="mcBack"></div>
+  <div class="mcCard">
+    <div class="mcHd">
+      <div class="mcT">📋 Manuel Kopyalama</div>
+      <button class="mcX" id="distManualClose" aria-label="Kapat">✕</button>
+    </div>
+    <div class="mcBd">
+      <p class="mcHint">Aşağıdaki tablo Excel’e yapıştırılmak üzere hazırlanmıştır. (Ctrl+A → Ctrl+C)</p>
+      <textarea id="distManualText" spellcheck="false"></textarea>
+      <div class="mcBtns">
+        <button class="btn" id="distManualSelect">Hepsini Seç</button>
+        <button class="btn" id="distManualCopy">Kopyala</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
   </div>
 
 <script>
@@ -1782,7 +1783,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=65"></script>
+<script src="app.js?v=66"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -1910,45 +1911,146 @@ body{
 
 
 <script>
-/* v6.5 UI-only: Dağılım Excel’e Kopyala -> MANUEL kopyalama penceresi (TSV) */
+/* v6.6 UI-only patches (NO fetch/process changes) */
 (function(){
-  function tableToTSV(root){
-    if(!root) return "";
-    const table = root.querySelector("table");
-    if(!table) return "";
-    const rows = Array.from(table.querySelectorAll("tr"));
-    const lines = rows.map(tr=>{
-      const cells = Array.from(tr.children).filter(c=>c && (c.tagName==="TD" || c.tagName==="TH"));
-      return cells.map(c=>{
-        const t = (c.innerText||"").replace(/\s+/g," ").trim();
-        return t.replace(/\t/g," ").replace(/\n/g," ");
-      }).join("\t");
-    }).filter(line=>line.trim().length>0);
-    return lines.join("\n");
+  function qs(sel){ return document.querySelector(sel); }
+  function byId(id){ return document.getElementById(id); }
+
+  // ---- Sticky detail card: keep right panel visible while scrolling
+  function makeDetailSticky(){
+    var d = byId('details');
+    if(!d) return;
+    var card = d.closest('.card');
+    if(!card) return;
+    card.style.position = 'sticky';
+    card.style.top = '110px';
+    card.style.alignSelf = 'start';
   }
-  function bind(){
-    const btn = document.getElementById("distCopyBtn");
-    if(!btn) return;
-    btn.addEventListener("click", function(){
-      const box = document.getElementById("distributionBox");
-      const tsv = tableToTSV(box);
-      if(!tsv){ 
-        // fallback: use existing selected copy flow
-        const b = document.getElementById("copyBtn");
-        if(b) b.click();
-        return;
-      }
-      if(typeof window.showManualCopy === "function"){
-        window.showManualCopy(tsv);
-      }else{
-        // last resort: try triggering copyBtn (may open manual on failure)
-        const b = document.getElementById("copyBtn");
-        if(b) b.click();
-      }
+
+  // ---- Sidebar quick modes: ensure different scopes actually update list
+  function setScope(value){
+    var s = byId('qScope');
+    if(!s) return;
+    var map = {
+      'all': ['all','tümü'],
+      'play': ['play','oyun'],
+      'person': ['person','kişi'],
+      'role': ['role','görev']
+    };
+    var want = value;
+    var opts = Array.prototype.slice.call(s.options || []);
+    var hit = opts.find(function(o){
+      var v = (o.value||'').toLowerCase();
+      var t = (o.textContent||'').toLowerCase();
+      return (want==='play' && (v==='play' || t.includes('oyun'))) ||
+             (want==='person' && (v==='person' || t.includes('kişi'))) ||
+             (want==='role' && (v==='role' || t.includes('görev'))) ||
+             (want==='all' && (v==='all' || t.includes('tümü')));
+    });
+    if(hit){
+      s.value = hit.value;
+      s.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+  }
+
+  function clearSearch(){
+    var q = byId('q');
+    if(q){ q.value=''; q.dispatchEvent(new Event('input', {bubbles:true})); }
+  }
+
+  function goPanel(){
+    var t = byId('tabPanel');
+    if(t) t.click();
+  }
+
+  function bindSidebar(){
+    var plays = byId('sidePlays');
+    var people = byId('sidePeople');
+    var rows = byId('sideRows');
+
+    if(plays) plays.addEventListener('click', function(){ goPanel(); clearSearch(); setScope('play'); });
+    if(people) people.addEventListener('click', function(){ goPanel(); clearSearch(); setScope('person'); });
+    if(rows) rows.addEventListener('click', function(){ goPanel(); clearSearch(); setScope('role'); });
+  }
+
+  // ---- Distribution: open MANUAL copy modal with filtered table TSV
+  function tableToTSV(table){
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tr'));
+    return rows.map(function(tr){
+      var cells = Array.prototype.slice.call(tr.querySelectorAll('th,td'));
+      return cells.map(function(td){
+        return (td.innerText||'').replace(/\s+/g,' ').trim();
+      }).join('\t');
+    }).join('\n');
+  }
+
+  function openManual(text){
+    var m = byId('distManualModal');
+    var ta = byId('distManualText');
+    if(!m || !ta) return;
+    ta.value = text || '';
+    m.classList.remove('hidden');
+    // focus for quick ctrl+c
+    setTimeout(function(){ ta.focus(); ta.select(); }, 50);
+  }
+
+  function closeManual(){
+    var m = byId('distManualModal');
+    if(m) m.classList.add('hidden');
+  }
+
+  function bindManualModal(){
+    var close = byId('distManualClose');
+    var back = qs('#distManualModal .mcBack');
+    var sel = byId('distManualSelect');
+    var copy = byId('distManualCopy');
+    var ta = byId('distManualText');
+
+    if(close) close.addEventListener('click', closeManual);
+    if(back) back.addEventListener('click', closeManual);
+    if(sel) sel.addEventListener('click', function(){ if(ta){ ta.focus(); ta.select(); } });
+    if(copy) copy.addEventListener('click', function(){
+      if(!ta) return;
+      ta.focus(); ta.select();
+      try{ document.execCommand('copy'); }catch(e){}
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeManual();
     });
   }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
+
+  function bindDistCopy(){
+    var btn = byId('distCopyBtn');
+    if(!btn) return;
+    btn.addEventListener('click', function(){
+      // Try to locate the distribution table container
+      var t = qs('#distributionBox table') || qs('#distTable') || qs('.dist table');
+      if(!t){
+        // fallback: copy whole box text
+        var box = byId('distributionBox') || qs('.dist');
+        openManual((box ? box.innerText : ''));
+        return;
+      }
+      openManual(tableToTSV(t));
+    });
+  }
+
+  function init(){
+    makeDetailSticky();
+    bindSidebar();
+    bindManualModal();
+    bindDistCopy();
+
+    // Make sure sidebar label isn't truncated by browser: set full text explicitly
+    var sp = byId('sidePeople');
+    if(sp){
+      var b = sp.querySelector('b');
+      if(b) b.textContent = 'Toplam Personel';
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
