@@ -112,7 +112,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
     .notifPanel{
       position:absolute;
       right:0;
-      top:46px;
+      top:calc(100% + 6px);
       width:min(420px, 92vw);
       background:var(--card);
       border:1px solid var(--line);
@@ -120,6 +120,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       box-shadow:var(--shadow);
       overflow:hidden;
       z-index:80;
+      max-height:360px; /* 3-4 bildirim görünür, kalan scroll */
     }
     .notifHd{
       padding:12px;
@@ -127,7 +128,7 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
       background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
     }
-    .notifBd{max-height:52vh;overflow:auto;padding:10px}
+    .notifBd{max-height:300px;overflow:auto;padding:10px}
 
     /* Mobilde bildirim paneli viewport dışına taşmasın */
     @media (max-width: 760px){
@@ -1214,9 +1215,9 @@ body.scope-person .qScopeBox{ display:none !important; }
 #notifPanel{
   width: 420px !important;
   max-width: min(92vw, 420px) !important;
-  max-height: 72vh !important;
+  max-height: 360px !important;
 }
-#notifPanel .notifBd{ max-height: calc(72vh - 64px) !important; overflow:auto !important; }
+#notifPanel .notifBd{ max-height: 290px !important; overflow:auto !important; }
 #notifPanel .notif-bubble{ padding: 10px 12px !important; border-radius: 16px !important; }
 #notifPanel .notif-bubble .t{ font-size: 12px !important; }
 #notifPanel .notif-bubble .when{ font-size: 11px !important; }
@@ -1248,41 +1249,10 @@ select{
 /* If the detail container is a column inside grid, ensure grid can align */
 .grid, .twoCol, .panelGrid{ align-items: start !important; }
 
-
-/* ===== v7.0 css assignment ===== */
-.assignRoot{ display:flex; flex-direction:column; gap:12px; }
-.asgGroup{ border:1px solid rgba(24,16,8,.10); border-radius:16px; overflow:hidden; background:#fff; box-shadow: 0 10px 30px rgba(24,16,8,.08); }
-.asgHead{ width:100%; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; padding:12px 14px; background:linear-gradient(180deg,#fff,#fbf7f1); border:none; cursor:pointer; text-align:left; }
-.asgTitle{ font-weight:900; color:var(--accent,#7a1e2c); font-size:13px; line-height:1.2; }
-.asgMeta{ font-size:12px; color:rgba(24,16,8,.55); white-space:nowrap; }
-.asgBody{ padding:10px 14px 12px; border-top:1px solid rgba(24,16,8,.08); display:none; }
-.asgPerson{ display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed rgba(24,16,8,.10); }
-.asgPerson:last-child{ border-bottom:none; }
-.asgPerson b{ font-size:13px; }
-.asgPerson span{ font-size:12px; color:rgba(24,16,8,.6); white-space:nowrap; }
-.asgActions{ display:flex; justify-content:flex-end; padding-top:10px; }
-#assignCopyRows{ white-space:nowrap; }
-
-/* Nokta nokta (ellipsis) istemiyoruz */
-.idt-item .label, .idt-item b, .legend, .legend * { 
-  text-overflow: clip !important; 
-  overflow: visible !important; 
-  white-space: nowrap !important; 
-}
-
-/* Bildirimlerde de kırpma yok */
-#notifPanel, #notifPanel *{
-  text-overflow: clip !important;
-  overflow: visible !important;
-  white-space: normal !important;
-}
-
-/* Bildirim panelini daha ufak: 3-4 kart görünür */
-#notifPanel{ max-height: 320px !important; }
-#notifPanel .notifBd{ max-height: 250px !important; overflow:auto !important; }
-
-/* Build stamp */
-#buildStamp{ position:fixed; right:12px; bottom:12px; z-index:999999; background:#111; color:#fff; padding:6px 10px; border-radius:999px; font:12px/1 Inter,system-ui; opacity:.75;}
+/* Assign view segmented control */
+.seg{display:inline-flex; background:rgba(255,255,255,.75); border:1px solid var(--line); border-radius:999px; padding:4px; box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
+.segBtn{border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:700; cursor:pointer; color:var(--muted); font-size:13px; line-height:1;}
+.segBtn.isActive{background:var(--card); color:var(--text); box-shadow:0 6px 18px rgba(24,16,8,.10);}
 
 </style>
 
@@ -1519,7 +1489,7 @@ body{
 
   <div class="nav">
     <button class="tab active" id="tabPanel">Panel</button>
-    <button class="tab" id="tabAssignment">Görev Ataması</button>
+        <button id="tabAssign" class="chip">📋 Görev Ataması</button>
     <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
@@ -1576,26 +1546,49 @@ body{
             <footer>
               <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
               
-  <div id="viewAssignment" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Görev Ataması</h2>
-        <div class="filters">
-          <div class="seg" title="Görünüm">
-            <button id="assignModeGroup" class="segbtn active">Görev Seti</button>
-            <button id="assignModePerson" class="segbtn">Kişi</button>
-          </div>
-          <div class="input" title="Ara">
-            🔎 <input id="assignQ" type="search" placeholder="Görev seti veya kişi ara..." autocomplete="off"/>
-          </div>
-          <button class="btn" id="assignCopyRows">📋 Satır Dökümü (Excel)</button>
-        </div>
+<div id="viewAssign" class="view" style="display:none">
+  <div class="card wide">
+    <div class="cardHead">
+      <div>
+        <div class="cardTitle">Görev Ataması</div>
+        <div class="cardSub">BÜTÜN OYUNLAR satırlarından (Oyun Adı / Kategori / Görev / Kişi) türetilir. Default: görev setine göre gruplu.</div>
       </div>
-      <div class="bd" style="padding-top:14px">
-        <div id="assignRoot" class="assignRoot"></div>
+      <div class="row" style="gap:10px;flex-wrap:wrap;justify-content:flex-end">
+        <div class="seg" id="assignSeg">
+          <button class="segBtn isActive" data-assign-view="group">Görev Seti</button>
+          <button class="segBtn" data-assign-view="dump">Satır Dökümü</button>
+        </div>
+        <button id="aCopy" class="btn">📋 Excel'e Kopyala</button>
+        <button id="aClear" class="btn ghost">Temizle</button>
+      </div>
+    </div>
+
+    <div class="row" style="gap:12px;align-items:center;margin-top:10px">
+      <div class="search" style="flex:1;max-width:520px">
+        <span class="sIcon">🔎</span>
+        <input id="aq" placeholder="Oyun / kişi / görev ara..." />
+      </div>
+    </div>
+
+    <div id="aGroupWrap" style="margin-top:14px"></div>
+
+    <div id="aDumpWrap" style="display:none;margin-top:14px">
+      <div class="tableWrap">
+        <table class="table" id="aTable">
+          <thead>
+            <tr>
+              <th>Oyun</th>
+              <th>Kategori</th>
+              <th>Görev</th>
+              <th>Kişi</th>
+            </tr>
+          </thead>
+          <tbody id="aTbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
+</div>
 
 <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
             </footer>
@@ -1685,7 +1678,7 @@ body{
           <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
         </div>
         <div class="bd">
-          <canvas id="chartMain" width="900" height="340"></canvas>
+          <canvas id="chartMain" width="980" height="390" style="display:block;margin:0 auto;"></canvas>
           <div class="mobileChartWrap">
             <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
             <div class="mobileChartList" id="chartMobileList"></div>
@@ -1890,7 +1883,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=700"></script>
+<script src="app.js?v=v7102081227"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -1923,6 +1916,11 @@ body{
       clearQ();
       setScopeValue(scopeVal);
       setBodyScope(bodyScope);
+      // Also switch the actual render mode (app.js) so menu items don't show the same list
+      try{
+        const m = (bodyScope === 'play') ? 'plays' : (bodyScope === 'rows') ? 'assign' : 'people';
+        if(window.IDT && typeof window.IDT.setMode === 'function') window.IDT.setMode(m);
+      }catch(_e){}
     }, true);
   }
 
@@ -2388,33 +2386,5 @@ body{
 })();
 </script>
 
-
-<script>
-/* ===== v7.0 assignment bindings (UI only) ===== */
-(function(){
-  const $=id=>document.getElementById(id);
-  const click=id=>{ const el=$(id); if(el) el.click(); };
-
-  // Sol menü: Görev Ataması -> yeni sekme
-  const sideRows = $("sideRows");
-  if(sideRows){
-    sideRows.addEventListener("click", (e)=>{
-      // aktif class'ı zaten var olan sistem hallediyor; sadece tab'ı değiştir
-      click("tabAssignment");
-    }, true);
-  }
-
-  // Aktif Oyun / Toplam Personel -> Panel modlarını garantile
-  const sidePlays=$("sidePlays");
-  if(sidePlays){
-    sidePlays.addEventListener("click", ()=>{ click("tabPanel"); const s=$("qScope"); if(s){ s.value="plays"; s.dispatchEvent(new Event("change",{bubbles:true})); } }, true);
-  }
-  const sidePeople=$("sidePeople");
-  if(sidePeople){
-    sidePeople.addEventListener("click", ()=>{ click("tabPanel"); const s=$("qScope"); if(s){ s.value="people"; s.dispatchEvent(new Event("change",{bubbles:true})); } }, true);
-  }
-})();
-</script>
-<div id="buildStamp">BUILD v7.0</div>
 </body>
 </html>
