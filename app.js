@@ -2235,7 +2235,7 @@ function renderAssignFilter_(){
     els.assignRowCount.textContent = `Kaynak satır: ${srcCount} • Ayrıştırılmış kayıt: ${expandedCount}`;
   }
   if(els.assignFilterMeta){
-    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}`);
+    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}`;
   }
   if(els.assignFilterTbody){
     if(!assignState.roles.size && !assignState.plays.size && !assignState.people.size){
