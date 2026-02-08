@@ -1138,6 +1138,87 @@ body.scope-person .qScopeBox{ display:none !important; }
 .idt-item b{ min-width:0; max-width: 150px; }
 .idt-count{ max-width: 56px; display:inline-flex; justify-content:center; }
 
+
+/* ===== v6.5 UI polish ===== */
+
+/* Sidebar: single line + smaller */
+.idt-item b{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 13px !important;
+}
+.idt-item .sub{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 11px !important;
+}
+
+/* Controls: uniform height */
+.filters input, .filters select, .filters button, .filters .btn,
+.top .btn, .top a.btn{
+  height: 38px !important;
+  border-radius: 12px !important;
+}
+.filters .input{ min-height: 38px !important; }
+.filters input{ padding: 0 12px !important; }
+
+/* Notif panel: style real classes */
+#notifPanel{
+  border-radius: 20px !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: 0 24px 70px rgba(24,16,8,.26) !important;
+  overflow: hidden !important;
+}
+#notifPanel .notifHd{
+  padding: 14px 14px !important;
+  background: linear-gradient(180deg, rgba(122,30,44,.10), rgba(255,255,255,.94)) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+#notifPanel .notifHd b{
+  font-size: 15px !important;
+  letter-spacing: .2px;
+}
+#notifPanel .notifBd{
+  padding: 10px !important;
+}
+#notifPanel .notif-bubble{
+  display:flex;
+  gap: 10px;
+  background: #fff !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 18px !important;
+  padding: 12px 12px !important;
+  box-shadow: 0 10px 22px rgba(16,24,40,.08) !important;
+  margin-bottom: 10px !important;
+}
+#notifPanel .notif-bubble.seen{
+  opacity: .88;
+}
+#notifPanel .notif-type{
+  width: 30px; height: 30px;
+  border-radius: 12px;
+  display:grid; place-items:center;
+  background: rgba(122,30,44,.10);
+  border:1px solid rgba(122,30,44,.18);
+  flex: 0 0 auto;
+}
+#notifPanel .notif-title{
+  font-weight: 900;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#notifPanel .notif-msg, #notifPanel .notif-meta, #notifPanel .notif-ts{
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1701,7 +1782,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=64"></script>
+<script src="app.js?v=65"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -1824,6 +1905,50 @@ body{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+
+
+<script>
+/* v6.5 UI-only: Dağılım Excel’e Kopyala -> MANUEL kopyalama penceresi (TSV) */
+(function(){
+  function tableToTSV(root){
+    if(!root) return "";
+    const table = root.querySelector("table");
+    if(!table) return "";
+    const rows = Array.from(table.querySelectorAll("tr"));
+    const lines = rows.map(tr=>{
+      const cells = Array.from(tr.children).filter(c=>c && (c.tagName==="TD" || c.tagName==="TH"));
+      return cells.map(c=>{
+        const t = (c.innerText||"").replace(/\s+/g," ").trim();
+        return t.replace(/\t/g," ").replace(/\n/g," ");
+      }).join("\t");
+    }).filter(line=>line.trim().length>0);
+    return lines.join("\n");
+  }
+  function bind(){
+    const btn = document.getElementById("distCopyBtn");
+    if(!btn) return;
+    btn.addEventListener("click", function(){
+      const box = document.getElementById("distributionBox");
+      const tsv = tableToTSV(box);
+      if(!tsv){ 
+        // fallback: use existing selected copy flow
+        const b = document.getElementById("copyBtn");
+        if(b) b.click();
+        return;
+      }
+      if(typeof window.showManualCopy === "function"){
+        window.showManualCopy(tsv);
+      }else{
+        // last resort: try triggering copyBtn (may open manual on failure)
+        const b = document.getElementById("copyBtn");
+        if(b) b.click();
+      }
+    });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bind);
+  else bind();
 })();
 </script>
 
