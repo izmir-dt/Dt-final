@@ -1626,16 +1626,13 @@ els.notifBtn && (()=> {
     if(els.notifPanel.classList.contains("hidden")) await open();
     else close();
   };
-  const handler = (e)=>{ e.stopPropagation(); toggle(); };
+  const handler = (e)=>{ try{ e.preventDefault(); }catch(_){} e.stopPropagation(); toggle(); };
   els.notifBtn.addEventListener("click", handler);
-  els.notifBtn.addEventListener("pointerup", handler);
-  els.notifClose && els.notifClose.addEventListener("click", close);
-  els.notifClose && els.notifClose.addEventListener("pointerup", close);
-  const bd = document.getElementById("notifBackdrop");
+els.notifClose && els.notifClose.addEventListener("click", close);
+const bd = document.getElementById("notifBackdrop");
   if(bd){
     bd.addEventListener("click", close);
-    bd.addEventListener("pointerup", close);
-  }
+}
   document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") close(); });
 })();
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
