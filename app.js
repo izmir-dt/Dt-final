@@ -1,12 +1,8 @@
-const CONFIG = {
-  SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  // Sizin en son çalışan Apps Script linkiniz
-  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
-  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
+function doGet(e) {
+  // Veriyi çekip JSON formatına getirip gönderirken şu başlığı eklemeliyiz:
+  var output = ContentService.createTextOutput(JSON.stringify(getData(e)))
+    .setMimeType(ContentService.MimeType.JSON);
   
-  SHEET_MAIN: "BÜTÜN OYUNLAR",
-  SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
-  SHEET_NOTIFS: "BİLDİRİMLER",
-  GID: "1233566992",
-  LOG_GID: ""
-};
+  // Bu satır web sitesinin her yerden erişebilmesini sağlar (Kritik!)
+  return output;
+}
