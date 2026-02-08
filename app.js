@@ -1311,12 +1311,12 @@ function closeDrawer(){
   els.drawerList.innerHTML = "";
 }
 function getDrawerFilteredItems(){
-  const q = els.drawerSearch.value.trim().toLowerCase();
+  const q = foldTr_(els.drawerSearch.value.trim());
   const labelMode = !!(drawerData[0] && typeof drawerData[0]==="object" && ("label" in drawerData[0]));
   if(labelMode) return drawerData.slice(); // copy only for items anyway
   if(!q) return drawerData.slice();
   return drawerData.filter(x=>{
-    const hay = (String(x.person||"") + " " + (Array.isArray(x.plays)?x.plays.join(" "):String(x.plays||""))).toLowerCase();
+    const hay = foldTr_(String(x.person||"") + " " + (Array.isArray(x.plays)?x.plays.join(" "):String(x.plays||"")));
     return hay.includes(q);
   });
 }
@@ -2169,8 +2169,14 @@ function initAssignToolOnce(){
     openCopyModal(tsv, "Sorgu – Karşılaştır");
   });
 
-  if(els.assignPersonA) els.assignPersonA.addEventListener("change", ()=>renderAssignTool());
-  if(els.assignPersonB) els.assignPersonB.addEventListener("change", ()=>renderAssignTool());
+  if(els.assignPersonA){
+    els.assignPersonA.addEventListener("input", ()=>renderAssignTool());
+    els.assignPersonA.addEventListener("change", ()=>renderAssignTool());
+  }
+  if(els.assignPersonB){
+    els.assignPersonB.addEventListener("input", ()=>renderAssignTool());
+    els.assignPersonB.addEventListener("change", ()=>renderAssignTool());
+  }
 
   // Search inside multi-selects (case-insensitive)
   const rS = document.getElementById("msRolesSearch");
@@ -2216,7 +2222,14 @@ function renderAssignFilter_(){
 
   const out = getAssignFilterRows_();
   const limited = out.slice(0, 500);
-  if(els.assignFilterMeta) els.assignFilterMeta.textContent = `${out.length} satır` + (out.length>500?` • ilk 500 gösteriliyor`:``);
+  const srcCount = (rawRows||[]).length;
+  const expandedCount = (rows||[]).length;
+  if(els.assignRowCount){
+    els.assignRowCount.textContent = `Kaynak satır: ${srcCount} • Ayrıştırılmış kayıt: ${expandedCount}`;
+  }
+  if(els.assignFilterMeta){
+    els.assignFilterMeta.textContent = `Sonuç: ${out.length} satır` + (out.length>500?` • ilk 500 gösteriliyor`:``);
+  }
   if(els.assignFilterTbody){
     if(!assignState.roles.size && !assignState.plays.size && !assignState.people.size){
       els.assignFilterTbody.innerHTML = `<tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr>`;
@@ -2246,16 +2259,22 @@ function fmtRoles_(set){
 
 function renderCompare_(){
   const vals = getAllAssignValues_();
-  // build selects once-ish: keep selected if exists
-  if(els.assignPersonA && els.assignPersonA.options.length===0){
-    els.assignPersonA.innerHTML = `<option value="">Seç…</option>` + vals.people.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-  }
-  if(els.assignPersonB && els.assignPersonB.options.length===0){
-    els.assignPersonB.innerHTML = `<option value="">Seç…</option>` + vals.people.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+  // Build datalist once-ish (searchable input)
+  const dl = document.getElementById("assignPeopleDatalist");
+  if(dl && dl.childElementCount===0){
+    dl.innerHTML = vals.people.map(p=>`<option value="${escapeHtml(p)}"></option>`).join("");
   }
 
-  const a = els.assignPersonA?.value || "";
-  const b = els.assignPersonB?.value || "";
+  const resolve = (v)=>{
+    const t = (v||"").toString().trim();
+    if(!t) return "";
+    const ft = foldTr_(t);
+    const hit = vals.people.find(p=>foldTr_(p)===ft);
+    return hit || "";
+  };
+
+  const a = resolve(els.assignPersonA?.value || "");
+  const b = resolve(els.assignPersonB?.value || "");
   if(!a || !b){
     if(els.cmpCommon) els.cmpCommon.innerHTML = `<div class="emptyHint">İki kişi seç.</div>`;
     if(els.cmpOnlyA) els.cmpOnlyA.innerHTML = `<div class="emptyHint">—</div>`;
@@ -2291,8 +2310,16 @@ function renderCompare_(){
 }
 
 function buildCompareTsv_(){
-  const a = els.assignPersonA?.value || "";
-  const b = els.assignPersonB?.value || "";
+  const vals = getAllAssignValues_();
+  const resolve = (v)=>{
+    const t = (v||"").toString().trim();
+    if(!t) return "";
+    const ft = foldTr_(t);
+    const hit = vals.people.find(p=>foldTr_(p)===ft);
+    return hit || "";
+  };
+  const a = resolve(els.assignPersonA?.value || "");
+  const b = resolve(els.assignPersonB?.value || "");
   if(!a || !b) return "";
   const mp = personPlayMap_();
   const mA = mp.get(a) || new Map();
