@@ -1,13 +1,1438 @@
-const CONFIG = {
-  SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  // SENİN GÜNCEL ÇALIŞAN LİNKİN
-  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
-  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>İDT | Repertuvar Kişi Takip Sistemi</title>
+
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
+  <style>
+
+:root{
+      --bg:#e9ded1;            /* premium warm ivory */
+      --card:#fbf7f1;
+      --text:#16161a;
+      --muted:#5a5560;
+      --line:#dccbb7;
+
+      --accent:#7a1e2c;        /* bordo */
+      --accent2:#c07a2a;       /* altın */
+      --ok:#18794e;
+      --warn:#b45309;
+      --bad:#b42318;
+      --shadow:0 10px 30px rgba(24,16,8,.12);
+      --radius:18px;
+      --radius2:14px;
+    }
+
+
+/* --- Alias tokens (compat) --- */
+:root{
+  --r: var(--radius);
+  --r2: var(--radius2);
+  --good: var(--ok);
+  --border: var(--line);
+  --primary: var(--accent);
+  --ink: var(--text);
+  --chip: color-mix(in srgb, var(--card) 82%, var(--bg) 18%);
+}
+html[data-theme="dark"]{
+  --border: var(--line);
+  --primary: var(--accent);
+  --ink: var(--text);
+}
+html[data-theme="dark"]{
+      --bg:#0b1020;
+      --card:#0f172a;
+      --text:#f1f5f9;
+      --muted:#cbd5e1;
+      --line:#1f2a44;
+
+      --accent:#60a5fa;
+      --accent2:#93c5fd;
+
+      --shadow: 0 18px 44px rgba(0,0,0,.55);
+      --chip:#111827;
+
+      --soft1:rgba(96,165,250,.14);
+      --soft2:rgba(34,197,94,.14);
+      --soft3:rgba(245,158,11,.14);
+      --soft4:rgba(236,72,153,.14);
+
+      --tabActiveBg: rgba(148,163,184,.12);
+      --tabActiveBorder: rgba(148,163,184,.25);
+      --tabActiveText: #f1f5f9;
+    }
+
+    *{box-sizing:border-box}
+    body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;color:var(--text);background:var(--bg);}
+    a{color:inherit}
+    header{
+      position:sticky;top:0;z-index:40;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .wrap{max-width:1220px;margin:0 auto;padding:16px}
+    .top{display:flex;align-items:center;flex-wrap:wrap;
+      padding:12px 16px;justify-content:space-between;gap:16px;}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:var(--shadow);
+      display:grid;place-items:center;color:#fff;font-weight:900;
+      letter-spacing:.6px;
+    }
+    .brand h1{margin:0;font-size:14px;line-height:1.25}
+
+    /* --- Brand box (requested) --- */
+    .brand-box{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+    .brand-main{font-weight:800;color:var(--accent2);letter-spacing:.3px}
+    .brand-divider{opacity:.6}
+    .brand-sub{font-weight:300;font-size:.75rem;letter-spacing:1px;color:var(--muted)}
+    
+    .brand .sub{margin-top:3px;color:var(--muted);font-size:12px}
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;margin-left:auto;}
+
+    .notif{position:relative}
+    .badge{
+      margin-left:6px;
+      background:var(--accent);
+      color:#fff;
+      border-radius:999px;
+      padding:2px 7px;
+      font-size:11px;
+      font-weight:800;
+    }
+    .hidden{display:none !important}
+    .notifPanel{
+      position:absolute;
+      right:0;
+      top:46px;
+      width:min(420px, 92vw);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      z-index:80;
+    }
+    .notifHd{
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      display:flex;justify-content:flex-start;align-items:flex-start;gap:10px;
+      background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
+    }
+    .notifBd{max-height:52vh;overflow:auto;padding:10px}
+
+    /* Mobilde bildirim paneli viewport dışına taşmasın */
+    @media (max-width: 760px){
+      .notifPanel{
+        position:fixed;
+        top:76px;
+        left:12px;
+        right:12px;
+        width:auto;
+        max-height:78vh;
+      }
+      .notifBd{max-height:calc(78vh - 70px)}
+    }
+    .logItem{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 10px;
+      margin-bottom:8px;
+      background:color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+    }
+    .logItem .meta{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.35}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      border:1px solid var(--line);
+      font-size:12px;font-weight:700;
+      background:var(--chip);
+      color:var(--text);
+      margin-left:8px;
+      white-space:nowrap;
+    }
+    .tag.retired{
+      border-color: color-mix(in srgb, var(--accent2) 35%, var(--line) 65%);
+      background: color-mix(in srgb, var(--accent2) 10%, var(--card) 90%);
+      color: color-mix(in srgb, var(--text) 60%, var(--accent) 40%);
+    }
+
+    .pill{
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--card);
+      font-size:12px;color:var(--muted);
+      display:flex;gap:8px;align-items:center;
+      max-width:60vw; overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--text);
+      padding:9px 11px;border-radius:12px;
+      cursor:pointer;
+      display:inline-flex;gap:8px;align-items:center;
+      text-decoration:none;
+      font-size:13px;
+    }
+    .btn:hover{border-color:color-mix(in srgb, var(--line) 55%, var(--accent) 45%)}
+    .btn.primary{border-color:color-mix(in srgb, var(--accent) 35%, var(--line) 65%);background:color-mix(in srgb, var(--accent) 8%, var(--card) 92%);color:var(--accent2)}
+    .btn.good{border-color:color-mix(in srgb, var(--good) 30%, var(--line) 70%);background:color-mix(in srgb, var(--good) 7%, var(--card) 93%);color:var(--good)}
+
+    .nav{
+      display:flex;gap:8px;flex-wrap:wrap;
+      padding:0 16px 12px;
+    }
+    .tab{
+      padding:9px 12px;border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--card);
+      cursor:pointer;font-size:13px;
+    }
+    .tab.active{
+      border-color:var(--tabActiveBorder);
+      background:var(--tabActiveBg);
+      color:var(--tabActiveText);
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:12px 12px 10px;
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:wrap;
+      background:linear-gradient(180deg,color-mix(in srgb, var(--card) 100%, transparent), color-mix(in srgb, var(--card) 92%, var(--bg) 8%));
+    }
+    .card .hd h2{margin:0;font-size:14px}
+    .card .bd{padding:12px}
+    .grid{display:grid;gap:12px;grid-template-columns: 1.1fr .9fr;margin-top:12px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} header{position:relative} }
+
+    .kpis{
+      display:grid;gap:12px;
+      grid-template-columns:repeat(4,1fr);
+      margin-bottom:12px;
+    }
+    @media (max-width: 980px){ .kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 520px){ .kpis{grid-template-columns:1fr}}
+    .kpi{
+display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:18px 18px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+}
+    .kpi .label{color:var(--muted);font-size:12px}
+    .kpi .value{font-size:22px;font-weight:900;letter-spacing:.2px}
+    .kpi .icon{
+width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  font-size:26px; /* bigger icon */
+  line-height:1;
+  flex:0 0 auto;
+  margin-left:18px;
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+}
+.kpi > div:first-child{flex:1; min-width:0;}
+
+    /* KPI cards as shortcuts (Panel / Analiz / Figüran / Grafikler) */
+    .kpi[data-go]{cursor:pointer; user-select:none;}
+    .kpi[data-go]:hover{transform:translateY(-1px);}
+    .kpi[data-go]:active{transform:translateY(0);}
+    .kpi[data-go]:focus{outline:3px solid rgba(192,122,42,.35); outline-offset:2px;}
+
+    .kpi.soft1{background:linear-gradient(135deg,var(--soft1), var(--card));}
+    .kpi.soft2{background:linear-gradient(135deg,var(--soft2), var(--card));}
+    .kpi.soft3{background:linear-gradient(135deg,var(--soft3), var(--card));}
+    .kpi.soft4{background:linear-gradient(135deg,var(--soft4), var(--card));}
+
+    .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center;margin-left:auto;margin-right:auto}
+    .input{
+      display:flex;align-items:center;gap:8px;min-width:260px;max-width:560px;flex:0 1 560px;
+      padding:10px 12px;border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--card);
+      min-width: 190px;
+      max-width: 640px;
+      flex:1 1 260px;
+    }
+    .input input, .input select{
+      width:100%;background:transparent;border:0;outline:0;
+      color:var(--text);font-size:14px;
+      appearance:none;
+    }
+    /* Dark-mode select dropdown readability */
+    select, option{
+      color:var(--text);
+      background: color-mix(in srgb, var(--card) 95%, var(--bg) 5%);
+    }
+    html[data-theme="dark"] select, html[data-theme="dark"] option{
+      background:#0f172a;
+      color:#e5e7eb;
+    }
+
+    .seg{
+      display:inline-flex;align-items:center;
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:var(--card);
+    }
+    .seg button{
+      border:0;background:transparent;color:var(--muted);
+      padding:10px 12px;cursor:pointer;font-size:13px;
+    }
+    .seg button.active{
+      color:var(--text);
+      background: color-mix(in srgb, var(--card) 78%, var(--bg) 22%);
+      font-weight:800;
+    }
+
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{
+      padding:12px;border-radius:var(--r2);
+      border:1px solid var(--line);
+      background:var(--card);
+      cursor:pointer;
+    }
+    .item:hover{border-color:color-mix(in srgb, var(--line) 60%, var(--accent) 40%)}
+    .item .t{display:flex;align-items:flex-start;justify-content:flex-start;gap:10px}
+    .name{font-weight:850; letter-spacing:.2px}
+    .meta{margin-top:4px;color:var(--muted);font-size:12px}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .chip{
+      padding:6px 9px;border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--chip);
+      font-size:12px;color:var(--muted);
+      max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .chip.warn{border-color:color-mix(in srgb, var(--warn) 30%, var(--line) 70%);background:color-mix(in srgb, var(--warn) 10%, var(--chip) 90%);color:color-mix(in srgb, var(--warn) 65%, var(--text) 35%)}
+    .chip.good{border-color:color-mix(in srgb, var(--good) 30%, var(--line) 70%);background:color-mix(in srgb, var(--good) 10%, var(--chip) 90%);color:var(--good)}
+    .chip.bad{border-color:color-mix(in srgb, var(--bad) 30%, var(--line) 70%);background:color-mix(in srgb, var(--bad) 10%, var(--chip) 90%);color:var(--bad)}
+    .empty{
+      padding:16px;border-radius:14px;
+      border:1px dashed color-mix(in srgb, var(--line) 70%, var(--muted) 30%);
+      color:var(--muted);text-align:center;
+      background:var(--card);
+    }
+    .title{margin:0 0 6px;font-size:18px}
+    .subtitle{margin:0 0 12px;color:var(--muted);font-size:13px}
+
+    .table{
+      width:100%;
+      border-collapse:separate;border-spacing:0;
+      border:1px solid var(--line);
+      border-radius:14px;overflow:hidden;
+      background:var(--card);
+    }
+    .table th,.table td{
+      padding:10px 10px;border-bottom:1px solid var(--line);
+      text-align:left;font-size:13px;vertical-align:top;
+    }
+    .table th{color:var(--muted);font-weight:800;background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%)}
+    .table tr:last-child td{border-bottom:0}
+    footer{padding:12px 14px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);background:var(--card)}
+    code{background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%);padding:2px 6px;border-radius:8px;border:1px solid var(--line)}
+    .small{color:var(--muted);font-size:12px}
+
+    
+    /* --- Skeleton (loading shimmer) --- */
+    .skeleton{position:relative;overflow:hidden;background:color-mix(in srgb, var(--card) 70%, var(--bg) 30%);border:1px solid var(--line);border-radius:14px}
+    .skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 1.2s infinite}
+    @keyframes shimmer{100%{transform:translateX(120%)}}
+    .skel-row{height:54px;margin:10px 0}
+    .skel-card{height:220px}
+    
+
+    /* Charts */
+    .chartsNav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .chartsNav .tab{border-radius:999px}
+    canvas{width:100%;height:340px;display:block;border-radius:14px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+
+    .drawer{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:var(--card);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:sticky; top:98px;
+      height: fit-content;
+      min-height: 140px;
+    }
+    .drawer .hd{padding:12px;border-bottom:1px solid var(--line);display:flex;justify-content:flex-start;gap:10px;align-items:center}
+    .drawer .bd{padding:12px}
+    .drawer.hidden{display:none}
+    .drawerTitle{font-weight:900}
+    .drawerSub{color:var(--muted);font-size:12px;margin-top:2px}
+    .miniList{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:60vh;overflow:auto}
+    .miniItem{border:1px solid var(--line);border-radius:14px;padding:10px;background:color-mix(in srgb, var(--card) 88%, var(--bg) 12%)}
+    .miniItem b{display:block}
   
-  SHEET_MAIN: "BÜTÜN OYUNLAR",
-  SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
-  SHEET_NOTIFS: "BİLDİRİMLER",
-  GID: "1233566992",
-  LOG_GID: ""
-};
-// Orijinal dosyadaki tüm mantık (renderList, handleSearch vb.) aynen devam eder.
+
+    /* ---- UI tweaks ---- */
+    .seg button{ padding:12px 16px; font-size:15px; }
+    .seg button.active{ box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 55%, transparent); }
+    input, select, textarea{ color: var(--text); background: var(--card); border:1px solid var(--border); }
+    input::placeholder, textarea::placeholder{ color: color-mix(in srgb, var(--text) 45%, transparent); }
+    table{ color: var(--text); }
+    th, td{ color: var(--text); }
+    .muted{ color: var(--muted); }
+
+    /* Mobile detail as modal */
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; }
+    .modal{ position:fixed; left:50%; transform:translateX(-50%); bottom:12px; width:min(980px, calc(100% - 24px));
+            max-height:80vh; background:var(--card); border:1px solid var(--border); border-radius:16px; z-index:60;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow:hidden; }
+    .modalHead{ display:flex; align-items:center; justify-content:flex-start; padding:12px 12px; border-bottom:1px solid var(--border); }
+    .modalTitle{ font-weight:800; }
+    .modalBody{ padding:12px; overflow:auto; max-height:calc(80vh - 54px); }
+    .hidden{ display:none !important; }
+
+    @media (min-width: 981px){
+      /* Desktop: keep modal hidden */
+      #mobileModal, #mobileOverlay{ display:none !important; }
+    }
+
+/* --- UI sadeleştirme: sadece Panel + Grafikler --- */
+.tabs button#tabDistribution,
+.tabs button#tabIntersection,
+.tabs button#tabFiguran { display:none !important; }
+
+/* Dark mode düğmesini gizle (tema sabit) */
+
+
+/* Mobilde detay modalı daha geniş ve okunur */
+@media (max-width: 900px){
+  .modal{ width:min(92vw, 720px) !important; }
+  .modalContent{ max-height: 75vh !important; overflow:auto; }
+
+  /* Grafikler: mobilde tek kolon + çizimler taşmasın */
+  #viewCharts .grid{ grid-template-columns: 1fr !important; }
+  /* Mobilde canvas yerine dokunmatik liste kullanacağız */
+  #chartMain{ display:none !important; }
+  canvas{ max-width:100%; height:auto; }
+
+  /* Mobil modal içindeki tablolar yatay kaydırılabilir olsun */
+  #mobileModalBd table{ display:block; width:100%; overflow-x:auto; }
+}
+
+/* ---- Mobil Grafik Listesi (Canvas alternatifi) ---- */
+.mobileChartWrap{ display:none; }
+.mobileChartList{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+.chipRow{ display:flex; align-items:center; justify-content:flex-start; gap:10px; padding:12px 12px; border-radius:14px; cursor:pointer; user-select:none;
+  border:1px solid rgba(0,0,0,.08); box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+.chipLeft{ display:flex; align-items:center; gap:10px; min-width:0; }
+.dot{ width:14px; height:14px; border-radius:999px; flex:0 0 14px; box-shadow:0 0 0 4px rgba(255,255,255,.35) inset; }
+.chipTitle{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:62vw; }
+.chipCount{ font-weight:900; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.35); }
+
+@media (max-width: 900px){
+  .mobileChartWrap{ display:block; }
+}
+
+/* Grafik yazıları daha okunur */
+.chartWrap svg text{ font-size: 12px; fill: var(--text); }
+
+
+/* --- Notifications (chat bubble) --- */
+.notif-bubble{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:8px 10px;
+  margin:8px 0;
+  border-radius:14px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 6px 14px rgba(0,0,0,.06);
+  cursor:pointer
+}
+.notif-bubble:hover{transform:translateY(-1px)}
+.notif-bubble.seen{opacity:.62}
+.notif-type{
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;
+  background:rgba(0,0,0,.05);
+  font-size:15px;
+  flex:0 0 28px
+}
+.notif-title{font-weight:800;margin-bottom:2px;font-size:13px;letter-spacing:.2px}
+.notif-msg{margin:2px 0 6px 0;font-size:13px;line-height:1.35}
+.notif-meta{font-size:12px;opacity:.8}
+.notif-ts{font-size:11px;opacity:.65;margin-top:6px}
+
+/* Mobil breadcrumb (oyun -> ekip) */
+.mobile-breadcrumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.55);backdrop-filter: blur(6px);}
+.mobile-breadcrumb .mb-text{font-weight:600;color:var(--ink);opacity:.9}
+@media (max-width: 980px){
+  .mobile-breadcrumb{position:sticky;top:8px;z-index:5}
+}
+
+
+
+    /* --- Responsive: mobilde canvas gizle, renkli liste göster --- */
+    @media (max-width: 820px){
+  #chartMain{ display:none !important; }
+  .mobileChartWrap{ display:block !important; }
+  .drawer{ position:relative !important; top:auto !important; inset:auto !important; border-radius: var(--r) !important; z-index:auto !important; }
+}
+.miniItem{ padding:14px !important; }
+      .miniItem b{ font-size:16px; }
+    }
+
+
+
+body.drawerOpen{ overflow:auto; }
+
+
+
+/* Enforce theme text colors */
+body{ background:var(--bg); color:var(--text); }
+a{ color:inherit; }
+.table th, .table td{ color:var(--text); }
+.btn{ color:var(--text); }
+.input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
+
+
+
+    /* Dark mode – bazı tarayıcılarda siyah kalan metinleri zorla düzelt */
+    html[data-theme="dark"] body{ color: var(--text); }
+    html[data-theme="dark"] button,
+    html[data-theme="dark"] input,
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] option,
+    html[data-theme="dark"] label,
+    html[data-theme="dark"] summary,
+    html[data-theme="dark"] .btn,
+    html[data-theme="dark"] .input,
+    html[data-theme="dark"] .table,
+    html[data-theme="dark"] .table td,
+    html[data-theme="dark"] .table th,
+    html[data-theme="dark"] .modal,
+    html[data-theme="dark"] .drawer{
+      color: var(--text);
+    }
+    html[data-theme="dark"] .subtitle,
+    html[data-theme="dark"] .muted,
+    html[data-theme="dark"] .pill,
+    html[data-theme="dark"] footer{
+      color: var(--muted);
+    }
+    /* Safari/Chrome autofill siyah yazı bug'ı */
+    html[data-theme="dark"] input:-webkit-autofill,
+    html[data-theme="dark"] textarea:-webkit-autofill,
+    html[data-theme="dark"] select:-webkit-autofill{
+      -webkit-text-fill-color: var(--text) !important;
+      transition: background-color 999999s ease-in-out 0s;
+    }
+    /* SVG içinde text (ikon vb.) */
+    html[data-theme="dark"] svg text{ fill: var(--text); }
+
+
+
+    #distributionBox th:nth-child(2){white-space:nowrap; width:110px}
+
+
+/* UX: tıklanabilir liste öğeleri */
+.miniItem, .miniRow{
+  cursor:pointer;
+}
+.miniItem:hover, .miniRow:hover{
+  filter: brightness(1.04);
+}
+
+@media (max-width: 720px){.actions{flex-wrap:wrap;margin-left:0} .top{flex-wrap:wrap;justify-content:flex-start}}
+
+/* --- Polishing: arama scope + temizle --- */
+.input{position:relative}
+.q-scope{
+  border:1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 90%, var(--bg) 10%);
+  color:var(--text);
+  border-radius:10px;
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:700;
+  max-width:140px;
+}
+.q-clear{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  font-size:16px;
+  line-height:1;
+  padding:6px 8px;
+  border-radius:10px;
+}
+.q-clear:hover{ background: color-mix(in srgb, var(--card) 75%, var(--bg) 25%); color:var(--text); }
+
+/* --- Polishing: Gelişmiş menüsü --- */
+.menu{ position:relative; }
+.menuPanel{
+  position:absolute;
+  right:0;
+  top:46px;
+  width:min(280px, 92vw);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  z-index:90;
+}
+.menuPanel .mi{
+  padding:10px 12px;
+  cursor:pointer;
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  font-weight:700;
+}
+.menuPanel .mi:last-child{border-bottom:0}
+.menuPanel .mi:hover{ background: color-mix(in srgb, var(--card) 78%, var(--bg) 22%); }
+.menuPanel .mi small{ color:var(--muted); font-weight:600; }
+
+/* Mobil: modal head sticky */
+@media (max-width: 980px){
+  .modalHead{ position:sticky; top:0; background:var(--card); z-index:2; }
+}
+
+
+/* --- Mobile polishing (layout fixes) --- */
+@media (max-width: 760px){
+  .top{flex-direction:column; align-items:flex-start; gap:10px; padding:10px 12px;}
+  .brand h1{font-size:13px; line-height:1.25;}
+  .actions{width:100%; flex-wrap:wrap; justify-content:flex-start; gap:8px; margin-left:0;}
+  .pill{max-width:100%; width:100%;}
+  .btn{padding:9px 10px; border-radius:12px;}
+  .wrap{padding:12px;}
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .kpi{padding:14px 14px;}
+}
+/* Tabs: yatay kaydırma (mobil) */
+@media (max-width: 980px){
+  .nav{overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; gap:8px; padding-bottom:10px;}
+  .nav::-webkit-scrollbar{display:none;}
+  .tab{white-space:nowrap;}
+}
+/* Mobile chart list visuals */
+@media (max-width: 900px){
+  .chipRow{border:1px solid color-mix(in srgb, var(--line) 75%, transparent); }
+  .chipTitle{max-width:58vw;}
+}
+
+/* --- Mobile nav: scrollable & Intersection visible --- */
+@media (max-width: 980px){
+  .nav{overflow-x:auto; -webkit-overflow-scrolling:touch; flex-wrap:nowrap; gap:8px; padding-bottom:10px;}
+  .nav::-webkit-scrollbar{display:none;}
+  .tab{white-space:nowrap;}
+  #tabIntersection{order:2;}
+  #tabFiguran{order:3;}
+  #tabCharts{order:4;}
+  #tabDistribution{order:5;}
+}
+/* --- Overflow safety: no clipped text --- */
+*{ overflow-wrap:anywhere; }
+.name,.meta,.chip,.pill,.btn,.tab,.drawerTitle,.drawerSub,.miniItem b,.miniItem div{ word-break:break-word; }
+.chip,.pill{ max-width:100%; white-space:normal; text-overflow:clip; }
+.table{ display:block; width:100%; overflow-x:auto; }
+.table th,.table td{ white-space:nowrap; }
+@media (min-width: 981px){
+  .table{ display:table; overflow:visible; }
+  .table th,.table td{ white-space:normal; }
+}
+/* --- Arama kapsamı: görünür kutucuk --- */
+.qScopeBox{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
+}
+select.q-scope{
+  border:0;
+  background:transparent;
+  padding:6px 6px;
+  font-weight:900;
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+  cursor:pointer;
+}
+
+/* input satırında düzgün hizalama */
+.filters .input{ gap:10px; flex-wrap:wrap; }
+.filters .input input{ flex:1 1 220px; min-width:220px; }
+
+/* Sadece mobilde Ek Araçlar butonunu kaldır */
+
+/* --- Kapsam seçici: label kalktı, ok eklendi --- */
+.qScopeBox{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background: color-mix(in srgb, var(--card) 86%, var(--bg) 14%);
+}
+.qScopeBox::after{
+  content:"▾";
+  font-weight:900;
+  color:var(--muted);
+  margin-left:2px;
+}
+select.q-scope{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  border:0;
+  background:transparent;
+  padding:6px 0;
+  font-weight:900;
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+  cursor:pointer;
+}
+
+
+/* --- Masaüstü sekme sırası: Grafikler 1, Panel 2 --- */
+.nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#tabCharts{order:1;}
+#tabPanel{order:2;}
+#tabDistribution{order:3;}
+#tabIntersection{order:4;}
+#tabFiguran{order:5;}
+#advBtn{order:6;}
+
+
+/* =========================
+   v26 HOTFIX (SAFE)
+   - Ek Araçlar tamamen kaldır (CSS ile gizle, JS kırılmasın)
+   - Kesişim: tek satır + modern numara badge
+   - Kapsam oku hizası iyileştir
+   ========================= */
+
+/* Ek Araçlar: tamamen gizle */
+#advBtn, #advMenu { display:none !important; }
+.menu { display:none !important; } /* ek araçlar menüsü komple */
+
+/* Kapsam seçici ok hizası (override) */
+.qScopeBox{ position:relative; }
+.qScopeBox::after{
+  content:"▾";
+  position:absolute; right:10px; top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
+  font-weight:900;
+  color:var(--muted);
+}
+select.q-scope{
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  padding-right:28px !important;
+}
+
+/* Kesişim: input satırı tek satır */
+#viewIntersection .filters .input{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  flex-wrap:nowrap !important;
+  white-space:nowrap;
+}
+#viewIntersection .filters .input select{
+  min-width:0 !important;
+  flex:1 1 auto !important;
+}
+.numBadge{
+  width:26px;height:26px;display:grid;place-items:center;
+  border-radius:10px;font-weight:900;font-size:13px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--card) 90%);
+  border:1px solid color-mix(in srgb, var(--accent) 22%, var(--line) 78%);
+  color: var(--accent);
+  flex:0 0 auto;
+}
+
+/* =========================
+   NOTIFICATIONS: CONTRAST FIX (v28)
+   ========================= */
+#notifBell{ position:relative; }
+#notifBtn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+#notifBadge{
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:12px;
+  line-height:20px;
+  color: var(--card);
+  background: var(--bad);
+}
+#notifPanel{
+  position:absolute;
+  right:0;
+  top:calc(100% + 10px);
+  width:min(420px, calc(100vw - 24px));
+  max-height:420px;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  padding:10px;
+  z-index:999;
+}
+.notifItem{
+  border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
+  border-radius:12px;
+  padding:10px 12px;
+  margin:8px 0;
+  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+  color: var(--text);
+}
+.notifTop{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+}
+.notifTop b{ color: var(--text); }
+.notifTop .muted,
+.notifItem .muted{
+  color: var(--muted) !important;
+  opacity:1 !important;
+}
+.notifItem div{ color: var(--text); }
+
+/* dark theme: ensure panel stays dark but text stays light */
+html[data-theme="dark"] #notifPanel{
+  background: color-mix(in srgb, var(--card) 92%, #000 8%);
+  border-color: color-mix(in srgb, var(--line) 70%, #000 30%);
+}
+
+/* =========================
+   NOTIF BUBBLES THEME FIX (v30)
+   Fix: dark theme had white text on light bubble background.
+   ========================= */
+
+/* Base (light) */
+#notifPanel .notif-bubble{
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+#notifPanel .notif-title,
+#notifPanel .notif-msg,
+#notifPanel .notif-meta,
+#notifPanel .notif-ts{
+  color:#0f172a !important;
+}
+#notifPanel .notif-meta{ color:#334155 !important; opacity:1 !important; }
+#notifPanel .notif-ts{ color:#64748b !important; opacity:1 !important; }
+#notifPanel .notif-type{
+  background: rgba(15,23,42,.06) !important;
+}
+
+/* Seen state: don't fade text; just soften bg */
+#notifPanel .notif-bubble.seen{
+  opacity:1 !important;
+  background: #f8fafc !important;
+  border-color: rgba(15,23,42,.08) !important;
+}
+
+/* Dark theme */
+html[data-theme="dark"] #notifPanel{
+  background: rgba(11,16,32,.96) !important;
+  color:#f8fafc !important;
+}
+html[data-theme="dark"] #notifPanel .notif-bubble{
+  background: rgba(30,41,59,.92) !important;
+  border-color: rgba(148,163,184,.18) !important;
+  color:#f8fafc !important;
+}
+html[data-theme="dark"] #notifPanel .notif-title,
+html[data-theme="dark"] #notifPanel .notif-msg{
+  color:#f8fafc !important;
+}
+html[data-theme="dark"] #notifPanel .notif-meta{
+  color:#cbd5e1 !important;
+  opacity:1 !important;
+}
+html[data-theme="dark"] #notifPanel .notif-ts{
+  color:#94a3b8 !important;
+  opacity:1 !important;
+}
+html[data-theme="dark"] #notifPanel .notif-type{
+  background: rgba(255,255,255,.08) !important;
+}
+html[data-theme="dark"] #notifPanel .notif-bubble.seen{
+  opacity:1 !important;
+  background: rgba(30,41,59,.72) !important;
+}
+
+/* --- Panel sade: Liste "Oyunlar/Kişiler" görünüm toggle'ını gizle --- */
+#viewPanel .seg[title="Görünüm"]{ display:none !important; }
+
+/* --- Arama kutusunu (Liste) desktop'ta biraz daralt --- */
+@media (min-width: 981px){
+  #viewPanel .filters .input{ max-width:460px; flex:0 1 460px; }
+}
+
+/* --- PDF indir: yazdırma görünümü (Save as PDF) --- */
+@media print{
+  header, .nav, #tabbar, .actions, .pill, .notifPanel{ display:none !important; }
+  body{ background:#fff !important; }
+  .wrap{ max-width:none !important; padding:0 !important; }
+  #viewPanel, #viewDistribution, #viewIntersection, #viewFiguran{ display:none !important; }
+  #viewCharts{ display:block !important; }
+  #chartDrawer{ display:none !important; }
+  canvas{ border:0 !important; }
+}
+
+
+/* --- Mobile Tab Bar (thumb-driven) --- */
+.tabbar{display:none;}
+@media (max-width: 980px){
+  body{ padding-bottom: 76px; }
+  .nav{ display:none !important; }
+  .tabbar{
+    display:flex;
+    position:fixed;
+    left:12px; right:12px; bottom:12px;
+    height:64px;
+    border-radius:18px;
+    border:1px solid color-mix(in srgb, var(--line) 70%, transparent 30%);
+    background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+    box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    overflow:hidden;
+    z-index:9999;
+    pointer-events:auto;
+  }
+  .tabbar .tb{
+    flex:1;
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+  }
+  .tabbar .tb .ico{ font-size:20px; line-height:1; }
+  .tabbar .tb .lbl{ font-size:11px; font-weight:800; letter-spacing:.2px; }
+  .tabbar .tb.active{
+    color:var(--text);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
+  }
+}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+
+<style>
+/* ===== IDT Theme Shell (UI-only) ===== */
+:root{
+  --bg:#e9ded1; --card:#ffffff; --text:#16161a; --muted:#5a5560;
+  --accent:#7a1e2c; --accent2:#c07a2a; --ok:#18794e;
+  --line: rgba(16,24,40,.12);
+  --shadow:0 10px 30px rgba(24,16,8,.12);
+  --radius:18px;
+}
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow:hidden;
+}
+
+/* Shell layout */
+.idt-shell{ display:flex; height:100vh; }
+.idt-sidebar{
+  width:260px; flex-shrink:0;
+  background:#1a1a1a; color:#fff;
+  display:flex; flex-direction:column;
+  padding:20px;
+}
+.idt-logo{
+  color: var(--accent2);
+  font-weight:900;
+  font-size:1.05rem;
+  margin-bottom:22px;
+  padding:10px 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.idt-item{
+  display:flex; align-items:center; gap:12px;
+  padding:14px;
+  margin-bottom:8px;
+  border-radius:12px;
+  cursor:pointer;
+  color:#ddd;
+  border:1px solid transparent;
+  user-select:none;
+}
+.idt-item:hover{ background: rgba(255,255,255,.06); color:#fff; }
+.idt-item.active{ background: var(--accent); color:#fff; border-color: var(--accent2); }
+
+.idt-main{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.idt-topnav{
+  height:70px; background:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 22px;
+  border-bottom: 1px solid var(--line);
+}
+.idt-top-actions{ display:flex; gap:10px; align-items:center; }
+.idt-pill{
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:900;
+  font-size:12px;
+  cursor:pointer;
+  border:1px solid var(--line);
+  background:#f7f7f7;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.idt-pill.primary{ background: var(--accent); color:#fff; border-color: rgba(0,0,0,.08); }
+.idt-pill.ok{ background: var(--ok); color:#fff; border-color: rgba(0,0,0,.08); text-decoration:none; }
+.idt-badge{
+  background: var(--accent2);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  padding:2px 7px;
+  border-radius:999px;
+  margin-left:6px;
+  border:2px solid #fff;
+}
+
+/* Content area */
+.idt-content{ flex:1; overflow:auto; padding:22px; }
+
+/* ===== Map old app layout to this theme ===== */
+/* Hide old chrome that clashes, keep DOM for logic */
+#tabbar{ display:none !important; }
+/* Many old wrappers have their own padding; soften */
+.wrap{ max-width: 1240px !important; margin:0 auto !important; }
+
+/* KPI cards: use existing #kpis / .kpi if present */
+#kpis, .kpis{ gap:14px !important; }
+.kpi{
+  background:#fff !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  border-left: 5px solid var(--accent2) !important;
+}
+.kpi .label{ color: var(--muted) !important; font-weight:900 !important; }
+.kpi .value{ color: var(--accent) !important; font-weight:900 !important; }
+
+/* Make dark panels light for readability */
+.drawer, #details, #drawerList, #drawerTitle, #drawerSub,
+#viewPanel, #viewCharts, #viewIntersection, #viewFiguran, #viewDistribution,
+.panel, .panel *{
+  color: var(--text) !important;
+}
+.panel{
+  background:#fff !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  border:1px solid var(--line) !important;
+}
+
+/* Notification panel: fixed drawer */
+#notifPanel{
+  position: fixed !important;
+  top: 78px !important;
+  right: 18px !important;
+  width: min(460px, 92vw) !important;
+  max-height: 72vh !important;
+  overflow:auto !important;
+  z-index: 99999 !important;
+  background:#fff !important;
+  border:1px solid var(--line) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--shadow) !important;
+}
+#notifPanel.hidden, .hidden#notifPanel{ display:none !important; }
+
+/* Mobile */
+@media (max-width: 860px){
+  body{ overflow:auto; }
+  .idt-shell{ flex-direction:column; height:auto; min-height:100vh; }
+  .idt-sidebar{
+    width:100%;
+    flex-direction:row;
+    align-items:stretch;
+    gap:8px;
+    overflow:auto;
+  }
+  .idt-logo{ display:none; }
+  .idt-item{ min-width:190px; margin-bottom:0; }
+  .idt-topnav{ position:sticky; top:0; z-index:50; }
+  .idt-content{ padding:14px; }
+}
+</style>
+
+</head>
+<body>
+  <div class="idt-shell">
+    <aside class="idt-sidebar" aria-label="Menü">
+      <div class="idt-logo">İZMİR DT</div>
+      <div class="idt-item active" id="sidePanel"><span>🏠</span><b>Oyun Listesi</b></div>
+      <div class="idt-item" id="sideCharts"><span>📊</span><b>Grafikler</b></div>
+      <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
+      <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b></div>
+      <div class="idt-item" id="sideNotifs"><span>🔔</span><b>Bildirimler</b></div>
+    </aside>
+
+    <main class="idt-main">
+      <header class="idt-topnav">
+        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+        <div class="idt-top-actions">
+          <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
+          <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
+          <a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
+        </div>
+      </header>
+
+      <div class="idt-content">
+        
+<header>
+  <div class="top">
+    <div class="brand">
+      <div class="logo">IDT</div>
+      <div>
+        <h1><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></h1>
+        </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
+      <span id="status" class="pill">⏳ Yükleniyor…</span>
+      <button class="btn" id="reloadBtn">↻ Yenile</button>
+
+      <div class="menu">
+        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
+        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
+          <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
+          <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
+        </div>
+      </div>
+
+      <div class="notif">
+        <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
+          🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
+        </button>
+        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
+          <div class="notifHd">
+            <div>
+              <b>Bildirimler</b>
+              <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <button class="btn" id="notifRefresh">↻</button>
+              <button class="btn" id="notifClose">✕</button>
+            </div>
+          </div>
+          <div class="notifBd" id="notifList">
+            <div class="empty">LOG okunuyor…</div>
+          </div>
+        </div>
+      </div>
+      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="tab active" id="tabPanel">Panel</button>
+    <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
+    <button class="tab" id="tabIntersection">Kesişim Analizi</button>
+    <button class="tab" id="tabFiguran">Figüranlar</button>
+    <button class="tab" id="tabCharts">Grafikler</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis" id="kpis">
+    <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
+    <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
+    <div class="kpi soft3" data-go="Panel" data-mode="rows" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
+    <div class="kpi soft4" data-go="Figuran" data-mode="figuran" role="button" tabindex="0" aria-label="Figüran listesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+  </div>
+
+  <!-- PANEL -->
+  <section id="viewPanel">
+    <div class="card">
+      <div class="hd">
+        <h2>Liste</h2>
+        <div class="filters">
+          <div class="input" title="Ara">
+            🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
+            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
+              <option value="all">Tümü</option>
+              <option value="play">Oyun</option>
+              <option value="person">Kişi</option>
+              <option value="role">Görev</option>
+            </select></div>
+            <button class="q-clear" id="qClear" title="Temizle">✕</button>
+          </div>
+<div class="seg" title="Görünüm">
+            <button id="btnPlays" class="active">🎭 Oyunlar</button>
+            <button id="btnPeople">👥 Kişiler</button>
+          </div>
+
+          <button class="btn" id="clearBtn">Temizle</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid">
+          <div>
+            <div class="list" id="list"></div>
+            <div class="small" id="hint" style="margin-top:10px"></div>
+          </div>
+          <div class="card" style="box-shadow:none">
+            <div class="hd">
+              <h2>Detay</h2>
+              <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
+</div>
+            <div class="bd" id="details">
+              <div class="empty">Soldan bir oyun veya kişi seç.</div>
+            </div>
+            <footer>
+              <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
+              <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
+  <section id="viewDistribution" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Oyunlara Göre Personel Dağılımı</h2>
+        <div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="Ara">
+            🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/>
+          </div>
+          <button class="btn" id="dClear">Temizle</button>
+        </div>
+        <div id="distributionBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KESİŞİM -->
+  <section id="viewIntersection" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Kesişim Analizi</h2>
+        <div class="small">İki oyunu seç — ortak personeli ve görevlerini gösterir.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="1. Oyun">
+            1️⃣
+            <select id="p1"></select>
+          </div>
+          <div class="input" title="2. Oyun">
+            2️⃣
+            <select id="p2"></select>
+          </div>
+          <button class="btn" id="swapBtn">⇄ Değiştir</button>
+        </div>
+        <div id="intersectionBox"></div>
+      </div>
+      <footer>
+        Not: Kesişim için kişi hücresindeki “virgül / ve / / / satır sonu” ayrımları otomatik yapılır.
+      </footer>
+    </div>
+  </section>
+
+  <!-- FİGÜRAN -->
+  <section id="viewFiguran" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Figüranlar</h2>
+        <div class="small">Apps Script mantığıyla: çoklu kişi varsa sadece <code>(Figüran)</code> etiketi olanlar alınır.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="Ara">
+            🔎 <input id="fq" type="search" placeholder="Figüran / oyun ara…" autocomplete="off"/>
+          </div>
+          <button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
+                    <button class="btn" id="fClear">Temizle</button>
+        </div>
+        <div id="figuranBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAFİKLER -->
+  <section id="viewCharts" style="display:none">
+    <div class="chartsNav">
+      <button class="tab active" id="chartTabRoles">Görevlere Göre Dağılım</button>
+      <button class="tab" id="chartTabCats">Kategori Dağılımı</button>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1.1fr .9fr">
+      <div class="card">
+        <div class="hd">
+          <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
+          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"><button class="btn" id="chartDownloadBtn" title="Grafiği PDF olarak indir">🧾 PDF indir</button></div>
+        </div>
+        <div class="bd">
+          <canvas id="chartMain" width="900" height="340"></canvas>
+          <div class="mobileChartWrap">
+            <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
+            <div class="mobileChartList" id="chartMobileList"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="drawer hidden" id="chartDrawer">
+        <div class="hd">
+          <div>
+            <div class="drawerTitle" id="drawerTitle">Seçim</div>
+            <div class="drawerSub" id="drawerSub">—</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
+            <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
+            <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
+            <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
+            <button class="btn" id="drawerClose">✕</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="input" style="min-width:unset" title="Ara">
+            🔎 <input id="drawerSearch" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/>
+          </div>
+          <div class="miniList" id="drawerList"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+  <!-- İSTATİSTİKLER -->
+  
+
+</div>
+
+
+
+  <!-- Mobile detail modal -->
+  <div id="mobileOverlay" class="overlay hidden" aria-hidden="true"></div>
+  <div id="mobileModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detay">
+    <div class="modalHead">
+      <div class="modalTitle">Detay</div>
+      <button id="modalClose" class="btn sm">Kapat</button>
+    </div>
+    <div id="mobileContent" class="modalBody"></div>
+  </div>
+
+
+  <!-- Mobile Tab Bar -->
+  <nav class="tabbar" id="tabbar" aria-label="Alt Menü">
+    <button class="tb active" data-tab="Panel" type="button"><span class="ico">🏠</span><span class="lbl">Panel</span></button>
+    <button class="tb" data-tab="Analiz" type="button"><span class="ico">🧩</span><span class="lbl">Analiz</span></button>
+    <button class="tb" data-tab="Figuran" type="button"><span class="ico">🎟️</span><span class="lbl">Figüran</span></button>
+    <button class="tb" data-tab="Grafikler" type="button"><span class="ico">📈</span><span class="lbl">Grafikler</span></button>
+  </nav>
+
+
+      </div>
+    </main>
+  </div>
+
+<script>
+/* UI Köprüsü: Mantığı bozmaz, sadece mevcut butonlara tıklar */
+(function(){
+  const click = (id)=>{ const el=document.getElementById(id); if(el) el.click(); };
+  const on = (id, fn)=>{ const el=document.getElementById(id); if(!el) return; el.addEventListener('click', fn); };
+
+  const activate = (id)=>{
+    document.querySelectorAll('.idt-item').forEach(x=>x.classList.remove('active'));
+    const el=document.getElementById(id); if(el) el.classList.add('active');
+  };
+
+  // sidebar -> existing tabs
+  on('sidePanel', ()=>{ activate('sidePanel'); click('tabPanel'); });
+  on('sideCharts', ()=>{ activate('sideCharts'); click('tabCharts'); });
+  on('sideIntersect', ()=>{ activate('sideIntersect'); click('tabIntersection'); });
+  on('sideFiguran', ()=>{ activate('sideFiguran'); click('tabFiguran'); });
+  on('sideNotifs', ()=>{ activate('sideNotifs'); click('notifBtn'); }); // keeps existing logic
+
+  // top actions -> existing buttons
+  on('topReload', ()=> click('reloadBtn'));
+  on('topNotif',  ()=> click('notifBtn'));
+  on('topSheet',  ()=> click('sheetBtn'));
+
+  // Mirror status text
+  const syncStatus = ()=>{
+    const s=document.getElementById('status');
+    const dst=document.getElementById('statusMirror');
+    if(s && dst) dst.textContent = s.textContent || '●';
+  };
+  setInterval(syncStatus, 500); syncStatus();
+
+  // Badge mirror
+  const syncBadge = ()=>{
+    const c=document.getElementById('notifCount');
+    const b=document.getElementById('topNotifBadge');
+    if(!c||!b) return;
+    const v=(c.textContent||'0').trim();
+    if(v && v!=='0'){ b.textContent=v; b.style.display='inline-flex'; }
+    else{ b.style.display='none'; }
+  };
+  setInterval(syncBadge, 700); syncBadge();
+})();
+</script>
+
+<script src="app.js"></script>
+</body>
+</html>
