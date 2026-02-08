@@ -1248,6 +1248,16 @@ select{
 /* If the detail container is a column inside grid, ensure grid can align */
 .grid, .twoCol, .panelGrid{ align-items: start !important; }
 
+
+
+/* --- Distribution mode toggle (Dağılım / Görev Ataması) --- */
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:rgba(255,255,255,.25)}
+.segBtn{border:0; padding:8px 12px; background:transparent; cursor:pointer; font-weight:700; color:var(--text)}
+.segBtn.active{background:var(--accent); color:#fff}
+@media (max-width: 720px){
+  .seg{width:100%; margin-left:0 !important; margin-top:10px}
+  .segBtn{flex:1}
+}
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1589,13 +1599,16 @@ body{
   <section id="viewDistribution" style="display:none">
     <div class="card">
       <div class="hd">
-        <h2>Oyunlara Göre Personel Dağılımı</h2>
-        <div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
+        <h2 id="distTitle">Oyunlara Göre Personel Dağılımı</h2>
+        <div class="small"><span id="distDesc">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</span></div>
       </div>
       <div class="bd">
         <div class="filters" style="margin-bottom:10px">
           <div class="input" title="Ara">
-            🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/><button class="btn" id="distCopyBtn" type="button" title="Filtreli dağılım listesini Excel\'e kopyala">📋 Excel’e Kopyala</button>
+            🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/><div class="seg" id="distModeSeg" style="margin-left:10px">
+              <button class="segBtn active" id="distModeDist" type="button" title="Kişiye göre dağılım">Dağılım</button>
+              <button class="segBtn" id="distModeAssign" type="button" title="Görev kombinasyonuna göre gruplu">Görev Ataması</button>
+            </div><button class="btn" id="distCopyBtn" type="button" title="Filtreli dağılım listesini Excel\'e kopyala">📋 Excel’e Kopyala</button>
           </div>
           <button class="btn" id="dClear">Temizle</button>
         </div>
