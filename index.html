@@ -1309,6 +1309,21 @@ select{
 .cmpLine .p{ font-weight: 900; }
 .cmpLine .r{ margin-top: 2px; color: var(--muted); font-size: 12.5px; }
 
+
+/* Hide sidebar badge for tools, row count shown inside the page */
+#sideRowsCount{display:none !important;}
+
+/* Multi-select search */
+.msSearch{width:100%;padding:10px 10px;border:1px solid var(--line);border-radius:12px;margin:10px 0 10px;background:var(--card);color:var(--text);}
+.msPanel{padding:10px;}
+
+/* Sticky result panel in tools */
+.toolGrid{align-items:start;}
+.toolCardSticky{position:sticky;top:86px;align-self:start;max-height:calc(100vh - 130px);overflow:auto;}
+
+/* Segmented control no wrap */
+.seg{flex-wrap:nowrap;gap:8px;}
+.segBtn{white-space:nowrap;}
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1477,7 +1492,7 @@ body{
 
       <div class="idt-item active" id="sidePlays"><span>🎭</span><b>Aktif Oyun</b><span class="idt-count" id="sidePlaysCount">-</span></div>
       <div class="idt-item" id="sidePeople"><span>👥</span><b>Toplam Personel</b><span class="idt-count" id="sidePeopleCount">-</span></div>
-      <div class="idt-item" id="sideRows"><span>🧾</span><b>Görev Ataması</b><span class="idt-count" id="sideRowsCount">-</span></div>
+      <div class="idt-item" id="sideRows"><span>🧾</span><b>Sorgu & Karşılaştır</b><span class="idt-count" id="sideRowsCount">-</span></div>
 
       <div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
       <div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
@@ -1612,8 +1627,9 @@ body{
   <div class="card">
     <div class="secHead">
       <div>
-        <h2 class="h2">Görev Ataması</h2>
-        <div class="muted small">Atama / sorgulama / karşılaştırma aracı.</div>
+        <h2 class="h2">Sorgulama & Karşılaştırma</h2>
+        <div class="muted small">Sorgulama ve karşılaştırma aracı.</div>
+        <div class="muted small" id="assignRowCount" style="margin-top:4px;"></div>
       </div>
       <div class="toolbar">
         <div class="seg" role="tablist" aria-label="Görev Ataması Modu">
@@ -1634,7 +1650,7 @@ body{
             <div class="toolLabel">Görevler</div>
             <details class="ms" id="msRoles">
               <summary class="msSum"><span class="msTxt" id="msRolesTxt">Seç…</span><span class="msBadge" id="msRolesBadge">0</span></summary>
-              <div class="msPanel"><div class="msList" id="msRolesList"></div></div>
+              <div class="msPanel"><input class="msSearch" id="msRolesSearch" type="text" placeholder="Görev ara…"/><div class="msList" id="msRolesList"></div></div>
             </details>
           </div>
 
@@ -1642,7 +1658,7 @@ body{
             <div class="toolLabel">Oyunlar</div>
             <details class="ms" id="msPlays">
               <summary class="msSum"><span class="msTxt" id="msPlaysTxt">Seç…</span><span class="msBadge" id="msPlaysBadge">0</span></summary>
-              <div class="msPanel"><div class="msList" id="msPlaysList"></div></div>
+              <div class="msPanel"><input class="msSearch" id="msPlaysSearch" type="text" placeholder="Oyun ara…"/><div class="msList" id="msPlaysList"></div></div>
             </details>
           </div>
 
@@ -1650,7 +1666,7 @@ body{
             <div class="toolLabel">Kişiler</div>
             <details class="ms" id="msPeople">
               <summary class="msSum"><span class="msTxt" id="msPeopleTxt">Seç…</span><span class="msBadge" id="msPeopleBadge">0</span></summary>
-              <div class="msPanel"><div class="msList" id="msPeopleList"></div></div>
+              <div class="msPanel"><input class="msSearch" id="msPeopleSearch" type="text" placeholder="Kişi ara…"/><div class="msList" id="msPeopleList"></div></div>
             </details>
           </div>
 
@@ -1660,7 +1676,7 @@ body{
           </div>
         </div>
 
-        <div class="toolCard">
+        <div class="toolCard toolCardSticky">
           <div class="toolTitle">Sonuç</div>
           <div class="toolSub" id="assignFilterMeta">—</div>
           <div class="tableWrap" style="margin-top:10px">
@@ -1678,7 +1694,7 @@ body{
       <div class="toolGrid" style="grid-template-columns: 1fr">
         <div class="toolCard">
           <div class="toolTitle">Karşılaştır</div>
-          <div class="toolSub">İki kişiyi seç — ortak oyunlar ve farklılıklar otomatik gelir.</div>
+          <div class="toolSub">İki kişiyi seç. Aşağıda 3 kart oluşur: Ortak Oyunlar / Sadece A / Sadece B. Kartların içinde o oyundaki görevler listelenir.</div>
 
           <div class="compareTop">
             <div class="comparePick">
