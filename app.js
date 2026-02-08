@@ -246,6 +246,29 @@ function escapeHtml(s) {
     .replaceAll("'","&#039;");
 }
 
+/* ===== Step7: Badge + EmptyState helpers (UI only) ===== */
+function badgeClassForRole(role){
+  const r = (role||"").toString().toLocaleUpperCase("tr-TR");
+  // Art / stage
+  if (/(OYUNCU|SANAT|REJİ|KOREOGRAF|DRAMATURG|MÜZİK|ORKESTRA|ŞEF|SOLİST)/.test(r)) return "badge--art";
+  // Figüran
+  if (/(FİGÜRAN|FIGÜRAN)/.test(r)) return "badge--fig";
+  // Technical
+  if (/(IŞIK|SES|KONDÜVİT|KONDUVİT|DEKOR|AKSESUAR|PERUK|MAKYAJ|KOSTÜM|SAHNE|KULİS|TEKNİK)/.test(r)) return "badge--tech";
+  // Admin / coordination
+  if (/(AMİR|SÜPERVİZÖR|KOORD|YÖNETMEN YARD|ASİSTAN|MÜDÜR|Sorumlusu)/.test(r)) return "badge--admin";
+  return "badge--muted";
+}
+function roleBadgeHTML(role){
+  const cls = badgeClassForRole(role);
+  return `<span class="badge ${cls}">${escapeHtml(role||"")}</span>`;
+}
+function emptyStateHTML(title, desc){
+  return `<div class="emptyState"><strong>${escapeHtml(title)}</strong><div style="margin-top:6px">${escapeHtml(desc||"")}</div></div>`;
+}
+/* ===== End Step7 ===== */
+
+
 function personTag(name){
   const n=(name||"").toString().trim();
   return (n && retiredSet && retiredSet.has(n)) ? `<span class="tag retired">Kurumdan Emekli Sanatçı</span>` : "";
@@ -830,7 +853,7 @@ function renderDetails(it){
       <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
-          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
+          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${roleBadgeHTML(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
     `;
@@ -849,7 +872,7 @@ function renderDetails(it){
             <div style="font-weight:850;margin:0 0 8px">${escapeHtml(p)}</div>
             <table class="table">
               <thead><tr><th>Kategori</th><th>Görev</th></tr></thead>
-              <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td></tr>`).join("")}</tbody>
+              <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${roleBadgeHTML(r.role)}</td></tr>`).join("")}</tbody>
             </table>
           </div>
         `;
@@ -2235,7 +2258,7 @@ function renderAssignFilter_(){
     els.assignRowCount.textContent = `Kaynak satır: ${srcCount} • Ayrıştırılmış kayıt: ${expandedCount}`;
   }
   if(els.assignFilterMeta){
-    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}`;
+    els.assignFilterMeta.textContent = `Sonuç (ayrıştırılmış): ${out.length} satır • Kaynak: ${srcCount}`);
   }
   if(els.assignFilterTbody){
     if(!assignState.roles.size && !assignState.plays.size && !assignState.people.size){
@@ -2243,7 +2266,7 @@ function renderAssignFilter_(){
     }else if(!out.length){
       els.assignFilterTbody.innerHTML = `<tr><td colspan="4"><div class="emptyHint">Sonuç yok.</div></td></tr>`;
     }else{
-      els.assignFilterTbody.innerHTML = limited.map(r=>`<tr><td>${escapeHtml(r.play)}</td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`).join("");
+      els.assignFilterTbody.innerHTML = limited.map(r=>`<tr><td>${escapeHtml(r.play)}</td><td>${escapeHtml(r.category||"")}</td><td>${roleBadgeHTML(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`).join("");
     }
   }
 }
@@ -2384,4 +2407,5 @@ function renderAssignTool(){
   if(isFilter) renderAssignFilter_();
   else renderCompare_();
 }
+
 
