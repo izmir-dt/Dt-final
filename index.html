@@ -3,77 +3,61 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-  <title>İDT Repertuvar Sistemi</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <title>İDT Takip</title>
   <style>
     :root {
       --idt-bordo: #7a1e2c;
-      --idt-altin: #c07a2a;
-      --bg-renk: #f8f5f2;
-      --kart-renk: #ffffff;
-      --yazi-ana: #1a1a1a;
-      --yazi-gri: #666666;
-      --golge: 0 10px 30px rgba(0,0,0,0.05);
+      --idt-altin: #c19a6b;
+      --bg: #f5f5f7;
+      --card: #ffffff;
+      --text: #1d1d1f;
     }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-renk);
-      color: var(--yazi-ana);
-      margin: 0; padding: 0;
-      -webkit-font-smoothing: antialiased;
-    }
+    body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+    
+    header { background: var(--idt-bordo); color: white; padding: 25px 20px 45px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: center; }
+    header h1 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
 
-    /* Üst Bar */
-    header {
-      background: var(--idt-bordo);
-      color: white;
-      padding: 25px 20px 50px 20px;
-      text-align: center;
-      border-bottom-left-radius: 40px;
-      border-bottom-right-radius: 40px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
+    .kpi-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: -25px 20px 20px; }
+    .kpi-card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+    .kpi-card b { display: block; font-size: 1.8rem; color: var(--idt-bordo); }
+    .kpi-card span { font-size: 0.7rem; color: #888; text-transform: uppercase; font-weight: bold; }
 
-    header h1 { font-size: 1.1rem; margin: 0; letter-spacing: 1px; font-weight: 800; }
+    .search-area { padding: 0 20px; margin-bottom: 20px; }
+    #searchInput { width: 100%; padding: 15px 20px; border-radius: 25px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-    /* İstatistik Kartları */
-    .stats-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin: -30px 20px 20px 20px;
-    }
+    .list-area { padding: 0 20px 100px; }
+    .item { background: var(--card); margin-bottom: 12px; padding: 15px; border-radius: 15px; border-left: 5px solid var(--idt-altin); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .item h3 { margin: 0; font-size: 15px; }
+    .item p { margin: 5px 0 0; font-size: 13px; color: #666; }
 
-    .stat-card {
-      background: var(--kart-renk);
-      padding: 20px;
-      border-radius: 20px;
-      box-shadow: var(--golge);
-      text-align: center;
-      border: 1px solid rgba(122, 30, 44, 0.05);
-    }
+    .tabbar { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 12px 0 30px; border-top: 1px solid #eee; }
+    .tab { background: none; border: none; font-size: 10px; font-weight: bold; color: #888; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .tab.active { color: var(--idt-bordo); }
+    .tab i { font-style: normal; font-size: 20px; }
+  </style>
+</head>
+<body>
 
-    .stat-card span { display: block; }
-    .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--idt-bordo); }
-    .stat-label { font-size: 0.7rem; color: var(--yazi-gri); text-transform: uppercase; margin-top: 5px; font-weight: 600; }
+  <header><h1>İZMİR DEVLET TİYATROSU</h1></header>
 
-    /* Arama Çubuğu */
-    .search-wrapper { padding: 0 20px; margin-bottom: 20px; }
-    #searchInput {
-      width: 100%;
-      padding: 15px 25px;
-      border-radius: 30px;
-      border: none;
-      background: var(--kart-renk);
-      box-shadow: var(--golge);
-      font-size: 16px;
-      outline: none;
-      box-sizing: border-box;
-    }
+  <div class="kpi-container">
+    <div class="kpi-card"><b id="valOyun">0</b><span>AKTİF OYUN</span></div>
+    <div class="kpi-card"><b id="valFiguran">0</b><span>TOPLAM KİŞİ</span></div>
+  </div>
 
-    /* Liste Elemanları */
-    .list-wrapper { padding: 0 20px 100px 20px; }
-    .data-item {
-      background: var(--kart-renk);
-      margin-bottom: 12px;
+  <div class="search-area">
+    <input type="text" id="searchInput" placeholder="Oyun veya kişi ara...">
+  </div>
+
+  <main id="list" class="list-area">
+    </main>
+
+  <nav class="tabbar">
+    <button class="tab active"><i>🏠</i>PANEL</button>
+    <button class="tab"><i>📊</i>ANALİZ</button>
+    <button class="tab"><i>🔔</i>BİLDİRİM</button>
+  </nav>
+
+</body>
+</html>
