@@ -1128,19 +1128,19 @@ button, a{touch-action:manipulation;}
 }
 
 
-/* === HOTFIX: Mobil sola hizalama + kart metinleri === */
-@media (max-width: 520px){
-  .kpi{
-    justify-content:flex-start !important;
-    align-items:flex-start !important;
-    text-align:left !important;
-  }
-  .kpi > div{ text-align:left !important; }
-  .kpi .label, .kpi .value{ text-align:left !important; }
-  .item, .item *{ text-align:left !important; }
-  .chipRow{ justify-content:flex-start !important; }
-  .chipLeft{ align-items:flex-start !important; }
+/* --- HOTFIX: Mobile/Detay kart metinleri SOLA yasla --- */
+@media (max-width: 820px){
+  .drawer, .drawer * { text-align:left !important; }
+  .person-card, .person-card * { text-align:left !important; }
+  .mini, .mini * { text-align:left !important; }
+  .card, .card * { text-align:left; }
+  .kpi > div { text-align:left !important; }
 }
+/* Bildirim paneli: satırlar daha okunur */
+.notif-item{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.03)}
+.notif-item .toprow{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:700}
+.notif-item .meta{display:flex;gap:8px;flex-wrap:wrap;opacity:.9}
+.notif-item .msg{opacity:.95;line-height:1.25}
 
 </style>
 </head>
