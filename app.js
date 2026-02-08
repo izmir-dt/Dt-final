@@ -1575,6 +1575,9 @@ function setActiveTab(which){
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
 
+  if(which==="Assign"){ try{ renderAssign(); }catch(e){ console.error(e); } }
+
+
   // URL hash (geri/ileri ve yenilemede aynı sekme)
   const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
     Assign:"gorev"
@@ -1588,13 +1591,7 @@ function setActiveTab(which){
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
     setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
   }
-
-  if(which==="Assign" && rows.length){
-    closeDrawer();
-    setTimeout(()=>{ try{ renderAssign(); }catch(e){ console.error(e); } }, 0);
-  }
 }
-
 
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
@@ -1603,6 +1600,15 @@ els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assign"));
 
+// Sidebar (yeni UI) uyumluluğu: varsa #sideRows Görev Ataması'nı açsın
+try{
+  const sideRows = document.getElementById("sideRows");
+  if(sideRows){
+    sideRows.addEventListener("click", ()=>setActiveTab("Assign"));
+  }
+}catch(e){console.warn(e);}
+
+
 function tabFromHash_(){
   const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
   if(h==="panel") return "Panel";
@@ -1610,7 +1616,7 @@ function tabFromHash_(){
   if(h==="kesisim" || h==="intersection") return "Intersection";
   if(h==="figuran" || h==="figüran") return "Figuran";
   if(h==="grafikler" || h==="charts") return "Charts";
-  if(h==="gorev" || h==="görev" || h==="assign" || h==="atama") return "Assign";
+  if(h==="gorev" || h==="görev" || h==="gorevatamasi" || h==="görevataması" || h==="gorev-atamasi" || h==="görev-ataması" || h==="assign") return "Assign";
   return null;
 }
 
