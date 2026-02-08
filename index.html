@@ -1254,6 +1254,14 @@ select{
 .segBtn{border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:700; cursor:pointer; color:var(--muted); font-size:13px; line-height:1;}
 .segBtn.isActive{background:var(--card); color:var(--text); box-shadow:0 6px 18px rgba(24,16,8,.10);}
 
+
+/* no-ellipsis: hiçbir yerde "..." istemiyoruz */
+.tag, .pill, .notif-card .line, .notif-card .sub, .notif-card .meta {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1801,7 +1809,7 @@ body{
   // Sidebar
   on('sidePlays',  ()=>{ activate('sidePlays');  clickKpiMode('plays'); });
   on('sidePeople', ()=>{ activate('sidePeople'); clickKpiMode('people'); });
-  on('sideRows',   ()=>{ activate('sideRows');   clickKpiMode('rows'); });
+        on('sideRows', ()=>{ activate('sideRows'); clickHidden('tabAssign'); /* Görev Ataması */ });
 
   on('sideDist', ()=>{ activate('sideDist'); const mi=document.getElementById('advDist'); if(mi) mi.click(); else click('tabDistribution'); });
   on('sideCharts', ()=>{ activate('sideCharts'); click('tabCharts'); });
