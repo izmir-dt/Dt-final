@@ -1241,9 +1241,9 @@ select{
 /* Keep detail panel visible while scrolling */
 #detailPane, .detailPane, #detailBox, .detailBox{
   position: sticky !important;
-  top: 92px !important;
+  top: calc(var(--hdrH) + 16px) !important;
   align-self: start !important;
-  max-height: calc(100vh - 112px) !important;
+  max-height: calc(100vh - var(--hdrH) - 32px) !important;
   overflow: auto !important;
 }
 /* If the detail container is a column inside grid, ensure grid can align */
@@ -1382,6 +1382,47 @@ select{
   max-height: calc(100vh - 180px);
   overflow: auto;
 }
+
+
+/* === UI Fixes (final) === */
+:root{ --hdrH:72px; }
+
+/* Compare (Kişi A/B) layout */
+.compareRow{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
+.comparePick{ flex:1 1 320px; min-width:260px; }
+.comparePick .toolInput{ width:100%; }
+.compareActions{ display:flex; gap:10px; align-items:center; margin-left:auto; }
+@media (max-width: 820px){
+  .compareActions{ width:100%; justify-content:flex-end; }
+}
+
+/* Sticky right panels: use real header height */
+.stickyRight{ position:sticky; top:calc(var(--hdrH) + 16px); max-height:calc(100vh - var(--hdrH) - 32px); overflow:auto; }
+.stickyRight .tableWrap{ max-height:none; }
+
+/* Tables: keep numeric + name on one line where possible */
+.table .cell-nowrap{ white-space:nowrap; }
+.table .cell-ellipsis{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.figuranTable td:nth-child(1),
+.distTable td:nth-child(1){ width:52px; }
+.figuranTable td:nth-child(2),
+.distTable td:nth-child(1),
+.distTable td:nth-child(2){ white-space:nowrap; }
+.figuranTable td:nth-child(2) b,
+.distTable td:nth-child(1) b{ display:inline-block; max-width:260px; vertical-align:top; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width: 1100px){
+  .figuranTable td:nth-child(2) b,
+  .distTable td:nth-child(1) b{ max-width:180px; }
+}
+
+/* Per-field clear buttons in Query filters */
+.msClearBtn{ margin-left:auto; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; font-weight:700; }
+.msClearBtn:hover{ filter:brightness(.98); }
+.msRow{ display:flex; gap:12px; align-items:flex-start; }
+.msRow .ms{ flex:1; }
+
+/* Sidebar separator symmetry */
+.sidebar{ border-right:1px solid rgba(255,255,255,.10); }
 
 </style>
 
@@ -1535,6 +1576,47 @@ body{
   .idt-topnav{ position:sticky; top:0; z-index:50; }
   .idt-content{ padding:14px; }
 }
+
+/* === UI Fixes (final) === */
+:root{ --hdrH:72px; }
+
+/* Compare (Kişi A/B) layout */
+.compareRow{ display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
+.comparePick{ flex:1 1 320px; min-width:260px; }
+.comparePick .toolInput{ width:100%; }
+.compareActions{ display:flex; gap:10px; align-items:center; margin-left:auto; }
+@media (max-width: 820px){
+  .compareActions{ width:100%; justify-content:flex-end; }
+}
+
+/* Sticky right panels: use real header height */
+.stickyRight{ position:sticky; top:calc(var(--hdrH) + 16px); max-height:calc(100vh - var(--hdrH) - 32px); overflow:auto; }
+.stickyRight .tableWrap{ max-height:none; }
+
+/* Tables: keep numeric + name on one line where possible */
+.table .cell-nowrap{ white-space:nowrap; }
+.table .cell-ellipsis{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.figuranTable td:nth-child(1),
+.distTable td:nth-child(1){ width:52px; }
+.figuranTable td:nth-child(2),
+.distTable td:nth-child(1),
+.distTable td:nth-child(2){ white-space:nowrap; }
+.figuranTable td:nth-child(2) b,
+.distTable td:nth-child(1) b{ display:inline-block; max-width:260px; vertical-align:top; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width: 1100px){
+  .figuranTable td:nth-child(2) b,
+  .distTable td:nth-child(1) b{ max-width:180px; }
+}
+
+/* Per-field clear buttons in Query filters */
+.msClearBtn{ margin-left:auto; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer; font-weight:700; }
+.msClearBtn:hover{ filter:brightness(.98); }
+.msRow{ display:flex; gap:12px; align-items:flex-start; }
+.msRow .ms{ flex:1; }
+
+/* Sidebar separator symmetry */
+.sidebar{ border-right:1px solid rgba(255,255,255,.10); }
+
 </style>
 
 
@@ -1709,28 +1791,31 @@ body{
           <div class="toolTitle">Filtreler</div>
           <div class="toolSub">Birden fazla seçim yapabilirsin. Seçim yaptıkça tablo anında güncellenir.</div>
 
-          <div class="toolRow">
+          <div class="toolRow msRow">
             <div class="toolLabel">Görevler</div>
             <details class="ms" id="msRoles">
               <summary class="msSum"><span class="msTxt" id="msRolesTxt">Seç…</span><span class="msBadge" id="msRolesBadge">0</span></summary>
               <div class="msPanel"><input class="msSearch" id="msRolesSearch" type="text" placeholder="Görev ara…"/><div class="msList" id="msRolesList"></div></div>
             </details>
+          <button type="button" class="msClearBtn" id="msRolesClear">Temizle</button>
           </div>
 
-          <div class="toolRow">
+          <div class="toolRow msRow">
             <div class="toolLabel">Oyunlar</div>
             <details class="ms" id="msPlays">
               <summary class="msSum"><span class="msTxt" id="msPlaysTxt">Seç…</span><span class="msBadge" id="msPlaysBadge">0</span></summary>
               <div class="msPanel"><input class="msSearch" id="msPlaysSearch" type="text" placeholder="Oyun ara…"/><div class="msList" id="msPlaysList"></div></div>
             </details>
+          <button type="button" class="msClearBtn" id="msPlaysClear">Temizle</button>
           </div>
 
-          <div class="toolRow">
+          <div class="toolRow msRow">
             <div class="toolLabel">Kişiler</div>
             <details class="ms" id="msPeople">
               <summary class="msSum"><span class="msTxt" id="msPeopleTxt">Seç…</span><span class="msBadge" id="msPeopleBadge">0</span></summary>
               <div class="msPanel"><input class="msSearch" id="msPeopleSearch" type="text" placeholder="Kişi ara…"/><div class="msList" id="msPeopleList"></div></div>
             </details>
+          <button type="button" class="msClearBtn" id="msPeopleClear">Temizle</button>
           </div>
 
           <div class="toolActions">
