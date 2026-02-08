@@ -2,150 +2,125 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>İDT | Yönetim Sistemi</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <title>İDT Yönetim Paneli</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --idt-bordo: #7a1e2c; --idt-altin: #c07a2a;
-      --side-bg: #1e1e1e; --main-bg: #f4f1ee;
-      --text: #1a1a1a; --card: #ffffff;
+      --bg: #f8f5f2; --sidebar-bg: #121212; --card: #ffffff;
+      --text: #1a1a1a; --muted: #64748b;
     }
-    body { font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--main-bg); overflow: hidden; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; margin:0; display:flex; height:100vh; background:var(--bg); color:var(--text); overflow:hidden; }
 
     /* SOL PANEL */
-    .sidebar { width: 280px; background: var(--side-bg); color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-    .sidebar h2 { font-size: 1.1rem; color: var(--idt-altin); margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+    .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 25px; flex-shrink: 0; z-index: 100; }
+    .sidebar h2 { color: var(--idt-altin); font-size: 1.1rem; margin-bottom: 35px; border-left: 4px solid var(--idt-bordo); padding-left: 15px; }
 
     .nav-bar {
-      display: flex; align-items: center; gap: 15px; padding: 15px;
-      margin-bottom: 10px; border-radius: 12px; cursor: pointer;
-      transition: 0.3s; border: 1px solid transparent;
+      display: flex; align-items: center; gap: 14px; padding: 16px;
+      margin-bottom: 8px; border-radius: 14px; cursor: pointer; transition: 0.3s;
+      color: #94a3b8; border: 1px solid transparent;
     }
-    .nav-bar:hover { background: rgba(255,255,255,0.05); }
-    .nav-bar.active { background: var(--idt-bordo); border-color: var(--idt-altin); }
-    .nav-bar b { font-size: 15px; }
-    .nav-bar span { font-size: 20px; }
+    .nav-bar:hover { background: rgba(255,255,255,0.05); color: white; }
+    .nav-bar.active { background: var(--idt-bordo); color: white; border-color: var(--idt-altin); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-    /* SAĞ İÇERİK ALANI */
-    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    /* SAĞ İÇERİK */
+    .main-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
     
     .top-header { 
-      padding: 15px 30px; background: white; display: flex; 
-      justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; 
+      height: 75px; background: white; border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 35px; z-index: 50;
     }
-    .sheet-link { 
-      padding: 8px 15px; background: #1d6f42; color: white; border-radius: 8px; 
-      text-decoration: none; font-size: 12px; font-weight: bold; 
+    .btn-sheet { 
+      background: #107c10; color: white; padding: 10px 18px; border-radius: 10px; 
+      text-decoration: none; font-weight: 800; font-size: 12px; display: flex; align-items: center; gap: 8px; 
     }
 
-    .detail-view { padding: 30px; overflow-y: auto; flex: 1; }
-    .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .scroll-content { padding: 35px; overflow-y: auto; flex: 1; }
+    
+    /* KPI ÖZETİ */
+    .kpi-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+    .kpi-card { background: white; padding: 25px; border-radius: 22px; border-left: 6px solid var(--idt-altin); box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+    .kpi-card span { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+    .kpi-card b { display: block; font-size: 30px; color: var(--idt-bordo); margin-top: 5px; }
 
-    /* MOBİL UYUM */
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; }
-      .sidebar h2 { display: none; }
-      .nav-bar { padding: 10px; min-width: 120px; justify-content: center; }
+    /* VERİ PANELİ */
+    .data-card { background: white; border-radius: 25px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); min-height: 450px; }
+    .search-input { 
+      width: 100%; padding: 18px; border-radius: 15px; border: 1px solid #eee; background: #f9f9f9; 
+      font-size: 16px; margin-bottom: 25px; outline: none; box-sizing: border-box;
     }
-  
-/* --- Notif panel: fixed drawer --- */
-#notifPanel{
-  position: fixed !important;
-  top: 74px !important;
-  right: 18px !important;
-  width: min(440px, 92vw) !important;
-  max-height: 72vh !important;
-  overflow: auto !important;
-  z-index: 100000 !important;
-  border: 1px solid var(--idt-line) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--idt-shadow) !important;
-  background: var(--idt-card) !important;
-  color: var(--idt-text) !important;
-}
-#notifPanel.hidden, .hidden#notifPanel{ display:none !important; }
 
-/* --- Dashboard strip: KPI + status ayrımı --- */
-.kpis{
-  margin-top: 10px !important;
-}
-.kpi{
-  border: 1px solid var(--idt-line) !important;
-  box-shadow: 0 10px 22px rgba(16,24,40,.08) !important;
-}
-.kpi .label{ color: var(--idt-muted) !important; font-weight:800 !important; }
-.kpi .value{ color: var(--idt-text) !important; font-weight:900 !important; }
-.kpi.soft1,.kpi.soft2,.kpi.soft3,.kpi.soft4{
-  background: linear-gradient(180deg, rgba(122,30,44,.06), rgba(255,255,255,.98)) !important;
-}
+    .section { display: none; }
+    .section.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Status pill (üstteki Hazır/cache yazısı nereye düşerse) */
-#status, .status, .pillStatus{
-  background: rgba(24,121,78,.12) !important;
-  color: #18794e !important;
-  border: 1px solid rgba(24,121,78,.22) !important;
-  border-radius: 999px !important;
-  padding: 6px 10px !important;
-  font-weight: 900 !important;
-}
-
-/* İç içe hissini azalt */
-.grid{ gap: 14px !important; }
-.item{ border: 1px solid var(--idt-line) !important; box-shadow:none !important; }
-.drawer{ border: 1px solid var(--idt-line) !important; }
-
-</style>
+    #status { font-size: 11px; font-weight: 800; color: #18794e; display: flex; align-items: center; gap: 6px; }
+    #status::before { content: ""; width: 8px; height: 8px; background: #18794e; border-radius: 50%; }
+  </style>
 </head>
 <body>
 
   <aside class="sidebar">
-    <h2>İZMİR DT PANEL</h2>
-    <div class="nav-bar active" onclick="switchTab('Panel', this)">
-      <span>🎭</span><b>Oyun Listesi</b>
-    </div>
-    <div class="nav-bar" onclick="switchTab('Analiz', this)">
-      <span>🧩</span><b>Kesişim Analizi</b>
-    </div>
-    <div class="nav-bar" onclick="switchTab('Figuran', this)">
-      <span>🎟️</span><b>Figüran/Emekli</b>
-    </div>
-    <div class="nav-bar" onclick="switchTab('Bildirim', this)">
-      <span>🔔</span><b>Bildirimler</b>
-    </div>
+    <h2>İZMİR DT</h2>
+    <div class="nav-bar active" onclick="switchSection('Panel', this)"><span>🏠</span><b>Panel / Liste</b></div>
+    <div class="nav-bar" onclick="switchSection('Analiz', this)"><span>🧩</span><b>Kesişim Analizi</b></div>
+    <div class="nav-bar" onclick="switchSection('Figuran', this)"><span>🎟️</span><b>Figüran Listesi</b></div>
+    <div class="nav-bar" onclick="switchSection('Bildirim', this)"><span>🔔</span><b>Sistem Bildirimleri</b></div>
   </aside>
 
-  <main class="main-content">
-    <div class="top-header">
-      <div id="status">● SİSTEM ÇEVRİMİÇİ</div>
-      <a href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit" target="_blank" class="sheet-link">
-        📊 EXCEL'DE AÇ
-      </a>
-    </div>
+  <main class="main-view">
+    <header class="top-header">
+      <div id="status">SİSTEM BAĞLI</div>
+      <a href="https://docs.google.com/spreadsheets/d/1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0/edit" target="_blank" class="btn-sheet">📊 EXCEL'DE AÇ</a>
+    </header>
 
-    <div class="detail-view">
-      <div class="card" id="detail-box">
-        <input type="text" id="searchInput" placeholder="Hızlıca ara..." style="width:100%; padding:15px; border-radius:10px; border:1px solid #ddd; margin-bottom:20px; font-size:16px;">
-        <div id="list">Veriler yükleniyor...</div>
+    <div class="scroll-content">
+      <div class="kpi-row">
+        <div class="kpi-card"><span>AKTİF OYUNLAR</span><b id="valOyun">0</b></div>
+        <div class="kpi-card"><span>TOPLAM PERSONEL</span><b id="valFiguran">0</b></div>
+      </div>
+
+      <div class="data-card">
+        <div id="sec-Panel" class="section active">
+          <input type="text" id="searchInput" class="search-input" placeholder="Hızlı ara (Oyun, Sanatçı...)">
+          <div id="list">Veriler senkronize ediliyor...</div>
+        </div>
+
+        <div id="sec-Analiz" class="section">
+          <h3>🧩 Kesişim Analizi Grafiği</h3>
+          <canvas id="chartMain" style="max-height: 400px; width: 100%;"></canvas>
+        </div>
+
+        <div id="sec-Figuran" class="section">
+          <h3>🎟️ Figüran ve Dış Kadro</h3>
+          <div id="figuranList"></div>
+        </div>
+
+        <div id="sec-Bildirim" class="section">
+          <h3>🔔 Son Hareketler</h3>
+          <div id="notifList"></div>
+        </div>
       </div>
     </div>
   </main>
 
   <script>
-    function switchTab(tab, el) {
-      // Aktiflik durumunu değiştir
+    function switchSection(id, el) {
+      // Bölümleri değiştir
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById('sec-' + id);
+      if(target) target.classList.add('active');
+
+      // Sidebar buton stilini değiştir
       document.querySelectorAll('.nav-bar').forEach(b => b.classList.remove('active'));
       el.classList.add('active');
 
-      // app.js'deki orijinal fonksiyonları tetikle
-      // app.js içinde tabbar butonlarını simüle etmek için:
-      const originalTab = document.querySelector(`[data-tab="${tab}"]`);
-      if(originalTab) originalTab.click();
-      
-      console.log(tab + " sekmesine geçildi.");
+      // app.js orijinal mantığını tetikle (id'ler orijinal dosyandaki id'lerle eşleşir)
+      const tabMap = { 'Panel':'tabPanel', 'Analiz':'tabIntersection', 'Figuran':'tabFiguran', 'Bildirim':'notifBtn' };
+      const originalBtn = document.getElementById(tabMap[id]);
+      if(originalBtn) originalBtn.click();
     }
   </script>
 </body>
