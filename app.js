@@ -977,10 +977,13 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   ctx.fill();
 
   const isM = isMobile();
-  const cx = isM ? cssW*0.50 : cssW*0.34;
-  const cy = cssH*0.52;
-  const rOuter = Math.min(cssW, cssH)*(isM ? 0.34 : 0.40);
-  const rInner = rOuter*0.60;
+  // Legend’i alta taşımak için alan ayır
+  const legendH = isM ? 120 : 96;
+  const plotH = Math.max(220, cssH - legendH);
+  const cx = cssW * 0.50;
+  const cy = plotH * 0.55;
+  const rOuter = Math.min(cssW, plotH) * (isM ? 0.34 : 0.42);
+  const rInner = rOuter * 0.60;
 
   let start = -Math.PI/2;
   for(let i=0;i<data.length;i++){
@@ -1017,34 +1020,45 @@ function drawDoughnut(canvas, items, topN, legendTitle){
   ctx.fillText(String(total), cx, cy+18);
   ctx.textAlign="left";
 
-  // legend
-  const lx = isM ? 16 : cssW*0.62;
-  let ly = isM ? (cy + rOuter + 20) : 24;
-
+  // legend (alta)
+  const pad = 16;
+  const legendY0 = plotH + 18;
   ctx.fillStyle = text;
   ctx.font = "13px system-ui";
-  ctx.fillText(legendTitle || "Dağılım", lx, ly);
-  ly += 10;
+  ctx.textAlign = "left";
+  ctx.fillText(legendTitle || "Dağılım", pad, legendY0);
 
+  // öğeleri altta çok sütunlu göster
   ctx.font = "12px system-ui";
-  const maxLegend = isM ? 10 : data.length;
-  for(let i=0;i<Math.min(data.length, maxLegend);i++){
-    const d=data[i];
-    ly += 18;
-    ctx.fillStyle = colorOf(d.k);
-    roundRect(ctx, lx, ly-11, 10, 10, 3);
-    ctx.fill();
-    ctx.fillStyle = muted;
-    const label = d.k.length>28 ? d.k.slice(0,28)+"…" : d.k;
-    ctx.fillText(`${label}  (${d.v})`, lx+16, ly-2);
-  }
-  if(isM && data.length>maxLegend){
-    ly += 16;
-    ctx.fillStyle = muted;
-    ctx.fillText(`+${data.length-maxLegend} kategori daha (tıkla: listede gör)`, lx, ly);
+  const items = data.slice(0, data.length);
+  const cols = isM ? 2 : 3;
+  const colW = (cssW - pad*2) / cols;
+  const rowH = 18;
+  let x = pad, y = legendY0 + 16;
+  for (let i=0;i<items.length;i++){
+    const d = items[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    x = pad + col * colW;
+    y = legendY0 + 16 + row * rowH;
+    // renk noktası
+    ctx.fillStyle = colorOf(d.k || d.key || d.name || d.label);
+    ctx.beginPath(); ctx.arc(x+6, y-4, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = text;
+    const label = `${String(d.k || d.key || d.name || d.label)} (${d.v})`;
+    ctx.fillText(label, x+16, y);
+    // fazla uzunsa kes
+    const maxW = colW - 22;
+    if (ctx.measureText(label).width > maxW){
+      let s = label;
+      while (s.length>6 && ctx.measureText(s+"…").width > maxW) s = s.slice(0,-1);
+      ctx.clearRect(x+16, y-14, maxW, 16);
+      ctx.fillStyle = text;
+      ctx.fillText(s+"…", x+16, y);
+    }
   }
 
-  ctx.strokeStyle = line;
+ctx.strokeStyle = line;
   ctx.strokeRect(0.5,0.5,cssW-1,cssH-1);
 }
 
