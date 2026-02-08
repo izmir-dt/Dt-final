@@ -1249,29 +1249,40 @@ select{
 .grid, .twoCol, .panelGrid{ align-items: start !important; }
 
 
-/* ===== v7.0 Görev Ataması UI ===== */
-.seg{ display:flex; background:rgba(0,0,0,.04); padding:4px; border-radius:999px; border:1px solid rgba(0,0,0,.08); }
-.segBtn{ border:none; background:transparent; padding:7px 12px; border-radius:999px; font-weight:800; font-size:12px; cursor:pointer; color:var(--muted); }
-.segBtn.active{ background:#fff; color:var(--text); box-shadow:0 6px 16px rgba(24,16,8,.10); }
-#assignRoot{ display:flex; flex-direction:column; gap:10px; }
-.asgGroup{ border:1px solid rgba(0,0,0,.08); border-radius:16px; overflow:hidden; background:#fff; }
-.asgHead{ width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:12px 12px; background:linear-gradient(180deg, rgba(122,30,44,.06), rgba(122,30,44,0)); border:none; cursor:pointer; text-align:left; }
-.asgTitle{ font-weight:900; font-size:13px; line-height:1.25; }
-.asgMeta{ font-size:12px; color:var(--muted); font-weight:800; white-space:nowrap; }
-.asgBody{ padding:10px 12px 12px; border-top:1px solid rgba(0,0,0,.06); }
-.asgPersons{ display:flex; flex-direction:column; gap:8px; }
-.asgPerson{ display:flex; justify-content:space-between; gap:10px; padding:10px 10px; border-radius:14px; background:rgba(0,0,0,.03); }
-.asgPerson b{ font-size:13px; line-height:1.2; }
-.asgPerson span{ font-size:12px; color:var(--muted); font-weight:800; white-space:nowrap; }
-.asgActions{ display:flex; justify-content:flex-end; margin-top:10px; }
+/* ===== v7.0 css assignment ===== */
+.assignRoot{ display:flex; flex-direction:column; gap:12px; }
+.asgGroup{ border:1px solid rgba(24,16,8,.10); border-radius:16px; overflow:hidden; background:#fff; box-shadow: 0 10px 30px rgba(24,16,8,.08); }
+.asgHead{ width:100%; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; padding:12px 14px; background:linear-gradient(180deg,#fff,#fbf7f1); border:none; cursor:pointer; text-align:left; }
+.asgTitle{ font-weight:900; color:var(--accent,#7a1e2c); font-size:13px; line-height:1.2; }
+.asgMeta{ font-size:12px; color:rgba(24,16,8,.55); white-space:nowrap; }
+.asgBody{ padding:10px 14px 12px; border-top:1px solid rgba(24,16,8,.08); display:none; }
+.asgPerson{ display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed rgba(24,16,8,.10); }
+.asgPerson:last-child{ border-bottom:none; }
+.asgPerson b{ font-size:13px; }
+.asgPerson span{ font-size:12px; color:rgba(24,16,8,.6); white-space:nowrap; }
+.asgActions{ display:flex; justify-content:flex-end; padding-top:10px; }
+#assignCopyRows{ white-space:nowrap; }
 
-/* No ellipsis (… yok) */
-.name, .asgTitle, .notif-bubble .t, .notif-bubble .meta, .notif-bubble .when,
-.chip, .kpi .label, .idt-item .label{
-  text-overflow:clip !important;
-  overflow:visible !important;
-  white-space:normal !important;
+/* Nokta nokta (ellipsis) istemiyoruz */
+.idt-item .label, .idt-item b, .legend, .legend * { 
+  text-overflow: clip !important; 
+  overflow: visible !important; 
+  white-space: nowrap !important; 
 }
+
+/* Bildirimlerde de kırpma yok */
+#notifPanel, #notifPanel *{
+  text-overflow: clip !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* Bildirim panelini daha ufak: 3-4 kart görünür */
+#notifPanel{ max-height: 320px !important; }
+#notifPanel .notifBd{ max-height: 250px !important; overflow:auto !important; }
+
+/* Build stamp */
+#buildStamp{ position:fixed; right:12px; bottom:12px; z-index:999999; background:#111; color:#fff; padding:6px 10px; border-radius:999px; font:12px/1 Inter,system-ui; opacity:.75;}
 
 </style>
 
@@ -1508,7 +1519,7 @@ body{
 
   <div class="nav">
     <button class="tab active" id="tabPanel">Panel</button>
-    <button class="tab" id="tabAssign" style="display:none">Görev Ataması</button>
+    <button class="tab" id="tabAssignment">Görev Ataması</button>
     <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
@@ -1564,7 +1575,29 @@ body{
             </div>
             <footer>
               <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
-              <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
+              
+  <div id="viewAssignment" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Görev Ataması</h2>
+        <div class="filters">
+          <div class="seg" title="Görünüm">
+            <button id="assignModeGroup" class="segbtn active">Görev Seti</button>
+            <button id="assignModePerson" class="segbtn">Kişi</button>
+          </div>
+          <div class="input" title="Ara">
+            🔎 <input id="assignQ" type="search" placeholder="Görev seti veya kişi ara..." autocomplete="off"/>
+          </div>
+          <button class="btn" id="assignCopyRows">📋 Satır Dökümü (Excel)</button>
+        </div>
+      </div>
+      <div class="bd" style="padding-top:14px">
+        <div id="assignRoot" class="assignRoot"></div>
+      </div>
+    </div>
+  </div>
+
+<div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
             </footer>
           </div>
         </div>
@@ -1572,31 +1605,7 @@ body{
     </div>
   </section>
 
-  
-  <!-- GÖREV ATAMASI (BÜTÜN OYUNLAR satırları üstünden, UI-only) -->
-  <section id="viewAssign" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Görev Ataması</h2>
-        <div class="filters" style="gap:10px; flex-wrap:wrap;">
-          <div class="seg" role="tablist" aria-label="Görünüm">
-            <button class="segBtn active" id="assignSegGroup" type="button">Görev setine göre</button>
-            <button class="segBtn" id="assignSegPerson" type="button">Kişiye göre</button>
-          </div>
-          <button class="btn" id="assignCopyRows">📋 Satır Dökümü (Excel)</button>
-        </div>
-      </div>
-      <div class="bd">
-        <div class="input" style="margin-bottom:12px;">
-          🔎 <input id="assignQ" type="search" placeholder="Oyun, kişi veya görev ara..." autocomplete="off">
-          <button class="x" id="assignClear" type="button" aria-label="Temizle">✕</button>
-        </div>
-
-        <div id="assignRoot"></div>
-      </div>
-    </div>
-  </section>
-<!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
+  <!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
   <section id="viewDistribution" style="display:none">
     <div class="card">
       <div class="hd">
@@ -2379,5 +2388,33 @@ body{
 })();
 </script>
 
+
+<script>
+/* ===== v7.0 assignment bindings (UI only) ===== */
+(function(){
+  const $=id=>document.getElementById(id);
+  const click=id=>{ const el=$(id); if(el) el.click(); };
+
+  // Sol menü: Görev Ataması -> yeni sekme
+  const sideRows = $("sideRows");
+  if(sideRows){
+    sideRows.addEventListener("click", (e)=>{
+      // aktif class'ı zaten var olan sistem hallediyor; sadece tab'ı değiştir
+      click("tabAssignment");
+    }, true);
+  }
+
+  // Aktif Oyun / Toplam Personel -> Panel modlarını garantile
+  const sidePlays=$("sidePlays");
+  if(sidePlays){
+    sidePlays.addEventListener("click", ()=>{ click("tabPanel"); const s=$("qScope"); if(s){ s.value="plays"; s.dispatchEvent(new Event("change",{bubbles:true})); } }, true);
+  }
+  const sidePeople=$("sidePeople");
+  if(sidePeople){
+    sidePeople.addEventListener("click", ()=>{ click("tabPanel"); const s=$("qScope"); if(s){ s.value="people"; s.dispatchEvent(new Event("change",{bubbles:true})); } }, true);
+  }
+})();
+</script>
+<div id="buildStamp">BUILD v7.0</div>
 </body>
 </html>
