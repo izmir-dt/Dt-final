@@ -1099,6 +1099,45 @@ header{ margin-bottom: 0 !important; }
 /* Hide scope dropdown when in person mode */
 body.scope-person .qScopeBox{ display:none !important; }
 
+
+/* ===== Notif panel v6.4 (more premium, theme-aligned) ===== */
+#notifPanel{
+  border-radius: 20px !important;
+  box-shadow: 0 24px 70px rgba(24,16,8,.26) !important;
+}
+#notifPanel .head{
+  padding: 14px 14px !important;
+}
+#notifPanel .head .title{
+  display:flex; align-items:center; gap:10px;
+}
+#notifPanel .head .title::before{
+  content:"🔔";
+  width:28px;height:28px;border-radius:10px;
+  display:grid;place-items:center;
+  background: rgba(122,30,44,.10);
+  border:1px solid rgba(122,30,44,.18);
+}
+#notifPanel .row{
+  padding: 12px 14px !important;
+}
+#notifPanel .n{
+  border-radius: 18px !important;
+}
+#notifPanel .n + .n{ margin-top: 10px !important; }
+#notifPanel .n .t{ letter-spacing:.2px; }
+#notifPanel .n .t, #notifPanel .n .meta, #notifPanel .n .when{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+
+/* ===== Sidebar counts: prevent wrap/overflow ===== */
+.idt-item{ position:relative; }
+.idt-item b{ min-width:0; max-width: 150px; }
+.idt-count{ max-width: 56px; display:inline-flex; justify-content:center; }
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1662,7 +1701,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=63"></script>
+<script src="app.js?v=64"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -1727,6 +1766,64 @@ body{
       }
     });
   }
+})();
+</script>
+
+
+<script>
+/* v6.4 UI-only: Dağılım Excel'e Kopyala -> MANUEL KOPYALAMA ekranını aç */
+(function(){
+  function bind(){
+    var dc = document.getElementById('distCopyBtn');
+    if(!dc) return;
+    dc.addEventListener('click', function(){
+      // Prefer manual copy button if exists
+      var b = document.getElementById('copyBtn') || document.getElementById('manualCopyBtn');
+      if(b) b.click();
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
+
+
+<script>
+/* v6.4 UI-only: Sidebar quick filters (no fetch changes) */
+(function(){
+  function setScopeLike(txt){
+    var s = document.getElementById('qScope');
+    if(!s) return;
+    var opts = Array.prototype.slice.call(s.options||[]);
+    var hit = opts.find(function(o){
+      var v = (o.value||"").toLowerCase();
+      var t = (o.textContent||"").toLowerCase();
+      txt = txt.toLowerCase();
+      return v===txt || t.indexOf(txt) !== -1;
+    });
+    if(hit){ s.value = hit.value; s.dispatchEvent(new Event('change', {bubbles:true})); }
+  }
+  function clearQ(){
+    var q = document.getElementById('q');
+    if(q){ q.value=""; q.dispatchEvent(new Event('input', {bubbles:true})); }
+  }
+  function goPanel(){
+    var t = document.getElementById('tabPanel');
+    if(t) t.click();
+  }
+  function bind(id, scope){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', function(){
+      goPanel(); clearQ(); if(scope) setScopeLike(scope);
+    });
+  }
+  function init(){
+    bind('sidePlays','oyun');
+    bind('sideRows','görev');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
