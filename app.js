@@ -1597,6 +1597,11 @@ function setActiveTab(which){
   }
 }
 
+// Expose a safe tab switcher for inline sidebar handlers (prevents hash/router desync)
+try{
+  window.IDT_setActiveTab = setActiveTab;
+}catch(_e){}
+
 els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
 els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
