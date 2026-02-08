@@ -1,13 +1,24 @@
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  // SENİN VERDİĞİN ÇALIŞAN GÜNCEL LİNK
-  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
-  NOTIF_API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
+  API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
-  SHEET_NOTIFS: "BİLDİRİMLER",
+  // Bildirimler için en stabil kaynak: Apps Script'in otomatik oluşturduğu LOG sayfası
+  // (Eğer sende BİLDİRİMLER diye ayrı sayfa varsa, aşağıda fallback var.)
+  SHEET_NOTIFS: "LOG",
+
+
+    NOTIF_SHEET_NAME: "BİLDİRİMLER",
+  NOTIF_GVIZ_URL: "", // boş bırak (aşağıda otomatik oluşturulacak)
+// Ana veri (genelde: "BÜTÜN OYUNLAR")
   GID: "1233566992",
-  LOG_GID: ""
+
+  // Apps Script'in oluşturduğu LOG sayfasının gid'sini buraya yaz (URL'den kopyala: ...?gid=XXXX)
+  LOG_GID: "",
+
+  sheetUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/edit?gid=${gid}`; },
+  gvizUrl(gid=this.GID){ return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${Date.now()}`; },
+  csvUrl(gid=this.GID){  return `https://docs.google.com/spreadsheets/d/${this.SPREADSHEET_ID}/export?format=csv&gid=${gid}&_=${Date.now()}`; },
 };
 
 function isMobile(){
@@ -1992,3 +2003,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
     fix("2. Oyun",2);
   }catch(e){ console.error(e); }
 });
+
+
+/* ===== UI HOTFIX: Config overrides (does not change CONFIG shape) ===== */
+try {
+  CONFIG.SPREADSHEET_ID = "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0";
+  CONFIG.API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
+  CONFIG.NOTIF_API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
+} catch (e) {
+  console.warn("CONFIG override skipped:", e);
+}
+
