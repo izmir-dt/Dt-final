@@ -139,6 +139,10 @@ const els = {
   hint: el("hint"),
   details: el("details"),
   copyBtn: el("copyBtn"),
+  copyPane: el("copyPane"),
+  copyTextArea: el("copyTextArea"),
+  detailsCard: el("detailsCard"),
+  detailCloseBtn: el("detailCloseBtn"),
 
   btnPlays: el("btnPlays"),
   btnPeople: el("btnPeople"),
@@ -921,24 +925,26 @@ function renderDetails(it){
       </div>
     `;
   }
+
+  // Mobile: detay panelini alttan aç
+  if(window.matchMedia("(max-width: 980px)").matches){
+    document.body.classList.add("detail-open");
+  }
 }
 
 /* ---------- Copy as Excel-friendly (TSV) ---------- */
 function toTSVFromSelected(){
   if(!selectedItem) return "";
-  const title = (selectedItem.title || "").trim();
-
-  // Always include a top "title" row for human readability
-  // (Excel will paste the table starting from the next row.)
   if(activeMode==="plays"){
     const rowsSorted=[...selectedItem.rows].sort((a,b)=>
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const lines=[title, ["Kategori","Görev","Kişi"].join("\t")];
+    const playTitle = selectedItem.title || "";
+    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
     for(const r of rowsSorted){
-      lines.push([r.category||"", r.role||"", r.person||""].join("\t"));
+      lines.push([playTitle, r.category||"", r.role||"", r.person||""].join("\t"));
     }
     return lines.join("\n");
   } else {
@@ -947,15 +953,13 @@ function toTSVFromSelected(){
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr")
     );
-    const lines=[title, ["Oyun","Kategori","Görev","Kişi"].join("\t")];
+    const lines=[["Oyun","Kategori","Görev"].join("\t")];
     for(const r of rs){
-      lines.push([r.play||"", r.category||"", r.role||"", title].join("\t"));
+      lines.push([r.play||"", r.category||"", r.role||""].join("\t"));
     }
     return lines.join("\n");
   }
 }
-
-
 
 
 /* ---------- distinct colors (unique per chart) ---------- */
@@ -1683,51 +1687,21 @@ window.addEventListener("popstate", ()=>{
 els.copyBtn.addEventListener("click", ()=>{
   const tsv = toTSVFromSelected();
   if(!tsv){ setStatus("⚠️ Önce bir öğe seç", "warn"); return; }
-  openCopyPane(tsv);
-  setStatus("📋 Panoya hazır", "ok");
-  setTimeout(()=>setStatus("✅ Hazır", "ok"), 1000);
+  // HER ZAMAN manuel pano (otomatik clipboard denemesi yok)
+  if(els.copyTextArea) els.copyTextArea.value = tsv;
+  if(els.copyPane) els.copyPane.classList.remove("hidden");
+  // Mobilde detay panelini alttan aç
+  if(window.matchMedia("(max-width: 980px)").matches){
+    document.body.classList.add("detail-open");
+  }
+  // Seçim kolaylığı
+  setTimeout(()=>{
+    try{ els.copyTextArea.focus(); els.copyTextArea.select(); }catch(e){}
+  }, 30);
+  setStatus("📋 Pano açıldı: Ctrl+A → Ctrl+C", "ok");
 });
+els.detailCloseBtn?.addEventListener("click", ()=>{ document.body.classList.remove("detail-open"); });
 
-
-
-
-function openCopyPane(tsv){
-  const pane = document.getElementById("copyPane");
-  const area = document.getElementById("copyArea");
-  if(!pane || !area){
-    // Fallback: at least show the text
-    alert("Pano bulunamadı.\n\n" + tsv.slice(0, 500));
-    return;
-  }
-  area.value = tsv;
-  pane.classList.remove("hidden");
-  pane.setAttribute("aria-hidden","false");
-  // Auto-select for fast Ctrl+C
-  area.focus();
-  area.select();
-}
-
-function closeCopyPane(){
-  const pane = document.getElementById("copyPane");
-  if(!pane) return;
-  pane.classList.add("hidden");
-  pane.setAttribute("aria-hidden","true");
-}
-
-function wireCopyPaneButtons(){
-  const selBtn = document.getElementById("copySelectBtn");
-  const closeBtn = document.getElementById("copyCloseBtn");
-  const area = document.getElementById("copyArea");
-  if(selBtn && area){
-    selBtn.addEventListener("click", ()=>{
-      area.focus();
-      area.select();
-    });
-  }
-  if(closeBtn){
-    closeBtn.addEventListener("click", closeCopyPane);
-  }
-}
 
 async function copyText(text){
   const value = String(text ?? "");
@@ -2065,7 +2039,6 @@ try{ window.load = load; }catch(e){}
 try{ window.renderDetails = renderDetails; }catch(e){}
 try{ window.loadNotifications = loadNotifications; }catch(e){}
 window.addEventListener('DOMContentLoaded', ()=>{
-  try{ wireCopyPaneButtons(); }catch(e){console.error(e)}
   try{ initKpiShortcuts(); }catch(e){console.error(e)}
   try{ initTabbar(); }catch(e){console.error(e)}
   try{ load(false); }catch(e){console.error(e)}
