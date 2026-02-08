@@ -35,6 +35,27 @@ function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 
+function buildInlinePlay(playItem){
+  try{
+    const rows = (playItem.rows||[]);
+    const map = new Map();
+    for(const r of rows){
+      const name = (r.person||"").trim();
+      if(!name) continue;
+      const role = (r.role||"").trim();
+      if(!map.has(name)) map.set(name, new Set());
+      if(role) map.get(name).add(role);
+    }
+    const people = [...map.entries()].map(([n, roles])=>({n, roles:[...roles]}))
+      .sort((a,b)=>a.n.localeCompare(b.n,'tr'));
+    const items = people.slice(0,60).map(p=>`<div class="p"><div class="pn">${escapeHtml(p.n)}</div><div class="pr">${escapeHtml(p.roles.join(", "))}</div></div>`).join("");
+    const more = people.length>60 ? `<div class="meta" style="margin-top:8px;color:var(--muted)">+${people.length-60} kişi daha…</div>` : "";
+    return `<div class="inline-play" aria-label="Oyundaki kişiler">${items}${more}</div>`;
+  }catch(e){
+    return '';
+  }
+}
+
 // --- Fuzzy search (mobile-friendly) ---
 function isSubsequence(hay, needle){
   let i=0,j=0;
@@ -226,17 +247,18 @@ function initTabbar(){
   if(!bar) return;
 
   const go = (t)=>{
-    if(t==="Panel") els.tabPanel && els.tabPanel.click();
-    else if(t==="Analiz") els.tabIntersection && els.tabIntersection.click();
-    else if(t==="Figuran") els.tabFiguran && els.tabFiguran.click();
-    else if(t==="Grafikler") els.tabCharts && els.tabCharts.click();
+    if(t==="Panel") setActiveTab("Panel");
+    else if(t==="Analiz") setActiveTab("Intersection");
+    else if(t==="Figuran") setActiveTab("Figuran");
+    else if(t==="Grafikler") setActiveTab("Charts");
   };
 
   const bind = (btn)=>{
     const t = btn.getAttribute("data-tab");
-    const handler = (e)=>{ e.stopPropagation(); go(t); setTabbarActive(t); };
-    btn.addEventListener("click", handler);
-    btn.addEventListener("pointerup", handler);
+    const handler = (e)=>{ e.preventDefault(); e.stopPropagation(); go(t); setTabbarActive(t); };
+    btn.addEventListener("click", handler, {passive:false});
+    // Bazı mobil tarayıcılarda click gecikebiliyor → touchend ile garanti
+    btn.addEventListener("touchend", handler, {passive:false});
   };
 
   bar.querySelectorAll(".tb").forEach(bind);
@@ -759,28 +781,6 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
-
-function inlinePanelHtml(it){
-  // Mobilde kartın altında açılan detay (accordion)
-  const rows = (it.rows||[]);
-  const sorted = [...rows].sort((a,b)=>
-    (a.category||"").localeCompare(b.category||"","tr") ||
-    (a.role||"").localeCompare(b.role||"","tr") ||
-    (a.person||"").localeCompare(b.person||"","tr")
-  );
-  const head = (activeMode==="plays")
-    ? "<thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>"
-    : "<thead><tr><th>Oyun</th><th>Görev</th><th>Kategori</th></tr></thead>";
-  const body = sorted.map(r=>{
-    if(activeMode==="plays"){
-      return `<tr><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.person||"")}</td></tr>`;
-    }else{
-      return `<tr><td>${escapeHtml(r.play||"")}</td><td>${escapeHtml(r.role||"")}</td><td>${escapeHtml(r.category||"")}</td></tr>`;
-    }
-  }).join("");
-  return `<div class="inlinePanel"><div class="inlineHead">${escapeHtml(it.title)}</div><div class="inlineTableWrap"><table class="table inlineTable">${head}<tbody>${body}</tbody></table></div></div>`;
-}
-
 function renderList(){
   const source = (activeMode==="plays") ? plays : (activeMode==="people" ? people : roles);
   const filtered = applyFilters(source);
@@ -828,15 +828,18 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
-      ${ (isMobile() && isActive) ? inlinePanelHtml(it) : "" }
+      ${ (isMobile() && activeMode==="plays" && isActive) ? buildInlinePlay(it) : "" }
     `;
     div.addEventListener("click", ()=>{
-      const wasActive = (activeId===it.id);
-      activeId = wasActive ? "" : it.id;
-      selectedItem = wasActive ? null : it;
+      activeId=it.id;
+      selectedItem = it;
       renderList();
-      if(!wasActive) renderDetails(it);
-      else renderDetails(null);
+      renderDetails(it);
+      // Mobilde oyun tıkla → kart altında kişiler aç/kapat (mod değiştirme yok)
+      if(isMobile() && activeMode==="plays"){
+        return;
+      }
+
     });
     frag.appendChild(div);
   }
@@ -854,7 +857,6 @@ function renderList(){
     els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
   }
 
-}
 
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
@@ -1479,6 +1481,11 @@ function setActiveTab(which){
   }
   el("tab"+which).classList.add("active");
   el("view"+which).style.display="block";
+  // Mobil alt menü senkron
+  if(which==="Panel") setTabbarActive("Panel");
+  else if(which==="Intersection"||which==="Distribution") setTabbarActive("Analiz");
+  else if(which==="Figuran") setTabbarActive("Figuran");
+  else if(which==="Charts") setTabbarActive("Grafikler");
   // A11y: aktif sekme
   ["Panel","Distribution","Intersection","Figuran","Charts"].forEach(n=>{
     const b = el("tab"+n);
@@ -1522,11 +1529,11 @@ function tabFromHash_(){
   return null;
 }
 
-els.tabPanel && els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
-els.tabDistribution && els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
-els.tabIntersection && els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
-els.tabFiguran && els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
-els.tabCharts && els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabPanel.addEventListener("click", ()=>setActiveTab("Panel"));
+els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
+els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
+els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
+els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
@@ -1534,42 +1541,41 @@ document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
 
-  const afterGo = ()=>{
-    // Panel içindeki segmentleri KPI'dan seç (Oyunlar / Kişiler)
-    if(target === "Panel"){
-      // KPI -> Panel içi görünüm
-      if(mode === "people"){
-        showAssignments = false;
-        activeMode = "people";
-        if(els.qScope) els.qScope.value = "person";
-        els.btnPeople && els.btnPeople.click();
-      }else if(mode === "plays"){
-        showAssignments = false;
-        activeMode = "plays";
-        if(els.qScope) els.qScope.value = "play";
-        els.btnPlays && els.btnPlays.click();
-      }else if(mode === "rows"){
-        // Görev ataması: kişi listesi + oyun/görev özeti
-        showAssignments = true;
-        activeMode = "people";
-        if(els.qScope) els.qScope.value = "role";
-        els.btnPeople && els.btnPeople.click();
-      }
-
-      // Liste alanına otomatik kaydır
-      const panelList = document.getElementById('viewPanel');
-      if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
+  const applyPanelMode = ()=>{
+    if(mode === "plays"){
+      showAssignments = false;
+      activeMode = "plays";
+      if(els.qScope) els.qScope.value = "play";
+      els.btnPlays && els.btnPlays.click();
+      renderList();
+    }else if(mode === "people"){
+      showAssignments = false;
+      activeMode = "people";
+      if(els.qScope) els.qScope.value = "person";
+      els.btnPeople && els.btnPeople.click();
+      renderList();
+    }else if(mode === "rows"){
+      // Görev ataması: kişi listesi + oyun/görev özeti
+      showAssignments = true;
+      activeMode = "people";
+      if(els.qScope) els.qScope.value = "role";
+      els.btnPeople && els.btnPeople.click();
+      renderList();
     }
-    else if(target === "Figuran"){
-      const fig = document.getElementById('viewFiguran');
-      if(fig) fig.scrollIntoView({behavior:'smooth', block:'start'});
-    }
+    const panelList = document.getElementById('viewPanel');
+    if(panelList) panelList.scrollIntoView({behavior:'smooth', block:'start'});
   };
 
   const goNow = ()=>{
-    setActiveTab(target);
-    // DOM görünürlüğü güncellensin diye küçük gecikme
-    setTimeout(afterGo, 50);
+    if(target==="Panel") setActiveTab("Panel");
+    else if(target==="Figuran") setActiveTab("Figuran");
+    else if(target==="Charts") setActiveTab("Charts");
+    else if(target==="Intersection") setActiveTab("Intersection");
+    else setActiveTab(target);
+
+    setTimeout(()=>{
+      if(target==="Panel") applyPanelMode();
+    }, 60);
   };
 
   card.addEventListener("click", goNow);
@@ -1597,36 +1603,15 @@ window.addEventListener("hashchange", ()=>{
 els.reloadBtn.addEventListener("click", ()=>load(false, true));
 
 // Bildirimler (LOG)
-els.notifBtn && (()=> {
-  const open = async ()=>{
-    els.notifPanel.classList.remove("hidden");
-    const bd = document.getElementById("notifBackdrop");
-    if(bd) bd.classList.remove("hidden");
+els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
+  els.notifPanel.classList.toggle("hidden");
+  if(!els.notifPanel.classList.contains("hidden")){
     await loadNotifications();
+    // panel açılınca "görüldü" say (sayaç sıfırlansın)
     localStorage.setItem("idt_log_seen_ts", String(Date.now()));
     els.notifCount.classList.add("hidden");
-  };
-  const close = ()=>{
-    els.notifPanel.classList.add("hidden");
-    const bd = document.getElementById("notifBackdrop");
-    if(bd) bd.classList.add("hidden");
-  };
-  const toggle = async ()=>{
-    if(els.notifPanel.classList.contains("hidden")) await open();
-    else close();
-  };
-  const handler = (e)=>{ e.stopPropagation(); toggle(); };
-  els.notifBtn.addEventListener("click", handler);
-  els.notifBtn.addEventListener("pointerup", handler);
-  els.notifClose && els.notifClose.addEventListener("click", close);
-  els.notifClose && els.notifClose.addEventListener("pointerup", close);
-  const bd = document.getElementById("notifBackdrop");
-  if(bd){
-    bd.addEventListener("click", close);
-    bd.addEventListener("pointerup", close);
   }
-  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") close(); });
-})();
+});
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
@@ -1636,22 +1621,24 @@ renderList(); });
 els.q.addEventListener("input", ()=>renderList());
 if(els.qScope){
   els.qScope.addEventListener("change", ()=>{
-    const v=els.qScope.value;
-    if(v==="play"){ showAssignments=false; activeMode="plays"; activePlayFilter=null; }
-    else if(v==="person"){ showAssignments=false; activeMode="people"; activePlayFilter=null; }
-    else if(v==="role"){ showAssignments=true; activeMode="people"; activePlayFilter=null; }
-    // all: mode değiştirme
-    activeId=null; selectedItem=null;
-    renderList(); renderDetails(null);
-  });
-}
-
-els.btnPlays.addEventListener("click", ()=>{
-  activeMode="plays";
-  activePlayFilter = null;
-  els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
-  activeId=null; selectedItem=null;
-  renderList(); renderDetails(null);
+  const v = String(els.qScope.value||"all").toLowerCase();
+  if(v==="play"){
+    showAssignments = false;
+    activeMode = "plays";
+  }else if(v==="person"){
+    showAssignments = false;
+    activeMode = "people";
+  }else if(v==="role"){
+    // Görev kapsamı: kişi listesi + görev/oyun özeti
+    showAssignments = true;
+    activeMode = "people";
+  }else{
+    showAssignments = false;
+    activeMode = "people";
+  }
+  activeId = null;
+  selectedItem = null;
+  renderList();
 });
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
@@ -1938,6 +1925,7 @@ async function load(isAuto=false, forceRefresh=false){
     setStatus("⛔ Veri yüklenemedi. Sheet paylaşımını ve bağlantıyı kontrol et.", "bad");
   }
 }
+}
 
 
 /* ---------- KPI shortcuts (stabil veri çekmeyi BOZMADAN) ---------- */
@@ -2016,13 +2004,7 @@ function initKpiShortcuts(){
     });
   }
 }
+initKpiShortcuts();
+initTabbar();
 
-// ---- expose critical functions (prevent scope issues) ----
-try{ window.load = load; }catch(e){}
-try{ window.renderDetails = renderDetails; }catch(e){}
-try{ window.loadNotifications = loadNotifications; }catch(e){}
-window.addEventListener('DOMContentLoaded', ()=>{
-  try{ initKpiShortcuts(); }catch(e){console.error(e)}
-  try{ initTabbar(); }catch(e){console.error(e)}
-  try{ load(false); }catch(e){console.error(e)}
-});
+load(false);
