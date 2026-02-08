@@ -3,181 +3,77 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-  <title>İDT | Repertuvar Takip Sistemi</title>
+  <title>İDT Repertuvar Sistemi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Kurumsal Renk Paleti */
-      --bg: #f4eee8;
-      --card: #ffffff;
-      --text: #2d2d2d;
-      --muted: #757575;
-      --accent: #7a1e2c; /* İDT Bordo */
-      --accent-light: #fbebed;
-      --gold: #c07a2a;
-      --success: #1b5e20;
-      --shadow: 0 4px 20px rgba(0,0,0,0.08);
-      --radius: 16px;
+      --idt-bordo: #7a1e2c;
+      --idt-altin: #c07a2a;
+      --bg-renk: #f8f5f2;
+      --kart-renk: #ffffff;
+      --yazi-ana: #1a1a1a;
+      --yazi-gri: #666666;
+      --golge: 0 10px 30px rgba(0,0,0,0.05);
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { 
-      font-family: 'Inter', -apple-system, sans-serif; 
-      background: var(--bg); 
-      color: var(--text); 
-      margin: 0; padding: 0; 
-      line-height: 1.5;
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-renk);
+      color: var(--yazi-ana);
+      margin: 0; padding: 0;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Header & Status */
+    /* Üst Bar */
     header {
-      background: var(--accent);
+      background: var(--idt-bordo);
       color: white;
-      padding: 20px 16px 40px 16px;
+      padding: 25px 20px 50px 20px;
       text-align: center;
-      border-bottom-left-radius: 30px;
-      border-bottom-right-radius: 30px;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-    header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
-    
-    #status {
-      position: fixed;
-      top: 10px; right: 10px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      z-index: 1000;
-      transition: all 0.3s;
-    }
-    .status-ok { background: var(--success); color: white; }
 
-    /* KPI Kartları */
-    .kpi-grid {
+    header h1 { font-size: 1.1rem; margin: 0; letter-spacing: 1px; font-weight: 800; }
+
+    /* İstatistik Kartları */
+    .stats-container {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: -25px 16px 20px 16px;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: -30px 20px 20px 20px;
     }
-    .kpi-card {
-      background: var(--card);
-      padding: 16px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+
+    .stat-card {
+      background: var(--kart-renk);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: var(--golge);
       text-align: center;
-      border: 1px solid rgba(0,0,0,0.03);
+      border: 1px solid rgba(122, 30, 44, 0.05);
     }
-    .kpi-card .val { font-size: 1.5rem; font-weight: 800; color: var(--accent); display: block; }
-    .kpi-card .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
 
-    /* Arama ve Filtreleme */
-    .search-container { padding: 0 16px; margin-bottom: 16px; }
-    .search-box {
+    .stat-card span { display: block; }
+    .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--idt-bordo); }
+    .stat-label { font-size: 0.7rem; color: var(--yazi-gri); text-transform: uppercase; margin-top: 5px; font-weight: 600; }
+
+    /* Arama Çubuğu */
+    .search-wrapper { padding: 0 20px; margin-bottom: 20px; }
+    #searchInput {
       width: 100%;
-      padding: 14px 20px;
-      border-radius: 25px;
-      border: 1px solid #ddd;
-      background: var(--card);
-      box-shadow: var(--shadow);
-      outline: none;
+      padding: 15px 25px;
+      border-radius: 30px;
+      border: none;
+      background: var(--kart-renk);
+      box-shadow: var(--golge);
       font-size: 16px;
+      outline: none;
+      box-sizing: border-box;
     }
 
-    /* Liste Tasarımı */
-    .list-container { padding: 0 16px 100px 16px; }
-    .item-card {
-      background: var(--card);
+    /* Liste Elemanları */
+    .list-wrapper { padding: 0 20px 100px 20px; }
+    .data-item {
+      background: var(--kart-renk);
       margin-bottom: 12px;
-      padding: 16px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-left: 5px solid var(--accent);
-      animation: slideIn 0.3s ease-out;
-    }
-    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .item-info h3 { margin: 0; font-size: 15px; font-weight: 700; }
-    .item-info p { margin: 4px 0 0 0; font-size: 13px; color: var(--muted); }
-
-    /* Tabbar */
-    .tabbar {
-      position: fixed;
-      bottom: 0; width: 100%;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0 calc(env(safe-area-inset-bottom) + 10px);
-      border-top: 1px solid #eee;
-      z-index: 900;
-    }
-    .tb {
-      background: none; border: none;
-      display: flex; flex-direction: column; align-items: center;
-      color: var(--muted); gap: 4px; transition: 0.2s;
-    }
-    .tb.active { color: var(--accent); }
-    .tb .ico { font-size: 20px; }
-    .tb .lbl { font-size: 10px; font-weight: 600; }
-
-    /* Modallar */
-    .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
-      backdrop-filter: blur(4px);
-    }
-    .modal {
-      position: fixed; bottom: 0; width: 100%;
-      background: var(--card);
-      border-top-left-radius: 25px; border-top-right-radius: 25px;
-      padding: 24px; z-index: 1001;
-      max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-    }
-    .hidden { display: none; }
-  </style>
-</head>
-<body>
-
-  <div id="status">Sistem Hazır</div>
-
-  <header>
-    <h1>İZMİR DEVLET TİYATROSU</h1>
-    <div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">Repertuvar Takip Paneli</div>
-  </header>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" id="kpiOyun">
-      <span class="val" id="valOyun">-</span>
-      <span class="lbl">Aktif Oyun</span>
-    </div>
-    <div class="kpi-card" id="kpiFiguran">
-      <span class="val" id="valFiguran">-</span>
-      <span class="lbl">Figuran Sayısı</span>
-    </div>
-  </div>
-
-  <div class="search-container">
-    <input type="text" id="searchInput" class="search-box" placeholder="Oyun veya kişi ara...">
-  </div>
-
-  <main id="list" class="list-container">
-    <div style="text-align: center; padding: 50px; color: var(--muted);">Veriler yükleniyor...</div>
-  </main>
-
-  <nav class="tabbar" id="tabbar">
-    <button class="tb active" data-tab="Panel"><span class="ico">🏠</span><span class="lbl">Panel</span></button>
-    <button class="tb" data-tab="Analiz"><span class="ico">🧩</span><span class="lbl">Analiz</span></button>
-    <button class="tb" data-tab="Bildirim"><span class="ico">🔔</span><span class="lbl">Bildirim</span></button>
-    <button class="tb" data-tab="Ayarlar"><span class="ico">⚙️</span><span class="lbl">Ayarlar</span></button>
-  </nav>
-
-  <div id="mobileOverlay" class="overlay hidden"></div>
-  <div id="mobileModal" class="modal hidden">
-    <div id="mobileContent"></div>
-    <button id="modalClose" style="width: 100%; margin-top: 20px; padding: 12px; border-radius: 12px; border: none; background: var(--accent); color: white; font-weight: 600;">Kapat</button>
-  </div>
-
-</body>
-</html>
