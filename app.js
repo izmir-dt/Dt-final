@@ -558,7 +558,7 @@ function parseLogFromGviz(obj){
 }
 
 
-async function loadNotifications(){
+async async function loadNotifications(){
   if(!els.notifPanel) return;
 
   // BİLDİRİMLER sheet'i yoksa / boşsa kibarca göster
