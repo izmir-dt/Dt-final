@@ -93,6 +93,11 @@ input::placeholder{color: color-mix(in srgb, var(--muted) 75%, transparent)}
     html{color-scheme: light;}
 body{margin:0;font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";color:var(--text);background:var(--bg);line-height:1.45;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
     a{color:inherit}
+
+    /* a11y helpers (v7.26) */
+    .sr-only{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    .skip{position:absolute;left:12px;top:10px;z-index:9999;padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);transform:translateY(-160%);transition:transform .15s ease;}
+    .skip:focus{transform:translateY(0);outline:none;}
     header{
       position:sticky;top:0;z-index:40;
       background: color-mix(in srgb, var(--bg) 88%, transparent);
@@ -1667,6 +1672,8 @@ body{
 
 </head>
 <body>
+  <a class="skip" href="#main">İçeriğe atla</a>
+  <h1 class="sr-only">İzmir Devlet Tiyatrosu – Repertuvar / Kişi Takip Sistemi</h1>
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
       <div class="idt-side-head">
@@ -1687,7 +1694,7 @@ body{
       <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
 </aside>
 
-    <main class="idt-main">
+    <main class="idt-main" id="main" tabindex="-1">
       <header class="idt-topnav">
         <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
         <div class="idt-top-actions">
@@ -1704,16 +1711,16 @@ body{
     <div class="brand">
       <div class="logo">IDT</div>
       <div>
-        <h1><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></h1>
+        <div class="brandTitle"><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></div>
         </div>
     </div>
     <div class="actions">
-      <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
-      <span id="status" class="pill">⏳ Yükleniyor…</span>
-      <button class="btn" id="reloadBtn">↻ Yenile</button>
+      <button type="button" class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
+      <span id="status" class="pill" aria-live="polite">⏳ Yükleniyor…</span>
+      <button type="button" class="btn" id="reloadBtn">↻ Yenile</button>
 
       <div class="menu">
-        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
+        <button type="button" class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
         <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
           <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
           <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
@@ -1721,7 +1728,7 @@ body{
       </div>
 
       <div class="notif">
-        <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
+        <button type="button" class="btn" id="notifBtn" title="Bildirimler (LOG)">
           🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
         </button>
         <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
@@ -1731,8 +1738,8 @@ body{
               <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
             </div>
             <div class="row" style="gap:8px">
-              <button class="btn" id="notifRefresh">↻</button>
-              <button class="btn" id="notifClose">✕</button>
+              <button type="button" class="btn" id="notifRefresh">↻</button>
+              <button type="button" class="btn" id="notifClose">✕</button>
             </div>
           </div>
           <div class="notifBd" id="notifList">
@@ -1814,12 +1821,12 @@ body{
   <div class="card">
     <div class="secHead">
       <div>
-        <h2 class="h2">Sorgulama & Karşılaştırma</h2>
-        <div class="muted small">Sorgulama ve karşılaştırma aracı.</div>
+        <h2 class="h2">Sorgu & Karşılaştır</h2>
+        <div class="muted small">Hızlı sorgulama, filtreleme ve kişi karşılaştırma aracı.</div>
         <div class="muted small" id="assignRowCount" style="margin-top:4px;"></div>
       </div>
       <div class="toolbar">
-        <div class="seg" role="tablist" aria-label="Görev Ataması Modu">
+        <div class="seg" role="tablist" aria-label="Sorgu modu">
           <button id="assignModeFilter" class="segBtn active" role="tab" aria-selected="true">🔍 Filtrele & Listele</button>
           <button id="assignModeCompare" class="segBtn" role="tab" aria-selected="false">🔄 Karşılaştır</button>
         </div>
@@ -1868,7 +1875,7 @@ body{
           <div class="toolSub" id="assignFilterMeta">—</div>
           <div class="tableWrap" style="margin-top:10px">
             <table class="tbl" id="assignFilterTable">
-              <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
+              <thead><tr><th scope="col">Oyun</th><th scope="col">Kategori</th><th scope="col">Görev</th><th scope="col">Kişi</th></tr></thead>
               <tbody id="assignFilterTbody"><tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr></tbody>
             </table>
           </div>
