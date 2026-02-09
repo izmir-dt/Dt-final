@@ -82,3 +82,137 @@ table.idt-table tbody tr:hover,
     max-height: calc(100vh - var(--idtHeaderH) - 20px);
   }
 }
+
+/* =========================
+   v8.3 Final UI tweaks
+   (Only UI/CSS. No data-fetch changes.)
+   ========================= */
+
+/* Premium sidebar mini logo (theater.png) */
+.idt-mini-logo{
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.18) 0%, rgba(255,255,255,.06) 35%, rgba(0,0,0,0) 70%),
+              linear-gradient(160deg, rgba(122,30,44,.95), rgba(34,28,24,.92));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+  overflow: hidden;
+}
+.idt-mini-logo img{
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+}
+
+/* Top-right action buttons: same height & visual rhythm */
+.idt-top-actions{
+  gap: 10px;
+}
+.idt-top-actions .idt-pill{
+  height: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.idt-top-actions .idt-pill svg,
+.idt-top-actions .idt-pill img{
+  width: 18px;
+  height: 18px;
+}
+
+/* Panel (Aktif Oyun / Toplam Personel): left list stays visible and scrolls */
+.idt-panel-left[data-idt-sticky="1"]{
+  max-height: calc(100vh - var(--idtHeaderH) - 60px);
+  overflow: hidden; /* list inside scrolls */
+}
+.idt-panel-left #list[data-idt-scroll="1"]{
+  max-height: calc(100vh - var(--idtHeaderH) - 120px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+}
+
+/* Sorgu & Karşılaştır: results table headers centered */
+#assignFilterTable th,
+#assignFilterTable td{
+  text-align: center;
+}
+#assignFilterTable td:nth-child(1){ text-align: left; }
+#assignFilterTable td:nth-child(4){ text-align: left; }
+
+/* Karşılaştır: Kişi A / Kişi B inputs equal width */
+.compareTop{
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.comparePick{
+  min-width: 0;
+}
+.comparePick .toolInput{
+  width: 100%;
+}
+.compareActions{
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Sidebar logo (theater.png in repo root) */
+.idt-mini-logo{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(120% 120% at 20% 20%, rgba(255,255,255,.18), rgba(255,255,255,0) 55%),
+              linear-gradient(135deg, rgba(122,30,44,.95), rgba(192,122,42,.55));
+  box-shadow: 0 10px 28px rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.12);
+  overflow: hidden;
+}
+.idt-mini-logo img{
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
+}
+
+/* Top action buttons: same height & consistent icon sizing */
+.idt-top-actions .idt-pill{
+  min-height: 44px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.idt-top-actions .idt-pill svg,
+.idt-top-actions .idt-pill i{
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+/* Center table headers in "Sorgu & Karşılaştır" results */
+#assignFilterTable thead th{
+  text-align: center;
+}
+
+/* Make result table a bit more readable on wide screens */
+#assignFilterTable tbody td{
+  vertical-align: top;
+}
+
