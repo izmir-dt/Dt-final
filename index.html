@@ -1413,6 +1413,40 @@ select{
 }
 #distributionBox .table th:nth-child(2), #distributionBox .table td:nth-child(2){width:33%}
 #distributionBox .table th:nth-child(3), #distributionBox .table td:nth-child(3){width:33%}
+
+
+/* --- PATCH: Dağılım tablosu daha kompakt + satır kısaltma --- */
+#viewDistribution .table td, #viewDistribution .table th{
+  padding:8px 10px;
+  vertical-align:middle;
+}
+#viewDistribution .table td:nth-child(1){ font-weight:700; white-space:nowrap; }
+#viewDistribution .table td:nth-child(2){ width:90px; }
+#viewDistribution .table td:nth-child(3),
+#viewDistribution .table td:nth-child(4){
+  font-size:12.5px;
+  line-height:1.25;
+}
+.cellClamp{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+  cursor:pointer;
+}
+.cellClamp.is-expanded{
+  display:block;
+  -webkit-line-clamp:unset;
+  overflow:visible;
+}
+
+/* --- PATCH: Figüran/Emekli isim hücresi ortala --- */
+#viewFiguran .table td:nth-child(2){
+  text-align:center;
+  font-weight:700;
+  white-space:nowrap;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1565,6 +1599,40 @@ body{
   .idt-topnav{ position:sticky; top:0; z-index:50; }
   .idt-content{ padding:14px; }
 }
+
+
+/* --- PATCH: Dağılım tablosu daha kompakt + satır kısaltma --- */
+#viewDistribution .table td, #viewDistribution .table th{
+  padding:8px 10px;
+  vertical-align:middle;
+}
+#viewDistribution .table td:nth-child(1){ font-weight:700; white-space:nowrap; }
+#viewDistribution .table td:nth-child(2){ width:90px; }
+#viewDistribution .table td:nth-child(3),
+#viewDistribution .table td:nth-child(4){
+  font-size:12.5px;
+  line-height:1.25;
+}
+.cellClamp{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+  cursor:pointer;
+}
+.cellClamp.is-expanded{
+  display:block;
+  -webkit-line-clamp:unset;
+  overflow:visible;
+}
+
+/* --- PATCH: Figüran/Emekli isim hücresi ortala --- */
+#viewFiguran .table td:nth-child(2){
+  text-align:center;
+  font-weight:700;
+  white-space:nowrap;
+}
+
 </style>
 
 
