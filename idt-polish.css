@@ -282,3 +282,72 @@ table.idt-table tbody tr:hover,
 .assignTable td{ line-height: 1.35; }
 .assignTable td:nth-child(1){ font-weight: 800; }
 .assignTable td:nth-child(4){ font-weight: 800; }
+
+
+/* === Symmetry Table System: Filter rows (Sorgulama & Karşılaştırma / Filtrele & Listele) === */
+.asRow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+}
+.asLabel{
+  width:120px;
+  flex:0 0 120px;
+  font-weight:700;
+}
+.asSelect{
+  flex:1 1 520px;
+  min-width:360px;
+  height:42px;
+  border-radius:12px;
+}
+.asBadge{
+  flex:0 0 auto;
+  min-width:28px;
+  height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+}
+.asClear{
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+}
+
+/* Make filter panel internal padding balanced */
+/* === Figüran/Emekli table: keep left aligned, vertically centered === */
+#figuranBox table th, #figuranBox table td{
+  vertical-align:middle;
+}
+#figuranBox table td:nth-child(2){
+  text-align:left !important;
+  font-weight:700;
+}
+#figuranBox table td:nth-child(1){
+  text-align:center;
+  font-variant-numeric: tabular-nums;
+  color:var(--muted, #5a5560);
+}
+#figuranBox table td:nth-child(3),
+#figuranBox table td:nth-child(4),
+#figuranBox table td:nth-child(5){
+  text-align:left;
+}
+
+/* === Oyunlara Göre Dağılım: tighter, symmetrical columns === */
+.distTable{
+  table-layout:fixed;
+}
+.distTable th:nth-child(1), .distTable td:nth-child(1){ width:260px; }
+.distTable th:nth-child(2), .distTable td:nth-child(2){ width:110px; text-align:center; font-variant-numeric:tabular-nums; }
+.distTable th:nth-child(3), .distTable td:nth-child(3){ width:auto; }
+.distTable th:nth-child(4), .distTable td:nth-child(4){ width:220px; }
+.distTable th{ text-align:left; }
+.distTable td{ padding-top:12px; padding-bottom:12px; }
