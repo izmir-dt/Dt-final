@@ -1528,15 +1528,15 @@ function renderFiguran(){
 
   els.figuranBox.innerHTML = `
     <table class="table">
-      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
             <td>${idx+1}</td>
             <td><b>${escapeHtml(f.person)}</b></td>
             <td>${escapeHtml((f.cats||[]).join(", "))}</td>
-            <td>${escapeHtml(f.plays.join(" • "))}</td>
             <td>${escapeHtml(f.roles.join(", "))}</td>
+            <td>${escapeHtml(f.plays.join(" • "))}</td>
             
           </tr>
         `).join("")}
@@ -2329,7 +2329,27 @@ function renderAssignFilter_(){
     }else if(!out.length){
       els.assignFilterTbody.innerHTML = `<tr><td colspan="4"><div class="emptyHint">Sonuç yok.</div></td></tr>`;
     }else{
-      els.assignFilterTbody.innerHTML = limited.map(r=>`<tr><td>${escapeHtml(r.play)}</td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`).join("");
+      // Oyun başına grupla (daha düzenli/"kartvari" görünüm)
+      const byPlay = new Map();
+      for(const r of limited){
+        const key = r.play || "(Oyun yok)";
+        if(!byPlay.has(key)) byPlay.set(key, []);
+        byPlay.get(key).push(r);
+      }
+      const plays = Array.from(byPlay.keys()).sort((a,b)=>a.localeCompare(b,"tr"));
+      const html = [];
+      for(const p of plays){
+        const items = byPlay.get(p);
+        html.push(`
+          <tr class="asGroup"><td colspan="4">
+            <div class="asGroupBar"><span class="asGroupTitle">${escapeHtml(p)}</span><span class="asGroupCount">${items.length} kayıt</span></div>
+          </td></tr>
+        `);
+        for(const r of items){
+          html.push(`<tr class="asItem"><td class="asItemPlay"></td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`);
+        }
+      }
+      els.assignFilterTbody.innerHTML = html.join("");
     }
   }
 }
