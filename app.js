@@ -1489,14 +1489,21 @@ function renderDistribution(){
           <tr>
             <td><b>${escapeHtml(d.person)}</b></td>
             <td>${d.plays.length}</td>
-            <td>${escapeHtml(d.plays.join(" • "))}</td>
-            <td>${escapeHtml(d.roles.join(", "))}</td>
+            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
+            <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
           </tr>
         `).join("")}
       </tbody>
     </table>
     <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
   `;
+
+  // UI: uzun oyun/rol listelerini 3 satırda kısalt, tıklayınca aç/kapat
+  try{
+    els.distributionBox.querySelectorAll(".cellClamp").forEach(el=>{
+      el.addEventListener("click", ()=> el.classList.toggle("is-expanded"));
+    });
+  }catch(e){}
 }
 
 /* ---------- figuran render ---------- */
