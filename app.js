@@ -246,6 +246,45 @@ function escapeHtml(s) {
     .replaceAll("'","&#039;");
 }
 
+function positionNotifPanel(){
+  if(!els.notifBtn || !els.notifPanel) return;
+  if(els.notifPanel.classList.contains("hidden")) return;
+
+  const btn = els.notifBtn;
+  const panel = els.notifPanel;
+
+  // Ensure panel is measurable
+  panel.style.visibility = "hidden";
+  panel.classList.remove("hidden");
+  const rect = btn.getBoundingClientRect();
+
+  // Measure
+  const pw = Math.min(360, Math.max(280, panel.offsetWidth || 360));
+  const ph = panel.offsetHeight || 420;
+
+  const margin = 10;
+  let top = rect.bottom + margin;
+  let left = rect.right - pw;
+
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Clamp within viewport
+  if(left < margin) left = margin;
+  if(left + pw > vw - margin) left = vw - margin - pw;
+
+  // If would overflow bottom, flip above the button
+  if(top + ph > vh - margin){
+    top = Math.max(margin, rect.top - margin - ph);
+  }
+
+  panel.style.top = `${Math.round(top)}px`;
+  panel.style.left = `${Math.round(left)}px`;
+  panel.style.right = "auto";
+  panel.style.visibility = "visible";
+}
+
+
 function personTag(name){
   const n=(name||"").toString().trim();
   return (n && retiredSet && retiredSet.has(n)) ? `<span class="tag retired">Kurumdan Emekli Sanatçı</span>` : "";
@@ -564,6 +603,11 @@ function parseLogFromGviz(obj){
 
 async function loadNotifications(){
   if(!els.notifPanel) return;
+
+  // UI: yükleniyor (boş kutu görünmesin)
+  if(els.notifList){
+    els.notifList.innerHTML = `<div class="empty"><span class="idt-mini-spinner"></span> Bildirimler yükleniyor…</div>`;
+  }
 
   try{
     // GVIZ (no JSONP) → BİLDİRİMLER sayfasını okur
@@ -1673,57 +1717,16 @@ if(els.advBtn && els.advMenu){
 }
 
 
-function positionNotifPanel(){
-  if(!els.notifBtn || !els.notifPanel) return;
-  const btn = els.notifBtn.getBoundingClientRect();
-  const panel = els.notifPanel;
-
-  const margin = 12;
-  const top = Math.round(btn.bottom + 8);
-  // Prefer aligning panel's right edge with button's right edge
-  const desiredLeft = Math.round(btn.right - panel.offsetWidth);
-  const maxLeft = window.innerWidth - margin - panel.offsetWidth;
-  const left = Math.max(margin, Math.min(desiredLeft, maxLeft));
-
-  // Apply via CSS vars to avoid layout thrash
-  document.documentElement.style.setProperty('--npTop', top + 'px');
-  document.documentElement.style.setProperty('--npLeft', left + 'px');
-  document.documentElement.style.setProperty('--npRight', 'auto');
-
-  // Ensure body scroll area fits
-  const maxH = Math.min(window.innerHeight - top - margin, 560);
-  panel.style.maxHeight = maxH + 'px';
-  const bd = panel.querySelector('.notifBd');
-  if(bd){
-    const hd = panel.querySelector('.notifHd');
-    const hdH = hd ? hd.getBoundingClientRect().height : 70;
-    bd.style.maxHeight = Math.max(180, maxH - hdH - 10) + 'px';
-  }
-}
-
 // Bildirimler (LOG)
 els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
+  // toggle
   const willOpen = els.notifPanel.classList.contains("hidden");
   els.notifPanel.classList.toggle("hidden");
   if(willOpen){
-    // Position first so it never feels like "opened but invisible"
+    // position first so it feels attached to button
     positionNotifPanel();
-    // Reposition on scroll/resize while open
-    const onMove = () => { if(!els.notifPanel.classList.contains("hidden")) positionNotifPanel(); };
-    window.addEventListener("resize", onMove, { passive:true });
-    window.addEventListener("scroll", onMove, { passive:true });
-    els.notifPanel.__idtOnMove = onMove;
-
     await loadNotifications();
     positionNotifPanel();
-  }else{
-    // cleanup listeners
-    const onMove = els.notifPanel.__idtOnMove;
-    if(onMove){
-      window.removeEventListener("resize", onMove);
-      window.removeEventListener("scroll", onMove);
-      els.notifPanel.__idtOnMove = null;
-    }
   }
 });
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
@@ -2432,3 +2435,8 @@ function renderAssignTool(){
 }
 
 
+
+
+// Keep notifications panel anchored
+window.addEventListener("resize", () => positionNotifPanel(), { passive: true });
+window.addEventListener("scroll", () => positionNotifPanel(), { passive: true });
