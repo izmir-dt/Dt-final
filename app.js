@@ -1482,7 +1482,13 @@ function renderDistribution(){
     return;
   }
   els.distributionBox.innerHTML = `
-    <table class="table">
+    <table class="table tableCompact distTable">
+      <colgroup>
+        <col style="width:240px">
+        <col style="width:120px">
+        <col>
+        <col style="width:220px">
+      </colgroup>
       <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map(d=>`
@@ -2261,6 +2267,17 @@ function initAssignToolOnce(){
   if(rS) rS.addEventListener("input", ()=>{ assignState.qRole = rS.value || ""; renderAssignTool(); });
   if(pS) pS.addEventListener("input", ()=>{ assignState.qPlay = pS.value || ""; renderAssignTool(); });
   if(kS) kS.addEventListener("input", ()=>{ assignState.qPerson = kS.value || ""; renderAssignTool(); });
+
+  // Multi-select clear buttons (UI only)
+  document.querySelectorAll(".msClear").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-target");
+      if(id==="msRoles"){ assignState.roles.clear(); assignState.qRole=""; if(rS) rS.value=""; }
+      else if(id==="msPlays"){ assignState.plays.clear(); assignState.qPlay=""; if(pS) pS.value=""; }
+      else if(id==="msPeople"){ assignState.people.clear(); assignState.qPerson=""; if(kS) kS.value=""; }
+      renderAssignTool();
+    });
+  });
 }
 
 function getAllAssignValues_(){
