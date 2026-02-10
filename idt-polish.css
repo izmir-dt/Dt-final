@@ -216,3 +216,69 @@ table.idt-table tbody tr:hover,
   vertical-align: top;
 }
 
+
+
+/* --- UI patches (B devam) --- */
+.table th, .table td{ vertical-align: middle; }
+
+/* Multi-select clear buttons next to Görev/Oyun/Kişi */
+.toolRow{ display:flex; align-items:center; gap:10px; position: relative; }
+.msClear{
+  margin-left: 8px;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.7);
+  color: #3b3b3b;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.msClear:hover{ background: rgba(255,255,255,.95); }
+.msClear:active{ transform: translateY(1px); }
+
+/* Oyunlara Göre Dağılım: daha kompakt ve başlıklar hizalı */
+.tableCompact th, .tableCompact td{ padding: 10px 12px; }
+.distTable thead th{
+  text-align: left;
+  font-weight: 800;
+}
+.distTable thead th:nth-child(2){ text-align: center; }
+.distTable td:nth-child(2){ text-align: center; }
+.distTable td:nth-child(3),
+.distTable td:nth-child(4){ line-height: 1.35; }
+.distTable td:nth-child(3){ font-weight: 600; }
+.distTable .muted{ opacity: .8; }
+
+/* Karşılaştırma kartları: 3 kart (Sadece A / Ortak / Sadece B) */
+.compareGrid{
+  grid-template-columns: 1fr 1.1fr 1fr;
+  grid-template-areas: "onlyA common onlyB";
+  gap: 14px;
+}
+.compareGrid .onlyA{ grid-area: onlyA; }
+.compareGrid .onlyB{ grid-area: onlyB; }
+.compareGrid .common{ grid-area: common; }
+
+.cmpRow{
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(0,0,0,.10);
+}
+.cmpRow:last-child{ border-bottom: 0; }
+.cmpPlay{
+  flex: 0 0 46%;
+  font-weight: 800;
+}
+.cmpRoles{
+  flex: 1 1 auto;
+  color: rgba(0,0,0,.72);
+}
+
+/* Sorgulama sonuç tablosu: daha düzenli */
+.assignTable th{ text-align: left; }
+.assignTable th, .assignTable td{ padding: 10px 12px; }
+.assignTable td{ line-height: 1.35; }
+.assignTable td:nth-child(1){ font-weight: 800; }
+.assignTable td:nth-child(4){ font-weight: 800; }
