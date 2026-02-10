@@ -283,6 +283,12 @@ table.idt-table tbody tr:hover,
 .assignTable td:nth-child(1){ font-weight: 800; }
 .assignTable td:nth-child(4){ font-weight: 800; }
 
+/* Oyun bazlı grup satırı (Sorgulama & Listele) */
+.assignTable tr.asGroup td{ background: rgba(0,0,0,.035); font-weight: 800; padding:10px 12px; }
+.assignTable .asGroupBar{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.assignTable .asGroupTitle{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.assignTable .asCount{ font-size:12px; font-weight:900; padding:4px 10px; border:1px solid var(--line); border-radius:999px; background: rgba(255,255,255,.6); }
+
 
 /* === Symmetry Table System: Filter rows (Sorgulama & Karşılaştırma / Filtrele & Listele) === */
 .asRow{
@@ -347,7 +353,28 @@ table.idt-table tbody tr:hover,
 }
 .distTable th:nth-child(1), .distTable td:nth-child(1){ width:260px; }
 .distTable th:nth-child(2), .distTable td:nth-child(2){ width:110px; text-align:center; font-variant-numeric:tabular-nums; }
-.distTable th:nth-child(3), .distTable td:nth-child(3){ width:auto; }
-.distTable th:nth-child(4), .distTable td:nth-child(4){ width:220px; }
+.distTable th:nth-child(3), .distTable td:nth-child(3){ width:220px; }
+.distTable th:nth-child(4), .distTable td:nth-child(4){ width:auto; }
 .distTable th{ text-align:left; }
 .distTable td{ padding-top:12px; padding-bottom:12px; }
+
+/* === Sorgulama sonuç: oyun bazlı grup satırı görseli === */
+.asGroup td{
+  background: rgba(220,203,183,.35);
+  border-top: 1px solid rgba(220,203,183,.8);
+  border-bottom: 1px solid rgba(220,203,183,.55);
+  padding: 10px 12px;
+}
+.asGroupBar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.asCount{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width: 64px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(122,30,44,.12);
+  color: rgba(122,30,44,1);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
