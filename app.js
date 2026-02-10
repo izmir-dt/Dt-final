@@ -1528,15 +1528,15 @@ function renderFiguran(){
 
   els.figuranBox.innerHTML = `
     <table class="table">
-      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
+      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
             <td>${idx+1}</td>
             <td><b>${escapeHtml(f.person)}</b></td>
             <td>${escapeHtml((f.cats||[]).join(", "))}</td>
-            <td>${escapeHtml(f.roles.join(", "))}</td>
             <td>${escapeHtml(f.plays.join(" • "))}</td>
+            <td class="muted">${escapeHtml(f.roles.join(", "))}</td>
             
           </tr>
         `).join("")}
