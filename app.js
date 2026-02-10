@@ -563,6 +563,16 @@ function parseLogFromGviz(obj){
 
 
 async function loadNotifications(){
+
+// UI: avoid "0 + boş kutu" – always show a clear state
+if(els.notifList){
+  els.notifList.innerHTML = `<div class="notifState"><span class="spinnerSm"></span>Bildirimler yükleniyor…</div>`;
+}
+if(els.notifCount){
+  // keep current count while loading; we'll update after parse
+  els.notifCount.classList.add("isLoading");
+}
+
   if(!els.notifPanel) return;
 
   try{
@@ -676,6 +686,12 @@ async function loadNotifications(){
     });
 
   }catch(err){
+
+if(els.notifList){
+  els.notifList.innerHTML = `<div class="notifState">Bildirimler alınamadı. <span class="muted">(Bağlantı / yetki / servis)</span></div>`;
+}
+if(els.notifCount) els.notifCount.textContent = "0";
+
     console.error(err);
     els.notifList.innerHTML = `<div class="empty">🔔 Bildirimler okunamadı.<br><span class="small muted">Kontrol: Sheet "Bağlantıya sahip herkes görüntüleyebilir" olmalı.</span></div>`;
     els.notifCount.textContent = "";
