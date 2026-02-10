@@ -1481,22 +1481,23 @@ function renderDistribution(){
     els.distributionBox.innerHTML = `<div class="empty">Kayıt yok (veya filtre çok dar).</div>`;
     return;
   }
+  // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
   els.distributionBox.innerHTML = `
     <table class="table tableCompact distTable">
       <colgroup>
         <col style="width:240px">
         <col style="width:120px">
+        <col style="width:240px">
         <col>
-        <col style="width:220px">
       </colgroup>
-      <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+      <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
       <tbody>
         ${filtered.map(d=>`
           <tr>
             <td><b>${escapeHtml(d.person)}</b></td>
             <td>${d.plays.length}</td>
-            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
             <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
+            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
           </tr>
         `).join("")}
       </tbody>
@@ -1526,17 +1527,18 @@ function renderFiguran(){
     return;
   }
 
+  // Figüran tablo sırası: SN / kişi / kategori / görevler / oyunlar
   els.figuranBox.innerHTML = `
-    <table class="table">
-      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Oyunlar</th><th>Görevler</th></tr></thead>
+    <table class="table figTable">
+      <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
             <td>${idx+1}</td>
             <td><b>${escapeHtml(f.person)}</b></td>
             <td>${escapeHtml((f.cats||[]).join(", "))}</td>
-            <td>${escapeHtml(f.plays.join(" • "))}</td>
             <td class="muted">${escapeHtml(f.roles.join(", "))}</td>
+            <td>${escapeHtml(f.plays.join(" • "))}</td>
             
           </tr>
         `).join("")}
