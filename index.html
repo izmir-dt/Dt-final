@@ -1440,11 +1440,27 @@ select{
   overflow:visible;
 }
 
-/* --- PATCH: Figüran/Emekli isim hücresi ortala --- */
+/* --- PATCH: Figüran/Emekli isim hücresi: sola yaslı (sadece dikey hizalama temiz) --- */
 #viewFiguran .table td:nth-child(2){
-  text-align:center;
+  text-align:left;
   font-weight:700;
   white-space:nowrap;
+}
+
+/* --- PATCH: Sorgulama & Karşılaştırma (Filtrele & Listele) oyun başına gruplu + daha kartvari --- */
+#viewGorev #assignFilterTable tbody tr.asGroup td{
+  background: rgba(122,30,44,.06);
+  font-weight:800;
+  letter-spacing:.2px;
+  padding:10px 12px;
+  border-top:1px solid rgba(122,30,44,.15);
+}
+#viewGorev #assignFilterTable tbody tr.asItem td{
+  padding:10px 12px;
+  vertical-align:top;
+}
+#viewGorev #assignFilterTable tbody tr.asItem td:first-child{
+  color: var(--muted);
 }
 
 </style>
@@ -1858,7 +1874,7 @@ body{
       <div class="toolGrid" style="grid-template-columns: 1fr">
         <div class="toolCard">
           <div class="toolTitle">Karşılaştır</div>
-          <div class="toolSub">İki kişiyi seç. Aşağıda 3 kart oluşur: Ortak Oyunlar / Sadece A / Sadece B. Kartların içinde o oyundaki görevler listelenir.</div>
+          <div class="toolSub">İki kişiyi seç. Aşağıda 3 kart oluşur: Sadece A / Ortak Oyunlar / Sadece B. Kartların içinde o oyundaki görevler listelenir.</div>
 
           <div class="compareTop">
             <div class="comparePick">
