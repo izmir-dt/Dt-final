@@ -1263,8 +1263,16 @@ select{
 .toolCard{ border:1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.55); border-radius: 18px; padding: 14px; box-shadow: 0 10px 28px rgba(24,16,8,.08); }
 .toolTitle{ font-weight: 900; font-size: 16px; }
 .toolSub{ margin-top:4px; color: var(--muted); font-size: 12.5px; }
-.toolRow{ display:grid; grid-template-columns: 110px 1fr; gap:10px; align-items: start; margin-top: 12px; }
-@media (max-width: 560px){ .toolRow{ grid-template-columns: 1fr; } }
+.toolRow{ display:grid; grid-template-columns: 110px minmax(260px,1fr) 42px; gap: 10px; align-items:center; margin-top: 12px; }
+.toolRow .toolLabel{ grid-column:1; }
+.toolRow .ms{ grid-column:2; width:100%; }
+.toolRow .msClear{ grid-column:3; justify-self:end; }
+@media (max-width: 560px){
+  .toolRow{ grid-template-columns: 1fr 42px; }
+  .toolRow .toolLabel{ grid-column:1 / -1; grid-row:1; padding-top:0; }
+  .toolRow .ms{ grid-column:1; grid-row:2; }
+  .toolRow .msClear{ grid-column:2; grid-row:2; }
+}
 .toolLabel{ font-weight:800; color: var(--text); font-size: 13px; padding-top: 8px; }
 .toolActions{ display:flex; gap:10px; margin-top: 12px; }
 
