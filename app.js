@@ -2348,7 +2348,15 @@ function renderAssignFilter_(){
           </td></tr>
         `);
         for(const r of items){
-          html.push(`<tr class="asItem"><td class="asItemPlay"></td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`);
+          // data-label: mobilde tabloyu "kart" düzenine çevirmek için
+          html.push(
+            `<tr class="asItem">`+
+            `<td class="asItemPlay"></td>`+
+            `<td data-label="Kategori">${escapeHtml(r.category||"")}</td>`+
+            `<td data-label="Görev">${escapeHtml(r.role)}</td>`+
+            `<td data-label="Kişi"><b>${escapeHtml(r.person)}</b></td>`+
+            `</tr>`
+          );
         }
       }
       els.assignFilterTbody.innerHTML = html.join("");
@@ -2370,6 +2378,12 @@ function personPlayMap_(){
 
 function fmtRoles_(set){
   return Array.from(set||[]).sort((a,b)=>a.localeCompare(b,"tr")).join(", ");
+}
+
+function rolesChipsHtml_(set){
+  const arr = Array.from(set||[]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"tr"));
+  if(!arr.length) return `<span class="muted">—</span>`;
+  return `<div class="roleChips">` + arr.map(r=>`<span class="roleChip">${escapeHtml(r)}</span>`).join("") + `</div>`;
 }
 
 function renderCompare_(){
@@ -2437,11 +2451,11 @@ function renderCompare_(){
   const renderList = (list, mapLeft, mapRight)=>{
     if(!list.length) return `<div class="emptyHint">—</div>`;
     return list.map(play=>{
-      const rolesL = fmtRoles_(mapLeft.get(play));
-      const rolesR = mapRight ? fmtRoles_(mapRight.get(play)) : "";
+      const rolesL = rolesChipsHtml_(mapLeft.get(play));
+      const rolesR = mapRight ? rolesChipsHtml_(mapRight.get(play)) : "";
       return `<div class="cmpRow"><div class="cmpPlay"><b>${escapeHtml(play)}</b></div>`
-        + (mapRight ? `<div class="cmpRoles"><span class="muted small">A:</span> ${escapeHtml(rolesL)}<br><span class="muted small">B:</span> ${escapeHtml(rolesR)}</div>`
-                    : `<div class="cmpRoles">${escapeHtml(rolesL)}</div>`)
+        + (mapRight ? `<div class="cmpRoles"><div class="cmpAB"><span class="muted small">A</span>${rolesL}</div><div class="cmpAB"><span class="muted small">B</span>${rolesR}</div></div>`
+                    : `<div class="cmpRoles">${rolesL}</div>`)
         + `</div>`;
     }).join("");
   };
