@@ -2951,5 +2951,23 @@ body{
 })();
 </script>
 
+
+  <!-- Mobile floating actions (replaces bottom nav to avoid layout breaking) -->
+  <div class="fabDock" aria-label="Hızlı erişim">
+    <button class="fab" type="button" data-go="#panel" aria-label="Panel">
+      <span class="fabI" aria-hidden="true">🏠</span>
+      <span class="fabT">Panel</span>
+    </button>
+    <button class="fab" type="button" data-go="#gorev" aria-label="Sorgu">
+      <span class="fabI" aria-hidden="true">🔎</span>
+      <span class="fabT">Sorgu</span>
+    </button>
+    <button class="fab fabNotif" type="button" data-action="notif" aria-label="Bildirimler">
+      <span class="fabI" aria-hidden="true">🔔</span>
+      <span class="fabT">Bildirim</span>
+      <span class="fabBadge" id="fabNotifBadge" aria-label="Bildirim sayısı"></span>
+    </button>
+  </div>
+
 </body>
 </html>
