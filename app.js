@@ -22,7 +22,8 @@ const CONFIG = {
 };
 
 function isMobile(){
-  return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
+  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 900px)
+  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
 }
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
@@ -863,8 +864,7 @@ function renderList(){
 }
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
-
-  const LIMIT = isMobile() ? 60 : 180;
+  // Paket 1: detay görünümünde truncate yok (tam liste)
 
   if(activeMode==="plays"){
     const rowsSorted=[...it.rows].sort((a,b)=>
@@ -872,12 +872,11 @@ function renderDetails(it){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const isLimited = detailExpandedId !== it.id;
-    const rowsToRender = isLimited ? rowsSorted.slice(0, LIMIT) : rowsSorted;
-    const hasMore = isLimited && rowsSorted.length > LIMIT;
+    const rowsToRender = rowsSorted;
+    const hasMore = false;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
+      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
       <table class="table asTable" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
@@ -886,18 +885,15 @@ function renderDetails(it){
       </table>
     `;
     labelizeTables(els.details);
-    const btn = document.getElementById('detailShowAll');
-    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   } else {
     const byPlay=new Map();
     for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
     const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    const isLimited = detailExpandedId !== it.id;
-    const blocksToRender = isLimited ? blocks.slice(0, LIMIT) : blocks;
-    const hasMore = isLimited && blocks.length > LIMIT;
+    const blocksToRender = blocks;
+    const hasMore = false;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
+      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır</p>
       <div id="detailTable">
       ${blocksToRender.map(([p, rs])=>{
         const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.role||"").localeCompare(b.role||"","tr"));
@@ -914,8 +910,6 @@ function renderDetails(it){
       </div>
     `;
     labelizeTables(els.details);
-    const btn = document.getElementById('detailShowAll');
-    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   }
 }
 
@@ -923,29 +917,33 @@ function renderDetails(it){
 
 function renderInlineDetailHtml(item, mode){
   // mode: 'play' or 'person'
-  const name = (mode==='play') ? item.name : item.name;
+  // Paket 1: inline detail "detay" sayılır → burada truncate yok.
+  // Kaynak: item.rows (stabil data modeli)
+  const title = (mode==='play') ? `${item.title} • Kadro` : `${item.title} • Oyunlar`;
 
-  const list = (mode==='play')
-    ? (item.people||[]).map(p => ({k:p.name, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'))
-    : (item.plays||[]).map(p => ({k:p.play, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'));
+  const list = [];
+  const rs = Array.isArray(item.rows) ? item.rows : [];
 
-  const expanded = (detailExpandedId === item.id);
-  const limit = expanded ? 9999 : 12;
-  const shown = list.slice(0, limit);
-  const moreCount = Math.max(0, list.length - shown.length);
+  if(mode === 'play'){
+    rs
+      .slice()
+      .sort((a,b)=> (a.person||"").localeCompare(b.person||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
+      .forEach(r=> list.push({k: (r.person||""), v: (r.role||"")}));
+  } else {
+    rs
+      .slice()
+      .sort((a,b)=> (a.play||"").localeCompare(b.play||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
+      .forEach(r=> list.push({k: (r.play||""), v: (r.role||"")}));
+  }
 
-  const title = (mode==='play') ? `${name} • Kadro` : `${name} • Oyunlar`;
   let html = `<div class="inlineDetails">
     <div class="inlineHead">
       <b>${escapeHtml(title)}</b>
-      <div style="display:flex; align-items:center; gap:8px;">
-        ${moreCount?`<span class="inlineMore">+${moreCount} satır daha</span>`:''}
-        ${(!expanded && list.length>12)?`<button class="inlineExpand" type="button" data-inline-expand="${escapeHtml(item.id)}">Tümünü göster</button>`:''}
-      </div>
+      <div class="small muted">${list.length} satır</div>
     </div>
     <div class="inlineGrid">`;
 
-  for(const row of shown){
+  for(const row of list){
     html += `<div class="inlineRow">
       <div class="k">${escapeHtml(row.k||'')}</div>
       <div class="v">${escapeHtml(row.v||'')}</div>
