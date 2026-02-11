@@ -483,3 +483,89 @@ table.idt-table tbody tr:hover,
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
+
+/* ============================
+   Symmetry + Mobile polish v8.3.14
+   (UI only: no data-fetch changes)
+   ============================ */
+
+/* Top bar buttons: keep single-line and prevent ugly wraps */
+#idt-topnav .actions{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+#idt-topnav .btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+#idt-topnav .btn .btnIcon{display:inline-flex;align-items:center;line-height:1}
+#idt-topnav .btn .btnLabel{display:inline-flex}
+
+/* Sorgulama & Listele — desktop table symmetry */
+#assignFilterTable{table-layout:fixed}
+#assignFilterTable th,#assignFilterTable td{padding:12px 14px;vertical-align:middle}
+#assignFilterTable thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#4f3a37}
+#assignFilterTable tbody td{line-height:1.35}
+#assignFilterTable th:nth-child(1),#assignFilterTable td:nth-child(1){width:30%}
+#assignFilterTable th:nth-child(2),#assignFilterTable td:nth-child(2){width:16%}
+#assignFilterTable th:nth-child(3),#assignFilterTable td:nth-child(3){width:22%}
+#assignFilterTable th:nth-child(4),#assignFilterTable td:nth-child(4){width:22%}
+
+/* Karşılaştır — corporate card look */
+.compareCard{background:linear-gradient(180deg,#fff,#fbf6f1);border:1px solid rgba(122,30,44,.10);border-radius:16px}
+.compareCard h4{font-size:14px;letter-spacing:.02em;color:#7a1e2c}
+.compareCard .block{border-radius:14px;border:1px solid rgba(0,0,0,.06);background:#fff}
+.compareCard .rolesList{margin:8px 0 0;padding-left:18px}
+.compareCard .rolesList li{margin:4px 0;line-height:1.35}
+.compareCard .empty{color:#6b5b57}
+
+/* Compare: ensure A / Common / B order consistently */
+.compareGrid{grid-template-areas:"onlyA common onlyB"}
+
+/* Mobile fixes */
+@media (max-width:720px){
+  /* Hide button labels on mobile to avoid wrapping */
+  #idt-topnav .btn .btnLabel{display:none}
+  #idt-topnav .btn{padding:10px 12px}
+
+  /* Sidebar branding compact */
+  .idt-side-head{padding:10px 12px;gap:10px}
+  .idt-side-head .logo{width:34px;height:34px;border-radius:12px}
+  .idt-side-head .brandName{font-size:15px;line-height:1.1}
+  .idt-side-head .brandSub{font-size:11px;opacity:.85}
+
+  /* Compare inputs/tools: avoid overlap */
+  .compareTopRow{display:grid;grid-template-columns:1fr;gap:10px}
+  .compareTopRow .compareTools{justify-content:flex-start;flex-wrap:wrap;gap:10px}
+  .compareTopRow .compareSelect{min-width:0}
+
+  /* Sorgulama & Listele: cards spacing */
+  .asItem{border-radius:16px}
+  .asRow{gap:8px}
+}
+
+/* Filters symmetry (Sorgulama & Listele) */
+.filterRow{align-items:center}
+.filterRow .msTrigger,.filterRow select{min-height:44px;padding:10px 12px;font-size:15px;border-radius:14px}
+.filterRow .msTrigger{width:100%}
+.filterRow .msClearBtn{width:44px;height:44px;border-radius:14px}
+@media (max-width:720px){
+  .filterRow{grid-template-columns:96px 1fr 44px}
+  .filterRow label{font-size:13px;line-height:1.1}
+}
+
+/* AssignFilter result table (desktop symmetry) */
+#assignFilterTable{table-layout:fixed}
+#assignFilterTable th,#assignFilterTable td{padding:12px 14px;vertical-align:middle}
+#assignFilterTable th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:rgba(0,0,0,.65)}
+#assignFilterTable td{line-height:1.25}
+#assignFilterTable tbody tr{height:52px}
+#assignFilterTable th:nth-child(1),#assignFilterTable td:nth-child(1){width:30%}
+#assignFilterTable th:nth-child(2),#assignFilterTable td:nth-child(2){width:16%}
+#assignFilterTable th:nth-child(3),#assignFilterTable td:nth-child(3){width:24%}
+#assignFilterTable th:nth-child(4),#assignFilterTable td:nth-child(4){width:30%}
+
+/* Compare cards: more corporate */
+.compareCard{background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.08);box-shadow:0 12px 30px rgba(0,0,0,.06)}
+.compareCard .compareCardTitle{font-size:14px;letter-spacing:.02em}
+.compareGameCard{border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.85);border-radius:16px;padding:12px 12px;margin:10px 0}
+.compareGameCard .gameName{font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.compareGameCard .roleChips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.compareGameCard .roleChip{padding:4px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.1);background:rgba(0,0,0,.03);font-size:12px}
+.compareGameCard ul{margin:6px 0 0 18px;padding:0}
+.compareGameCard li{margin:2px 0;line-height:1.35}
+.compareEmpty{padding:14px;border:1px dashed rgba(0,0,0,.18);border-radius:16px;background:rgba(255,255,255,.75);color:rgba(0,0,0,.65)}
