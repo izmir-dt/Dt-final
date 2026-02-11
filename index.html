@@ -1903,6 +1903,49 @@ body{
 }
 #figuranPane table td:nth-child(2),
 #figuranPane table th:nth-child(2){text-align:left}
+
+/* Inline detail (mobile expand under row) */
+.inlineDetail{margin-top:10px;padding:12px 12px;border:1px solid rgba(0,0,0,.08);border-radius:16px;background:rgba(255,255,255,.68)}
+.inlineDetail .inlineHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.inlineDetail .inlineHead .t{font-weight:900}
+.inlineDetail .kv{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:6px 0;border-top:1px dashed rgba(0,0,0,.08)}
+.inlineDetail .k{font-weight:800;color:var(--muted);min-width:110px}
+.inlineDetail .v{flex:1;text-align:right}
+.inlineDetail .miniBtn{border:1px solid rgba(0,0,0,.12);background:var(--card);border-radius:999px;padding:6px 10px}
+
+@media (max-width: 420px){
+  .idt-pill .btnLabel{display:none}
+  .idt-pill{padding:10px 12px;min-width:44px}
+}
+
+/* Mobile Speed-Dial (FAB) */
+.fabWrap{position:fixed;right:14px;bottom:16px;z-index:9999;display:none}
+.fabMain{width:56px;height:56px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:var(--accent);color:#fff;box-shadow:0 18px 46px rgba(0,0,0,.22)}
+.fabMain:active{transform:translateY(1px)}
+.fabMenu{position:absolute;right:0;bottom:66px;display:flex;flex-direction:column;gap:10px;align-items:flex-end;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease, transform .18s ease}
+.fabWrap[data-open="1"] .fabMenu{opacity:1;pointer-events:auto;transform:translateY(0)}
+.fabMini{display:flex;align-items:center;gap:10px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.96);padding:10px 12px;box-shadow:0 12px 30px rgba(0,0,0,.16);max-width:min(78vw,320px)}
+.fabMini .fabMiniI{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;background:rgba(122,30,44,.12);color:var(--accent);font-size:18px;flex:0 0 34px}
+.fabMini .fabMiniT{font-weight:900;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width: 820px){ .fabWrap{display:block} }
+
+/* Tables -> Cards (mobile): prevent broken headers / horizontal scroll */
+@media (max-width: 720px){
+  .tableWrap{overflow:visible}
+  table.asTable{width:100%;border:0}
+  table.asTable thead{display:none}
+  table.asTable tbody{display:block}
+  table.asTable tr{display:block;margin:10px 0;border:1px solid var(--line);border-radius:14px;padding:10px;background:rgba(255,255,255,.75)}
+  table.asTable td{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 0;border:0;white-space:normal;word-break:break-word}
+  table.asTable td::before{content:attr(data-label);font-weight:900;color:var(--muted);flex:0 0 110px;max-width:110px}
+  table.asTable td:last-child{padding-bottom:2px}
+}
+
+@media (max-width: 420px){
+  .idt-pill .btnLabel{display:none}
+  .idt-pill{min-width:46px;padding:10px 12px}
+  .idt-pill .btnIcon{margin-right:0}
+}
 </style>
 
 </head>
@@ -2953,20 +2996,31 @@ body{
 
 
   <!-- Mobile floating actions (replaces bottom nav to avoid layout breaking) -->
-  <div class="fabDock" aria-label="Hızlı erişim">
-    <button class="fab" type="button" data-go="#panel" aria-label="Panel">
-      <span class="fabI" aria-hidden="true">🏠</span>
-      <span class="fabT">Panel</span>
+  <!-- Mobil hızlı erişim: tek FAB + açılır menü (bottom nav yerine) -->
+  <div class="fabWrap" aria-label="Hızlı erişim">
+    <button class="fabMain" id="fabMain" type="button" aria-label="Menü">
+      <span class="fabI" aria-hidden="true">☰</span>
     </button>
-    <button class="fab" type="button" data-go="#gorev" aria-label="Sorgu">
-      <span class="fabI" aria-hidden="true">🔎</span>
-      <span class="fabT">Sorgu</span>
-    </button>
-    <button class="fab fabNotif" type="button" data-action="notif" aria-label="Bildirimler">
-      <span class="fabI" aria-hidden="true">🔔</span>
-      <span class="fabT">Bildirim</span>
-      <span class="fabBadge" id="fabNotifBadge" aria-label="Bildirim sayısı"></span>
-    </button>
+    <div class="fabMenu" id="fabMenu" aria-hidden="true">
+      <button class="fabItem" type="button" data-go="#panel" aria-label="Panel">
+        <span class="fabI" aria-hidden="true">🏠</span><span class="fabT">Panel</span>
+      </button>
+      <button class="fabItem" type="button" data-go="#gorev" aria-label="Sorgu">
+        <span class="fabI" aria-hidden="true">🔎</span><span class="fabT">Sorgu</span>
+      </button>
+      <button class="fabItem" type="button" data-go="#analiz" aria-label="Dağılım">
+        <span class="fabI" aria-hidden="true">📊</span><span class="fabT">Dağılım</span>
+      </button>
+      <button class="fabItem" type="button" data-go="#kesisim" aria-label="Kesişim">
+        <span class="fabI" aria-hidden="true">🧩</span><span class="fabT">Kesişim</span>
+      </button>
+      <button class="fabItem" type="button" data-go="#figuran" aria-label="Figüran">
+        <span class="fabI" aria-hidden="true">🎭</span><span class="fabT">Figüran</span>
+      </button>
+      <button class="fabItem" type="button" data-go="#grafik" aria-label="Grafikler">
+        <span class="fabI" aria-hidden="true">📈</span><span class="fabT">Grafikler</span>
+      </button>
+    </div>
   </div>
 
 </body>
