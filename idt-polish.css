@@ -270,7 +270,6 @@ table.idt-table tbody tr:hover,
 .distTable thead th{
   text-align: left;
   font-weight: 800;
-  white-space: nowrap;
 }
 .distTable thead th:nth-child(2){ text-align: center; }
 .distTable td:nth-child(2){ text-align: center; }
@@ -278,11 +277,6 @@ table.idt-table tbody tr:hover,
 .distTable td:nth-child(4){ line-height: 1.35; }
 .distTable td:nth-child(3){ font-weight: 600; }
 .distTable .muted{ opacity: .8; }
-
-@media (max-width: 560px){
-  .tableCompact th, .tableCompact td{ padding: 8px 8px; }
-  .distTable thead th{ font-size: 12px; }
-}
 
 /* Karşılaştırma kartları: 3 kart (Sadece A / Ortak / Sadece B) */
 .compareGrid{
@@ -869,10 +863,9 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
     padding:12px;
     box-shadow:var(--shadow);
   }
-  /* Keep values LEFT-aligned (not pushed to the right) */
   table.asTable td{
     display:flex;
-    justify-content:flex-start;
+    justify-content:space-between;
     align-items:flex-start;
     gap:12px;
     padding:8px 0;
@@ -930,4 +923,44 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
   align-items:center;
   justify-content:center;
   box-shadow:0 6px 16px rgba(0,0,0,.25);
+}
+
+
+/* ===== Mobile modal (used by chart taps) ===== */
+.mModal{position:fixed; inset:0; z-index:9999; display:flex; align-items:flex-end; justify-content:center; padding:16px;}
+.mModal[hidden]{display:none;}
+.mModalBackdrop{position:absolute; inset:0; background:rgba(0,0,0,.35); border:0;}
+.mModalCard{position:relative; width:min(720px, 100%); max-height:80vh; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 18px 60px rgba(0,0,0,.18); overflow:hidden;}
+.mModalHead{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line);}
+.mModalTitle{font-weight:800; letter-spacing:.2px;}
+.mModalClose{border:1px solid var(--line); background:transparent; border-radius:10px; padding:8px 10px; cursor:pointer;}
+.mModalBody{padding:12px 14px; overflow:auto; max-height:calc(80vh - 54px);}
+.mModalMeta{color:var(--muted); font-size:13px; margin-bottom:10px;}
+.mModalList{display:grid; gap:10px;}
+.mModalList .pill{display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(255,255,255,.25);}
+.mModalList .pill b{font-weight:800;}
+.mModalList .pill .sub{color:var(--muted); font-size:12px;}
+
+/* Prevent letter-by-letter stacking on mobile */
+@media (max-width: 820px){
+  .card, .tabs, .fabMenu, .asCard, .cmpCard, .mModalCard, .filters, .tableCards, .listCard{
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+}
+
+/* ===== Inline details (mobile list row expansion) ===== */
+.inlineDetails{margin:10px 0 14px; padding:12px 12px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.35);}
+.inlineDetails .inlineHead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+.inlineDetails .inlineHead b{font-weight:900;}
+.inlineDetails .inlineMore{font-size:12px; color:var(--muted);}
+.inlineDetails .inlineGrid{display:grid; gap:8px;}
+.inlineDetails .inlineRow{display:grid; grid-template-columns: 1fr 1.3fr; gap:10px; align-items:start; padding:8px 10px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.25);}
+.inlineDetails .k{font-weight:800;}
+.inlineDetails .v{justify-self:start; text-align:left; color:var(--text);}
+.inlineDetails .inlineExpand{border:1px solid var(--line); background:transparent; border-radius:12px; padding:8px 10px; cursor:pointer; font-weight:700;}
+.inlineDetails .inlineExpand:hover{background:rgba(0,0,0,.03);}
+@media (max-width: 520px){
+  .inlineDetails .inlineRow{grid-template-columns:1fr;}
+  .inlineDetails .v{color:var(--muted);}
 }
