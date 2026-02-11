@@ -22,8 +22,8 @@ const CONFIG = {
 };
 
 function isMobile(){
-  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 900px)
-  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 980px)
+  return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
@@ -1689,18 +1689,18 @@ function renderIntersection(){
   }
   els.intersectionBox.innerHTML = `
     <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-    <div class="tableScroll"><table class="table queryTable" style="min-width:860px">
+    <table class="table queryTable interTable">
       <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
       <tbody>
         ${common.map(c=>`
           <tr>
             <td><b>${escapeHtml(c.person)}</b></td>
-            <td>${escapeHtml(c.catsA.join(", "))}<br><span class="small">${escapeHtml(c.rolesA.join(", "))}</span></td>
-            <td>${escapeHtml(c.catsB.join(", "))}<br><span class="small">${escapeHtml(c.rolesB.join(", "))}</span></td>
+            <td data-label="${escapeHtml(a)}">${escapeHtml(c.catsA.join(", "))}<br><span class="small">${escapeHtml(c.rolesA.join(", "))}</span></td>
+            <td data-label="${escapeHtml(b)}">${escapeHtml(c.catsB.join(", "))}<br><span class="small">${escapeHtml(c.rolesB.join(", "))}</span></td>
           </tr>
         `).join("")}
       </tbody>
-    </table></div>
+    </table>
   `;
 }
 
