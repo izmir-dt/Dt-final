@@ -1506,29 +1506,58 @@ function renderDistribution(){
     els.distributionBox.innerHTML = `<div class="empty">Kayıt yok (veya filtre çok dar).</div>`;
     return;
   }
-  // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
-  els.distributionBox.innerHTML = `
-    <table class="table tableCompact distTable">
-      <colgroup>
-        <col style="width:240px">
-        <col style="width:120px">
-        <col style="width:240px">
-        <col>
-      </colgroup>
-      <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
-      <tbody>
+
+  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 860px)").matches;
+
+  if(isNarrow){
+    // Mobil: tablo yerine kart düzeni (harf harf kırılma + düzensizlik çözümü)
+    els.distributionBox.innerHTML = `
+      <div class="distCards">
         ${filtered.map(d=>`
-          <tr>
-            <td><b>${escapeHtml(d.person)}</b></td>
-            <td>${d.plays.length}</td>
-            <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
-            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
-          </tr>
+          <div class="distCard">
+            <div class="distHead">
+              <div class="distPerson">${escapeHtml(d.person)}</div>
+              <div class="distCount">${d.plays.length} oyun</div>
+            </div>
+            <div class="distRow">
+              <div class="distLabel">Görevler</div>
+              <div class="distValue cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div>
+            </div>
+            <div class="distRow">
+              <div class="distLabel">Oyunlar</div>
+              <div class="distValue cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div>
+            </div>
+          </div>
         `).join("")}
-      </tbody>
-    </table>
-    <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
-  `;
+      </div>
+      <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
+    `;
+  }else{
+    // Masaüstü: simetrik tablo düzeni
+    // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
+    els.distributionBox.innerHTML = `
+      <table class="table tableCompact distTable">
+        <colgroup>
+          <col style="width:240px">
+          <col style="width:120px">
+          <col style="width:240px">
+          <col>
+        </colgroup>
+        <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
+        <tbody>
+          ${filtered.map(d=>`
+            <tr>
+              <td><b>${escapeHtml(d.person)}</b></td>
+              <td>${d.plays.length}</td>
+              <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
+              <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
+    `;
+  }
 
   // UI: uzun oyun/rol listelerini 3 satırda kısalt, tıklayınca aç/kapat
   try{
@@ -1537,6 +1566,7 @@ function renderDistribution(){
     });
   }catch(e){}
 }
+
 
 /* ---------- figuran render ---------- */
 function renderFiguran(){
