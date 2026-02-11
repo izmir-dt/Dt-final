@@ -447,6 +447,49 @@ table.idt-table tbody tr:hover,
   overflow-wrap: anywhere; /* tek uzun kelimede taşmayı önle */
 }
 
+/* 5b) MOBİL: Figüran tablosunu kart/listeye çevir (yatay scroll yok, harf harf kırılma yok) */
+@media (max-width: 720px){
+  /* Mobilde sidebar başlığı harf harf kırılmasın: metni gizle, sadece logo kalsın */
+  .idt-sidebar .idt-head-txt{ display:none; }
+
+  #viewFiguran .figTable{ border:0; }
+  #viewFiguran .figTable thead{ display:none; }
+  #viewFiguran .figTable,
+  #viewFiguran .figTable tbody,
+  #viewFiguran .figTable tr,
+  #viewFiguran .figTable td{
+    display:block;
+    width:100%;
+  }
+  #viewFiguran .figTable tr{
+    margin: 10px 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    padding: 10px 12px;
+    box-shadow: var(--shadow);
+  }
+  #viewFiguran .figTable td{
+    border:0;
+    padding: 6px 0;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  #viewFiguran .figTable td::before{
+    content: attr(data-label);
+    flex: 0 0 86px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  #viewFiguran .figTable td[data-label="S.N"]{
+    display:none;
+  }
+}
+
 /* 6) İç scroll alanlarında en alt içerik kesilmesin */
 .idt-sticky-panel,
 [data-idt-sticky="1"],
