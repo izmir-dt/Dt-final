@@ -1625,6 +1625,38 @@ function renderIntersection(){
     els.intersectionBox.innerHTML = `<div class="empty"><b>${escapeHtml(a)}</b> ile <b>${escapeHtml(b)}</b> arasında ortak personel yok.</div>`;
     return;
   }
+
+  // Mobilde yatay kaydırma olmaması için tabloyu kart düzene çevir.
+  // Not: masaüstünde tablo kalır.
+  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 820px)").matches;
+  if(isNarrow){
+    els.intersectionBox.innerHTML = `
+      <div class="interHead">
+        <div class="small"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
+      </div>
+      <div class="ixList">
+        ${common.map(c=>`
+          <div class="ixCard">
+            <div class="ixPerson">${escapeHtml(c.person)}</div>
+            <div class="ixCols">
+              <div class="ixCol">
+                <div class="ixTitle">${escapeHtml(a)}</div>
+                <div class="ixMeta">${escapeHtml(c.catsA.join(", ")) || "—"}</div>
+                <div class="ixRole">${escapeHtml(c.rolesA.join(", ")) || "—"}</div>
+              </div>
+              <div class="ixCol">
+                <div class="ixTitle">${escapeHtml(b)}</div>
+                <div class="ixMeta">${escapeHtml(c.catsB.join(", ")) || "—"}</div>
+                <div class="ixRole">${escapeHtml(c.rolesB.join(", ")) || "—"}</div>
+              </div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+    return;
+  }
+
   els.intersectionBox.innerHTML = `
     <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
     <table class="table">
