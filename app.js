@@ -1507,66 +1507,75 @@ function renderDistribution(){
     return;
   }
 
-  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 860px)").matches;
+  const isDesktop = (()=>{
+    try{ return window.matchMedia && window.matchMedia("(min-width: 992px)").matches; }
+    catch(e){ return false; }
+  })();
 
-  if(isNarrow){
-    // Mobil: tablo yerine kart düzeni (harf harf kırılma + düzensizlik çözümü)
+  if(isDesktop){
+    // Masaüstü: tam genişlik kartlar + sağ üstte oyun sayısı rozeti
     els.distributionBox.innerHTML = `
       <div class="distCards">
-        ${filtered.map(d=>`
-          <div class="distCard">
-            <div class="distHead">
-              <div class="distPerson">${escapeHtml(d.person)}</div>
-              <div class="distCount">${d.plays.length} oyun</div>
+        ${filtered.map(d=>{
+          const roles = (d.roles||[]).filter(Boolean);
+          const plays = (d.plays||[]).filter(Boolean);
+          const rolesText = roles.join("\n");
+          const playsText = plays.join("\n");
+          return `
+            <div class="dagilim-card">
+              <div class="dagilim-header">
+                <div class="dagilim-name" title="${escapeHtml(d.person)}">${escapeHtml(d.person)}</div>
+                <div class="dagilim-badge">${plays.length} Oyun</div>
+              </div>
+              <div class="dagilim-section">
+                <div class="dagilim-label">Görevler</div>
+                <div class="dagilim-content">${escapeHtml(rolesText || "-")}</div>
+              </div>
+              <div class="dagilim-section">
+                <div class="dagilim-label">Oyunlar</div>
+                <div class="dagilim-content">${escapeHtml(playsText || "-")}</div>
+              </div>
             </div>
-            <div class="distRow">
-              <div class="distLabel">Görevler</div>
-              <div class="distValue cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div>
-            </div>
-            <div class="distRow">
-              <div class="distLabel">Oyunlar</div>
-              <div class="distValue cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div>
-            </div>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
       </div>
       <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
     `;
-  }else{
-    // Masaüstü: simetrik tablo düzeni
-    // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
-    els.distributionBox.innerHTML = `
-      <table class="table tableCompact distTable">
-        <colgroup>
-          <col style="width:240px">
-          <col style="width:120px">
-          <col style="width:240px">
-          <col>
-        </colgroup>
-        <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
-        <tbody>
-          ${filtered.map(d=>`
-            <tr>
-              <td><b>${escapeHtml(d.person)}</b></td>
-              <td>${d.plays.length}</td>
-              <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
-              <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-      <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
-    `;
+    return;
   }
 
-  // UI: uzun oyun/rol listelerini 3 satırda kısalt, tıklayınca aç/kapat
+  // Mobil / dar ekran: mevcut tablo (stabilite için dokunmuyoruz)
+  // Kolon sırası: Kişi / Oyun Sayısı / Görevler / Oyunlar
+  els.distributionBox.innerHTML = `
+    <table class="table tableCompact distTable">
+      <colgroup>
+        <col style="width:240px">
+        <col style="width:120px">
+        <col style="width:240px">
+        <col>
+      </colgroup>
+      <thead><tr><th>Kişi</th><th>Oyun Sayısı</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
+      <tbody>
+        ${filtered.map(d=>`
+          <tr>
+            <td><b>${escapeHtml(d.person)}</b></td>
+            <td>${d.plays.length}</td>
+            <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
+            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+    <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
+  `;
+
+  // Mobil: uzun oyun/rol listelerini 3 satırda kısalt, tıklayınca aç/kapat
   try{
     els.distributionBox.querySelectorAll(".cellClamp").forEach(el=>{
       el.addEventListener("click", ()=> el.classList.toggle("is-expanded"));
     });
   }catch(e){}
 }
-
 
 /* ---------- figuran render ---------- */
 function renderFiguran(){
