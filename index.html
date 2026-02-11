@@ -1745,6 +1745,7 @@ body{
   <div class="nav">
     <button class="tab active" id="tabPanel">Panel</button>
     <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
+    <button class="tab" id="tabHeatmap">Yoğunluk Matrisi</button>
       <button id="tabAssign" class="tab-btn">📑 Görev Ataması</button>
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
@@ -1954,6 +1955,33 @@ body{
     </div>
   </section>
 
+
+  <!-- YOĞUNLUK MATRİSİ -->
+  <section id="viewHeatmap" style="display:none">
+    <div class="card">
+      <div class="hd">
+        <h2>Yoğunluk Matrisi</h2>
+        <div class="small">Personel × Oyun görünümü. Hücreye tıklayınca Panel’de detay açılır.</div>
+      </div>
+      <div class="bd">
+        <div class="filters" style="margin-bottom:10px">
+          <div class="input" title="Görünen oyun sayısı">
+            🎭
+            <select id="hmColLimit">
+              <option value="25">25 oyun</option>
+              <option value="35" selected>35 oyun</option>
+              <option value="45">45 oyun</option>
+              <option value="60">60 oyun</option>
+            </select>
+          </div>
+          <button class="btn" id="hmRefresh">Yenile</button>
+          <button class="btn" id="hmToPanel">Panel’e Git</button>
+        </div>
+        <div id="heatmapBox"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- KESİŞİM -->
   <section id="viewIntersection" style="display:none">
     <div class="card">
@@ -2070,7 +2098,7 @@ body{
     <button class="tb" data-tab="Analiz" type="button"><span class="ico">🧩</span><span class="lbl">Analiz</span></button>
     <button class="tb" data-tab="Figuran" type="button"><span class="ico">🎟️</span><span class="lbl">Figüran</span></button>
     <button class="tb" data-tab="Grafikler" type="button"><span class="ico">📈</span><span class="lbl">Grafikler</span></button>
-  </nav>
+</nav>
 
 
       </div>
@@ -2223,7 +2251,7 @@ body{
 <script src="app.js?v=691"></script>
 
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
-<script src="idt-desktop1.js?v=1"></script>
+<script src="idt-desktop10.js?v=1"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -2777,6 +2805,20 @@ body{
     </div>
   </div>
 </div>
+
+
+  <!-- YÜKLENİYOR -->
+  <div id="globalLoading" class="hidden" aria-hidden="true">
+    <div class="glBack"></div>
+    <div class="glCard" role="dialog" aria-modal="true" aria-labelledby="glTitle">
+      <div id="glTitle" class="glTitle">Veriler hazırlanıyor…</div>
+      <div class="glRow">
+        <span class="spinnerSm"></span>
+        <div class="glMsg" id="glMsg">Lütfen bekleyin…</div>
+      </div>
+      <button class="btn glClose" id="glClose" type="button">Kapat</button>
+    </div>
+  </div>
 
 </body>
 </html>
