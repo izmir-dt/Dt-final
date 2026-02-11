@@ -22,14 +22,12 @@ const CONFIG = {
 };
 
 function isMobile(){
-  // Breakpoint + touch detection (some phones report wider viewports)
-  try{
-    const mm = (q)=>window.matchMedia && window.matchMedia(q).matches;
-    return !!(mm('(max-width: 900px)') || mm('(pointer: coarse)') || mm('(hover: none)'));
-  }catch(_e){
-    return window.innerWidth <= 900;
-  }
+  // Mobile = small viewport OR touch device (coarse pointer).
+  // Fix: some phones/tablets report large widths, which blocked mobile modals.
+  const mm = (q)=> (window.matchMedia && window.matchMedia(q).matches);
+  return mm("(max-width: 980px)") || mm("(pointer: coarse)");
 }
+
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
 function labelizeTable(table){
@@ -1199,18 +1197,10 @@ function chartHitKeyFromEvent(ev){
   if(!chartHits || !chartHits.length) return null;
   const canvas = ev.currentTarget || els.chartMain;
   const rect = canvas.getBoundingClientRect();
-  // Canvas can be CSS-scaled; map pointer coords into canvas space
-  const sx = rect.width ? (canvas.width / rect.width) : 1;
-  const sy = rect.height ? (canvas.height / rect.height) : 1;
-  const x = (ev.clientX - rect.left) * sx;
-  const y = (ev.clientY - rect.top) * sy;
+  const x = ev.clientX - rect.left;
+  const y = ev.clientY - rect.top;
 
   for(const h of chartHits){
-    // Bars (if ever used)
-    if(h.type === 'bar'){
-      if(x >= h.x && x <= (h.x + h.w) && y >= h.y && y <= (h.y + h.h)) return h.key;
-      continue;
-    }
     if(h.type !== 'wedge') continue;
     const dx = x - h.cx;
     const dy = y - h.cy;
@@ -1353,8 +1343,7 @@ function renderMobileChartList(items){
   }).join("");
 
   els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
-    elm.addEventListener("click", (e)=>{
-      try{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }catch(_e){}
+    elm.addEventListener("click", ()=>{
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
@@ -1695,7 +1684,7 @@ function renderIntersection(){
   }
   els.intersectionBox.innerHTML = `
     <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-    <table class="table asTable queryTable">
+    <table class="table">
       <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
       <tbody>
         ${common.map(c=>`
