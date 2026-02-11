@@ -1611,17 +1611,40 @@ body{
 @media (max-width: 860px){
   body{ overflow:auto; }
   .idt-shell{ flex-direction:column; height:auto; min-height:100vh; }
+
+  /* Üst bar daha kompakt + içerik yukarı gelsin */
+  .idt-topnav{ position:sticky; top:0; z-index:50; }
+  .idt-title{ font-size:16px; }
+  .idt-subtitle{ font-size:12px; }
+  .idt-status{ font-size:12px; padding:6px 10px; }
+  .idt-actions{ gap:8px; }
+  .idt-actions .btn{ padding:10px 12px; border-radius:14px; }
+
+  /* Sol menü -> ALT YATAY NAV (kullanıcı isteği: sayfanın altında yatay kaydırılabilir) */
   .idt-sidebar{
+    position:fixed;
+    left:0; right:0; bottom:0; top:auto;
     width:100%;
+    height:72px;
     flex-direction:row;
     align-items:stretch;
-    gap:8px;
-    overflow:auto;
+    gap:10px;
+    padding:10px 12px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    border-right:none;
+    border-top:1px solid var(--line);
+    background:rgba(16,16,18,.92);
+    backdrop-filter: blur(10px);
+    z-index:80;
   }
   .idt-logo{ display:none; }
-  .idt-item{ min-width:190px; margin-bottom:0; }
-  .idt-topnav{ position:sticky; top:0; z-index:50; }
-  .idt-content{ padding:14px; }
+  .idt-nav{ flex-direction:row; gap:10px; padding:0; margin:0; }
+  .idt-item{ min-width: 170px; margin:0; height:52px; }
+  .idt-item .badge{ margin-left:auto; }
+
+  /* İçerik altta nav ile kapanmasın */
+  .idt-content{ padding:14px 14px 96px; }
 }
 
 
