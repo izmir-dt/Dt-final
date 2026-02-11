@@ -818,7 +818,11 @@ function renderList(){
         try{ els.details.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){}
       });
     }
-  }
+	});
+
+	    // mount
+	    els.list.appendChild(div);
+	  }
 
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
 }
