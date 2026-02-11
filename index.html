@@ -413,8 +413,8 @@ width:48px;
     .modalBody{ padding:12px; overflow:auto; max-height:calc(80vh - 54px); }
     .hidden{ display:none !important; }
 
-     (hover: hover) and (pointer: fine) and (min-width: 981px){
-      /* Desktop: keep modal hidden (but allow touch/tablet) */
+    @media (min-width: 981px){
+      /* Desktop: keep modal hidden */
       #mobileModal, #mobileOverlay{ display:none !important; }
     }
 
@@ -905,6 +905,9 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   opacity:1 !important;
   background: rgba(30,41,59,.72) !important;
 }
+
+/* --- Panel sade: Liste "Oyunlar/Kişiler" görünüm toggle'ını gizle --- */
+#viewPanel .seg[title="Görünüm"]{ display:none !important; }
 
 /* --- Arama kutusunu (Liste) desktop'ta biraz daralt --- */
 @media (min-width: 981px){
