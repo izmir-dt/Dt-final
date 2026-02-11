@@ -966,40 +966,5 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
 }
 
 
-/* ===== Intersection (desktop-like, no asTable on mobile) ===== */
-.interGridWrap{
-  border:1px solid var(--line);
-  border-radius:16px;
-  overflow:hidden;
-  background:var(--card);
-  box-shadow:var(--shadow);
-}
-.interRow{
-  display:grid;
-  grid-template-columns: minmax(180px, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap:14px;
-  padding:12px 14px;
-  border-top:1px solid var(--line);
-  align-items:start;
-}
-.interRow:first-child{border-top:0;}
-.interHead{
-  background:color-mix(in srgb, var(--card) 82%, var(--bg));
-  font-weight:800;
-}
-.interCell{min-width:0;}
-.interCats{font-weight:700;}
-.interRoles{color:var(--muted); margin-top:3px; line-height:1.25;}
-.interCell.person{white-space:normal;}
-.interCell.playA,.interCell.playB{white-space:normal;}
-/* Mobile: keep side-by-side columns, tighten spacing */
-@media (max-width: 900px){
-  .interRow{
-    grid-template-columns: minmax(120px, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap:10px;
-    padding:10px 12px;
-  }
-  .interHead .muted{display:none;}
-  .interCats{font-weight:800;}
-  .interRoles{font-size:12px;}
-}
+/* Horizontal scroll wrapper for wide tables (e.g., Kesişim Analizi) */
+.tableScroll{ overflow:auto; -webkit-overflow-scrolling:touch; }
