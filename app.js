@@ -1519,8 +1519,13 @@ function renderDistribution(){
         ${filtered.map(d=>{
           const roles = (d.roles||[]).filter(Boolean);
           const plays = (d.plays||[]).filter(Boolean);
-          const rolesText = roles.join("\n");
-          const playsText = plays.join("\n");
+          // Görsel: düz metin yerine düzenli liste/grid
+          const rolesHtml = roles.length
+            ? roles.map(r=>`<span class="roleItem">${escapeHtml(String(r))}</span>`).join("")
+            : `<span class="muted">-</span>`;
+          const playsHtml = plays.length
+            ? plays.map(p=>`<span class="playItem">${escapeHtml(String(p))}</span>`).join("")
+            : `<span class="muted">-</span>`;
           return `
             <div class="dagilim-card">
               <div class="dagilim-header">
@@ -1529,11 +1534,11 @@ function renderDistribution(){
               </div>
               <div class="dagilim-section">
                 <div class="dagilim-label">Görevler</div>
-                <div class="dagilim-content">${escapeHtml(rolesText || "-")}</div>
+                <div class="dagilim-content dagilim-roles">${rolesHtml}</div>
               </div>
               <div class="dagilim-section">
                 <div class="dagilim-label">Oyunlar</div>
-                <div class="dagilim-content">${escapeHtml(playsText || "-")}</div>
+                <div class="dagilim-content dagilim-plays">${playsHtml}</div>
               </div>
             </div>
           `;
