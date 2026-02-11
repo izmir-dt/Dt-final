@@ -812,22 +812,12 @@ function renderList(){
       renderList();
       renderDetails(it);
 
-      if(isMobile()){
-        if(activeMode==="plays"){
-          // Mobilde oyun tıkla → modal ekip aç
-          activePlayFilter = it.title;
-          setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
-          openMobileModal(els.details.innerHTML, it.title);
-          history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
-        } else {
-          // Mobilde kişi tıkla → detayları direkt modal'da göster (scroll zorunluluğu olmasın)
-          openMobileModal(els.details.innerHTML, it.title);
-          history.pushState({mode:"people", modal:"person", person:it.title}, "");
-        }
-      }
-
-    });
-    els.list.appendChild(div);
+    // Mobile: keep inline + bring detail into view (no modal)
+    if(isMobile()){
+      requestAnimationFrame(()=>{
+        try{ els.details.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){}
+      });
+    }
   }
 
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
@@ -2540,3 +2530,58 @@ function renderAssignTool(){
 }
 
 
+
+// ===== Floating actions (mobile) =====
+function syncFabNotifBadge(){
+  const a = document.getElementById('notifCount');
+  const b = document.getElementById('topNotifBadge');
+  const fab = document.getElementById('fabNotifBadge');
+  if(!fab) return;
+  let n = 0;
+  const pick = (el)=>{
+    if(!el) return 0;
+    const t = (el.textContent||'').trim();
+    const v = parseInt(t, 10);
+    return Number.isFinite(v) ? v : 0;
+  };
+  n = Math.max(pick(a), pick(b));
+  if(n>0){
+    fab.textContent = String(n);
+    fab.style.display = 'inline-flex';
+  }else{
+    fab.textContent = '';
+    fab.style.display = 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const dock = document.querySelector('.fabDock');
+  if(!dock) return;
+
+  dock.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+
+    const go = btn.getAttribute('data-go');
+    const action = btn.getAttribute('data-action');
+    if(go){
+      location.hash = go;
+      try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){ window.scrollTo(0,0); }
+      return;
+    }
+    if(action==='notif'){
+      // Reuse existing notification button logic
+      const top = document.getElementById('topNotif') || document.getElementById('notifBtn');
+      if(top) top.click();
+      return;
+    }
+  });
+
+  // keep badge in sync
+  syncFabNotifBadge();
+  const a = document.getElementById('notifCount');
+  const b = document.getElementById('topNotifBadge');
+  const mo = new MutationObserver(syncFabNotifBadge);
+  if(a) mo.observe(a, {childList:true, characterData:true, subtree:true});
+  if(b) mo.observe(b, {childList:true, characterData:true, subtree:true});
+});
