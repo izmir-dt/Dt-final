@@ -46,12 +46,16 @@ function labelizeTablesIn(root){
   root.querySelectorAll('table').forEach(labelizeTable);
 }
 function openMobileModal(html){
-  if(!isMobile()) return;
+  // Stabil: modal can be opened on large phones/tablets too
   els.mobileContent.innerHTML = html;
   els.mobileOverlay.classList.remove("hidden");
   els.mobileModal.classList.remove("hidden");
   els.mobileOverlay.setAttribute("aria-hidden","false");
   document.body.style.overflow="hidden";
+}
+
+function __restoreScrollY(y){
+  try{ requestAnimationFrame(()=>window.scrollTo({top:y, behavior:"auto"})); }catch(e){}
 }
 function closeMobileModal(){
   els.mobileOverlay.classList.add("hidden");
@@ -832,6 +836,7 @@ function renderList(){
       ${inline}
     `;
     div.addEventListener("click", (e)=>{
+      const __y = window.scrollY;
       const expandBtn = e.target.closest && e.target.closest('[data-inline-expand]');
       if(expandBtn){
         e.stopPropagation();
@@ -840,6 +845,7 @@ function renderList(){
         selectedItem = it;
         renderList();
         renderDetails(it);
+        __restoreScrollY(__y);
         return;
       }
       // mobile: allow toggle open/close without jumping the page
@@ -847,6 +853,7 @@ function renderList(){
         activeId=null;
         selectedItem=null;
         renderList();
+        __restoreScrollY(__y);
         return;
       }
       activeId=it.id;
@@ -854,6 +861,7 @@ function renderList(){
       detailExpandedId = null;
       renderList();
       renderDetails(it);
+      __restoreScrollY(__y);
 	});
 
 	    // mount
@@ -1848,7 +1856,13 @@ els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.cl
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
 els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
-els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
+// Stabil: debounce list filtering to avoid micro-freezes while typing
+let __qTimer=null;
+els.q.addEventListener("input", ()=>{
+  localStorage.setItem("idt_q", els.q.value||"");
+  clearTimeout(__qTimer);
+  __qTimer = setTimeout(()=>{ renderList(); }, 140);
+});
 els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
 els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
