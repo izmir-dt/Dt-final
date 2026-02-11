@@ -90,8 +90,8 @@ table.idt-table tbody tr:hover,
 
 /* Premium sidebar mini logo (theater.png) */
 .idt-mini-logo{
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   border-radius: 14px;
   display: grid;
   place-items: center;
@@ -102,8 +102,8 @@ table.idt-table tbody tr:hover,
   overflow: hidden;
 }
 .idt-mini-logo img{
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
 }
@@ -965,85 +965,7 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
   .inlineDetails .v{color:var(--muted);}
 }
 
-
-/* Horizontal scroll wrapper for wide tables (e.g., Kesişim Analizi) */
-.tableScroll{ overflow:auto; -webkit-overflow-scrolling:touch; }
-
-
-/* === PATCH: desktop logo slightly smaller === */
-.idt-mini-logo{width:42px !important;height:42px !important;flex:0 0 42px !important;}
-
-/* === PATCH: Assign (Sorgu & Karşılaştır) overflow control === */
-.asPlayPill{
-  display:inline-block;
-  max-width: 320px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-}
-.asGroupTitle{
-  display:inline-block;
-  max-width: 70%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-}
-@media (max-width: 900px){
-  .asPlayPill{ max-width: 160px; }
-  .asGroupTitle{ max-width: 62%; }
-}
-
-/* === PATCH: Panel search input sizing (mobile) === */
-@media (max-width: 900px){
-  #viewPanel .filters .input{
-    padding:10px 12px !important;
-    align-items:center !important;
-    min-height: 44px !important;
-  }
-  #viewPanel .filters .input input#q{
-    font-size:16px !important;
-    line-height:20px !important;
-  }
-}
-
-/* === PATCH: Distribution table readability on mobile === */
-@media (max-width: 900px){
-  .distTable td{
-    word-break: normal !important;
-    overflow-wrap: anywhere !important;
-  }
-  .distTable td[data-label="Görevler"] .roleChips{ gap:6px !important; }
-}
-
-/* =========================
-   DESKTOP FREEZE HOTFIX
-   - Keep desktop clean (no Oyunlar/Kişiler segment near list)
-   - Slightly smaller logo
-   - Prevent long play names from overflowing in results tables
-   ========================= */
-
-@media (hover: hover) and (pointer: fine) and (min-width: 981px){
-  /* Hide view segment (Oyunlar/Kişiler) on desktop list header */
-  #viewPanel .seg[title="Görünüm"],
-  #viewPanel .seg[title="Gorunum"],
-  #viewPanel .seg[aria-label="Görünüm"]{
-    display:none !important;
-  }
-}
-
-/* Logo: one notch smaller */
-.idt-mini-logo{ width:40px !important; height:40px !important; flex:0 0 40px !important; }
-
-/* Query/Compare results: clamp long play pills */
-.tableWrap td .pill,
-.tableWrap td .asPlayPill,
-#viewAssign .pill{
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: inline-block;
-  vertical-align: bottom;
+/* Desktop: hide list mode toggle (Oyunlar/Kişiler) */
+@media (min-width: 901px){
+  #viewPanel .seg[title="Görünüm"]{ display:none !important; }
 }
