@@ -246,6 +246,16 @@ function escapeHtml(s) {
     .replaceAll("'","&#039;");
 }
 
+
+function debounce(fn, wait=120){
+  let t = null;
+  return function(...args){
+    const ctx = this;
+    if(t) clearTimeout(t);
+    t = setTimeout(()=>{ t=null; fn.apply(ctx, args); }, wait);
+  };
+}
+
 function personTag(name){
   const n=(name||"").toString().trim();
   return (n && retiredSet && retiredSet.has(n)) ? `<span class="tag retired">Kurumdan Emekli Sanatçı</span>` : "";
@@ -772,8 +782,10 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
-function renderList(){
+function renderList(opts={}){
   const source = (activeMode==="plays") ? plays : people;
+  const preserveScroll = (opts.preserveScroll !== undefined) ? !!opts.preserveScroll : true;
+  const prevScrollTop = (preserveScroll && els.list) ? els.list.scrollTop : 0;
   const filtered = applyFilters(source);
 
   els.list.innerHTML="";
@@ -809,7 +821,7 @@ function renderList(){
     div.addEventListener("click", ()=>{
       activeId=it.id;
       selectedItem = it;
-      renderList();
+      renderList({preserveScroll:true});
       renderDetails(it);
 
       if(isMobile() && activeMode==="plays"){
@@ -827,6 +839,12 @@ function renderList(){
 
     });
     els.list.appendChild(div);
+  }
+
+  if(preserveScroll){
+    requestAnimationFrame(()=>{
+      try{ els.list.scrollTop = Math.min(prevScrollTop, els.list.scrollHeight); }catch(_e){}
+    });
   }
 
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
@@ -1760,10 +1778,12 @@ els.notifBtn && els.notifBtn.addEventListener("click", async ()=>{
 els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.classList.add("hidden"));
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
-els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
-els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
-els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
-els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
+const renderListDebounced = debounce(()=>renderList({preserveScroll:true}), 120);
+
+els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList({preserveScroll:false}); });
+els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderListDebounced(); });
+els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList({preserveScroll:true}); });
+els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList({preserveScroll:false}); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
   activeMode="plays";
   try{ localStorage.setItem("idt_mode","plays"); }catch(_e){}
@@ -1771,7 +1791,7 @@ els.btnPlays.addEventListener("click", ()=>{
   activePlayFilter = null;
   els.btnPlays.classList.add("active"); els.btnPeople.classList.remove("active");
   activeId=null; selectedItem=null;
-  renderList(); renderDetails(null);
+  renderList({preserveScroll:false}); renderDetails(null);
 });
 els.btnPeople.addEventListener("click", ()=>{
   activeMode="people";
@@ -1780,7 +1800,7 @@ els.btnPeople.addEventListener("click", ()=>{
   activePlayFilter = null;
   els.btnPeople.classList.add("active"); els.btnPlays.classList.remove("active");
   activeId=null; selectedItem=null;
-  renderList(); renderDetails(null);
+  renderList({preserveScroll:false}); renderDetails(null);
 });
 
 
