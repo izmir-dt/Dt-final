@@ -25,7 +25,8 @@ function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 function openMobileModal(html){
-  if(!isMobile()) return;
+  // Mobil listelerde modalı her koşulda aç (bazı cihazlarda media query yanlış yakalanabiliyor)
+  if(!els.mobileContent || !els.mobileOverlay || !els.mobileModal) return;
   els.mobileContent.innerHTML = html;
   els.mobileOverlay.classList.remove("hidden");
   els.mobileModal.classList.remove("hidden");
@@ -896,17 +897,20 @@ function renderDetails(it){
 /* ---------- Copy as Excel-friendly (TSV) ---------- */
 function toTSVFromSelected(){
   if(!selectedItem) return "";
+  // Not: Manuel düzenleme için başlık satırı ayrı verilir (A1'de oyun/kişi adı),
+  // sonra tablo başlıkları (Excel'e yapıştırınca düzenli dursun).
   if(activeMode==="plays"){
     const rowsSorted=[...selectedItem.rows].sort((a,b)=>
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const playTitle = selectedItem.title || "";
-    const lines=[["Oyun","Kategori","Görev","Kişi"].join("\t")];
-    for(let i=0;i<rowsSorted.length;i++){
-      const r = rowsSorted[i];
-      lines.push([i===0?playTitle:"", r.category||"", r.role||"", r.person||""].join("	"));
+    const playTitle = (selectedItem.title || "").trim();
+    const lines=[];
+    if(playTitle) lines.push(playTitle);
+    lines.push(["Kategori","Görev","Kişi"].join("\t"));
+    for(const r of rowsSorted){
+      lines.push([r.category||"", r.role||"", r.person||""].join("\t"));
     }
     return lines.join("\n");
   } else {
@@ -915,7 +919,10 @@ function toTSVFromSelected(){
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr")
     );
-    const lines=[["Oyun","Kategori","Görev"].join("\t")];
+    const personTitle = (selectedItem.title || "").trim();
+    const lines=[];
+    if(personTitle) lines.push(personTitle);
+    lines.push(["Oyun","Kategori","Görev"].join("\t"));
     for(const r of rs){
       lines.push([r.play||"", r.category||"", r.role||""].join("\t"));
     }
