@@ -2619,9 +2619,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const menu = document.getElementById('fabMenu');
   if(!wrap || !main || !menu) return;
 
-  const close = ()=> wrap.classList.remove('open');
-  const open = ()=> wrap.classList.add('open');
-  const toggle = ()=> wrap.classList.toggle('open');
+  const syncFab = () => {
+    const isOpen = wrap.classList.contains('open');
+    // CSS can listen to either .open or data-open="1" (we support both)
+    wrap.dataset.open = isOpen ? '1' : '0';
+    main.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    menu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  };
+
+  const close = ()=>{ wrap.classList.remove('open'); syncFab(); };
+  const open = ()=>{ wrap.classList.add('open'); syncFab(); };
+  const toggle = ()=>{ wrap.classList.toggle('open'); syncFab(); };
+
+  // Initial state
+  syncFab();
 
   main.addEventListener('click', (e)=>{ e.preventDefault(); toggle(); });
   menu.addEventListener('click', (e)=>{
