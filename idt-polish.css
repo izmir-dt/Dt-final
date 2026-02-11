@@ -964,3 +964,48 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
   .inlineDetails .inlineRow{grid-template-columns:1fr;}
   .inlineDetails .v{color:var(--muted);}
 }
+
+
+/* Intersection mobile side-by-side (old good style) */
+.interList{ display:flex; flex-direction:column; gap:12px; }
+.interCard{
+  border:1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+}
+.interPerson{
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+.interCols{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.interCol{
+  border:1px solid rgba(0,0,0,.06);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,.55);
+  min-width:0;
+}
+.interHead{
+  font-weight: 900;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.interCats{ font-weight: 800; line-height: 1.25; word-break: break-word; }
+.interRoles{ margin-top: 6px; font-size: 12.5px; opacity: .9; line-height: 1.25; word-break: break-word; }
+
+/* very small screens: keep side-by-side but reduce padding */
+@media (max-width: 360px){
+  .interCol{ padding: 8px; }
+  .interHead{ font-size: 12px; }
+  .interRoles{ font-size: 12px; }
+}
