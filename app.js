@@ -1741,6 +1741,7 @@ function computeIntersection(playA, playB){
 function renderIntersection(){
   const a = els.p1.value;
   const b = els.p2.value;
+
   if(!a || !b){
     els.intersectionBox.innerHTML = `<div class="empty">Oyun seç.</div>`;
     return;
@@ -1749,14 +1750,46 @@ function renderIntersection(){
     els.intersectionBox.innerHTML = `<div class="empty">İki farklı oyun seçersen ortak personeli gösterebilirim 🙂</div>`;
     return;
   }
+
   const common = computeIntersection(a,b);
   if(!common.length){
     els.intersectionBox.innerHTML = `<div class="empty"><b>${escapeHtml(a)}</b> ile <b>${escapeHtml(b)}</b> arasında ortak personel yok.</div>`;
     return;
   }
+
+  const header = `<div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>`;
+
+  // Mobile: old-good style (two games side-by-side with clear headers)
+  if(isMobile()){
+    els.intersectionBox.innerHTML = `
+      ${header}
+      <div class="interList">
+        ${common.map(c=>`
+          <div class="interCard">
+            <div class="interPerson">${escapeHtml(c.person)}</div>
+            <div class="interCols">
+              <div class="interCol">
+                <div class="interHead">${escapeHtml(a)}</div>
+                <div class="interCats">${escapeHtml(c.catsA.join(", ")) || "—"}</div>
+                <div class="interRoles">${escapeHtml(c.rolesA.join(", ")) || "—"}</div>
+              </div>
+              <div class="interCol">
+                <div class="interHead">${escapeHtml(b)}</div>
+                <div class="interCats">${escapeHtml(c.catsB.join(", ")) || "—"}</div>
+                <div class="interRoles">${escapeHtml(c.rolesB.join(", ")) || "—"}</div>
+              </div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+    return;
+  }
+
+  // Desktop/tablet: classic table with headers
   els.intersectionBox.innerHTML = `
-    <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-    <table class="table asTable queryTable">
+    ${header}
+    <table class="table interTable">
       <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
       <tbody>
         ${common.map(c=>`
