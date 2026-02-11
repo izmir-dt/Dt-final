@@ -844,7 +844,7 @@ function renderDetails(it){
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
       <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
-      <table class="table" id="detailTable">
+      <table class="table asTable" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
           ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
@@ -864,7 +864,7 @@ function renderDetails(it){
         return `
           <div style="margin:12px 0 10px">
             <div style="font-weight:850;margin:0 0 8px">${escapeHtml(p)}</div>
-            <table class="table">
+            <table class="table asTable">
               <thead><tr><th>Kategori</th><th>Görev</th></tr></thead>
               <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td></tr>`).join("")}</tbody>
             </table>
@@ -1484,7 +1484,7 @@ function renderDistribution(){
   }
   // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
   els.distributionBox.innerHTML = `
-    <table class="table tableCompact distTable">
+      <table class="table tableCompact distTable asTable">
       <colgroup>
         <col style="width:240px">
         <col style="width:120px">
@@ -1495,10 +1495,10 @@ function renderDistribution(){
       <tbody>
         ${filtered.map(d=>`
           <tr>
-            <td><b>${escapeHtml(d.person)}</b></td>
-            <td>${d.plays.length}</td>
-            <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
-            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
+            <td data-label="Kişi"><b>${escapeHtml(d.person)}</b></td>
+            <td data-label="Oyun Sayısı">${d.plays.length}</td>
+            <td data-label="Görevler"><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
+            <td data-label="Oyunlar"><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
           </tr>
         `).join("")}
       </tbody>
@@ -1530,16 +1530,16 @@ function renderFiguran(){
 
   // Figüran tablo sırası: SN / kişi / kategori / görevler / oyunlar
   els.figuranBox.innerHTML = `
-    <table class="table figTable">
+    <table class="table figTable asTable">
       <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
-            <td>${idx+1}</td>
-            <td><b>${escapeHtml(f.person)}</b></td>
-            <td>${escapeHtml((f.cats||[]).join(", "))}</td>
-            <td class="muted">${escapeHtml(f.roles.join(", "))}</td>
-            <td>${escapeHtml(f.plays.join(" • "))}</td>
+            <td data-label="S.N">${idx+1}</td>
+            <td data-label="Kişi"><b>${escapeHtml(f.person)}</b></td>
+            <td data-label="Kategori">${escapeHtml((f.cats||[]).join(", "))}</td>
+            <td data-label="Görevler" class="muted">${escapeHtml(f.roles.join(", "))}</td>
+            <td data-label="Oyunlar">${escapeHtml(f.plays.join(" • "))}</td>
             
           </tr>
         `).join("")}
@@ -1603,7 +1603,7 @@ function renderIntersection(){
   }
   els.intersectionBox.innerHTML = `
     <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-    <table class="table">
+    <table class="table asTable queryTable">
       <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
       <tbody>
         ${common.map(c=>`
