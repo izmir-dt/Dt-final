@@ -2514,16 +2514,40 @@ body{
       e.stopPropagation();
       if(e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-      // Build TSV from distribution table inside #distributionBox (fallback: first table found in active section)
+      // TSV üretimi: önce tablo varsa ondan al; yoksa (masaüstü kart görünümü) kartlardan üret.
       var box = $('distributionBox') || document.querySelector('.section.active') || document;
       var table = box.querySelector('table');
-      if(!table){ alert('Tablo bulunamadı.'); return; }
 
-      var rows = Array.from(table.querySelectorAll('tr')).map(function(tr){
-        return Array.from(tr.querySelectorAll('th,td')).map(function(td){
-          return (td.innerText||'').replace(/\s+\n/g,' ').replace(/\n/g,' ').trim();
-        }).join('\t');
-      }).join('\n');
+      function norm(t){
+        return (t||'').toString().replace(/\s+\n/g,' ').replace(/\n/g,' ').replace(/\s+/g,' ').trim();
+      }
+
+      var rows = '';
+      if(table){
+        rows = Array.from(table.querySelectorAll('tr')).map(function(tr){
+          return Array.from(tr.querySelectorAll('th,td')).map(function(td){
+            return norm(td.innerText);
+          }).join('\t');
+        }).join('\n');
+      } else {
+        // Kartlardan TSV: Kişi | Oyun Sayısı | Görevler | Oyunlar
+        var cards = Array.from(box.querySelectorAll('.dagilim-card'));
+        if(!cards.length){
+          // son çare: metni aç (boş da olabilir)
+          rows = norm(box.innerText||'');
+        } else {
+          var lines = [];
+          lines.push(['Kişi','Oyun Sayısı','Görevler','Oyunlar'].join('\t'));
+          cards.forEach(function(card){
+            var name = norm((card.querySelector('.dagilim-name')||{}).innerText);
+            var badge = norm((card.querySelector('.dagilim-badge')||{}).innerText).replace(/\D+/g,'');
+            var roles = Array.from(card.querySelectorAll('.dagilim-roles .roleItem')).map(function(x){return norm(x.innerText);}).join(', ');
+            var plays = Array.from(card.querySelectorAll('.dagilim-plays .playItem')).map(function(x){return norm(x.innerText);}).join(' • ');
+            lines.push([name, badge, roles, plays].join('\t'));
+          });
+          rows = lines.join('\n');
+        }
+      }
 
       if(window.openManualCopyModal) window.openManualCopyModal(rows);
       else if(window.__idtOpenManualCopy) window.__idtOpenManualCopy(rows);
