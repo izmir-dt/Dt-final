@@ -2351,7 +2351,7 @@ function renderAssignFilter_(){
           // data-label: mobilde tabloyu "kart" düzenine çevirmek için
           html.push(
             `<tr class="asItem">`+
-            `<td class="asItemPlay"></td>`+
+            `<td data-label="Oyun" class="asItemPlay"><span class="asPlayPill">${escapeHtml(p||"")}</span></td>`+
             `<td data-label="Kategori">${escapeHtml(r.category||"")}</td>`+
             `<td data-label="Görev">${escapeHtml(r.role)}</td>`+
             `<td data-label="Kişi"><b>${escapeHtml(r.person)}</b></td>`+
@@ -2384,6 +2384,12 @@ function rolesChipsHtml_(set){
   const arr = Array.from(set||[]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"tr"));
   if(!arr.length) return `<span class="muted">—</span>`;
   return `<div class="roleChips">` + arr.map(r=>`<span class="roleChip">${escapeHtml(r)}</span>`).join("") + `</div>`;
+}
+
+function rolesListHtml_(set){
+  const arr = Array.from(set||[]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"tr"));
+  if(!arr.length) return `<div class="emptyHint">Görev yok</div>`;
+  return `<ul class="cmpRolesList">` + arr.map(r=>`<li>${escapeHtml(r)}</li>`).join("") + `</ul>`;
 }
 
 function renderCompare_(){
@@ -2449,14 +2455,39 @@ function renderCompare_(){
   const onlyB = Array.from(playsB).filter(x=>!playsA.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
 
   const renderList = (list, mapLeft, mapRight)=>{
-    if(!list.length) return `<div class="emptyHint">—</div>`;
+    if(!list.length) return `<div class="emptyHint">Kayıt yok</div>`;
     return list.map(play=>{
-      const rolesL = rolesChipsHtml_(mapLeft.get(play));
-      const rolesR = mapRight ? rolesChipsHtml_(mapRight.get(play)) : "";
-      return `<div class="cmpRow"><div class="cmpPlay"><b>${escapeHtml(play)}</b></div>`
-        + (mapRight ? `<div class="cmpRoles"><div class="cmpAB"><span class="muted small">A</span>${rolesL}</div><div class="cmpAB"><span class="muted small">B</span>${rolesR}</div></div>`
-                    : `<div class="cmpRoles">${rolesL}</div>`)
-        + `</div>`;
+      const chipsL = rolesChipsHtml_(mapLeft.get(play));
+      const chipsR = mapRight ? rolesChipsHtml_(mapRight.get(play)) : "";
+      const listL  = rolesListHtml_(mapLeft.get(play));
+      const listR  = mapRight ? rolesListHtml_(mapRight.get(play)) : "";
+
+      const rightHtml = mapRight
+        ? `
+          <div class="cmpRoles" data-mode="ab">
+            <div class="cmpAB">
+              <div class="cmpABHead">Kişi A</div>
+              <div class="cmpABBody">${chipsL}${listL}</div>
+            </div>
+            <div class="cmpAB">
+              <div class="cmpABHead">Kişi B</div>
+              <div class="cmpABBody">${chipsR}${listR}</div>
+            </div>
+          </div>
+        `
+        : `
+          <div class="cmpRoles" data-mode="single">
+            <div class="cmpRolesHead">Görevler</div>
+            <div class="cmpRolesBody">${chipsL}${listL}</div>
+          </div>
+        `;
+
+      return `
+        <div class="cmpRow">
+          <div class="cmpPlay"><div class="cmpPlayTitle">${escapeHtml(play)}</div></div>
+          ${rightHtml}
+        </div>
+      `;
     }).join("");
   };
 
