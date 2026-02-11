@@ -531,3 +531,78 @@ table.idt-table tbody tr:hover,
   .ixCol{ flex: 1 1 100%; }
   .ixMeta,.ixRole{ overflow-wrap: anywhere; word-break: normal; }
 }
+
+
+/* === FAZ1 / ADIM5: Dağılım (Oyunlara Göre Personel) mobil düzeni === */
+/* Amaç: harf harf kırılma yok, yatay kaydırma yok, okunur kart sistemi */
+@media (max-width: 860px){
+  #viewDistribution .distTable{ display:none !important; }
+  #viewDistribution .distCards{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  #viewDistribution .distCard{
+    background: var(--card, #fff);
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 16px;
+    padding: 12px 12px;
+    box-shadow: 0 8px 18px rgba(0,0,0,.06);
+  }
+  #viewDistribution .distHead{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  #viewDistribution .distPerson{
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 1.2;
+    max-width: 70%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  #viewDistribution .distCount{
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.04);
+    white-space:nowrap;
+  }
+  #viewDistribution .distRow{
+    display:grid;
+    grid-template-columns: 92px 1fr;
+    gap:10px;
+    padding: 8px 0;
+    border-top: 1px dashed rgba(0,0,0,.08);
+  }
+  #viewDistribution .distRow:first-of-type{ border-top: 0; padding-top: 0; }
+  #viewDistribution .distLabel{
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(0,0,0,.55);
+    text-transform: none;
+    white-space:nowrap;
+  }
+  #viewDistribution .distValue{
+    font-size: 13px;
+    line-height: 1.35;
+    /* harf harf kırılmayı engelle */
+    word-break: normal;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  /* cellClamp mobilde de çalışsın ama daha okunur */
+  #viewDistribution .cellClamp{ -webkit-line-clamp: 4; }
+}
+
+/* Dağılım tablo hücreleri: harf harf kırılma engeli (genel güvenlik) */
+#viewDistribution .table td, 
+#viewDistribution .table th{
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
