@@ -991,3 +991,111 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
   object-fit: cover !important;
   display: block !important;
 }
+
+
+
+/* =========================
+   PATCH: Desktop small polish + Mobile list restore
+   (NO core logic touched)
+   ========================= */
+
+/* Desktop: mini logo slightly smaller */
+.idt-mini-logo{
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+}
+.idt-mini-logo img{
+  width: 28px !important;
+  height: 28px !important;
+}
+
+/* Desktop: Sorgu/Karsilastir table - prevent game name overflow */
+#viewSorgu .asTable td:first-child,
+#viewSorgu .asTable th:first-child{
+  max-width: 220px;
+}
+#viewSorgu .asTable td:first-child .pill,
+#viewSorgu .asTable td:first-child .chip,
+#viewSorgu .asTable td:first-child span{
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Mobile: Panel search row should NOT grow tall */
+@media (max-width: 560px){
+  #viewPanel .filters{
+    justify-content:flex-start !important;
+  }
+  #viewPanel .filters .input{
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    padding:10px 12px !important;
+    gap:10px !important;
+  }
+  #viewPanel .filters .input input{
+    min-width:0 !important;
+    flex:1 1 auto !important;
+  }
+  #viewPanel .q-scope{
+    max-width:110px !important;
+    padding:8px 8px !important;
+    font-size:12px !important;
+  }
+  #viewPanel .q-clear{
+    width:34px !important;
+    height:34px !important;
+  }
+}
+
+/* Mobile: inline expand list typography + left alignment */
+@media (max-width: 900px){
+  .inlineDetails{
+    margin-top:10px;
+    padding:12px 12px;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:16px;
+    background:rgba(255,255,255,.68);
+  }
+  .inlineDetails .inlineHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:8px;
+  }
+  .inlineDetails .inlineGrid{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .inlineDetails .inlineRow{
+    display:flex;
+    gap:10px;
+    padding-top:8px;
+    border-top:1px dashed rgba(0,0,0,.08);
+  }
+  .inlineDetails .inlineRow:first-child{
+    border-top:none;
+    padding-top:0;
+  }
+  .inlineDetails .k{
+    flex:0 0 44%;
+    font-weight:800;
+    color:var(--muted);
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    text-align:left;
+  }
+  .inlineDetails .v{
+    flex:1;
+    font-weight:600;
+    text-align:left;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+  }
+}
