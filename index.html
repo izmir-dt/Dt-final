@@ -1869,9 +1869,9 @@ body{
       <header class="idt-topnav">
         <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
         <div class="idt-top-actions">
-          <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
-          <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
-<a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
+          <button class="idt-pill" id="topReload" type="button"><span class="btnIcon">🔄</span><span class="btnLabel">Yenile</span></button>
+          <button class="idt-pill primary" id="topNotif" type="button"><span class="btnIcon">🔔</span><span class="btnLabel">Bildirimler</span> <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
+<a class="idt-pill ok" id="topSheet" href="javascript:void(0)"><span class="btnIcon">📊</span><span class="btnLabel">Excel</span></a>
         </div>
       </header>
 
@@ -1900,7 +1900,7 @@ body{
 
       <div class="notif">
         <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
-          🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
+          <span class="btnIcon">🔔</span><span class="btnLabel">Bildirimler</span> <span class="badge hidden" id="notifCount">0</span>
         </button>
         <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
           <div class="notifHd">
