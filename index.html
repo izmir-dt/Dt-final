@@ -659,8 +659,7 @@ a{ color:inherit; }
   #tabDistribution{order:5;}
 }
 /* --- Overflow safety: no clipped text --- */
-/* Prevent mobile text from stacking letter-by-letter */
-*{ overflow-wrap:break-word; word-break:normal; }
+*{ overflow-wrap:anywhere; }
 .name,.meta,.chip,.pill,.btn,.tab,.drawerTitle,.drawerSub,.miniItem b,.miniItem div{ word-break:break-word; }
 .chip,.pill{ max-width:100%; white-space:normal; text-overflow:clip; }
 .table{ display:block; width:100%; overflow-x:auto; }
@@ -2995,9 +2994,24 @@ body{
   });
 })();
 </script>
+  <!-- Mobile people modal (chart taps) -->
 
+  <!-- Mobile people modal (chart taps) -->
+  <div id="mobilePeopleModal" class="mModal" hidden aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="mModalCard">
+      <div class="mModalHead">
+        <div class="mModalTitle">Detay</div>
+        <button id="mobilePeopleClose" class="mModalClose" type="button" aria-label="Kapat">✕</button>
+      </div>
+      <div class="mModalBody">
+        <div class="mModalMeta"></div>
+        <div class="mModalList"></div>
+      </div>
+    </div>
+    <button class="mModalBackdrop" type="button" aria-label="Kapat"></button>
+  </div>
 
-  <!-- Mobile floating actions (replaces bottom nav to avoid layout breaking) -->
+<!-- Mobile floating actions (replaces bottom nav to avoid layout breaking) -->
   <!-- Mobil hızlı erişim: tek FAB + açılır menü (bottom nav yerine) -->
   <div class="fabWrap" aria-label="Hızlı erişim" data-open="0">
     <button class="fabMain" id="fabMain" type="button" aria-label="Menü">
