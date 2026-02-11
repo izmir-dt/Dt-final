@@ -1016,3 +1016,34 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
   }
   .distTable td[data-label="Görevler"] .roleChips{ gap:6px !important; }
 }
+
+/* =========================
+   DESKTOP FREEZE HOTFIX
+   - Keep desktop clean (no Oyunlar/Kişiler segment near list)
+   - Slightly smaller logo
+   - Prevent long play names from overflowing in results tables
+   ========================= */
+
+@media (hover: hover) and (pointer: fine) and (min-width: 981px){
+  /* Hide view segment (Oyunlar/Kişiler) on desktop list header */
+  #viewPanel .seg[title="Görünüm"],
+  #viewPanel .seg[title="Gorunum"],
+  #viewPanel .seg[aria-label="Görünüm"]{
+    display:none !important;
+  }
+}
+
+/* Logo: one notch smaller */
+.idt-mini-logo{ width:40px !important; height:40px !important; flex:0 0 40px !important; }
+
+/* Query/Compare results: clamp long play pills */
+.tableWrap td .pill,
+.tableWrap td .asPlayPill,
+#viewAssign .pill{
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: bottom;
+}
