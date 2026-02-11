@@ -138,6 +138,9 @@ table.idt-table tbody tr:hover,
   overflow: auto;
   overscroll-behavior: contain;
   padding-right: 2px;
+  padding-bottom: 18px;
+  scroll-padding-bottom: 18px;
+
 }
 
 /* Sorgu & Karşılaştır: sonuç tablosu (masaüstü) daha simetrik */
@@ -968,3 +971,26 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
 
 /* Horizontal scroll wrapper for wide tables (e.g., Kesişim Analizi) */
 .tableScroll{ overflow:auto; -webkit-overflow-scrolling:touch; }
+
+
+/* --- PATCH (Stabil v9): Distribution (Oyunlara göre personel) mobile typography + symmetry --- */
+@media (max-width: 820px){
+  #distributionBox .table{ table-layout:auto !important; }
+  #distributionBox .table th, #distributionBox .table td{
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  #distributionBox .table th:nth-child(1), #distributionBox .table td:nth-child(1){
+    width:auto !important;
+    font-weight:800;
+  }
+  #distributionBox .table th:nth-child(2), #distributionBox .table td:nth-child(2),
+  #distributionBox .table th:nth-child(3), #distributionBox .table td:nth-child(3){
+    width:auto !important;
+  }
+  /* tighter but readable */
+  #viewDistribution .table td, #viewDistribution .table th{ padding:10px 10px; line-height:1.25; }
+}
