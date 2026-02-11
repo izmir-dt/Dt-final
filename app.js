@@ -812,17 +812,18 @@ function renderList(){
       renderList();
       renderDetails(it);
 
-      if(isMobile() && activeMode==="plays"){
-        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
-        activePlayFilter = it.title;
-        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
-
-        // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
-        // Modal içine aynı içeriği basıyoruz
-        openMobileModal(els.details.innerHTML);
-
-        // Geri tuşu: modal kapansın
-        history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
+      if(isMobile()){
+        if(activeMode==="plays"){
+          // Mobilde oyun tıkla → modal ekip aç
+          activePlayFilter = it.title;
+          setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
+          openMobileModal(els.details.innerHTML, it.title);
+          history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
+        } else {
+          // Mobilde kişi tıkla → detayları direkt modal'da göster (scroll zorunluluğu olmasın)
+          openMobileModal(els.details.innerHTML, it.title);
+          history.pushState({mode:"people", modal:"person", person:it.title}, "");
+        }
       }
 
     });
