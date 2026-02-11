@@ -270,6 +270,7 @@ table.idt-table tbody tr:hover,
 .distTable thead th{
   text-align: left;
   font-weight: 800;
+  white-space: nowrap;
 }
 .distTable thead th:nth-child(2){ text-align: center; }
 .distTable td:nth-child(2){ text-align: center; }
@@ -277,6 +278,11 @@ table.idt-table tbody tr:hover,
 .distTable td:nth-child(4){ line-height: 1.35; }
 .distTable td:nth-child(3){ font-weight: 600; }
 .distTable .muted{ opacity: .8; }
+
+@media (max-width: 560px){
+  .tableCompact th, .tableCompact td{ padding: 8px 8px; }
+  .distTable thead th{ font-size: 12px; }
+}
 
 /* Karşılaştırma kartları: 3 kart (Sadece A / Ortak / Sadece B) */
 .compareGrid{
@@ -767,7 +773,7 @@ html[data-theme="dark"] .cmpRolesList li{
 html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05);}
 
 /* Prevent "harfler alt alta": allow normal wrapping, never break letters */
-.asTable,.cmpCard,.tabbar,.brand,.actions,.filters{word-break:normal;overflow-wrap:anywhere;}
+.asTable,.cmpCard,.tabbar,.brand,.actions,.filters{word-break:normal;overflow-wrap:break-word;}
 
 @media (max-width:640px){
   .asTable{display:block;}
@@ -863,9 +869,10 @@ html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
     padding:12px;
     box-shadow:var(--shadow);
   }
+  /* Keep values LEFT-aligned (not pushed to the right) */
   table.asTable td{
     display:flex;
-    justify-content:space-between;
+    justify-content:flex-start;
     align-items:flex-start;
     gap:12px;
     padding:8px 0;
