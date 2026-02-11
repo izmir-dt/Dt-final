@@ -22,7 +22,8 @@ const CONFIG = {
 };
 
 function isMobile(){
-  return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
+  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 900px)
+  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
 }
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
@@ -178,26 +179,6 @@ if(els.chartMain){
     els.chartMain.style.cursor = hit ? 'pointer' : 'default';
   });
 }
-
-// Safety-net: if listeners get lost due to re-render, delegate chart clicks
-document.addEventListener('click', (e)=>{
-  try{
-    const c = e.target && (e.target.id==='chartMain' ? e.target : e.target.closest && e.target.closest('#chartMain'));
-    if(c){
-      onChartCanvasClick(Object.assign({}, e, { currentTarget: c }));
-      return;
-    }
-    const chip = e.target && e.target.closest && e.target.closest('.chipRow');
-    if(chip && chip.getAttribute){
-      const key = chip.getAttribute('data-key');
-      if(key && key!=='Diğer'){
-        const people = buildPeopleListForKey(key);
-        const title = `${chartMode==='roles' ? 'Görev' : 'Kategori'}: ${key}`;
-        openMobilePeopleModal(title, `${people.length} kişi`, people);
-      }
-    }
-  }catch(err){ console.error(err); }
-});
 
 
 let rawRows = [];
@@ -883,8 +864,7 @@ function renderList(){
 }
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
-
-  const LIMIT = isMobile() ? 60 : 180;
+  // Paket 1: detay görünümünde truncate yok (tam liste)
 
   if(activeMode==="plays"){
     const rowsSorted=[...it.rows].sort((a,b)=>
@@ -892,12 +872,11 @@ function renderDetails(it){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const isLimited = detailExpandedId !== it.id;
-    const rowsToRender = isLimited ? rowsSorted.slice(0, LIMIT) : rowsSorted;
-    const hasMore = isLimited && rowsSorted.length > LIMIT;
+    const rowsToRender = rowsSorted;
+    const hasMore = false;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
+      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
       <table class="table asTable" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
@@ -906,18 +885,15 @@ function renderDetails(it){
       </table>
     `;
     labelizeTables(els.details);
-    const btn = document.getElementById('detailShowAll');
-    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   } else {
     const byPlay=new Map();
     for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
     const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    const isLimited = detailExpandedId !== it.id;
-    const blocksToRender = isLimited ? blocks.slice(0, LIMIT) : blocks;
-    const hasMore = isLimited && blocks.length > LIMIT;
+    const blocksToRender = blocks;
+    const hasMore = false;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
+      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır</p>
       <div id="detailTable">
       ${blocksToRender.map(([p, rs])=>{
         const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.role||"").localeCompare(b.role||"","tr"));
@@ -934,8 +910,6 @@ function renderDetails(it){
       </div>
     `;
     labelizeTables(els.details);
-    const btn = document.getElementById('detailShowAll');
-    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   }
 }
 
@@ -943,29 +917,33 @@ function renderDetails(it){
 
 function renderInlineDetailHtml(item, mode){
   // mode: 'play' or 'person'
-  const name = (mode==='play') ? item.name : item.name;
+  // Paket 1: inline detail "detay" sayılır → burada truncate yok.
+  // Kaynak: item.rows (stabil data modeli)
+  const title = (mode==='play') ? `${item.title} • Kadro` : `${item.title} • Oyunlar`;
 
-  const list = (mode==='play')
-    ? (item.people||[]).map(p => ({k:p.name, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'))
-    : (item.plays||[]).map(p => ({k:p.play, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'));
+  const list = [];
+  const rs = Array.isArray(item.rows) ? item.rows : [];
 
-  const expanded = (detailExpandedId === item.id);
-  const limit = expanded ? 9999 : 12;
-  const shown = list.slice(0, limit);
-  const moreCount = Math.max(0, list.length - shown.length);
+  if(mode === 'play'){
+    rs
+      .slice()
+      .sort((a,b)=> (a.person||"").localeCompare(b.person||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
+      .forEach(r=> list.push({k: (r.person||""), v: (r.role||"")}));
+  } else {
+    rs
+      .slice()
+      .sort((a,b)=> (a.play||"").localeCompare(b.play||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
+      .forEach(r=> list.push({k: (r.play||""), v: (r.role||"")}));
+  }
 
-  const title = (mode==='play') ? `${name} • Kadro` : `${name} • Oyunlar`;
   let html = `<div class="inlineDetails">
     <div class="inlineHead">
       <b>${escapeHtml(title)}</b>
-      <div style="display:flex; align-items:center; gap:8px;">
-        ${moreCount?`<span class="inlineMore">+${moreCount} satır daha</span>`:''}
-        ${(!expanded && list.length>12)?`<button class="inlineExpand" type="button" data-inline-expand="${escapeHtml(item.id)}">Tümünü göster</button>`:''}
-      </div>
+      <div class="small muted">${list.length} satır</div>
     </div>
     <div class="inlineGrid">`;
 
-  for(const row of shown){
+  for(const row of list){
     html += `<div class="inlineRow">
       <div class="k">${escapeHtml(row.k||'')}</div>
       <div class="v">${escapeHtml(row.v||'')}</div>
@@ -1216,10 +1194,18 @@ function chartHitKeyFromEvent(ev){
   if(!chartHits || !chartHits.length) return null;
   const canvas = ev.currentTarget || els.chartMain;
   const rect = canvas.getBoundingClientRect();
-  const x = ev.clientX - rect.left;
-  const y = ev.clientY - rect.top;
+  // Canvas can be CSS-scaled; map pointer coords into canvas space
+  const sx = rect.width ? (canvas.width / rect.width) : 1;
+  const sy = rect.height ? (canvas.height / rect.height) : 1;
+  const x = (ev.clientX - rect.left) * sx;
+  const y = (ev.clientY - rect.top) * sy;
 
   for(const h of chartHits){
+    // Bars (if ever used)
+    if(h.type === 'bar'){
+      if(x >= h.x && x <= (h.x + h.w) && y >= h.y && y <= (h.y + h.h)) return h.key;
+      continue;
+    }
     if(h.type !== 'wedge') continue;
     const dx = x - h.cx;
     const dy = y - h.cy;
@@ -1686,51 +1672,36 @@ function computeIntersection(playA, playB){
   return common;
 }
 function renderIntersection(){
-const a = els.p1.value;
-const b = els.p2.value;
-if(!a || !b){
-  els.intersectionBox.innerHTML = `<div class="empty">Oyun seç.</div>`;
-  return;
-}
-if(a===b){
-  els.intersectionBox.innerHTML = `<div class="empty">İki farklı oyun seçersen ortak personeli gösterebilirim 🙂</div>`;
-  return;
-}
-const common = computeIntersection(a,b);
-if(!common.length){
-  els.intersectionBox.innerHTML = `<div class="empty"><b>${escapeHtml(a)}</b> ile <b>${escapeHtml(b)}</b> arasında ortak personel yok.</div>`;
-  return;
-}
-
-const head = `
-  <div class="interRow interHead">
-    <div class="interCell person">Kişi</div>
-    <div class="interCell playA">${escapeHtml(a)} <span class="muted">• Kategori / Görev</span></div>
-    <div class="interCell playB">${escapeHtml(b)} <span class="muted">• Kategori / Görev</span></div>
-  </div>
-`;
-
-const rowsHtml = common.map(c=>`
-  <div class="interRow">
-    <div class="interCell person"><b>${escapeHtml(c.person)}</b></div>
-    <div class="interCell playA">
-      <div class="interCats">${escapeHtml(c.catsA.join(", "))}</div>
-      <div class="interRoles small">${escapeHtml(c.rolesA.join(", "))}</div>
-    </div>
-    <div class="interCell playB">
-      <div class="interCats">${escapeHtml(c.catsB.join(", "))}</div>
-      <div class="interRoles small">${escapeHtml(c.rolesB.join(", "))}</div>
-    </div>
-  </div>
-`).join("");
-
-els.intersectionBox.innerHTML = `
-  <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-  <div class="interGridWrap">
-    ${head}
-    ${rowsHtml}
-  </div>
-`;
+  const a = els.p1.value;
+  const b = els.p2.value;
+  if(!a || !b){
+    els.intersectionBox.innerHTML = `<div class="empty">Oyun seç.</div>`;
+    return;
+  }
+  if(a===b){
+    els.intersectionBox.innerHTML = `<div class="empty">İki farklı oyun seçersen ortak personeli gösterebilirim 🙂</div>`;
+    return;
+  }
+  const common = computeIntersection(a,b);
+  if(!common.length){
+    els.intersectionBox.innerHTML = `<div class="empty"><b>${escapeHtml(a)}</b> ile <b>${escapeHtml(b)}</b> arasında ortak personel yok.</div>`;
+    return;
+  }
+  els.intersectionBox.innerHTML = `
+    <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
+    <div class="tableScroll"><table class="table queryTable" style="min-width:860px">
+      <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
+      <tbody>
+        ${common.map(c=>`
+          <tr>
+            <td><b>${escapeHtml(c.person)}</b></td>
+            <td>${escapeHtml(c.catsA.join(", "))}<br><span class="small">${escapeHtml(c.rolesA.join(", "))}</span></td>
+            <td>${escapeHtml(c.catsB.join(", "))}<br><span class="small">${escapeHtml(c.rolesB.join(", "))}</span></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table></div>
+  `;
 }
 
 /* ---------- navigation ---------- */
