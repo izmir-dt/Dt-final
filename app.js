@@ -22,31 +22,7 @@ const CONFIG = {
 };
 
 function isMobile(){
-  // Mobile = small viewport OR touch device (coarse pointer).
-  // Fix: some phones/tablets report large widths, which blocked mobile modals.
-  const mm = (q)=> (window.matchMedia && window.matchMedia(q).matches);
-  return mm("(max-width: 980px)") || mm("(pointer: coarse)");
-}
-
-
-// --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
-function labelizeTable(table){
-  if(!table) return;
-  const headers = Array.from(table.querySelectorAll('thead th')).map(th => (th.textContent||'').trim());
-  if(!headers.length) return;
-  table.classList.add('respCards');
-  const rows = table.querySelectorAll('tbody tr');
-  rows.forEach(tr => {
-    Array.from(tr.children).forEach((td, idx) => {
-      if(td && td.nodeType===1 && td.tagName==='TD'){
-        td.setAttribute('data-label', headers[idx] || `Kolon ${idx+1}`);
-      }
-    });
-  });
-}
-function labelizeTablesIn(root){
-  if(!root) return;
-  root.querySelectorAll('table').forEach(labelizeTable);
+  return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 function openMobileModal(html){
   if(!isMobile()) return;
@@ -192,7 +168,6 @@ let people = [];
 let playsList = [];
 let activeMode = "plays";
 let activeId = null;
-let detailExpandedId = null; // for performance: show limited rows until user expands
 let selectedItem = null;
 
 let distribution = [];
@@ -808,7 +783,6 @@ function renderList(){
     return;
   }
 
-  const mobile = isMobile();
   for(const it of filtered){
     const isActive = it.id===activeId;
     const meta = (activeMode==="plays")
@@ -822,7 +796,6 @@ function renderList(){
     const div=document.createElement("div");
     div.className="item";
     if(isActive) div.style.borderColor="color-mix(in srgb, var(--accent) 35%, var(--line) 65%)";
-    const inline = (mobile && isActive) ? renderInlineDetailHtml(it, activeMode==='plays' ? 'play' : 'person') : "";
     div.innerHTML = `
       <div class="t">
         <div>
@@ -832,42 +805,34 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
-      ${inline}
     `;
-    div.addEventListener("click", (e)=>{
-      const expandBtn = e.target.closest && e.target.closest('[data-inline-expand]');
-      if(expandBtn){
-        e.stopPropagation();
-        detailExpandedId = it.id;
-        activeId = it.id;
-        selectedItem = it;
-        renderList();
-        renderDetails(it);
-        return;
-      }
-      // mobile: allow toggle open/close without jumping the page
-      if(mobile && activeId===it.id){
-        activeId=null;
-        selectedItem=null;
-        renderList();
-        return;
-      }
+    div.addEventListener("click", ()=>{
       activeId=it.id;
       selectedItem = it;
-      detailExpandedId = null;
       renderList();
       renderDetails(it);
-	});
 
-	    // mount
-	    els.list.appendChild(div);
-	  }
+      if(isMobile() && activeMode==="plays"){
+        // ✅ İstenen: Mobilde oyun tıkla → modal ekip aç (liste Oyunlar olarak kalsın)
+        activePlayFilter = it.title;
+        setStatus(`📌 Oyun: ${activePlayFilter} • Ekip`, "ok");
+
+        // Alttaki detay panelini güncelliyoruz ama kullanıcıyı aşağı kaydırmıyoruz
+        // Modal içine aynı içeriği basıyoruz
+        openMobileModal(els.details.innerHTML);
+
+        // Geri tuşu: modal kapansın
+        history.pushState({mode:"plays", modal:"team", play:activePlayFilter}, "");
+      }
+
+    });
+    els.list.appendChild(div);
+  }
 
   els.hint.textContent = `Gösterilen: ${filtered.length} / ${source.length}`;
 }
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
-  // Paket 1: detay görünümünde truncate yok (tam liste)
 
   if(activeMode==="plays"){
     const rowsSorted=[...it.rows].sort((a,b)=>
@@ -875,89 +840,42 @@ function renderDetails(it){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const rowsToRender = rowsSorted;
-    const hasMore = false;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
       <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
-      <table class="table asTable" id="detailTable">
+      <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
-          ${rowsToRender.map(r=>`<tr><td data-label="Kategori">${escapeHtml(r.category)}</td><td data-label="Görev">${escapeHtml(r.role)}</td><td data-label="Kişi">${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
+          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
     `;
-    labelizeTables(els.details);
   } else {
     const byPlay=new Map();
     for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
     const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    const blocksToRender = blocks;
-    const hasMore = false;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
       <p class="subtitle">${it.count} oyun • ${it.rows.length} satır</p>
       <div id="detailTable">
-      ${blocksToRender.map(([p, rs])=>{
+      ${blocks.map(([p, rs])=>{
         const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.role||"").localeCompare(b.role||"","tr"));
         return `
           <div style="margin:12px 0 10px">
             <div style="font-weight:850;margin:0 0 8px">${escapeHtml(p)}</div>
-            <table class="table asTable">
+            <table class="table">
               <thead><tr><th>Kategori</th><th>Görev</th></tr></thead>
-              <tbody>${rs2.map(r=>`<tr><td data-label="Kategori">${escapeHtml(r.category)}</td><td data-label="Görev">${escapeHtml(r.role)}</td></tr>`).join("")}</tbody>
+              <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td></tr>`).join("")}</tbody>
             </table>
           </div>
         `;
       }).join("")}
       </div>
     `;
-    labelizeTables(els.details);
   }
 }
 
-// Mobile: show a quick inline detail under the tapped list row (no extra scrolling)
-
-function renderInlineDetailHtml(item, mode){
-  // mode: 'play' or 'person'
-  // Paket 1: inline detail "detay" sayılır → burada truncate yok.
-  // Kaynak: item.rows (stabil data modeli)
-  const title = (mode==='play') ? `${item.title} • Kadro` : `${item.title} • Oyunlar`;
-
-  const list = [];
-  const rs = Array.isArray(item.rows) ? item.rows : [];
-
-  if(mode === 'play'){
-    rs
-      .slice()
-      .sort((a,b)=> (a.person||"").localeCompare(b.person||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
-      .forEach(r=> list.push({k: (r.person||""), v: (r.role||"")}));
-  } else {
-    rs
-      .slice()
-      .sort((a,b)=> (a.play||"").localeCompare(b.play||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
-      .forEach(r=> list.push({k: (r.play||""), v: (r.role||"")}));
-  }
-
-  let html = `<div class="inlineDetails">
-    <div class="inlineHead">
-      <b>${escapeHtml(title)}</b>
-      <div class="small muted">${list.length} satır</div>
-    </div>
-    <div class="inlineGrid">`;
-
-  for(const row of list){
-    html += `<div class="inlineRow">
-      <div class="k">${escapeHtml(row.k||'')}</div>
-      <div class="v">${escapeHtml(row.v||'')}</div>
-    </div>`;
-  }
-
-  html += `</div></div>`;
-  return html;
-}
-
-
+/* ---------- Copy as Excel-friendly (TSV) ---------- */
 function toTSVFromSelected(){
   if(!selectedItem) return "";
   if(activeMode==="plays"){
@@ -1565,7 +1483,7 @@ function renderDistribution(){
   }
   // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
   els.distributionBox.innerHTML = `
-      <table class="table tableCompact distTable asTable">
+    <table class="table tableCompact distTable">
       <colgroup>
         <col style="width:240px">
         <col style="width:120px">
@@ -1576,10 +1494,10 @@ function renderDistribution(){
       <tbody>
         ${filtered.map(d=>`
           <tr>
-            <td data-label="Kişi"><b>${escapeHtml(d.person)}</b></td>
-            <td data-label="Oyun Sayısı">${d.plays.length}</td>
-            <td data-label="Görevler"><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
-            <td data-label="Oyunlar"><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
+            <td><b>${escapeHtml(d.person)}</b></td>
+            <td>${d.plays.length}</td>
+            <td><div class="cellClamp rolesCell" title="${escapeHtml(d.roles.join(", "))}">${escapeHtml(d.roles.join(", "))}</div></td>
+            <td><div class="cellClamp gamesCell" title="${escapeHtml(d.plays.join(" • "))}">${escapeHtml(d.plays.join(" • "))}</div></td>
           </tr>
         `).join("")}
       </tbody>
@@ -1611,16 +1529,16 @@ function renderFiguran(){
 
   // Figüran tablo sırası: SN / kişi / kategori / görevler / oyunlar
   els.figuranBox.innerHTML = `
-    <table class="table figTable asTable">
+    <table class="table figTable">
       <thead><tr><th>S.N</th><th>Kişi</th><th>Kategori</th><th>Görevler</th><th>Oyunlar</th></tr></thead>
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
-            <td data-label="S.N">${idx+1}</td>
-            <td data-label="Kişi"><b>${escapeHtml(f.person)}</b></td>
-            <td data-label="Kategori">${escapeHtml((f.cats||[]).join(", "))}</td>
-            <td data-label="Görevler" class="muted">${escapeHtml(f.roles.join(", "))}</td>
-            <td data-label="Oyunlar">${escapeHtml(f.plays.join(" • "))}</td>
+            <td>${idx+1}</td>
+            <td><b>${escapeHtml(f.person)}</b></td>
+            <td>${escapeHtml((f.cats||[]).join(", "))}</td>
+            <td class="muted">${escapeHtml(f.roles.join(", "))}</td>
+            <td>${escapeHtml(f.plays.join(" • "))}</td>
             
           </tr>
         `).join("")}
@@ -2430,15 +2348,7 @@ function renderAssignFilter_(){
           </td></tr>
         `);
         for(const r of items){
-          // data-label: mobilde tabloyu "kart" düzenine çevirmek için
-          html.push(
-            `<tr class="asItem">`+
-            `<td data-label="Oyun" class="asItemPlay"><span class="asPlayPill">${escapeHtml(p||"")}</span></td>`+
-            `<td data-label="Kategori">${escapeHtml(r.category||"")}</td>`+
-            `<td data-label="Görev">${escapeHtml(r.role)}</td>`+
-            `<td data-label="Kişi"><b>${escapeHtml(r.person)}</b></td>`+
-            `</tr>`
-          );
+          html.push(`<tr class="asItem"><td class="asItemPlay"></td><td>${escapeHtml(r.category||"")}</td><td>${escapeHtml(r.role)}</td><td><b>${escapeHtml(r.person)}</b></td></tr>`);
         }
       }
       els.assignFilterTbody.innerHTML = html.join("");
@@ -2460,18 +2370,6 @@ function personPlayMap_(){
 
 function fmtRoles_(set){
   return Array.from(set||[]).sort((a,b)=>a.localeCompare(b,"tr")).join(", ");
-}
-
-function rolesChipsHtml_(set){
-  const arr = Array.from(set||[]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"tr"));
-  if(!arr.length) return `<span class="muted">—</span>`;
-  return `<div class="roleChips">` + arr.map(r=>`<span class="roleChip">${escapeHtml(r)}</span>`).join("") + `</div>`;
-}
-
-function rolesListHtml_(set){
-  const arr = Array.from(set||[]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"tr"));
-  if(!arr.length) return `<div class="emptyHint">Görev yok</div>`;
-  return `<ul class="cmpRolesList">` + arr.map(r=>`<li>${escapeHtml(r)}</li>`).join("") + `</ul>`;
 }
 
 function renderCompare_(){
@@ -2537,39 +2435,14 @@ function renderCompare_(){
   const onlyB = Array.from(playsB).filter(x=>!playsA.has(x)).sort((x,y)=>x.localeCompare(y,"tr"));
 
   const renderList = (list, mapLeft, mapRight)=>{
-    if(!list.length) return `<div class="emptyHint">Kayıt yok</div>`;
+    if(!list.length) return `<div class="emptyHint">—</div>`;
     return list.map(play=>{
-      const chipsL = rolesChipsHtml_(mapLeft.get(play));
-      const chipsR = mapRight ? rolesChipsHtml_(mapRight.get(play)) : "";
-      const listL  = rolesListHtml_(mapLeft.get(play));
-      const listR  = mapRight ? rolesListHtml_(mapRight.get(play)) : "";
-
-      const rightHtml = mapRight
-        ? `
-          <div class="cmpRoles" data-mode="ab">
-            <div class="cmpAB">
-              <div class="cmpABHead">Kişi A</div>
-              <div class="cmpABBody">${chipsL}${listL}</div>
-            </div>
-            <div class="cmpAB">
-              <div class="cmpABHead">Kişi B</div>
-              <div class="cmpABBody">${chipsR}${listR}</div>
-            </div>
-          </div>
-        `
-        : `
-          <div class="cmpRoles" data-mode="single">
-            <div class="cmpRolesHead">Görevler</div>
-            <div class="cmpRolesBody">${chipsL}${listL}</div>
-          </div>
-        `;
-
-      return `
-        <div class="cmpRow">
-          <div class="cmpPlay"><div class="cmpPlayTitle">${escapeHtml(play)}</div></div>
-          ${rightHtml}
-        </div>
-      `;
+      const rolesL = fmtRoles_(mapLeft.get(play));
+      const rolesR = mapRight ? fmtRoles_(mapRight.get(play)) : "";
+      return `<div class="cmpRow"><div class="cmpPlay"><b>${escapeHtml(play)}</b></div>`
+        + (mapRight ? `<div class="cmpRoles"><span class="muted small">A:</span> ${escapeHtml(rolesL)}<br><span class="muted small">B:</span> ${escapeHtml(rolesR)}</div>`
+                    : `<div class="cmpRoles">${escapeHtml(rolesL)}</div>`)
+        + `</div>`;
     }).join("");
   };
 
@@ -2621,46 +2494,3 @@ function renderAssignTool(){
 }
 
 
-
-// ===== Mobile Speed-Dial (FAB) =====
-document.addEventListener('DOMContentLoaded', ()=>{
-  const wrap = document.querySelector('.fabWrap');
-  const main = document.getElementById('fabMain');
-  const menu = document.getElementById('fabMenu');
-  if(!wrap || !main || !menu) return;
-
-  const syncFab = () => {
-    const isOpen = wrap.classList.contains('open');
-    // CSS can listen to either .open or data-open="1" (we support both)
-    wrap.dataset.open = isOpen ? '1' : '0';
-    main.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    menu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
-  };
-
-  const close = ()=>{ wrap.classList.remove('open'); syncFab(); };
-  const open = ()=>{ wrap.classList.add('open'); syncFab(); };
-  const toggle = ()=>{ wrap.classList.toggle('open'); syncFab(); };
-
-  // Initial state
-  syncFab();
-
-  main.addEventListener('click', (e)=>{ e.preventDefault(); toggle(); });
-  menu.addEventListener('click', (e)=>{
-    const btn = e.target.closest('button[data-go]');
-    if(!btn) return;
-    const go = btn.getAttribute('data-go');
-    if(go){
-      close();
-      location.hash = go;
-      try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){ window.scrollTo(0,0); }
-    }
-  });
-
-  // close on outside click
-  document.addEventListener('click', (e)=>{
-    if(!wrap.classList.contains('open')) return;
-    if(e.target === wrap || wrap.contains(e.target)) return;
-    close();
-  });
-  window.addEventListener('hashchange', close);
-});
