@@ -1560,6 +1560,45 @@ select{
   color: var(--muted);
 }
 
+
+
+/* --- PATCH v9 Paket1b: Mobile text wrapping + symmetric cards --- */
+#viewAssign .assignTable td,
+#viewAssign .assignTable th{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#viewAssign .assignTable td > *{ min-width:0; }
+
+/* Generic responsive-card table helper (.respCards) */
+@media (max-width: 900px){
+  table.respCards thead{ display:none; }
+  table.respCards, table.respCards tbody, table.respCards tr, table.respCards td{ display:block; width:100%; }
+  table.respCards tr{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow: var(--shadow);
+    margin:10px 0;
+    overflow:hidden;
+  }
+  table.respCards td{
+    display:grid;
+    grid-template-columns: 120px 1fr;
+    gap:10px;
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+  table.respCards td:last-child{ border-bottom:none; }
+  table.respCards td::before{
+    content: attr(data-label);
+    font-weight:700;
+    color:var(--muted);
+  }
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
