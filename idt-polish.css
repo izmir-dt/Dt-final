@@ -499,3 +499,35 @@ table.idt-table tbody tr:hover,
   scroll-padding-bottom: 24px;
   padding-bottom: 24px;
 }
+
+/* 7) Kesişim Analizi: mobilde kart görünüm + yatay kaydırma yok */
+#viewIntersection, #intersectionBox{ overflow-x: hidden; }
+
+.interHead{ display:flex; justify-content:flex-start; align-items:center; gap:10px; }
+.ixList{ display:flex; flex-direction:column; gap:12px; }
+.ixCard{
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.ixPerson{ font-weight: 800; margin-bottom: 10px; }
+.ixCols{ display:flex; gap:10px; }
+.ixCol{
+  flex: 1 1 240px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(0,0,0,0.02);
+}
+.ixTitle{ font-weight: 800; margin-bottom: 6px; }
+.ixMeta{ font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.ixRole{ color: var(--text); }
+
+@media (max-width: 720px){
+  .ixCols{ flex-wrap: wrap; }
+  .ixCol{ flex: 1 1 100%; }
+  .ixMeta,.ixRole{ overflow-wrap: anywhere; word-break: normal; }
+}
