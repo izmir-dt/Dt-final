@@ -3061,3 +3061,28 @@ body{
 
 </body>
 </html>
+/* =========================
+   DESKTOP RESTORE (dokunma)
+   ========================= */
+
+/* 1) Desktop'ta "Oyunlar / Kişiler" toggle'ını tamamen gizle */
+@media (min-width: 901px){
+  #viewPanel .seg[title="Görünüm"]{
+    display: none !important;
+  }
+}
+
+/* 2) Sidebar logo boyutunu eski gibi yap (küçült + kırp düzgün) */
+.idt-mini-logo{
+  width: 46px !important;
+  height: 46px !important;
+  flex: 0 0 46px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+.idt-mini-logo img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
