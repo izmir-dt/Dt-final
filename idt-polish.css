@@ -140,13 +140,42 @@ table.idt-table tbody tr:hover,
   padding-right: 2px;
 }
 
-/* Sorgu & Karşılaştır: results table headers centered */
+/* Sorgu & Karşılaştır: sonuç tablosu (masaüstü) daha simetrik */
+#assignFilterTable{
+  table-layout: fixed;
+}
 #assignFilterTable th,
 #assignFilterTable td{
-  text-align: center;
+  text-align: left;
+  padding: 12px 14px;
+  line-height: 1.25;
 }
-#assignFilterTable td:nth-child(1){ text-align: left; }
-#assignFilterTable td:nth-child(4){ text-align: left; }
+#assignFilterTable th{ white-space: nowrap; }
+/* Kolon genişlikleri (Oyun / Kategori / Görev / Kişi) */
+#assignFilterTable th:nth-child(1), #assignFilterTable td:nth-child(1){ width: 42%; }
+#assignFilterTable th:nth-child(2), #assignFilterTable td:nth-child(2){ width: 16%; }
+#assignFilterTable th:nth-child(3), #assignFilterTable td:nth-child(3){ width: 22%; }
+#assignFilterTable th:nth-child(4), #assignFilterTable td:nth-child(4){ width: 20%; }
+#assignFilterTable td:nth-child(2){ text-align: center; }
+
+/* Oyun hücresi: uzun oyun adlarında taşmayı engelle */
+#assignFilterTable td:nth-child(1){
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.asPlayPill{
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(122,30,44,.08);
+  border: 1px solid rgba(122,30,44,.18);
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Karşılaştır: Kişi A / Kişi B inputs equal width */
 .compareTop{
@@ -259,22 +288,41 @@ table.idt-table tbody tr:hover,
 .compareGrid .onlyB{ grid-area: onlyB; }
 .compareGrid .common{ grid-area: common; }
 
+/* Karşılaştır: oyun başlıkları + görevleri "kurumsal kart" gibi */
 .cmpRow{
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: flex-start;
-  padding: 10px 0;
-  border-bottom: 1px dashed rgba(0,0,0,.10);
+  padding: 12px 12px;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,.75);
 }
-.cmpRow:last-child{ border-bottom: 0; }
-.cmpPlay{
-  flex: 0 0 46%;
-  font-weight: 800;
+.cmpPlayTitle{
+  font-weight: 900;
+  letter-spacing: .2px;
+  line-height: 1.1;
 }
-.cmpRoles{
-  flex: 1 1 auto;
-  color: rgba(0,0,0,.72);
+.cmpRolesHead{
+  font-size: 12.5px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: rgba(0,0,0,.55);
+  margin-bottom: 6px;
 }
+.cmpRolesList{
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 18px;
+}
+.cmpRolesList li{ margin: 0; color: rgba(0,0,0,.78); }
+
+.cmpAB{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cmpABCol{ border:1px solid rgba(0,0,0,.06); border-radius:10px; padding:10px 10px; background: rgba(0,0,0,.02); }
+.cmpABHead{ font-size: 12px; font-weight: 900; letter-spacing: .3px; margin-bottom: 6px; }
 
 .roleChips{ display:flex; flex-wrap:wrap; gap:6px; }
 .roleChip{
@@ -331,7 +379,8 @@ table.idt-table tbody tr:hover,
     border: 0 !important;
     width:100%;
   }
-  #assignFilterTable tr.asItem td.asItemPlay{ display:none; }
+  /* Mobil kartlarda oyun bilgisi de görünsün */
+  #assignFilterTable tr.asItem td.asItemPlay{ display:flex; }
   #assignFilterTable tr.asItem td::before{
     content: attr(data-label);
     font-weight: 800;
@@ -342,8 +391,7 @@ table.idt-table tbody tr:hover,
 
   /* Karşılaştırma kartları mobilde alt-alta */
   .compareGrid{ grid-template-columns: 1fr; grid-template-areas: "onlyA" "common" "onlyB"; }
-  .cmpRow{ flex-direction: column; }
-  .cmpPlay{ flex: 1 1 auto; width:100%; }
+  .cmpRolesList{ grid-template-columns: 1fr; }
 }
 
 
