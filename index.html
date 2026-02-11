@@ -1923,7 +1923,8 @@ body{
 .fabMain{width:56px;height:56px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:var(--accent);color:#fff;box-shadow:0 18px 46px rgba(0,0,0,.22)}
 .fabMain:active{transform:translateY(1px)}
 .fabMenu{position:absolute;right:0;bottom:66px;display:flex;flex-direction:column;gap:10px;align-items:flex-end;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease, transform .18s ease}
-.fabWrap[data-open="1"] .fabMenu{opacity:1;pointer-events:auto;transform:translateY(0)}
+  .fabWrap[data-open="1"] .fabMenu,
+  .fabWrap.open .fabMenu{opacity:1;pointer-events:auto;transform:translateY(0)}
 .fabMini{display:flex;align-items:center;gap:10px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.96);padding:10px 12px;box-shadow:0 12px 30px rgba(0,0,0,.16);max-width:min(78vw,320px)}
 .fabMini .fabMiniI{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;background:rgba(122,30,44,.12);color:var(--accent);font-size:18px;flex:0 0 34px}
 .fabMini .fabMiniT{font-weight:900;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2997,7 +2998,7 @@ body{
 
   <!-- Mobile floating actions (replaces bottom nav to avoid layout breaking) -->
   <!-- Mobil hızlı erişim: tek FAB + açılır menü (bottom nav yerine) -->
-  <div class="fabWrap" aria-label="Hızlı erişim">
+  <div class="fabWrap" aria-label="Hızlı erişim" data-open="0">
     <button class="fabMain" id="fabMain" type="button" aria-label="Menü">
       <span class="fabI" aria-hidden="true">☰</span>
     </button>
