@@ -1722,7 +1722,7 @@ function renderIntersection(){
 function setActiveTab(which){
   // Track active tab so we can safely re-render after data load
   try{ window.__idtActiveTab = which; }catch(_e){}
-  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
+  const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabHeatmap","viewHeatmap"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
     el(v).style.display="none";
@@ -1738,7 +1738,12 @@ function setActiveTab(which){
   if (location.hash !== "#"+slug) {
     history.replaceState(null, "", "#" + slug);
   }
-  if(which==="Charts" && rows.length){
+  
+  if(which==="Heatmap" && rows.length){
+    try{ closeDrawer(); }catch(_e){}
+    try{ window.IDTHeatmap && window.IDTHeatmap.render && window.IDTHeatmap.render(); }catch(e){ console.error(e); }
+  }
+if(which==="Charts" && rows.length){
     closeDrawer();
     // Sekme görünür olduktan sonra çiz (mobilde listeyi garanti eder)
     setTimeout(()=>{ try{ drawChart(); }catch(e){ console.error(e); } }, 0);
@@ -1753,11 +1758,13 @@ els.tabDistribution.addEventListener("click", ()=>setActiveTab("Distribution"));
 els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
+els.tabHeatmap && els.tabHeatmap.addEventListener("click", ()=>setActiveTab("Heatmap"));
 els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assign"));
 
 function tabFromHash_(){
   const h = String(location.hash||"").replace(/^#/,"").toLowerCase();
   if(h==="panel") return "Panel";
+  if(h==="matris") return "Heatmap";
   if(h==="analiz" || h==="analysis" || h==="distribution") return "Distribution";
   if(h==="kesisim" || h==="intersection") return "Intersection";
   if(h==="figuran" || h==="figüran") return "Figuran";
