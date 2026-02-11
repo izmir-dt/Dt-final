@@ -22,8 +22,8 @@ const CONFIG = {
 };
 
 function isMobile(){
-  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 980px)
-  return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
+  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 900px)
+  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
 }
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
@@ -46,16 +46,14 @@ function labelizeTablesIn(root){
   root.querySelectorAll('table').forEach(labelizeTable);
 }
 function openMobileModal(html){
-  // Stabil: modal can be opened on large phones/tablets too
+  // Allow on coarse-pointer devices even if viewport width temporarily exceeds breakpoint
+  const coarse = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  if(!(isMobile() || coarse)) return;
   els.mobileContent.innerHTML = html;
   els.mobileOverlay.classList.remove("hidden");
   els.mobileModal.classList.remove("hidden");
   els.mobileOverlay.setAttribute("aria-hidden","false");
   document.body.style.overflow="hidden";
-}
-
-function __restoreScrollY(y){
-  try{ requestAnimationFrame(()=>window.scrollTo({top:y, behavior:"auto"})); }catch(e){}
 }
 function closeMobileModal(){
   els.mobileOverlay.classList.add("hidden");
@@ -836,7 +834,6 @@ function renderList(){
       ${inline}
     `;
     div.addEventListener("click", (e)=>{
-      const __y = window.scrollY;
       const expandBtn = e.target.closest && e.target.closest('[data-inline-expand]');
       if(expandBtn){
         e.stopPropagation();
@@ -845,7 +842,6 @@ function renderList(){
         selectedItem = it;
         renderList();
         renderDetails(it);
-        __restoreScrollY(__y);
         return;
       }
       // mobile: allow toggle open/close without jumping the page
@@ -853,7 +849,6 @@ function renderList(){
         activeId=null;
         selectedItem=null;
         renderList();
-        __restoreScrollY(__y);
         return;
       }
       activeId=it.id;
@@ -861,7 +856,6 @@ function renderList(){
       detailExpandedId = null;
       renderList();
       renderDetails(it);
-      __restoreScrollY(__y);
 	});
 
 	    // mount
@@ -1697,18 +1691,18 @@ function renderIntersection(){
   }
   els.intersectionBox.innerHTML = `
     <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-    <table class="table queryTable interTable">
+    <div class="tableScroll"><table class="table queryTable" style="min-width:860px">
       <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
       <tbody>
         ${common.map(c=>`
           <tr>
             <td><b>${escapeHtml(c.person)}</b></td>
-            <td data-label="${escapeHtml(a)}">${escapeHtml(c.catsA.join(", "))}<br><span class="small">${escapeHtml(c.rolesA.join(", "))}</span></td>
-            <td data-label="${escapeHtml(b)}">${escapeHtml(c.catsB.join(", "))}<br><span class="small">${escapeHtml(c.rolesB.join(", "))}</span></td>
+            <td>${escapeHtml(c.catsA.join(", "))}<br><span class="small">${escapeHtml(c.rolesA.join(", "))}</span></td>
+            <td>${escapeHtml(c.catsB.join(", "))}<br><span class="small">${escapeHtml(c.rolesB.join(", "))}</span></td>
           </tr>
         `).join("")}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1856,13 +1850,7 @@ els.notifClose && els.notifClose.addEventListener("click", ()=>els.notifPanel.cl
 els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications);
 
 els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); });
-// Stabil: debounce list filtering to avoid micro-freezes while typing
-let __qTimer=null;
-els.q.addEventListener("input", ()=>{
-  localStorage.setItem("idt_q", els.q.value||"");
-  clearTimeout(__qTimer);
-  __qTimer = setTimeout(()=>{ renderList(); }, 140);
-});
+els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderList(); });
 els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList(); });
 els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList(); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
