@@ -1559,11 +1559,11 @@ function renderFiguran(){
       <tbody>
         ${filtered.map((f, idx)=>`
           <tr>
-            <td>${idx+1}</td>
-            <td><b>${escapeHtml(f.person)}</b></td>
-            <td>${escapeHtml((f.cats||[]).join(", "))}</td>
-            <td class="muted">${escapeHtml(f.roles.join(", "))}</td>
-            <td>${escapeHtml(f.plays.join(" • "))}</td>
+            <td data-label="S.N">${idx+1}</td>
+            <td data-label="Kişi"><b>${escapeHtml(f.person)}</b></td>
+            <td data-label="Kategori">${escapeHtml((f.cats||[]).join(", "))}</td>
+            <td data-label="Görevler" class="muted">${escapeHtml(f.roles.join(", "))}</td>
+            <td data-label="Oyunlar">${escapeHtml(f.plays.join(" • "))}</td>
             
           </tr>
         `).join("")}
