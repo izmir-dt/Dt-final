@@ -818,7 +818,7 @@ function renderList(){
     const div=document.createElement("div");
     div.className="item";
     if(isActive) div.style.borderColor="color-mix(in srgb, var(--accent) 35%, var(--line) 65%)";
-    const inline = (mobile && isActive) ? renderInlineDetailHtml(it) : "";
+    const inline = (mobile && isActive) ? renderInlineDetailHtml(it, activeMode==='plays' ? 'play' : 'person') : "";
     div.innerHTML = `
       <div class="t">
         <div>
@@ -830,7 +830,17 @@ function renderList(){
       <div class="chips">${chips}${more}</div>
       ${inline}
     `;
-    div.addEventListener("click", ()=>{
+    div.addEventListener("click", (e)=>{
+      const expandBtn = e.target.closest && e.target.closest('[data-inline-expand]');
+      if(expandBtn){
+        e.stopPropagation();
+        detailExpandedId = it.id;
+        activeId = it.id;
+        selectedItem = it;
+        renderList();
+        renderDetails(it);
+        return;
+      }
       // mobile: allow toggle open/close without jumping the page
       if(mobile && activeId===it.id){
         activeId=null;
@@ -910,44 +920,43 @@ function renderDetails(it){
 }
 
 // Mobile: show a quick inline detail under the tapped list row (no extra scrolling)
-function renderInlineDetailHtml(it){
-  try{
-    const LIMIT = 10;
-    if(activeMode==="plays"){
-      const rowsSorted=[...it.rows].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr")|| (a.role||"").localeCompare(b.role||"","tr")|| (a.person||"").localeCompare(b.person||"","tr"));
-      const rowsToRender = rowsSorted.slice(0, LIMIT);
-      const more = it.rows.length>LIMIT ? `<div class="muted" style="margin-top:8px">+${it.rows.length-LIMIT} satır daha</div>` : "";
-      return `
-        <div class="inlineDetail">
-          <div class="inlineHead">Detay</div>
-          <div class="inlineBody">
-            ${rowsToRender.map(r=>`<div class="inlineRow"><div class="k">${escapeHtml(r.category)} / ${escapeHtml(r.role)}</div><div class="v">${escapeHtml(r.person)}${personTag(r.person)}</div></div>`).join("")}
-            ${more}
-          </div>
-        </div>`;
-    }
-    // people mode
-    const byPlay=new Map();
-    for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
-    const plays=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr")).slice(0, LIMIT);
-    const more = byPlay.size>LIMIT ? `<div class="muted" style="margin-top:8px">+${byPlay.size-LIMIT} oyun daha</div>` : "";
-    return `
-      <div class="inlineDetail">
-        <div class="inlineHead">Detay</div>
-        <div class="inlineBody">
-          ${plays.map(([p, rs])=>{
-            const roles=[...new Set(rs.map(x=>x.role).filter(Boolean))].slice(0,3).join(", ");
-            return `<div class="inlineRow"><div class="k">${escapeHtml(p)}</div><div class="v">${escapeHtml(roles||"—")}</div></div>`;
-          }).join("")}
-          ${more}
-        </div>
-      </div>`;
-  }catch(e){
-    return "";
+
+function renderInlineDetailHtml(item, mode){
+  // mode: 'play' or 'person'
+  const name = (mode==='play') ? item.name : item.name;
+
+  const list = (mode==='play')
+    ? (item.people||[]).map(p => ({k:p.name, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'))
+    : (item.plays||[]).map(p => ({k:p.play, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'));
+
+  const expanded = (detailExpandedId === item.id);
+  const limit = expanded ? 9999 : 12;
+  const shown = list.slice(0, limit);
+  const moreCount = Math.max(0, list.length - shown.length);
+
+  const title = (mode==='play') ? `${name} • Kadro` : `${name} • Oyunlar`;
+  let html = `<div class="inlineDetails">
+    <div class="inlineHead">
+      <b>${escapeHtml(title)}</b>
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${moreCount?`<span class="inlineMore">+${moreCount} satır daha</span>`:''}
+        ${(!expanded && list.length>12)?`<button class="inlineExpand" type="button" data-inline-expand="${escapeHtml(item.id)}">Tümünü göster</button>`:''}
+      </div>
+    </div>
+    <div class="inlineGrid">`;
+
+  for(const row of shown){
+    html += `<div class="inlineRow">
+      <div class="k">${escapeHtml(row.k||'')}</div>
+      <div class="v">${escapeHtml(row.v||'')}</div>
+    </div>`;
   }
+
+  html += `</div></div>`;
+  return html;
 }
 
-/* ---------- Copy as Excel-friendly (TSV) ---------- */
+
 function toTSVFromSelected(){
   if(!selectedItem) return "";
   if(activeMode==="plays"){
@@ -1333,16 +1342,13 @@ function renderMobileChartList(items){
   }).join("");
 
   els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
-    const open = (e)=>{
-      if(e) e.preventDefault();
+    elm.addEventListener("click", ()=>{
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
       const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
-    };
-    elm.addEventListener("click", open);
-    elm.addEventListener("pointerup", open);
+    });
   });
 }
 function drawChart(){
@@ -1696,14 +1702,6 @@ function renderIntersection(){
 function setActiveTab(which){
   // Track active tab so we can safely re-render after data load
   try{ window.__idtActiveTab = which; }catch(_e){}
-
-  // Mobile UX: when user taps "Panel", start from Oyunlar list.
-  if(which === "Panel" && isMobile()){
-    activeMode = "plays";
-    try{ localStorage.setItem("idt_mode", "plays"); }catch(_e){}
-    if(els.btnPlays) els.btnPlays.classList.add("active");
-    if(els.btnPeople) els.btnPeople.classList.remove("active");
-  }
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
