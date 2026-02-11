@@ -24,6 +24,26 @@ const CONFIG = {
 function isMobile(){
   return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
+
+// --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
+function labelizeTable(table){
+  if(!table) return;
+  const headers = Array.from(table.querySelectorAll('thead th')).map(th => (th.textContent||'').trim());
+  if(!headers.length) return;
+  table.classList.add('respCards');
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(tr => {
+    Array.from(tr.children).forEach((td, idx) => {
+      if(td && td.nodeType===1 && td.tagName==='TD'){
+        td.setAttribute('data-label', headers[idx] || `Kolon ${idx+1}`);
+      }
+    });
+  });
+}
+function labelizeTablesIn(root){
+  if(!root) return;
+  root.querySelectorAll('table').forEach(labelizeTable);
+}
 function openMobileModal(html){
   if(!isMobile()) return;
   els.mobileContent.innerHTML = html;
@@ -168,6 +188,7 @@ let people = [];
 let playsList = [];
 let activeMode = "plays";
 let activeId = null;
+let detailExpandedId = null; // for performance: show limited rows until user expands
 let selectedItem = null;
 
 let distribution = [];
@@ -783,6 +804,7 @@ function renderList(){
     return;
   }
 
+  const mobile = isMobile();
   for(const it of filtered){
     const isActive = it.id===activeId;
     const meta = (activeMode==="plays")
@@ -796,6 +818,7 @@ function renderList(){
     const div=document.createElement("div");
     div.className="item";
     if(isActive) div.style.borderColor="color-mix(in srgb, var(--accent) 35%, var(--line) 65%)";
+    const inline = (mobile && isActive) ? renderInlineDetailHtml(it) : "";
     div.innerHTML = `
       <div class="t">
         <div>
@@ -805,19 +828,21 @@ function renderList(){
         <div style="color:var(--muted);font-size:12px">▶</div>
       </div>
       <div class="chips">${chips}${more}</div>
+      ${inline}
     `;
     div.addEventListener("click", ()=>{
+      // mobile: allow toggle open/close without jumping the page
+      if(mobile && activeId===it.id){
+        activeId=null;
+        selectedItem=null;
+        renderList();
+        return;
+      }
       activeId=it.id;
       selectedItem = it;
+      detailExpandedId = null;
       renderList();
       renderDetails(it);
-
-    // Mobile: keep inline + bring detail into view (no modal)
-    if(isMobile()){
-      requestAnimationFrame(()=>{
-        try{ els.details.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){}
-      });
-    }
 	});
 
 	    // mount
@@ -829,44 +854,96 @@ function renderList(){
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
 
+  const LIMIT = isMobile() ? 60 : 180;
+
   if(activeMode==="plays"){
     const rowsSorted=[...it.rows].sort((a,b)=>
       (a.category||"").localeCompare(b.category||"","tr") ||
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
+    const isLimited = detailExpandedId !== it.id;
+    const rowsToRender = isLimited ? rowsSorted.slice(0, LIMIT) : rowsSorted;
+    const hasMore = isLimited && rowsSorted.length > LIMIT;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
+      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
       <table class="table asTable" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
-          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
+          ${rowsToRender.map(r=>`<tr><td data-label="Kategori">${escapeHtml(r.category)}</td><td data-label="Görev">${escapeHtml(r.role)}</td><td data-label="Kişi">${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
     `;
+    labelizeTables(els.details);
+    const btn = document.getElementById('detailShowAll');
+    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   } else {
     const byPlay=new Map();
     for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
     const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
+    const isLimited = detailExpandedId !== it.id;
+    const blocksToRender = isLimited ? blocks.slice(0, LIMIT) : blocks;
+    const hasMore = isLimited && blocks.length > LIMIT;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır</p>
+      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
       <div id="detailTable">
-      ${blocks.map(([p, rs])=>{
+      ${blocksToRender.map(([p, rs])=>{
         const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.role||"").localeCompare(b.role||"","tr"));
         return `
           <div style="margin:12px 0 10px">
             <div style="font-weight:850;margin:0 0 8px">${escapeHtml(p)}</div>
             <table class="table asTable">
               <thead><tr><th>Kategori</th><th>Görev</th></tr></thead>
-              <tbody>${rs2.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td></tr>`).join("")}</tbody>
+              <tbody>${rs2.map(r=>`<tr><td data-label="Kategori">${escapeHtml(r.category)}</td><td data-label="Görev">${escapeHtml(r.role)}</td></tr>`).join("")}</tbody>
             </table>
           </div>
         `;
       }).join("")}
       </div>
     `;
+    labelizeTables(els.details);
+    const btn = document.getElementById('detailShowAll');
+    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
+  }
+}
+
+// Mobile: show a quick inline detail under the tapped list row (no extra scrolling)
+function renderInlineDetailHtml(it){
+  try{
+    const LIMIT = 10;
+    if(activeMode==="plays"){
+      const rowsSorted=[...it.rows].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr")|| (a.role||"").localeCompare(b.role||"","tr")|| (a.person||"").localeCompare(b.person||"","tr"));
+      const rowsToRender = rowsSorted.slice(0, LIMIT);
+      const more = it.rows.length>LIMIT ? `<div class="muted" style="margin-top:8px">+${it.rows.length-LIMIT} satır daha</div>` : "";
+      return `
+        <div class="inlineDetail">
+          <div class="inlineHead">Detay</div>
+          <div class="inlineBody">
+            ${rowsToRender.map(r=>`<div class="inlineRow"><div class="k">${escapeHtml(r.category)} / ${escapeHtml(r.role)}</div><div class="v">${escapeHtml(r.person)}${personTag(r.person)}</div></div>`).join("")}
+            ${more}
+          </div>
+        </div>`;
+    }
+    // people mode
+    const byPlay=new Map();
+    for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
+    const plays=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr")).slice(0, LIMIT);
+    const more = byPlay.size>LIMIT ? `<div class="muted" style="margin-top:8px">+${byPlay.size-LIMIT} oyun daha</div>` : "";
+    return `
+      <div class="inlineDetail">
+        <div class="inlineHead">Detay</div>
+        <div class="inlineBody">
+          ${plays.map(([p, rs])=>{
+            const roles=[...new Set(rs.map(x=>x.role).filter(Boolean))].slice(0,3).join(", ");
+            return `<div class="inlineRow"><div class="k">${escapeHtml(p)}</div><div class="v">${escapeHtml(roles||"—")}</div></div>`;
+          }).join("")}
+          ${more}
+        </div>
+      </div>`;
+  }catch(e){
+    return "";
   }
 }
 
@@ -1256,13 +1333,16 @@ function renderMobileChartList(items){
   }).join("");
 
   els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
-    elm.addEventListener("click", ()=>{
+    const open = (e)=>{
+      if(e) e.preventDefault();
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
       const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
-    });
+    };
+    elm.addEventListener("click", open);
+    elm.addEventListener("pointerup", open);
   });
 }
 function drawChart(){
@@ -1616,6 +1696,14 @@ function renderIntersection(){
 function setActiveTab(which){
   // Track active tab so we can safely re-render after data load
   try{ window.__idtActiveTab = which; }catch(_e){}
+
+  // Mobile UX: when user taps "Panel", start from Oyunlar list.
+  if(which === "Panel" && isMobile()){
+    activeMode = "plays";
+    try{ localStorage.setItem("idt_mode", "plays"); }catch(_e){}
+    if(els.btnPlays) els.btnPlays.classList.add("active");
+    if(els.btnPeople) els.btnPeople.classList.remove("active");
+  }
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
   for(const [t,v] of tabs){
     el(t).classList.remove("active");
@@ -2535,57 +2623,45 @@ function renderAssignTool(){
 
 
 
-// ===== Floating actions (mobile) =====
-function syncFabNotifBadge(){
-  const a = document.getElementById('notifCount');
-  const b = document.getElementById('topNotifBadge');
-  const fab = document.getElementById('fabNotifBadge');
-  if(!fab) return;
-  let n = 0;
-  const pick = (el)=>{
-    if(!el) return 0;
-    const t = (el.textContent||'').trim();
-    const v = parseInt(t, 10);
-    return Number.isFinite(v) ? v : 0;
-  };
-  n = Math.max(pick(a), pick(b));
-  if(n>0){
-    fab.textContent = String(n);
-    fab.style.display = 'inline-flex';
-  }else{
-    fab.textContent = '';
-    fab.style.display = 'none';
-  }
-}
-
+// ===== Mobile Speed-Dial (FAB) =====
 document.addEventListener('DOMContentLoaded', ()=>{
-  const dock = document.querySelector('.fabDock');
-  if(!dock) return;
+  const wrap = document.querySelector('.fabWrap');
+  const main = document.getElementById('fabMain');
+  const menu = document.getElementById('fabMenu');
+  if(!wrap || !main || !menu) return;
 
-  dock.addEventListener('click', (e)=>{
-    const btn = e.target.closest('button');
+  const syncFab = () => {
+    const isOpen = wrap.classList.contains('open');
+    // CSS can listen to either .open or data-open="1" (we support both)
+    wrap.dataset.open = isOpen ? '1' : '0';
+    main.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    menu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  };
+
+  const close = ()=>{ wrap.classList.remove('open'); syncFab(); };
+  const open = ()=>{ wrap.classList.add('open'); syncFab(); };
+  const toggle = ()=>{ wrap.classList.toggle('open'); syncFab(); };
+
+  // Initial state
+  syncFab();
+
+  main.addEventListener('click', (e)=>{ e.preventDefault(); toggle(); });
+  menu.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-go]');
     if(!btn) return;
-
     const go = btn.getAttribute('data-go');
-    const action = btn.getAttribute('data-action');
     if(go){
+      close();
       location.hash = go;
       try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(_){ window.scrollTo(0,0); }
-      return;
-    }
-    if(action==='notif'){
-      // Reuse existing notification button logic
-      const top = document.getElementById('topNotif') || document.getElementById('notifBtn');
-      if(top) top.click();
-      return;
     }
   });
 
-  // keep badge in sync
-  syncFabNotifBadge();
-  const a = document.getElementById('notifCount');
-  const b = document.getElementById('topNotifBadge');
-  const mo = new MutationObserver(syncFabNotifBadge);
-  if(a) mo.observe(a, {childList:true, characterData:true, subtree:true});
-  if(b) mo.observe(b, {childList:true, characterData:true, subtree:true});
+  // close on outside click
+  document.addEventListener('click', (e)=>{
+    if(!wrap.classList.contains('open')) return;
+    if(e.target === wrap || wrap.contains(e.target)) return;
+    close();
+  });
+  window.addEventListener('hashchange', close);
 });
