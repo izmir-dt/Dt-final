@@ -1753,11 +1753,21 @@ body{
 </header>
 
 <div class="wrap">
+  <div class="dash">
+    <div class="dashTitle">Ana Kontrol Paneli</div>
+    <div class="dashSub">En hızlı erişim için aşağıdaki kısayollardan birini kullan. Seçimlerin üstte “Aktif Seçimler” şeridinde görünür.</div>
+  </div>
   <div class="kpis" id="kpis">
     <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
     <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
     <div class="kpi soft3" data-go="Panel" data-mode="rows" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
     <div class="kpi soft4" data-go="Figuran" data-mode="figuran" role="button" tabindex="0" aria-label="Figüran listesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+  </div>
+
+  <div class="activeFilters hidden" id="activeFilters" aria-label="Aktif Seçimler">
+    <div class="afTitle">Aktif Seçimler</div>
+    <div class="afChips" id="afChips"></div>
+    <button class="btn afClear" id="afClear" type="button" title="Tüm seçimleri temizle">Temizle</button>
   </div>
 
   <!-- PANEL -->
@@ -2211,6 +2221,9 @@ body{
 </script>
 
 <script src="app.js?v=691"></script>
+
+<!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
+<script src="idt-desktop1.js?v=1"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -2732,6 +2745,38 @@ body{
   });
 })();
 </script>
+
+<!-- Yardım (tamamen Türkçe) -->
+<button class="helpFab" id="helpBtn" type="button" aria-label="Yardım">?</button>
+<div class="helpOverlay hidden" id="helpOverlay" aria-hidden="true"></div>
+<div class="helpModal hidden" id="helpModal" role="dialog" aria-label="Yardım">
+  <div class="helpHd">
+    <b>Yardım</b>
+    <button class="btn" id="helpClose" type="button">✕</button>
+  </div>
+  <div class="helpBd">
+    <div class="helpBlock">
+      <div class="helpT">Hızlı başlangıç</div>
+      <ol class="helpList">
+        <li><b>Panel</b> sekmesinde oyun veya kişi seç.</li>
+        <li>Detaylar sağ tarafta açılır.</li>
+        <li>Excel’e aktarmak için <b>Tab ile Kopyala</b> butonunu kullan.</li>
+      </ol>
+    </div>
+    <div class="helpBlock">
+      <div class="helpT">Aktif Seçimler</div>
+      <div class="helpP">Seçtiğin oyun/kişi/filtreler üstte etiket olarak görünür. Etiketin yanındaki ✕ ile kaldırabilirsin.</div>
+    </div>
+    <div class="helpBlock">
+      <div class="helpT">Grafikler</div>
+      <div class="helpP">Grafikte bir dilime/çubuğa tıklayınca ilgili liste açılır.</div>
+    </div>
+    <div class="helpBlock">
+      <div class="helpT">Kesişim Analizi</div>
+      <div class="helpP">İki oyun seçerek ortak personeli ve görevlerini görürsün.</div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
