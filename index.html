@@ -1843,6 +1843,59 @@ body{
   <link rel="stylesheet" href="idt-polish.css">
   <script defer src="idt-performance.js"></script>
 
+
+<style id="idt-patch-v8_3_15">
+/* === v8.3.15 UI/UX patch: symmetry + cards + mobile polish (NO data-fetch changes) === */
+#assignPaneFilter .table{table-layout:fixed}
+#assignPaneFilter thead th{font-weight:800; letter-spacing:.2px}
+#assignPaneFilter th:nth-child(1){width:28%}
+#assignPaneFilter th:nth-child(2){width:18%}
+#assignPaneFilter th:nth-child(3){width:20%}
+#assignPaneFilter th:nth-child(4){width:34%}
+#assignPaneFilter td{vertical-align:top}
+#assignPaneFilter .asGroup td{padding:10px 12px}
+#assignPaneFilter .asGroupBar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.65)}
+#assignPaneFilter .asGroupTitle{font-weight:900}
+#assignPaneFilter .asGroupCount{color:var(--muted);font-weight:700;font-size:12px}
+#assignPaneFilter .asItem td{padding:10px 12px}
+#assignPaneFilter .asPlayPill{display:inline-flex;align-items:center;max-width:100%;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(250,245,238,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width: 860px){
+  #assignPaneFilter .tableWrap{overflow:visible}
+  #assignPaneFilter table thead{display:none}
+  #assignPaneFilter table, #assignPaneFilter tbody, #assignPaneFilter tr, #assignPaneFilter td{display:block;width:100%}
+  #assignPaneFilter tr.asGroup{margin:10px 0 6px}
+  #assignPaneFilter tr.asGroup td{padding:0;border:0;background:none}
+  #assignPaneFilter tr.asItem{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0;background:rgba(255,255,255,.92);box-shadow:0 10px 24px rgba(24,16,8,.08);}
+  #assignPaneFilter tr.asItem td{padding:6px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border:0;}
+  #assignPaneFilter tr.asItem td::before{content: attr(data-label);min-width:86px;color:var(--muted);font-weight:800;}
+  #assignPaneFilter tr.asItem td b{font-weight:900}
+}
+.compareGrid{gap:14px}
+.cmpCard{padding:14px 14px 10px}
+.cmpCard .cmpCardTitle{font-weight:900; letter-spacing:.2px}
+.cmpGame{border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.75);}
+.cmpGameHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.cmpGameName{font-weight:1000; letter-spacing:.2px; line-height:1.15}
+.cmpRoleList{margin:6px 0 0 0;padding-left:16px;line-height:1.35}
+.cmpRoleList li{margin:2px 0}
+.cmpBadge{font-weight:800}
+@media (max-width: 860px){
+  .comparePick{grid-template-columns:1fr;gap:10px}
+  .cmpTools{justify-content:flex-start}
+}
+@media (max-width: 560px){
+  .brandRow{gap:10px}
+  .brandIcon{width:34px;height:34px}
+  .brandTitle{font-size:14px}
+  .brandSub{display:none}
+  .topActions .idt-pill{padding:10px 10px}
+  .topActions .idt-pill .btnLabel{display:none}
+  .topActions .idt-pill .btnIcon{margin:0}
+}
+#figuranPane table td:nth-child(2),
+#figuranPane table th:nth-child(2){text-align:left}
+</style>
+
 </head>
 <body>
   <div class="idt-shell">
