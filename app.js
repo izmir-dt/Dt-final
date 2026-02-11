@@ -178,6 +178,37 @@ if(els.chartMain){
     const hit = chartHitKeyFromEvent(ev);
     els.chartMain.style.cursor = hit ? 'pointer' : 'default';
   });
+
+// Robust: delegate chart interactions in case canvas/list is re-rendered
+document.addEventListener("click", (ev)=>{
+  const t = ev.target;
+  if(!t) return;
+
+  // Canvas click (desktop)
+  const canvas = t.closest && t.closest("#chartMain");
+  if(canvas && canvas === els.chartMain){
+    onChartCanvasClick(ev);
+    return;
+  }
+
+  // Mobile chip list click fallback (if direct listeners were not attached)
+  const chip = t.closest && t.closest("#chartMobileList .chipRow");
+  if(chip){
+    const key = chip.getAttribute("data-key");
+    if(!key || key==="Diğer") return;
+    try{
+      const people = buildPeopleListForKey(key);
+      const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
+      openMobilePeopleModal(title, `${people.length} kişi`, people);
+    }catch(err){
+      console.error(err);
+      try{
+        const items = buildDrawerItemsForKey(String(key));
+        openDrawer(`${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`, `${items.length} kişi`, items, {mode:'items'});
+      }catch(_){}
+    }
+  }
+});
 }
 
 
@@ -1250,29 +1281,62 @@ function buildDrawerItemsForKey(key){
   return out;
 }
 
-function onChartCanvasClick(ev){
-  const key = chartHitKeyFromEvent(ev);
-  if(!key) return;
-
-  // "Diğer" -> drill-down into labels
-  if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
-    drawerStack.push({
-      title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
-      subtitle: els.drawerSub.textContent || '',
-      items: drawerData.slice(),
-      mode: drawerMode
-    });
-    const labels = window.__chartOtherItems
-      .slice()
-      .sort((a,b)=>b.v-a.v)
-      .map(x=>({label:x.k, value:x.v}));
-    openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
-    return;
+// --- KPI: Full personnel list (unique people summary) ---
+function buildAllPeopleSummary(){
+  const map = new Map(); // person -> {plays:Set, roles:Set}
+  for(const r of rows){
+    const p = (r.person||"").trim();
+    if(!p) continue;
+    if(!map.has(p)) map.set(p, {plays:new Set(), roles:new Set()});
+    const v = map.get(p);
+    if(r.play) v.plays.add(String(r.play).trim());
+    if(r.role) v.roles.add(String(r.role).trim());
   }
+  const out = [];
+  for(const [person, v] of map.entries()){
+    const playsArr = Array.from(v.plays).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    const rolesArr = Array.from(v.roles).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
+    out.push({
+      person,
+      roles: rolesArr.join(", "),
+      plays: playsArr,
+    });
+  }
+  // sort by person
+  out.sort((a,b)=>a.person.localeCompare(b.person,'tr'));
+  return out;
+}
 
-  const items = buildDrawerItemsForKey(String(key));
-  const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
-  openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
+
+function onChartCanvasClick(ev){
+  try{
+    const key = chartHitKeyFromEvent(ev);
+    if(!key) return;
+
+    // "Diğer" -> drill-down into labels
+    if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
+      drawerStack.push({
+        title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
+        subtitle: els.drawerSub.textContent || '',
+        items: drawerData.slice(),
+        mode: drawerMode
+      });
+      const labels = window.__chartOtherItems
+        .slice()
+        .sort((a,b)=>b.v-a.v)
+        .map(x=>({label:x.k, value:x.v}));
+      openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
+      return;
+    }
+
+    const items = buildDrawerItemsForKey(String(key));
+    const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
+    openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
+  }catch(err){
+    console.error(err);
+    // Fallback: if chart list exists (mobile), do nothing; otherwise show a lightweight hint
+    try{ toast && toast("Grafik detayı açılamadı (JS hata). Konsolu kontrol et."); }catch(_){}
+  }
 }
 
 /* ---------- mobile chart list ---------- */
@@ -1350,7 +1414,11 @@ function renderMobileChartList(items){
   });
 }
 function drawChart(){
-  if(!rows.length) return;
+  try{
+    if(!rows.length) return;
+    const canvasHidden = (els.chartMain && window.getComputedStyle) ? (getComputedStyle(els.chartMain).display === "none" || getComputedStyle(els.chartMain).visibility === "hidden") : false;
+    const useMobile = isMobile() || canvasHidden;
+
   if(chartMode==="roles"){
     const counts=new Map();
     for(const r of rows){
@@ -1361,7 +1429,7 @@ function drawChart(){
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
     window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Görevlere Göre Dağılım";
-    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
+    if(useMobile){ closeDrawer(); renderMobileChartList(items); return; }
     drawDoughnut(els.chartMain, items, 14, "Top Görevler");
   }else{
     const counts=new Map();
@@ -1373,9 +1441,10 @@ function drawChart(){
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
     window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Kategori Dağılımı";
-    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
+    if(useMobile){ closeDrawer(); renderMobileChartList(items); return; }
     drawDoughnut(els.chartMain, items, 14, "Top Kategoriler");
   }
+  }catch(e){ console.error(e); }
 }
 
 /* ---------- chart drawer ---------- */
@@ -1562,7 +1631,7 @@ function renderDistribution(){
   }
   // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
   els.distributionBox.innerHTML = `
-      <table class="table tableCompact distTable asTable">
+      <table id="distTable" class="table tableCompact distTable asTable respCards">
       <colgroup>
         <col style="width:240px">
         <col style="width:120px">
@@ -1583,6 +1652,12 @@ function renderDistribution(){
     </table>
     <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
   `;
+
+  // Mobile readability: convert distribution table to labeled cards
+  try{
+    const t = document.getElementById("distTable");
+    if(t) labelizeTable(t);
+  }catch(e){ console.error(e); }
 
   // UI: uzun oyun/rol listelerini 3 satırda kısalt, tıklayınca aç/kapat
   try{
@@ -1747,12 +1822,30 @@ function tabFromHash_(){
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const target = String(card.getAttribute("data-go")||"").trim();
+  const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
-  card.addEventListener("click", ()=>setActiveTab(target));
+
+  const go = ()=>{
+    // Special: Total Personnel KPI should open a full list (no extra tabs needed)
+    if(target==="Panel" && mode==="people"){
+      try{
+        const list = buildAllPeopleSummary();
+        openDrawer("Toplam Personel", `${list.length} kişi`, list, {mode:"items"});
+      }catch(err){
+        console.error(err);
+        setActiveTab("Panel");
+      }
+      return;
+    }
+    // Default behavior
+    setActiveTab(target);
+  };
+
+  card.addEventListener("click", go);
   card.addEventListener("keydown", (e)=>{
     if(e.key==="Enter" || e.key===" "){
       e.preventDefault();
-      setActiveTab(target);
+      go();
     }
   });
 });
