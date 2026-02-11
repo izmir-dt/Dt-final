@@ -22,8 +22,7 @@ const CONFIG = {
 };
 
 function isMobile(){
-  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 900px)
-  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+  return window.matchMedia && window.matchMedia("(max-width: 980px)").matches;
 }
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
@@ -178,38 +177,27 @@ if(els.chartMain){
     const hit = chartHitKeyFromEvent(ev);
     els.chartMain.style.cursor = hit ? 'pointer' : 'default';
   });
-
-// Robust: delegate chart interactions in case canvas/list is re-rendered
-document.addEventListener("click", (ev)=>{
-  const t = ev.target;
-  if(!t) return;
-
-  // Canvas click (desktop)
-  const canvas = t.closest && t.closest("#chartMain");
-  if(canvas && canvas === els.chartMain){
-    onChartCanvasClick(ev);
-    return;
-  }
-
-  // Mobile chip list click fallback (if direct listeners were not attached)
-  const chip = t.closest && t.closest("#chartMobileList .chipRow");
-  if(chip){
-    const key = chip.getAttribute("data-key");
-    if(!key || key==="Diğer") return;
-    try{
-      const people = buildPeopleListForKey(key);
-      const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
-      openMobilePeopleModal(title, `${people.length} kişi`, people);
-    }catch(err){
-      console.error(err);
-      try{
-        const items = buildDrawerItemsForKey(String(key));
-        openDrawer(`${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`, `${items.length} kişi`, items, {mode:'items'});
-      }catch(_){}
-    }
-  }
-});
 }
+
+// Safety-net: if listeners get lost due to re-render, delegate chart clicks
+document.addEventListener('click', (e)=>{
+  try{
+    const c = e.target && (e.target.id==='chartMain' ? e.target : e.target.closest && e.target.closest('#chartMain'));
+    if(c){
+      onChartCanvasClick(Object.assign({}, e, { currentTarget: c }));
+      return;
+    }
+    const chip = e.target && e.target.closest && e.target.closest('.chipRow');
+    if(chip && chip.getAttribute){
+      const key = chip.getAttribute('data-key');
+      if(key && key!=='Diğer'){
+        const people = buildPeopleListForKey(key);
+        const title = `${chartMode==='roles' ? 'Görev' : 'Kategori'}: ${key}`;
+        openMobilePeopleModal(title, `${people.length} kişi`, people);
+      }
+    }
+  }catch(err){ console.error(err); }
+});
 
 
 let rawRows = [];
@@ -895,7 +883,8 @@ function renderList(){
 }
 function renderDetails(it){
   if(!it){ els.details.innerHTML = `<div class="empty">Soldan bir oyun veya kişi seç.</div>`; return; }
-  // Paket 1: detay görünümünde truncate yok (tam liste)
+
+  const LIMIT = isMobile() ? 60 : 180;
 
   if(activeMode==="plays"){
     const rowsSorted=[...it.rows].sort((a,b)=>
@@ -903,11 +892,12 @@ function renderDetails(it){
       (a.role||"").localeCompare(b.role||"","tr") ||
       (a.person||"").localeCompare(b.person||"","tr")
     );
-    const rowsToRender = rowsSorted;
-    const hasMore = false;
+    const isLimited = detailExpandedId !== it.id;
+    const rowsToRender = isLimited ? rowsSorted.slice(0, LIMIT) : rowsSorted;
+    const hasMore = isLimited && rowsSorted.length > LIMIT;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır</p>
+      <p class="subtitle">${it.count} kişi • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
       <table class="table asTable" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
@@ -916,15 +906,18 @@ function renderDetails(it){
       </table>
     `;
     labelizeTables(els.details);
+    const btn = document.getElementById('detailShowAll');
+    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   } else {
     const byPlay=new Map();
     for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
     const blocks=[...byPlay.entries()].sort((a,b)=>a[0].localeCompare(b[0],"tr"));
-    const blocksToRender = blocks;
-    const hasMore = false;
+    const isLimited = detailExpandedId !== it.id;
+    const blocksToRender = isLimited ? blocks.slice(0, LIMIT) : blocks;
+    const hasMore = isLimited && blocks.length > LIMIT;
     els.details.innerHTML = `
       <h3 class="title">${escapeHtml(it.title)}${personTag(it.title)}</h3>
-      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır</p>
+      <p class="subtitle">${it.count} oyun • ${it.rows.length} satır${hasMore ? ` • <button class="btn small" id="detailShowAll" type="button">Tümünü göster</button>` : ''}</p>
       <div id="detailTable">
       ${blocksToRender.map(([p, rs])=>{
         const rs2=[...rs].sort((a,b)=>(a.category||"").localeCompare(b.category||"","tr") || (a.role||"").localeCompare(b.role||"","tr"));
@@ -941,6 +934,8 @@ function renderDetails(it){
       </div>
     `;
     labelizeTables(els.details);
+    const btn = document.getElementById('detailShowAll');
+    if(btn){ btn.addEventListener('click', ()=>{ detailExpandedId = it.id; renderDetails(it); }); }
   }
 }
 
@@ -948,33 +943,29 @@ function renderDetails(it){
 
 function renderInlineDetailHtml(item, mode){
   // mode: 'play' or 'person'
-  // Paket 1: inline detail "detay" sayılır → burada truncate yok.
-  // Kaynak: item.rows (stabil data modeli)
-  const title = (mode==='play') ? `${item.title} • Kadro` : `${item.title} • Oyunlar`;
+  const name = (mode==='play') ? item.name : item.name;
 
-  const list = [];
-  const rs = Array.isArray(item.rows) ? item.rows : [];
+  const list = (mode==='play')
+    ? (item.people||[]).map(p => ({k:p.name, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'))
+    : (item.plays||[]).map(p => ({k:p.play, v: (p.role||'') })).sort((a,b)=>a.k.localeCompare(b.k,'tr'));
 
-  if(mode === 'play'){
-    rs
-      .slice()
-      .sort((a,b)=> (a.person||"").localeCompare(b.person||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
-      .forEach(r=> list.push({k: (r.person||""), v: (r.role||"")}));
-  } else {
-    rs
-      .slice()
-      .sort((a,b)=> (a.play||"").localeCompare(b.play||"","tr") || (a.role||"").localeCompare(b.role||"","tr"))
-      .forEach(r=> list.push({k: (r.play||""), v: (r.role||"")}));
-  }
+  const expanded = (detailExpandedId === item.id);
+  const limit = expanded ? 9999 : 12;
+  const shown = list.slice(0, limit);
+  const moreCount = Math.max(0, list.length - shown.length);
 
+  const title = (mode==='play') ? `${name} • Kadro` : `${name} • Oyunlar`;
   let html = `<div class="inlineDetails">
     <div class="inlineHead">
       <b>${escapeHtml(title)}</b>
-      <div class="small muted">${list.length} satır</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${moreCount?`<span class="inlineMore">+${moreCount} satır daha</span>`:''}
+        ${(!expanded && list.length>12)?`<button class="inlineExpand" type="button" data-inline-expand="${escapeHtml(item.id)}">Tümünü göster</button>`:''}
+      </div>
     </div>
     <div class="inlineGrid">`;
 
-  for(const row of list){
+  for(const row of shown){
     html += `<div class="inlineRow">
       <div class="k">${escapeHtml(row.k||'')}</div>
       <div class="v">${escapeHtml(row.v||'')}</div>
@@ -1281,62 +1272,29 @@ function buildDrawerItemsForKey(key){
   return out;
 }
 
-// --- KPI: Full personnel list (unique people summary) ---
-function buildAllPeopleSummary(){
-  const map = new Map(); // person -> {plays:Set, roles:Set}
-  for(const r of rows){
-    const p = (r.person||"").trim();
-    if(!p) continue;
-    if(!map.has(p)) map.set(p, {plays:new Set(), roles:new Set()});
-    const v = map.get(p);
-    if(r.play) v.plays.add(String(r.play).trim());
-    if(r.role) v.roles.add(String(r.role).trim());
-  }
-  const out = [];
-  for(const [person, v] of map.entries()){
-    const playsArr = Array.from(v.plays).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
-    const rolesArr = Array.from(v.roles).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
-    out.push({
-      person,
-      roles: rolesArr.join(", "),
-      plays: playsArr,
-    });
-  }
-  // sort by person
-  out.sort((a,b)=>a.person.localeCompare(b.person,'tr'));
-  return out;
-}
-
-
 function onChartCanvasClick(ev){
-  try{
-    const key = chartHitKeyFromEvent(ev);
-    if(!key) return;
+  const key = chartHitKeyFromEvent(ev);
+  if(!key) return;
 
-    // "Diğer" -> drill-down into labels
-    if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
-      drawerStack.push({
-        title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
-        subtitle: els.drawerSub.textContent || '',
-        items: drawerData.slice(),
-        mode: drawerMode
-      });
-      const labels = window.__chartOtherItems
-        .slice()
-        .sort((a,b)=>b.v-a.v)
-        .map(x=>({label:x.k, value:x.v}));
-      openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
-      return;
-    }
-
-    const items = buildDrawerItemsForKey(String(key));
-    const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
-    openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
-  }catch(err){
-    console.error(err);
-    // Fallback: if chart list exists (mobile), do nothing; otherwise show a lightweight hint
-    try{ toast && toast("Grafik detayı açılamadı (JS hata). Konsolu kontrol et."); }catch(_){}
+  // "Diğer" -> drill-down into labels
+  if(String(key) === 'Diğer' && Array.isArray(window.__chartOtherItems) && window.__chartOtherItems.length){
+    drawerStack.push({
+      title: els.drawerTitle.textContent || (chartMode==='roles' ? 'Görevler' : 'Kategoriler'),
+      subtitle: els.drawerSub.textContent || '',
+      items: drawerData.slice(),
+      mode: drawerMode
+    });
+    const labels = window.__chartOtherItems
+      .slice()
+      .sort((a,b)=>b.v-a.v)
+      .map(x=>({label:x.k, value:x.v}));
+    openDrawer('Diğer', `${labels.length} kategori`, labels, {mode:'labels'});
+    return;
   }
+
+  const items = buildDrawerItemsForKey(String(key));
+  const title = `${chartMode === 'roles' ? 'Görev' : 'Kategori'}: ${key}`;
+  openDrawer(title, `${items.length} kişi`, items, {mode:'items'});
 }
 
 /* ---------- mobile chart list ---------- */
@@ -1414,11 +1372,7 @@ function renderMobileChartList(items){
   });
 }
 function drawChart(){
-  try{
-    if(!rows.length) return;
-    const canvasHidden = (els.chartMain && window.getComputedStyle) ? (getComputedStyle(els.chartMain).display === "none" || getComputedStyle(els.chartMain).visibility === "hidden") : false;
-    const useMobile = isMobile() || canvasHidden;
-
+  if(!rows.length) return;
   if(chartMode==="roles"){
     const counts=new Map();
     for(const r of rows){
@@ -1429,7 +1383,7 @@ function drawChart(){
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
     window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Görevlere Göre Dağılım";
-    if(useMobile){ closeDrawer(); renderMobileChartList(items); return; }
+    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
     drawDoughnut(els.chartMain, items, 14, "Top Görevler");
   }else{
     const counts=new Map();
@@ -1441,10 +1395,9 @@ function drawChart(){
     const items=[...counts.entries()].map(([k,set])=>({k,v:set.size})).sort((a,b)=>b.v-a.v);
     window.__chartColorOf = makeChartColorGetter(items.map(x=>x.k));
     els.chartTitle.textContent = "Kategori Dağılımı";
-    if(useMobile){ closeDrawer(); renderMobileChartList(items); return; }
+    if(isMobile()){ closeDrawer(); renderMobileChartList(items); return; }
     drawDoughnut(els.chartMain, items, 14, "Top Kategoriler");
   }
-  }catch(e){ console.error(e); }
 }
 
 /* ---------- chart drawer ---------- */
@@ -1631,7 +1584,7 @@ function renderDistribution(){
   }
   // Kolon sırası (UI isteği): Kişi / Oyun Sayısı / Görevler / Oyunlar
   els.distributionBox.innerHTML = `
-      <table id="distTable" class="table tableCompact distTable asTable respCards">
+      <table class="table tableCompact distTable asTable">
       <colgroup>
         <col style="width:240px">
         <col style="width:120px">
@@ -1652,12 +1605,6 @@ function renderDistribution(){
     </table>
     <div class="small" style="margin-top:10px">Toplam: ${filtered.length} kişi</div>
   `;
-
-  // Mobile readability: convert distribution table to labeled cards
-  try{
-    const t = document.getElementById("distTable");
-    if(t) labelizeTable(t);
-  }catch(e){ console.error(e); }
 
   // UI: uzun oyun/rol listelerini 3 satırda kısalt, tıklayınca aç/kapat
   try{
@@ -1739,69 +1686,51 @@ function computeIntersection(playA, playB){
   return common;
 }
 function renderIntersection(){
-  const a = els.p1.value;
-  const b = els.p2.value;
+const a = els.p1.value;
+const b = els.p2.value;
+if(!a || !b){
+  els.intersectionBox.innerHTML = `<div class="empty">Oyun seç.</div>`;
+  return;
+}
+if(a===b){
+  els.intersectionBox.innerHTML = `<div class="empty">İki farklı oyun seçersen ortak personeli gösterebilirim 🙂</div>`;
+  return;
+}
+const common = computeIntersection(a,b);
+if(!common.length){
+  els.intersectionBox.innerHTML = `<div class="empty"><b>${escapeHtml(a)}</b> ile <b>${escapeHtml(b)}</b> arasında ortak personel yok.</div>`;
+  return;
+}
 
-  if(!a || !b){
-    els.intersectionBox.innerHTML = `<div class="empty">Oyun seç.</div>`;
-    return;
-  }
-  if(a===b){
-    els.intersectionBox.innerHTML = `<div class="empty">İki farklı oyun seçersen ortak personeli gösterebilirim 🙂</div>`;
-    return;
-  }
+const head = `
+  <div class="interRow interHead">
+    <div class="interCell person">Kişi</div>
+    <div class="interCell playA">${escapeHtml(a)} <span class="muted">• Kategori / Görev</span></div>
+    <div class="interCell playB">${escapeHtml(b)} <span class="muted">• Kategori / Görev</span></div>
+  </div>
+`;
 
-  const common = computeIntersection(a,b);
-  if(!common.length){
-    els.intersectionBox.innerHTML = `<div class="empty"><b>${escapeHtml(a)}</b> ile <b>${escapeHtml(b)}</b> arasında ortak personel yok.</div>`;
-    return;
-  }
+const rowsHtml = common.map(c=>`
+  <div class="interRow">
+    <div class="interCell person"><b>${escapeHtml(c.person)}</b></div>
+    <div class="interCell playA">
+      <div class="interCats">${escapeHtml(c.catsA.join(", "))}</div>
+      <div class="interRoles small">${escapeHtml(c.rolesA.join(", "))}</div>
+    </div>
+    <div class="interCell playB">
+      <div class="interCats">${escapeHtml(c.catsB.join(", "))}</div>
+      <div class="interRoles small">${escapeHtml(c.rolesB.join(", "))}</div>
+    </div>
+  </div>
+`).join("");
 
-  const header = `<div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>`;
-
-  // Mobile: old-good style (two games side-by-side with clear headers)
-  if(isMobile()){
-    els.intersectionBox.innerHTML = `
-      ${header}
-      <div class="interList">
-        ${common.map(c=>`
-          <div class="interCard">
-            <div class="interPerson">${escapeHtml(c.person)}</div>
-            <div class="interCols">
-              <div class="interCol">
-                <div class="interHead">${escapeHtml(a)}</div>
-                <div class="interCats">${escapeHtml(c.catsA.join(", ")) || "—"}</div>
-                <div class="interRoles">${escapeHtml(c.rolesA.join(", ")) || "—"}</div>
-              </div>
-              <div class="interCol">
-                <div class="interHead">${escapeHtml(b)}</div>
-                <div class="interCats">${escapeHtml(c.catsB.join(", ")) || "—"}</div>
-                <div class="interRoles">${escapeHtml(c.rolesB.join(", ")) || "—"}</div>
-              </div>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    `;
-    return;
-  }
-
-  // Desktop/tablet: classic table with headers
-  els.intersectionBox.innerHTML = `
-    ${header}
-    <table class="table interTable">
-      <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
-      <tbody>
-        ${common.map(c=>`
-          <tr>
-            <td><b>${escapeHtml(c.person)}</b></td>
-            <td>${escapeHtml(c.catsA.join(", "))}<br><span class="small">${escapeHtml(c.rolesA.join(", "))}</span></td>
-            <td>${escapeHtml(c.catsB.join(", "))}<br><span class="small">${escapeHtml(c.rolesB.join(", "))}</span></td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
+els.intersectionBox.innerHTML = `
+  <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
+  <div class="interGridWrap">
+    ${head}
+    ${rowsHtml}
+  </div>
+`;
 }
 
 /* ---------- navigation ---------- */
@@ -1855,30 +1784,12 @@ function tabFromHash_(){
 // KPI kartları: hızlı sekme geçişi
 document.querySelectorAll(".kpi[data-go]").forEach(card=>{
   const target = String(card.getAttribute("data-go")||"").trim();
-  const mode = String(card.getAttribute("data-mode")||"").trim();
   if(!target) return;
-
-  const go = ()=>{
-    // Special: Total Personnel KPI should open a full list (no extra tabs needed)
-    if(target==="Panel" && mode==="people"){
-      try{
-        const list = buildAllPeopleSummary();
-        openDrawer("Toplam Personel", `${list.length} kişi`, list, {mode:"items"});
-      }catch(err){
-        console.error(err);
-        setActiveTab("Panel");
-      }
-      return;
-    }
-    // Default behavior
-    setActiveTab(target);
-  };
-
-  card.addEventListener("click", go);
+  card.addEventListener("click", ()=>setActiveTab(target));
   card.addEventListener("keydown", (e)=>{
     if(e.key==="Enter" || e.key===" "){
       e.preventDefault();
-      go();
+      setActiveTab(target);
     }
   });
 });
