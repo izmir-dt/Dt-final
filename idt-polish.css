@@ -654,10 +654,15 @@ html[data-theme="dark"] .cmpRolesList li{
   background:rgba(255,255,255,.05);
 }
 
-/* Prevent “harfler alt alta”: allow normal wrapping, never break letters */
+/* Prevent “harfler alt alta”: don't break words into letters */
 .asTable, .cmpCard, .tabbar, .brand, .actions, .filters{
   word-break: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+}
+
+/* Top actions (mobile): keep pills readable (no vertical text) */
+.idt-top-actions .idt-pill{
+  white-space: nowrap;
 }
 
 /* Mobile: true card layout (label on top, value below) */
