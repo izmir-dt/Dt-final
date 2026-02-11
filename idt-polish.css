@@ -90,8 +90,8 @@ table.idt-table tbody tr:hover,
 
 /* Premium sidebar mini logo (theater.png) */
 .idt-mini-logo{
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   border-radius: 14px;
   display: grid;
   place-items: center;
@@ -102,8 +102,8 @@ table.idt-table tbody tr:hover,
   overflow: hidden;
 }
 .idt-mini-logo img{
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
 }
@@ -140,42 +140,13 @@ table.idt-table tbody tr:hover,
   padding-right: 2px;
 }
 
-/* Sorgu & Karşılaştır: sonuç tablosu (masaüstü) daha simetrik */
-#assignFilterTable{
-  table-layout: fixed;
-}
+/* Sorgu & Karşılaştır: results table headers centered */
 #assignFilterTable th,
 #assignFilterTable td{
-  text-align: left;
-  padding: 12px 14px;
-  line-height: 1.25;
+  text-align: center;
 }
-#assignFilterTable th{ white-space: nowrap; }
-/* Kolon genişlikleri (Oyun / Kategori / Görev / Kişi) */
-#assignFilterTable th:nth-child(1), #assignFilterTable td:nth-child(1){ width: 42%; }
-#assignFilterTable th:nth-child(2), #assignFilterTable td:nth-child(2){ width: 16%; }
-#assignFilterTable th:nth-child(3), #assignFilterTable td:nth-child(3){ width: 22%; }
-#assignFilterTable th:nth-child(4), #assignFilterTable td:nth-child(4){ width: 20%; }
-#assignFilterTable td:nth-child(2){ text-align: center; }
-
-/* Oyun hücresi: uzun oyun adlarında taşmayı engelle */
-#assignFilterTable td:nth-child(1){
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.asPlayPill{
-  display: inline-block;
-  max-width: 100%;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(122,30,44,.08);
-  border: 1px solid rgba(122,30,44,.18);
-  font-weight: 600;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+#assignFilterTable td:nth-child(1){ text-align: left; }
+#assignFilterTable td:nth-child(4){ text-align: left; }
 
 /* Karşılaştır: Kişi A / Kişi B inputs equal width */
 .compareTop{
@@ -288,53 +259,22 @@ table.idt-table tbody tr:hover,
 .compareGrid .onlyB{ grid-area: onlyB; }
 .compareGrid .common{ grid-area: common; }
 
-/* Karşılaştır: oyun başlıkları + görevleri "kurumsal kart" gibi */
 .cmpRow{
   display: flex;
-  flex-direction: column;
   gap: 10px;
-  padding: 12px 12px;
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 12px;
-  background: rgba(255,255,255,.75);
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(0,0,0,.10);
 }
-.cmpPlayTitle{
-  font-weight: 900;
-  letter-spacing: .2px;
-  line-height: 1.1;
+.cmpRow:last-child{ border-bottom: 0; }
+.cmpPlay{
+  flex: 0 0 46%;
+  font-weight: 800;
 }
-.cmpRolesHead{
-  font-size: 12.5px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  color: rgba(0,0,0,.55);
-  margin-bottom: 6px;
+.cmpRoles{
+  flex: 1 1 auto;
+  color: rgba(0,0,0,.72);
 }
-.cmpRolesList{
-  margin: 0;
-  padding-left: 18px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 18px;
-}
-.cmpRolesList li{ margin: 0; color: rgba(0,0,0,.78); }
-
-.cmpAB{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.cmpABCol{ border:1px solid rgba(0,0,0,.06); border-radius:10px; padding:10px 10px; background: rgba(0,0,0,.02); }
-.cmpABHead{ font-size: 12px; font-weight: 900; letter-spacing: .3px; margin-bottom: 6px; }
-
-.roleChips{ display:flex; flex-wrap:wrap; gap:6px; }
-.roleChip{
-  display:inline-flex;
-  align-items:center;
-  padding:4px 8px;
-  border:1px solid rgba(0,0,0,.12);
-  border-radius:999px;
-  background: rgba(255,255,255,.6);
-  font-size: 12.5px;
-  line-height: 1.1;
- }
 
 /* Sorgulama sonuç tablosu: daha düzenli */
 .assignTable th{ text-align: left; }
@@ -344,55 +284,10 @@ table.idt-table tbody tr:hover,
 .assignTable td:nth-child(4){ font-weight: 800; }
 
 /* Oyun bazlı grup satırı (Sorgulama & Listele) */
-.assignTable tr.asHead td{ background: rgba(0,0,0,.035); font-weight: 800; padding:10px 12px; }
+.assignTable tr.asGroup td{ background: rgba(0,0,0,.035); font-weight: 800; padding:10px 12px; }
 .assignTable .asGroupBar{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .assignTable .asGroupTitle{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .assignTable .asCount{ font-size:12px; font-weight:900; padding:4px 10px; border:1px solid var(--line); border-radius:999px; background: rgba(255,255,255,.6); }
-
-/* Mobil: Sorgulama & Listele sonuçlarını kart yapısına çevir */
-@media (max-width: 820px){
-  #assignFilterTable thead{ display:none; }
-  #assignFilterTable,
-  #assignFilterTable tbody,
-  #assignFilterTable tr{ display:block; width:100%; }
-
-  #assignFilterTable tr.asHead{
-    margin-top: 14px;
-    border-radius: 14px;
-    overflow:hidden;
-  }
-
-  #assignFilterTable tr.asItem{
-    border: 1px solid rgba(0,0,0,.10);
-    border-radius: 14px;
-    padding: 10px 12px;
-    margin: 10px 0;
-    background: rgba(255,255,255,.72);
-  }
-
-  #assignFilterTable tr.asItem td{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap: 12px;
-    padding: 6px 0;
-    border: 0 !important;
-    width:100%;
-  }
-  /* Mobil kartlarda oyun bilgisi de görünsün */
-  #assignFilterTable tr.asItem td.asItemPlay{ display:flex; }
-  #assignFilterTable tr.asItem td::before{
-    content: attr(data-label);
-    font-weight: 800;
-    color: rgba(0,0,0,.60);
-    flex: 0 0 88px;
-  }
-  #assignFilterTable tr.asItem td:last-child b{ font-weight: 900; }
-
-  /* Karşılaştırma kartları mobilde alt-alta */
-  .compareGrid{ grid-template-columns: 1fr; grid-template-areas: "onlyA" "common" "onlyB"; }
-  .cmpRolesList{ grid-template-columns: 1fr; }
-}
 
 
 /* === Symmetry Table System: Filter rows (Sorgulama & Karşılaştırma / Filtrele & Listele) === */
@@ -464,7 +359,7 @@ table.idt-table tbody tr:hover,
 .distTable td{ padding-top:12px; padding-bottom:12px; }
 
 /* === Sorgulama sonuç: oyun bazlı grup satırı görseli === */
-.asHead td{
+.asGroup td{
   background: rgba(220,203,183,.35);
   border-top: 1px solid rgba(220,203,183,.8);
   border-bottom: 1px solid rgba(220,203,183,.55);
@@ -484,488 +379,80 @@ table.idt-table tbody tr:hover,
   font-variant-numeric: tabular-nums;
 }
 
-/* ============================
-   Symmetry + Mobile polish v8.3.14
-   (UI only: no data-fetch changes)
-   ============================ */
 
-/* Top bar buttons: keep single-line and prevent ugly wraps */
-#idt-topnav .actions{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
-#idt-topnav .btn{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
-#idt-topnav .btn .btnIcon{display:inline-flex;align-items:center;line-height:1}
-#idt-topnav .btn .btnLabel{display:inline-flex}
+/* ================================
+   FAZ 1 • ADIM 1 — KORUMA KALKANI
+   Amaç: Menü taşma yok, satır okunabilir, global kırılmalar yok.
+   Not: Veri çekme / bildirim mantığına dokunmaz.
+   ================================ */
 
-/* Sorgulama & Listele — desktop table symmetry */
-#assignFilterTable{table-layout:fixed}
-#assignFilterTable th,#assignFilterTable td{padding:12px 14px;vertical-align:middle}
-#assignFilterTable thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#4f3a37}
-#assignFilterTable tbody td{line-height:1.35}
-#assignFilterTable th:nth-child(1),#assignFilterTable td:nth-child(1){width:30%}
-#assignFilterTable th:nth-child(2),#assignFilterTable td:nth-child(2){width:16%}
-#assignFilterTable th:nth-child(3),#assignFilterTable td:nth-child(3){width:22%}
-#assignFilterTable th:nth-child(4),#assignFilterTable td:nth-child(4){width:22%}
-
-/* Karşılaştır — corporate card look */
-.compareCard{background:linear-gradient(180deg,#fff,#fbf6f1);border:1px solid rgba(122,30,44,.10);border-radius:16px}
-.compareCard h4{font-size:14px;letter-spacing:.02em;color:#7a1e2c}
-.compareCard .block{border-radius:14px;border:1px solid rgba(0,0,0,.06);background:#fff}
-.compareCard .rolesList{margin:8px 0 0;padding-left:18px}
-.compareCard .rolesList li{margin:4px 0;line-height:1.35}
-.compareCard .empty{color:#6b5b57}
-
-/* Compare: ensure A / Common / B order consistently */
-.compareGrid{grid-template-areas:"onlyA common onlyB"}
-
-/* Mobile fixes */
-@media (max-width:720px){
-  /* Hide button labels on mobile to avoid wrapping */
-  #idt-topnav .btn .btnLabel{display:none}
-  #idt-topnav .btn{padding:10px 12px}
-
-  /* Sidebar branding compact */
-  .idt-side-head{padding:10px 12px;gap:10px}
-  .idt-side-head .logo{width:34px;height:34px;border-radius:12px}
-  .idt-side-head .brandName{font-size:15px;line-height:1.1}
-  .idt-side-head .brandSub{font-size:11px;opacity:.85}
-
-  /* Compare inputs/tools: avoid overlap */
-  .compareTopRow{display:grid;grid-template-columns:1fr;gap:10px}
-  .compareTopRow .compareTools{justify-content:flex-start;flex-wrap:wrap;gap:10px}
-  .compareTopRow .compareSelect{min-width:0}
-
-  /* Sorgulama & Listele: cards spacing */
-  .asItem{border-radius:16px}
-  .asRow{gap:8px}
+/* 1) Menü ve yan menü: tek satır + ... + sabit yükseklik */
+.idt-side .idt-item,
+.idt-side .idt-item *{
+  min-width: 0;
 }
-
-/* Filters symmetry (Sorgulama & Listele) */
-.filterRow{align-items:center}
-.filterRow .msTrigger,.filterRow select{min-height:44px;padding:10px 12px;font-size:15px;border-radius:14px}
-.filterRow .msTrigger{width:100%}
-.filterRow .msClearBtn{width:44px;height:44px;border-radius:14px}
-@media (max-width:720px){
-  .filterRow{grid-template-columns:96px 1fr 44px}
-  .filterRow label{font-size:13px;line-height:1.1}
+.idt-side .idt-item{
+  min-height: 44px;
+  align-items: center;
 }
-
-/* AssignFilter result table (desktop symmetry) */
-#assignFilterTable{table-layout:fixed}
-#assignFilterTable th,#assignFilterTable td{padding:12px 14px;vertical-align:middle}
-#assignFilterTable th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:rgba(0,0,0,.65)}
-#assignFilterTable td{line-height:1.25}
-#assignFilterTable tbody tr{height:52px}
-#assignFilterTable th:nth-child(1),#assignFilterTable td:nth-child(1){width:30%}
-#assignFilterTable th:nth-child(2),#assignFilterTable td:nth-child(2){width:16%}
-#assignFilterTable th:nth-child(3),#assignFilterTable td:nth-child(3){width:24%}
-#assignFilterTable th:nth-child(4),#assignFilterTable td:nth-child(4){width:30%}
-
-/* Compare cards: more corporate */
-.compareCard{background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.08);box-shadow:0 12px 30px rgba(0,0,0,.06)}
-.compareCard .compareCardTitle{font-size:14px;letter-spacing:.02em}
-.compareGameCard{border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.85);border-radius:16px;padding:12px 12px;margin:10px 0}
-.compareGameCard .gameName{font-size:13px;letter-spacing:.04em;text-transform:uppercase}
-.compareGameCard .roleChips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.compareGameCard .roleChip{padding:4px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.1);background:rgba(0,0,0,.03);font-size:12px}
-.compareGameCard ul{margin:6px 0 0 18px;padding:0}
-.compareGameCard li{margin:2px 0;line-height:1.35}
-.compareEmpty{padding:14px;border:1px dashed rgba(0,0,0,.18);border-radius:16px;background:rgba(255,255,255,.75);color:rgba(0,0,0,.65)}
-
-/* === v8.3.16 Symmetry + Mobile Cards Hotfix === */
-
-/* Tables: consistent density + symmetry */
-.asTable{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-}
-.asTable th, .asTable td{
-  padding:10px 12px;
-  vertical-align:top;
-}
-.asTable th{
-  text-align:left;
-  font-weight:800;
-  letter-spacing:.2px;
-}
-.asTable td{
-  line-height:1.25;
-}
-.asTableWide td:nth-child(1){ /* Sıra No */
-  width:56px;
-  text-align:center;
-  font-variant-numeric: tabular-nums;
-}
-.asTableWide td:nth-child(2){ /* Kişi */
-  min-width:160px;
-}
-.asTableWide td:nth-child(3){ /* Oyunlar */
-  min-width:160px;
-}
-.asTableWide td:nth-child(4){ /* Görev */
-  min-width:140px;
-}
-.asTableWide td:nth-child(5){ /* Oyun Sayısı */
-  width:110px;
-  text-align:center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Figüran tabloları: isimler sola, diğerleri dengeli */
-.figTable td:nth-child(1),
-.figTable td:nth-child(2){
-  text-align:left !important;
-}
-.figTable td:nth-child(1){
-  font-variant-numeric: tabular-nums;
-  width:56px;
-}
-
-/* Compare cards: corporate list */
-.cmpCard{ padding:14px 14px 12px; }
-.cmpCard h4{ margin:0 0 6px; font-size:14px; }
-.cmpGroupTitle{
-  font-weight:900;
-  letter-spacing:.2px;
-}
-.cmpRow{
-  padding:10px 10px;
-  border-radius:12px;
-}
-.cmpPlay{
-  font-weight:900;
-}
-.cmpRolesList{
-  list-style:none;
-  margin:6px 0 0;
-  padding:0;
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-}
-.cmpRolesList li{
-  padding:4px 8px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  background:rgba(0,0,0,.03);
-  font-size:12px;
-  line-height:1.15;
-}
-html[data-theme="dark"] .cmpRolesList li{
-  background:rgba(255,255,255,.05);
-}
-
-/* Prevent “harfler alt alta”: don't break words into letters */
-.asTable, .cmpCard, .tabbar, .brand, .actions, .filters{
-  word-break: normal;
-  overflow-wrap: normal;
-}
-
-/* Top actions (mobile): keep pills readable (no vertical text) */
-.idt-top-actions .idt-pill{
+.idt-side .idt-item b{
+  display: block;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-/* Mobile: true card layout (label on top, value below) */
-@media (max-width: 640px){
-  .asTable{ display:block; }
-  .asTable thead{ display:none !important; }
-  .asTable tbody{ display:block; }
-  .asTable tr{
-    display:block;
-    padding:10px 10px;
-    margin:10px 0;
-    border:1px solid var(--line);
-    border-radius:14px;
-    background:var(--card);
-    box-shadow:var(--shadow);
-  }
-  .asTable td{
-    display:block !important;
-    padding:8px 8px !important;
-    border-top:1px dashed rgba(0,0,0,.08);
-  }
-  html[data-theme="dark"] .asTable td{
-    border-top-color: rgba(255,255,255,.12);
-  }
-  .asTable td:first-child{
-    border-top:none;
-  }
-  .asTable td::before{
-    content:attr(data-label);
-    display:block;
-    font-size:11px;
-    font-weight:900;
-    letter-spacing:.2px;
-    text-transform:uppercase;
-    color:var(--muted);
-    margin:0 0 4px;
-  }
-  .asTableWide td:nth-child(1){ width:auto; text-align:left; }
-
-  /* Compare pickers: no overlap */
-  .cmpPicks{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:10px;
-  }
-
-  /* Bottom tabbar: readable, no wrap */
-  .tabbar{
-    padding:8px 10px;
-  }
-  .tabbar button{
-    min-width:0;
-  }
-  .tabbar .lbl{
-    font-size:12px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:72px;
-  }
-
-  /* Make brand smaller (header) */
-  .brandTitle{
-    font-size:13px !important;
-    line-height:1.15 !important;
-  }
-  .brandSub{ font-size:11px !important; }
-  .actions{ gap:6px !important; }
-  .actions .btn{ padding:8px 10px !important; }
+/* Üst aksiyon butonları: taşma ve okunabilirlik */
+.idt-topnav .idt-pill{
+  min-height: 40px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-/* Ultra small: icon-first bottom nav labels hidden */
-@media (max-width: 380px){
-  .tabbar .lbl{ display:none; }
-  .tabbar button{ padding:10px 8px; }
-}
-/* === v8.3.16 Symmetry + Mobile Cards Hotfix === */
-
-/* Tables: consistent density + symmetry */
-.asTable{width:100%;border-collapse:separate;border-spacing:0;}
-.asTable th,.asTable td{padding:10px 12px;vertical-align:top;}
-.asTable th{text-align:left;font-weight:800;letter-spacing:.2px;}
-.asTable td{line-height:1.25;}
-.asTableWide td:nth-child(1){width:56px;text-align:center;font-variant-numeric:tabular-nums;}
-.asTableWide td:nth-child(2){min-width:160px;}
-.asTableWide td:nth-child(3){min-width:160px;}
-.asTableWide td:nth-child(4){min-width:140px;}
-.asTableWide td:nth-child(5){width:110px;text-align:center;font-variant-numeric:tabular-nums;}
-
-/* Figüran tabloları: isimler sola, diğerleri dengeli */
-.figTable td:nth-child(1),.figTable td:nth-child(2){text-align:left !important;}
-.figTable td:nth-child(1){font-variant-numeric:tabular-nums;width:56px;}
-
-/* Compare cards: corporate list */
-.cmpCard{padding:14px 14px 12px;}
-.cmpCard h4{margin:0 0 6px;font-size:14px;}
-.cmpGroupTitle{font-weight:900;letter-spacing:.2px;}
-.cmpRow{padding:10px 10px;border-radius:12px;}
-.cmpPlay{font-weight:900;}
-.cmpRolesList{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px;}
-.cmpRolesList li{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.03);font-size:12px;line-height:1.15;}
-html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05);}
-
-/* Prevent "harfler alt alta": allow normal wrapping, never break letters */
-.asTable,.cmpCard,.tabbar,.brand,.actions,.filters{word-break:normal;overflow-wrap:break-word;}
-
-@media (max-width:640px){
-  .asTable{display:block;}
-  .asTable thead{display:none !important;}
-  .asTable tbody{display:block;}
-  .asTable tr{display:block;padding:10px 10px;margin:10px 0;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow);}
-  .asTable td{display:block !important;padding:8px 8px !important;border-top:1px dashed rgba(0,0,0,.08);}
-  html[data-theme="dark"] .asTable td{border-top-color:rgba(255,255,255,.12);}
-  .asTable td:first-child{border-top:none;}
-  .asTable td::before{content:attr(data-label);display:block;font-size:11px;font-weight:900;letter-spacing:.2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px;}
-  .asTableWide td:nth-child(1){width:auto;text-align:left;}
-
-  .cmpPicks{display:grid;grid-template-columns:1fr;gap:10px;}
-
-  .tabbar{padding:8px 10px;}
-  .tabbar button{min-width:0;}
-  .tabbar .lbl{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px;}
-
-  .brandTitle{font-size:13px !important;line-height:1.15 !important;}
-  .brandSub{font-size:11px !important;}
-  .actions{gap:6px !important;}
-  .actions .btn{padding:8px 10px !important;}
+/* 2) Satır yüksekliği + okunabilirlik (liste satırları) */
+.row{
+  min-height: 42px;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
-@media (max-width:380px){
-  .tabbar .lbl{display:none;}
-  .tabbar button{padding:10px 8px;}
+/* 3) Detay alanında metin ASLA nowrap olmasın (okunabilirlik) */
+#details p,
+#details div{
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere; /* uzun unvan/isim tek parça ise taşmasın */
 }
 
-
-/* === v8.3.16 HOTFIX: mobile cards + symmetry === */
-.asTable{width:100%;border-collapse:separate;border-spacing:0}
-.asTable th,.asTable td{padding:10px 12px;vertical-align:top}
-.asTable th{text-align:left;font-weight:800;letter-spacing:.2px}
-.asTable td{line-height:1.25}
-.figTable td:nth-child(1),.figTable td:nth-child(2){text-align:left!important}
-.cmpRolesList{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
-.cmpRolesList li{padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.03);font-size:12px;line-height:1.15}
-html[data-theme="dark"] .cmpRolesList li{background:rgba(255,255,255,.05)}
-@media (max-width:640px){
-  .asTable thead{display:none!important}
-  .asTable,.asTable tbody,.asTable tr{display:block}
-  .asTable tr{margin:10px 0;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
-  .asTable td{display:block!important;border-top:1px dashed rgba(0,0,0,.08);padding:8px!important}
-  html[data-theme="dark"] .asTable td{border-top-color:rgba(255,255,255,.12)}
-  .asTable td:first-child{border-top:none}
-  .asTable td::before{content:attr(data-label);display:block;font-size:11px;font-weight:900;letter-spacing:.2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
-  .cmpPicks{display:grid;grid-template-columns:1fr;gap:10px}
-  .tabbar .lbl{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px}
-  .brandTitle{font-size:13px!important;line-height:1.15!important}
-  .brandSub{font-size:11px!important}
+/* 4) Segment butonları / küçük kontrol grupları: taşma yok */
+.seg, .toolRow{
+  min-width: 0;
 }
-@media (max-width:380px){.tabbar .lbl{display:none}}
-/* Tabbar readability */
-.tabbar{background:color-mix(in srgb, var(--card) 92%, transparent);backdrop-filter:saturate(140%) blur(10px);border-top:1px solid var(--line)}
-.tabbar button{min-height:44px}
-/* Compare pickers: prevent overlap + full width inputs */
-.compareTop select,.compareTop input{width:100%}
-@media (max-width: 980px){.compareTop{grid-template-columns:1fr !important}.compareMid{display:none}}
-
-
-/* ===== Mobile UX hotfixes (tables->cards + header buttons + floating actions) ===== */
-@media (max-width: 900px){
-  /* Prefer FAB dock over bottom nav (less breakage on small screens) */
-  .tabbar{display:none !important;}
-  .fabDock{display:flex !important;}
-
-  /* Top actions: prevent vertical letter-stacking */
-  .actions{flex-wrap:wrap;}
-  .actions .btn{white-space:nowrap;}
-
-  #themeBtn, #reloadBtn, #advBtn{
-    width:44px; height:44px; padding:0;
-    display:inline-flex; align-items:center; justify-content:center;
-    font-size:0; /* hide text safely */
-  }
-  #themeBtn::before{content:"🌓"; font-size:18px;}
-  #reloadBtn::before{content:"↻"; font-size:20px;}
-  #advBtn::before{content:"🧰"; font-size:18px;}
-
-  #notifBtn{min-height:44px;}
-  #notifBtn .btnLabel{display:none;}
-
-  /* Tables -> card layout (prevents squished/vertical headers) */
-  table.asTable thead{display:none !important;}
-  table.asTable, table.asTable tbody, table.asTable tr, table.asTable td{display:block; width:100%;}
-  table.asTable{border:0 !important; background:transparent !important;}
-  table.asTable tr{
-    margin:0 0 12px 0;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:12px;
-    box-shadow:var(--shadow);
-  }
-  table.asTable td{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
-    padding:8px 0;
-    border-bottom:1px dashed rgba(0,0,0,.10);
-  }
-  table.asTable td:last-child{border-bottom:0;}
-  table.asTable td::before{
-    content:attr(data-label);
-    font-weight:700;
-    color:var(--muted);
-    flex:0 0 38%;
-    max-width:38%;
-  }
-  table.asTable td > *{max-width:62%;}
-  table.asTable td{word-break:break-word;}
+.seg button, .toolRow button{
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.fabDock{
-  position:fixed;
-  right:12px;
-  bottom:12px;
-  z-index:9999;
-  display:none;
-  flex-direction:column;
-  gap:10px;
-}
-.fab{
-  border:1px solid var(--line);
-  background:var(--card);
-  color:var(--text);
-  box-shadow:var(--shadow);
-  border-radius:999px;
-  padding:12px 14px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-height:44px;
-  cursor:pointer;
-}
-.fabI{font-size:18px; line-height:1;}
-.fabT{font-size:13px; font-weight:800; white-space:nowrap;}
-.fabNotif{position:relative;}
-.fabBadge{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  min-width:18px;
-  height:18px;
-  padding:0 6px;
-  border-radius:999px;
-  background:var(--accent);
-  color:#fff;
-  font-size:12px;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 6px 16px rgba(0,0,0,.25);
+/* 5) Tablo hücrelerinde harf harf kırılmayı engelle */
+.table td, .table th{
+  word-break: normal;
+  overflow-wrap: anywhere; /* tek uzun kelimede taşmayı önle */
 }
 
-
-/* ===== Mobile modal (used by chart taps) ===== */
-.mModal{position:fixed; inset:0; z-index:9999; display:flex; align-items:flex-end; justify-content:center; padding:16px;}
-.mModal[hidden]{display:none;}
-.mModalBackdrop{position:absolute; inset:0; background:rgba(0,0,0,.35); border:0;}
-.mModalCard{position:relative; width:min(720px, 100%); max-height:80vh; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 18px 60px rgba(0,0,0,.18); overflow:hidden;}
-.mModalHead{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line);}
-.mModalTitle{font-weight:800; letter-spacing:.2px;}
-.mModalClose{border:1px solid var(--line); background:transparent; border-radius:10px; padding:8px 10px; cursor:pointer;}
-.mModalBody{padding:12px 14px; overflow:auto; max-height:calc(80vh - 54px);}
-.mModalMeta{color:var(--muted); font-size:13px; margin-bottom:10px;}
-.mModalList{display:grid; gap:10px;}
-.mModalList .pill{display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(255,255,255,.25);}
-.mModalList .pill b{font-weight:800;}
-.mModalList .pill .sub{color:var(--muted); font-size:12px;}
-
-/* Prevent letter-by-letter stacking on mobile */
-@media (max-width: 820px){
-  .card, .tabs, .fabMenu, .asCard, .cmpCard, .mModalCard, .filters, .tableCards, .listCard{
-    word-break: normal;
-    overflow-wrap: break-word;
-  }
-}
-
-/* ===== Inline details (mobile list row expansion) ===== */
-.inlineDetails{margin:10px 0 14px; padding:12px 12px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.35);}
-.inlineDetails .inlineHead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
-.inlineDetails .inlineHead b{font-weight:900;}
-.inlineDetails .inlineMore{font-size:12px; color:var(--muted);}
-.inlineDetails .inlineGrid{display:grid; gap:8px;}
-.inlineDetails .inlineRow{display:grid; grid-template-columns: 1fr 1.3fr; gap:10px; align-items:start; padding:8px 10px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.25);}
-.inlineDetails .k{font-weight:800;}
-.inlineDetails .v{justify-self:start; text-align:left; color:var(--text);}
-.inlineDetails .inlineExpand{border:1px solid var(--line); background:transparent; border-radius:12px; padding:8px 10px; cursor:pointer; font-weight:700;}
-.inlineDetails .inlineExpand:hover{background:rgba(0,0,0,.03);}
-@media (max-width: 520px){
-  .inlineDetails .inlineRow{grid-template-columns:1fr;}
-  .inlineDetails .v{color:var(--muted);}
-}
-
-/* Desktop: hide list mode toggle (Oyunlar/Kişiler) */
-@media (min-width: 901px){
-  #viewPanel .seg[title="Görünüm"]{ display:none !important; }
+/* 6) İç scroll alanlarında en alt içerik kesilmesin */
+.idt-sticky-panel,
+[data-idt-sticky="1"],
+.idt-panel-left,
+.idt-panel-right,
+.bd{
+  scroll-padding-bottom: 24px;
+  padding-bottom: 24px;
 }
