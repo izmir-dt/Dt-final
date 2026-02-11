@@ -22,8 +22,13 @@ const CONFIG = {
 };
 
 function isMobile(){
-  // NOTE: keep JS breakpoint aligned with CSS (canvas hidden <= 900px)
-  return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+  // Breakpoint + touch detection (some phones report wider viewports)
+  try{
+    const mm = (q)=>window.matchMedia && window.matchMedia(q).matches;
+    return !!(mm('(max-width: 900px)') || mm('(pointer: coarse)') || mm('(hover: none)'));
+  }catch(_e){
+    return window.innerWidth <= 900;
+  }
 }
 
 // --- Responsive tables: convert table rows to "cards" on mobile (no horizontal scroll)
@@ -46,9 +51,7 @@ function labelizeTablesIn(root){
   root.querySelectorAll('table').forEach(labelizeTable);
 }
 function openMobileModal(html){
-  // Allow on coarse-pointer devices even if viewport width temporarily exceeds breakpoint
-  const coarse = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
-  if(!(isMobile() || coarse)) return;
+  if(!isMobile()) return;
   els.mobileContent.innerHTML = html;
   els.mobileOverlay.classList.remove("hidden");
   els.mobileModal.classList.remove("hidden");
@@ -1350,7 +1353,8 @@ function renderMobileChartList(items){
   }).join("");
 
   els.chartMobileList.querySelectorAll(".chipRow").forEach(elm=>{
-    elm.addEventListener("click", ()=>{
+    elm.addEventListener("click", (e)=>{
+      try{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }catch(_e){}
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
@@ -1691,7 +1695,7 @@ function renderIntersection(){
   }
   els.intersectionBox.innerHTML = `
     <div class="small" style="margin-bottom:10px"><b>${escapeHtml(a)}</b> ∩ <b>${escapeHtml(b)}</b> → <b>${common.length}</b> kişi</div>
-    <div class="tableScroll"><table class="table queryTable" style="min-width:860px">
+    <table class="table asTable queryTable">
       <thead><tr><th>Kişi</th><th>${escapeHtml(a)} (Kategori / Görev)</th><th>${escapeHtml(b)} (Kategori / Görev)</th></tr></thead>
       <tbody>
         ${common.map(c=>`
@@ -1702,7 +1706,7 @@ function renderIntersection(){
           </tr>
         `).join("")}
       </tbody>
-    </table></div>
+    </table>
   `;
 }
 
