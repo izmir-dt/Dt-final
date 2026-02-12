@@ -865,10 +865,24 @@ function renderDetails(it){
       <table class="table" id="detailTable">
         <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
         <tbody>
-          ${rowsSorted.map(r=>`<tr><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
+          ${rowsSorted.map(r=>`<tr data-person="${escapeHtml(r.person)}"><td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.role)}</td><td>${escapeHtml(r.person)}${personTag(r.person)}</td></tr>`).join("")}
         </tbody>
       </table>
     `;
+
+    // Yoğunluk Matrisi'nden gelindiyse ilgili kişiyi vurgula ve kaydır
+    try{
+      const fp = window.__idtHeatmapFocusPerson;
+      if(fp){
+        const rows = Array.from(els.details.querySelectorAll('tr[data-person]'));
+        const tr = rows.find(x => (x.getAttribute('data-person')||'') === fp);
+        if(tr){
+          tr.classList.add('rowFocus');
+          tr.scrollIntoView({block:'center'});
+        }
+        window.__idtHeatmapFocusPerson = null;
+      }
+    }catch(_e){}
   } else {
     const byPlay=new Map();
     for(const r of it.rows){ if(!byPlay.has(r.play)) byPlay.set(r.play,[]); byPlay.get(r.play).push(r); }
