@@ -2137,6 +2137,16 @@ async function load(isAuto=false){
           window.rows = rows;
 
           try{
+            // === Matris stabilitesi için: satır cache (rows reset olsa bile kaybolmasın) ===
+            if(Array.isArray(rows) && rows.length){
+              // shallow copy is enough; objects are immutable for UI purposes
+              window.__IDT_ROWS_CACHE = rows.slice(0);
+              window.__IDT_ROWS_CACHE_AT = Date.now();
+            }
+          }catch(_e){}
+
+
+          try{
             // Eğer kullanıcı Matris ekranındaysa, veri geldikten sonra Matris'i kesin başlat
             if((location.hash||"").toLowerCase().startsWith("#matris")){
               setTimeout(()=>{ try{ window.IDTHeatmap && window.IDTHeatmap.render && window.IDTHeatmap.render(); }catch(_e){} }, 0);
@@ -2657,7 +2667,11 @@ function renderAssignTool(){
   let wired = false;
   function uniq(arr){ return Array.from(new Set(arr)); }
   function norm(s){ return String(s||"").trim(); }
-  function getRows(){ return Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []); }
+  function getRows(){
+    const c = window.__IDT_ROWS_CACHE;
+    if(Array.isArray(c) && c.length) return c;
+    return Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []);
+  }
   function buildPlayPersonIndex(rows){
     const playToPeople = new Map();
     const playToRows = new Map();
