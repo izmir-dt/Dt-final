@@ -126,3 +126,37 @@ window.renderYoğunlukTablosu = function() {
     });
     target.innerHTML = h + `</tbody></table></div>`;
 };
+/* ============================================================
+   İZMİR DT - SİSTEMATİK FİNAL RESTORASYON (HİÇBİR ŞEYİ SİLMEZ)
+   ============================================================ */
+window.renderYoğunlukTablosu = function() {
+  const target = document.getElementById('ccList');
+  if(!target || !window.allDataRaw) return;
+
+  // Altın Kural 3: Default A (Mükerrerleri görselde temizler)
+  const cleanData = window.allDataRaw.filter((v,i,a)=>a.findIndex(t=>(t.isim===v.isim && t.oyunAd===v.oyunAd))===i);
+  
+  const plays = [...new Set(cleanData.map(d => d.oyunAd))].sort();
+  const people = [...new Set(cleanData.map(d => d.isim))].sort();
+
+  let h = `<div class="heatmap-wrapper"><table class="heatmap-table"><thead><tr><th class="sticky-col">Personel</th>`;
+  plays.forEach(p => h += `<th class="rotate-text"><div><span>${p}</span></div></th>`);
+  h += `</tr></thead><tbody>`;
+
+  people.forEach(per => {
+    h += `<tr><td class="sticky-col">${per}</td>`;
+    plays.forEach(pl => {
+      const m = cleanData.find(d => d.isim === per && d.oyunAd === pl);
+      h += `<td class="heatmap-cell ${m?'lvl-active':''}">${m?'1':''}</td>`;
+    });
+    h += `</tr>`;
+  });
+  target.innerHTML = h + `</tbody></table></div>`;
+};
+
+// app.js ile haberleşmeyi sağlar (Otomatik Tetikleme)
+const originalStatsFn = window.idtUpdateStats;
+window.idtUpdateStats = function() {
+    if(originalStatsFn) originalStatsFn();
+    if(window.renderYoğunlukTablosu) window.renderYoğunlukTablosu();
+};
