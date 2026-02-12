@@ -2719,6 +2719,8 @@ async function idtCopyToClipboard(text){
 
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
+
+
 /* === v9: Operasyonel Sayaçlar (veri çekmeye dokunmadan) === */
 function idtUpdateStats(){
   const pCount = (window.allDataRaw || []).length;
@@ -2742,8 +2744,8 @@ function idtUpdateStats(){
   }
   window.addEventListener("DOMContentLoaded", ()=>{
     tick();
+    // first 30s frequent
     const t1 = setInterval(tick, 800);
     setTimeout(()=>{ clearInterval(t1); setInterval(tick, 4000); }, 30000);
   });
 })();
-
