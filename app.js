@@ -2135,6 +2135,14 @@ async function load(isAuto=false){
           // Veri çekme bloğunu değiştirmeden sadece global erişim sağlıyoruz.
           window.rawRows = rawRows;
           window.rows = rows;
+
+          try{
+            // Eğer kullanıcı Matris ekranındaysa, veri geldikten sonra Matris'i kesin başlat
+            if((location.hash||"").toLowerCase().startsWith("#matris")){
+              setTimeout(()=>{ try{ window.IDTHeatmap && window.IDTHeatmap.render && window.IDTHeatmap.render(); }catch(_e){} }, 0);
+            }
+          }catch(_e){}
+
           window.plays = plays;
           window.people = people;
           renderList();
@@ -2647,10 +2655,6 @@ function renderAssignTool(){
 (function(){
   // Guard: only wire once
   let wired = false;
-  let _wiredRoot = null;
-  let _wiredRowsLen = 0;
-  let _wiredAt = 0;
-  let lastCcRoot = null;
   function uniq(arr){ return Array.from(new Set(arr)); }
   function norm(s){ return String(s||"").trim(); }
   function getRows(){ return Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []); }
@@ -2938,14 +2942,10 @@ function renderCommon(){
       setTimeout(wire, 250);
       return;
     }
-    if(wired && lastCcRoot===root) return;
-    if(lastCcRoot!==root){ wired = false; }
-    lastCcRoot = root;
+    if(wired) return;
     wired = true;
-    _wiredRoot = root;
-    _wiredRowsLen = (rows0 && rows0.length) ? rows0.length : 0;
-    _wiredAt = Date.now();
-INDEX = buildPlayPersonIndex(rows0);
+
+    INDEX = buildPlayPersonIndex(rows0);
 
     // Build sorted plays by unique person count
     const counts = [];
@@ -3002,236 +3002,94 @@ INDEX = buildPlayPersonIndex(rows0);
 
 
 
-/* === PATCH: Quick mini nav + Aktif Oyun Excel Copy (UI-only) === */
+/* === ROOT CLEAN PATCH: Üst bar davranışı === */
 (function(){
-  // Mini top nav: click -> trigger existing sidebar nav item click (no state rewrite)
-  document.addEventListener("click", function(e){
-    const btn = e.target && e.target.closest ? e.target.closest(".miniNavBtn") : null;
-    if(!btn) return;
-    const id = btn.getAttribute("data-side");
-    if(!id) return;
-    const el = document.getElementById(id);
-    if(el && el.click){
-      e.preventDefault();
-      e.stopPropagation();
-      el.click();
-    }
-  }, true);
+  function h(){ return (location.hash || "#panel").toLowerCase(); }
 
-  // Aktif Oyun: copy filtered plays list as TSV (Play \t Kişi \t Satır)
-  const copyBtn = document.getElementById("btnCopyActivePlays");
-  if(copyBtn){
-    copyBtn.addEventListener("click", function(){
-      try{
-        if(typeof activeMode !== "undefined" && activeMode !== "plays"){
-          toast("Bu kopyalama sadece 'Aktif Oyun' görünümünde çalışır.", "warn");
-          return;
-        }
-        const source = (typeof plays !== "undefined") ? plays : [];
-        const filtered = (typeof applyFilters === "function") ? applyFilters(source) : source;
-        if(!filtered || !filtered.length){
-          toast("Kopyalanacak veri yok.", "warn");
-          return;
-        }
-        const lines = [];
-        lines.push(["Oyun Adı","Kişi Sayısı","Satır Sayısı"].join("\\t"));
-        for(const it of filtered){
-          const title = it && it.title ? it.title : "";
-          const personCount = it && it.count ? it.count : 0;
-          const rowCount = it && it.rows ? it.rows.length : 0;
-          lines.push([title, String(personCount), String(rowCount)].join("\\t"));
-        }
-        copyText(lines.join("\\n"));
-        toast("Aktif Oyun listesi Excel için kopyalandı ✅", "ok");
-      }catch(err){
-        console.error(err);
-        toast("Kopyalama sırasında hata oluştu.", "bad");
-      }
-    });
-  }
-})();
-
-
-
-
-/* === PATCH v3: Sidebar kaldırıldı -> üst menü butonları eski nav click'lerini tetikler === */
-(function(){
   document.addEventListener("click", function(e){
     const b = e.target && e.target.closest ? e.target.closest(".topNav2Btn") : null;
     if(!b) return;
     const id = b.getAttribute("data-go");
-    if(!id) return;
-    const el = document.getElementById(id);
+    const el = id ? document.getElementById(id) : null;
     if(el && el.click){
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       el.click();
     }
   }, true);
-})();
 
-
-
-
-/* === PATCH v4: Top bar aktif görünüm + Aktif Oyun araçları + Matris init garanti === */
-(function(){
-  function curHash(){ return (location.hash || "#panel").toLowerCase(); }
-
-  function setActiveBtn(){
-    const h = curHash();
+  function setActive(){
+    const hash = h();
     document.querySelectorAll(".topNav2Btn").forEach(b=>{
       const id = (b.getAttribute("data-go")||"").toLowerCase();
-      // map ids to hashes roughly
       const on =
-        (h.startsWith("#plays") && id==="sideplays") ||
-        (h.startsWith("#people") && id==="sidepeople") ||
-        (h.startsWith("#rows") && id==="siderows") ||
-        (h.startsWith("#dist") && id==="sidedist") ||
-        (h.startsWith("#matris") && id==="sideheatmap") ||
-        (h.startsWith("#charts") && id==="sidecharts") ||
-        (h.startsWith("#kesisim") && id==="sideintersect") ||
-        (h.startsWith("#figuran") && id==="sidefiguran");
+        (hash.startsWith("#plays") && id==="sideplays") ||
+        (hash.startsWith("#people") && id==="sidepeople") ||
+        (hash.startsWith("#rows") && id==="siderows") ||
+        (hash.startsWith("#dist") && id==="sidedist") ||
+        (hash.startsWith("#matris") && id==="sideheatmap") ||
+        (hash.startsWith("#charts") && id==="sidecharts") ||
+        (hash.startsWith("#kesisim") && id==="sideintersect") ||
+        (hash.startsWith("#figuran") && id==="sidefiguran");
       b.classList.toggle("is-active", !!on);
     });
-  }
 
-  function toggleTools(){
     const tools = document.getElementById("topbarTools");
-    if(!tools) return;
-    const h = curHash();
-    // Aktif Oyun hash'i genelde #plays veya #panelde aktif seçimde; biz #plays'e bağlayalım.
-    const on = h.startsWith("#plays");
-    tools.style.display = on ? "" : "none";
+    if(tools) tools.style.display = hash.startsWith("#plays") ? "" : "none";
   }
 
-  // Aktif Oyun filtre: varsa sayfadaki mevcut inputa proxy et, yoksa client-side filtre (DOM)
-  function wireActiveTools(){
+  window.addEventListener("hashchange", ()=>setTimeout(setActive, 0));
+  window.addEventListener("DOMContentLoaded", ()=>setTimeout(setActive, 0));
+  setTimeout(setActive, 50);
+
+  // Active tools proxy
+  function wireTools(){
     const inp = document.getElementById("topbarActiveFilter");
     const btn = document.getElementById("topbarActiveCopy");
-    if(inp && !inp.__wired){
-      inp.__wired = true;
+    if(inp && !inp.__w){
+      inp.__w=true;
       inp.addEventListener("input", ()=>{
-        // try existing active search input first
         const target = document.getElementById("playsSearch") || document.getElementById("qText") || document.getElementById("searchInput");
         if(target){
           target.value = inp.value;
           target.dispatchEvent(new Event("input", {bubbles:true}));
-          return;
         }
-        // fallback: filter rows by text for elements with data-play card
-        const q = inp.value.toLowerCase();
-        document.querySelectorAll("[data-play], .playCard, .rowPlay").forEach(el=>{
-          const t = (el.innerText||"").toLowerCase();
-          el.style.display = t.includes(q) ? "" : "none";
-        });
       });
     }
-    if(btn && !btn.__wired){
-      btn.__wired = true;
+    if(btn && !btn.__w){
+      btn.__w=true;
       btn.addEventListener("click", ()=>{
-        try{
-          // prefer existing copy function if any
-          const fn = window.copyActiveToExcel || window.copyPlaysTSV;
-          if(typeof fn === "function"){ fn(); return; }
-          // fallback: copy visible play cards titles as TSV
-          const lines = ["Oyun\tKişi"];
-          document.querySelectorAll("[data-play]").forEach(card=>{
-            if(card.offsetParent===null) return;
-            const t = (card.getAttribute("data-play")||card.innerText||"").trim();
-            if(t) lines.push(t.replace(/\s+/g," ")+"\t");
-          });
-          if(window.copyText) window.copyText(lines.join("\n"));
-          else navigator.clipboard.writeText(lines.join("\n"));
-          if(window.toast) window.toast("Aktif Oyun listesi kopyalandı ✅","ok");
-        }catch(err){
-          console.error(err);
-          alert("Kopyalama hatası.");
-        }
+        // prefer existing copy button click if present
+        const existing = document.getElementById("btnCopyPlays") || document.getElementById("copyPlays") || document.getElementById("playsCopy");
+        if(existing && existing.click){ existing.click(); return; }
+        if(typeof window.copyPlaysTSV === "function"){ window.copyPlaysTSV(); return; }
       });
     }
   }
-
-  function ensureHeatmap(){
-    const h = curHash();
-    if(h.startsWith("#matris")){
-      try{
-        if(window.IDTHeatmap && typeof window.IDTHeatmap.render==="function"){
-          window.IDTHeatmap.render();
-        }
-      }catch(err){ console.error(err); }
-    }
-  }
-
-  function onRoute(){
-    setActiveBtn();
-    toggleTools();
-    wireActiveTools();
-    ensureHeatmap();
-  }
-
-  window.addEventListener("hashchange", ()=>setTimeout(onRoute, 0));
-  window.addEventListener("DOMContentLoaded", ()=>setTimeout(onRoute, 0));
-  // Also call once in case script loads after DOM
-  setTimeout(onRoute, 50);
+  window.addEventListener("DOMContentLoaded", wireTools);
+  window.addEventListener("hashchange", wireTools);
 })();
 
 
 
 
-/* === PATCH v5: Matris/Yoğunluk init robust (DOM render sonrası garanti) === */
-(function reduceMatrisBug(){
-  let matrisTimer = null;
-  function wantMatris(){
-    return (location.hash || "").toLowerCase().startsWith("#matris");
-  }
-  function matrisReady(){
-    return !!document.getElementById("ccTop15") && !!document.getElementById("ccPlayA") && !!document.getElementById("ccPlayB");
-  }
-  function dataReady(){
-    try{
-      const r = (Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []));
-      return !!(r && r.length);
-    }catch(_e){ return false; }
-  }
-  function kick(){
-    try{
-      if(window.IDTHeatmap && typeof window.IDTHeatmap.render==="function"){
-        window.IDTHeatmap.render();
+/* === ROOT CLEAN PATCH: Matris girişinde kısa retry === */
+(function(){
+  function enterMatris(){
+    if(!(location.hash||"").toLowerCase().startsWith("#matris")) return;
+    let tries=0;
+    const t=setInterval(()=>{
+      tries++;
+      const ok = !!document.getElementById("ccTop15") && !!document.getElementById("ccPlayA") && !!document.getElementById("ccPlayB");
+      const hasData = Array.isArray(window.rows) && window.rows.length;
+      if(ok && hasData){
+        try{ window.IDTHeatmap && window.IDTHeatmap.render && window.IDTHeatmap.render(); }catch(_e){}
+        clearInterval(t);
       }
-    }catch(err){ console.error(err); }
-  }
-  function schedule(){
-    if(matrisTimer) return;
-    const start = Date.now();
-    matrisTimer = setInterval(()=>{
-      if(!wantMatris()){
-        clearInterval(matrisTimer); matrisTimer=null;
-        return;
-      }
-      // Wait for view to be in DOM + data ready
-      if(matrisReady() && dataReady()){
-        kick();
-        clearInterval(matrisTimer); matrisTimer=null;
-        return;
-      }
-      // Safety stop after 6s
-      if(Date.now()-start > 6000){
-        console.warn("Matris init timeout: domReady=", matrisReady(), "dataReady=", dataReady());
-        clearInterval(matrisTimer); matrisTimer=null;
-      }
+      if(tries>=20) clearInterval(t); // 4s
     }, 200);
   }
-
-  window.addEventListener("hashchange", ()=>{
-    if(wantMatris()) schedule();
-  });
-  window.addEventListener("DOMContentLoaded", ()=>{
-    if(wantMatris()) schedule();
-  });
-  // Also if user navigates via in-app clicks that do not change hash instantly, observe
-  document.addEventListener("click", (e)=>{
-    const b = e.target && e.target.closest ? e.target.closest('[data-go="sideHeatmap"], #sideHeatmap') : null;
-    if(b) setTimeout(()=>{ if(wantMatris()) schedule(); }, 0);
-  }, true);
+  window.addEventListener("hashchange", enterMatris);
+  window.addEventListener("DOMContentLoaded", enterMatris);
+  setTimeout(enterMatris, 400);
 })();
 
