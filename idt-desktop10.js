@@ -99,3 +99,30 @@ window.renderYoğunlukTablosu = function() {
   });
   container.innerHTML = html + `</tbody></table></div>`;
 };
+/* === İDT FİNAL TABLO & EXCEL DÜZELTME === */
+window.renderYoğunlukTablosu = function() {
+    const target = document.getElementById('ccList');
+    if (!target || !window.allDataRaw) return;
+
+    // Altın Kural 3: Default A Mantığı (Mükerrerleri görselde temizler)
+    const cleanData = window.allDataRaw.filter((v, i, a) => 
+        a.findIndex(t => (t.isim === v.isim && t.oyunAd === v.oyunAd)) === i
+    );
+
+    const plays = [...new Set(cleanData.map(d => d.oyunAd))].sort();
+    const people = [...new Set(cleanData.map(d => d.isim))].sort();
+
+    let h = `<div class="heatmap-wrapper"><table class="heatmap-table"><thead><tr><th class="sticky-col">PERSONEL / OYUN</th>`;
+    plays.forEach(p => h += `<th class="rotate-text"><div><span>${p}</span></div></th>`);
+    h += `</tr></thead><tbody>`;
+
+    people.forEach(per => {
+        h += `<tr><td class="sticky-col">${per}</td>`;
+        plays.forEach(pl => {
+            const m = cleanData.find(d => d.isim === per && d.oyunAd === pl);
+            h += `<td class="heatmap-cell ${m ? 'lvl-active' : ''}">${m ? '1' : ''}</td>`;
+        });
+        h += `</tr>`;
+    });
+    target.innerHTML = h + `</tbody></table></div>`;
+};
