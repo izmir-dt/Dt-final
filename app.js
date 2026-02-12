@@ -3093,3 +3093,63 @@ function renderCommon(){
   setTimeout(enterMatris, 400);
 })();
 
+
+
+
+/* === MATRIS FINAL FIX: Hash #matris açılışında veri geldikten sonra render garantisi (fetch bloğuna dokunmadan) === */
+(function(){
+  function wantMatris(){
+    return ((location.hash||"").toLowerCase().startsWith("#matris") || (window.__idtActiveTab==="Heatmap"));
+  }
+  function domReady(){
+    return !!document.getElementById("ccTop15") && !!document.getElementById("ccPlayA") && !!document.getElementById("ccPlayB");
+  }
+  function dataReady(){
+    try{
+      return Array.isArray(window.rows) && window.rows.length>0;
+    }catch(_e){ return false; }
+  }
+  function render(){
+    try{
+      if(window.IDTHeatmap && typeof window.IDTHeatmap.render==="function"){
+        window.IDTHeatmap.render();
+      }
+    }catch(e){ console.error(e); }
+  }
+  function ensure(){
+    if(!wantMatris()) return;
+    if(domReady() && dataReady()){
+      render();
+      return true;
+    }
+    return false;
+  }
+
+  // 1) Açılış / sekme değişimi: kısa retry
+  function retryEnsure(){
+    if(!wantMatris()) return;
+    let i=0;
+    const t=setInterval(()=>{
+      i++;
+      if(ensure()){ clearInterval(t); }
+      if(i>=30) clearInterval(t); // 6s max
+    }, 200);
+  }
+  window.addEventListener("hashchange", ()=>setTimeout(retryEnsure,0));
+  window.addEventListener("DOMContentLoaded", ()=>setTimeout(retryEnsure,0));
+
+  // 2) Veri yüklenmesi bittiğini "Hazır" yazısından yakala (load() içini değiştirmiyoruz)
+  const statusEl = document.getElementById("statusMirror");
+  if(statusEl){
+    const obs = new MutationObserver(()=>{
+      const txt = (statusEl.textContent||"").toLowerCase();
+      // "Hazır" -> load tamamlandı
+      if(txt.includes("hazır")){
+        // Matris açıksa tekrar render et (ilk açılışta setActiveTab rows boşken çalışıyordu)
+        if(wantMatris()) retryEnsure();
+      }
+    });
+    obs.observe(statusEl, {childList:true, subtree:true, characterData:true});
+  }
+})();
+
