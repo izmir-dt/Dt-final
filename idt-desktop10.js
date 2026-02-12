@@ -312,6 +312,8 @@
         const person = td.getAttribute('data-person') || '';
         const play = td.getAttribute('data-play') || '';
         setState({kisi: person, oyun: play});
+        // Panel'de detay açılınca ilgili kişiyi vurgulamak için (best-effort)
+        try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
         // go to Panel
         const tabPanel = $('tabPanel');
         if(tabPanel) tabPanel.click();
