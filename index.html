@@ -1486,6 +1486,29 @@ select{
 }
 .idt-mini-nav .miniNavBtn:hover{border-color:rgba(0,0,0,.22)}
 
+
+/* === PATCH v3: Üst yatay menü barı === */
+.idt-topbar2{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:8px 14px;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  background:#fff;
+  flex-wrap:wrap;
+}
+.idt-topbar2 .topNav2Btn{
+  border:1px solid rgba(0,0,0,.10);
+  background:#fff;
+  border-radius:999px;
+  padding:7px 12px;
+  font-weight:800;
+  font-size:13px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.idt-topbar2 .topNav2Btn:hover{border-color:rgba(0,0,0,.22)}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1719,20 +1742,25 @@ body{
     <main class="idt-main">
       <header class="idt-topnav">
         <div class="idt-top-left">
-          <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
-          <div class="idt-mini-nav" aria-label="Hızlı Menü">
-            <button class="miniNavBtn" type="button" data-side="sidePlays">🎭 Aktif</button>
-            <button class="miniNavBtn" type="button" data-side="sideHeatmap">🧩 Yoğunluk</button>
-            <button class="miniNavBtn" type="button" data-side="sideIntersect">🧠 Kesişim</button>
-            <button class="miniNavBtn" type="button" data-side="sideCharts">📈 Grafik</button>
-          </div>
-        </div>
+          <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div></div>
         <div class="idt-top-actions">
           <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
           <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
 <a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
         </div>
       </header>
+
+<div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
+  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
+  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
+  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
+</div>
+
 
       <div class="idt-content">
         
