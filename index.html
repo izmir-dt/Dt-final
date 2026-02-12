@@ -2907,5 +2907,30 @@ body{
     </div>
   </div>
 
-</body>
+
+        <div class="active-tools">
+            <input type="text" placeholder="Aktif Oyun filtrele..." oninput="filterActive(this.value)">
+            <button onclick="copyActiveToExcel()">Excel Kopyala</button>
+        </div>
+
+        <script>
+        function filterActive(val){
+            const rows = document.querySelectorAll('.active-row');
+            rows.forEach(r=>{
+                r.style.display = r.innerText.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        function copyActiveToExcel(){
+            let text = "";
+            document.querySelectorAll('.active-row').forEach(r=>{
+                if(r.style.display !== 'none'){
+                    text += r.innerText + "\n";
+                }
+            });
+            navigator.clipboard.writeText(text);
+            alert("Excel için kopyalandı.");
+        }
+        </script>
+        </body>
 </html>
