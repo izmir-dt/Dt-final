@@ -1680,6 +1680,7 @@ body{
       <div class="idt-item" id="sideRows"><span>🧾</span><b>Sorgu & Karşılaştır</b><span class="idt-count" id="sideRowsCount">-</span></div>
 
       <div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
+      <div class="idt-item" id="sideHeatmap"><span>🟫</span><b>Yoğunluk Matrisi</b></div>
       <div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
       <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
       <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
@@ -2169,6 +2170,7 @@ body{
   on('sideRows',   ()=>{ activate('sideRows');   location.hash = '#gorev'; });
 
   on('sideDist', ()=>{ activate('sideDist'); const mi=document.getElementById('advDist'); if(mi) mi.click(); else click('tabDistribution'); });
+  on('sideHeatmap', ()=>{ activate('sideHeatmap'); click('tabHeatmap'); });
   on('sideCharts', ()=>{ activate('sideCharts'); click('tabCharts'); });
   on('sideIntersect', ()=>{ activate('sideIntersect'); click('tabIntersection'); });
   on('sideFiguran', ()=>{ activate('sideFiguran'); click('tabFiguran'); });
