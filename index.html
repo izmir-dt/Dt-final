@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>İDT | Repertuvar Kişi Takip Sistemi</title>
@@ -1664,6 +1663,7 @@ body{
   <link rel="stylesheet" href="idt-polish.css">
   <script defer src="idt-performance.js"></script>
 
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
   <div class="idt-shell">
@@ -1697,16 +1697,17 @@ body{
         </div>
       </header>
 
-<nav class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <div class="afChips" aria-label="Kısa Menü">
-    <button class="topNav2Btn" type="button" data-go="sidePlays">Oyunlar</button>
-    <button class="topNav2Btn" type="button" data-go="sidePeople">Kişiler</button>
-    <button class="topNav2Btn" type="button" data-go="sideIntersect">Kesişim</button>
-    <button class="topNav2Btn" type="button" data-go="sideCharts">Grafikler</button>
-    <button class="topNav2Btn" type="button" data-go="sideHeatmap" style="opacity:.75">Yoğunluk</button>
-    <button class="topNav2Btn" type="button" data-go="sideFiguran" style="opacity:.75">Figüran</button>
-  </div>
-</nav>
+<div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
+  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
+  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
+  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
+</div>
+
 
       <div class="idt-content">
         
@@ -2044,7 +2045,7 @@ body{
                 <input type="checkbox" id="ccFigOnly" />
                 Sadece Figüran
               </label>
-              <button class="btn" id="ccCopyList" title="Excel\'e tam uyumlu kopyalar">Tabloyu Excel için Kopyala</button>
+              <button class="btn" id="ccCopyList">Listeyi Excel’e Kopyala</button>
               <button class="btn" id="ccToPanel">Panel’de Aç</button>
             </div>
           </div>
@@ -2854,25 +2855,22 @@ body{
 <div class="helpOverlay hidden" id="helpOverlay" aria-hidden="true"></div>
 <div class="helpModal hidden" id="helpModal" role="dialog" aria-label="Yardım">
   <div class="helpHd">
-    <b>Operasyonel Rehber</b>
+    <b>Yardım</b>
     <button class="btn" id="helpClose" type="button">✕</button>
   </div>
   <div class="helpBd">
     <div class="helpBlock">
-      <div class="helpT">⚡ Hızlı Excel Aktarımı</div>
-      <div class="helpP">Tablo üzerindeki <b>Kopyala</b> butonu veriyi Excel hücre yapısına uygun şekilde panoya alır. Excel’de doğrudan <b>Ctrl+V</b> yapabilirsin.</div>
+      <div class="helpT">Hızlı başlangıç</div>
+      <ol class="helpList">
+        <li><b>Panel</b> sekmesinde oyun veya kişi seç.</li>
+        <li>Detaylar sağ tarafta açılır.</li>
+        <li>Excel’e aktarmak için <b>Tab ile Kopyala</b> butonunu kullan.</li>
+      </ol>
     </div>
     <div class="helpBlock">
-      <div class="helpT">🔍 Akıllı Filtreleme</div>
-      <div class="helpP">Arama kutusuna yazdığın her harf gerçek zamanlı sonuç üretir. Büyük/küçük harf duyarlılığı optimize edilmiştir.</div>
+      <div class="helpT">Aktif Seçimler</div>
+      <div class="helpP">Seçtiğin oyun/kişi/filtreler üstte etiket olarak görünür. Etiketin yanındaki ✕ ile kaldırabilirsin.</div>
     </div>
-    <div class="helpBlock">
-      <div class="helpT">📊 Dinamik Grafikler</div>
-      <div class="helpP">Grafik dilimlerine tıklayarak ilgili personele anında gidebilirsin.</div>
-    </div>
-  </div>
-</div>
-</div>
     <div class="helpBlock">
       <div class="helpT">Grafikler</div>
       <div class="helpP">Grafikte bir dilime/çubuğa tıklayınca ilgili liste açılır.</div>
