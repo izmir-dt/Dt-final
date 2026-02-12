@@ -1104,3 +1104,43 @@ table.idt-table tbody tr:hover,
 #ccList tr:nth-child(even){ background-color: rgba(0,0,0,0.02); }
 #ccList tr:hover{ background-color: rgba(122,30,44,0.04) !important; transition: background 0.2s ease; }
 .row-item span, td{ font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+/* === v9 Topbar + Stats + Venn === */
+:root{
+  --bg:#e9ded1;
+  --card:#fbf7f1;
+  --accent:#7a1e2c;
+  --accent2:#c07a2a;
+  --line:#dccbb7;
+}
+
+.nav-content{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;}
+.nav-brand{display:flex;align-items:center;gap:12px;min-width:240px;}
+.nav-logo{height:40px;width:auto;filter:grayscale(1) brightness(.55);}
+.nav-title-group{display:flex;flex-direction:column;line-height:1.05;}
+.nav-main-title{font-weight:900;font-size:16px;color:var(--accent);}
+.nav-sub-title{font-weight:800;font-size:11px;color:var(--muted);}
+
+.nav-links-wrapper{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.topNav2Btn{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;font-weight:900;cursor:pointer;transition:.2s;}
+.topNav2Btn .material-icons{font-size:18px;color:var(--accent);}
+.topNav2Btn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(0,0,0,.08);}
+.topNav2Btn.is-active{background:var(--accent)!important;color:#fff!important;border-color:rgba(122,30,44,.45)!important;}
+.topNav2Btn.is-active .material-icons{color:#fff;}
+
+.nav-stats{display:flex;align-items:center;gap:12px;margin-left:auto;}
+.stat-unit{display:flex;flex-direction:column;align-items:flex-end;padding:6px 10px;border-radius:12px;background:rgba(0,0,0,.035);}
+.stat-unit.border-left{border-left:2px solid var(--line);padding-left:14px;}
+.stat-label{font-size:9px;font-weight:900;color:var(--muted);letter-spacing:.08em;}
+.stat-num{font-size:15px;font-weight:900;color:var(--accent);}
+
+.help-btn{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:#fff;cursor:pointer;}
+.help-btn .material-icons{color:var(--accent);}
+
+.venn-visualizer{display:flex;justify-content:center;margin:18px 0;}
+
+@media (max-width:980px){
+  .nav-content{flex-direction:column;align-items:stretch;}
+  .nav-brand{min-width:unset;justify-content:center;}
+  .nav-stats{justify-content:center;}
+  .nav-links-wrapper{justify-content:center;}
+}
