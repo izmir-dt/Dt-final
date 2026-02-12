@@ -28,7 +28,9 @@ async function idtFetchAll() {
   }
 }
 
-function idtUpdateStats() {
+function idtUpdateStats()// app.js'nin en altına ekle:
+if(window.setupHeatmap) window.setupHeatmap();
+console.log("⚓ Altın Kural 1: Veri çekimi bitti, tablo tetiklendi."); {
   const pEl = document.getElementById("stat-total-personel");
   if(pEl) pEl.textContent = String(window.allDataRaw.length);
 }
