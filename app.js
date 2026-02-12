@@ -2637,3 +2637,302 @@ function renderAssignTool(){
 }
 
 
+
+
+
+// ===============================
+// Yoğunluk & Çakışma Merkezi (Heatmap yerine odaklı görünüm)
+// Not: Veri çekme / bildirim bloklarına dokunmadan sadece render + event handler.
+// ===============================
+(function(){
+  // Guard: only wire once
+  let wired = false;
+  function uniq(arr){ return Array.from(new Set(arr)); }
+  function norm(s){ return String(s||"").trim(); }
+  function getRows(){ return Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []); }
+  function buildPlayPersonIndex(rows){
+    const playToPeople = new Map();
+    const playToRows = new Map();
+    for(const r of rows){
+      const play = norm(r.play);
+      const person = norm(r.person);
+      if(!play || !person) continue;
+      if(!playToPeople.has(play)) playToPeople.set(play, new Set());
+      playToPeople.get(play).add(person);
+      if(!playToRows.has(play)) playToRows.set(play, []);
+      playToRows.get(play).push(r);
+    }
+    return { playToPeople, playToRows };
+  }
+
+  function el(id){ return document.getElementById(id); }
+
+  function renderTop15(playsSorted){
+    const box = el("ccTop15");
+    if(!box) return;
+    box.innerHTML = "";
+    const top15 = playsSorted.slice(0, 15);
+    top15.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "cc-card";
+      card.innerHTML = `
+        <div class="cc-card-title">${escapeHtml(p.play)}</div>
+        <div class="cc-card-meta">${p.count} kişi</div>
+        <div class="cc-card-bar"><span style="width:${p.pct}%"></span></div>
+        <button class="cc-card-btn" type="button" data-play="${escapeAttr(p.play)}">Seç</button>
+      `;
+      box.appendChild(card);
+    });
+    box.querySelectorAll("button[data-play]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const play = btn.getAttribute("data-play") || "";
+        setQuickPlay(play);
+      });
+    });
+  }
+
+  let INDEX = null;
+  let PLAYS_SORTED = [];
+  let quickPlay = "";
+  function setQuickPlay(play){
+    quickPlay = play;
+    renderQuickList();
+  }
+
+  function populateSelects(){
+    const a = el("ccPlayA");
+    const b = el("ccPlayB");
+    if(!a || !b) return;
+    const options = ['<option value="">Seç…</option>'].concat(
+      PLAYS_SORTED.map(p=>`<option value="${escapeAttr(p.play)}">${escapeHtml(p.play)} (${p.count})</option>`)
+    ).join("");
+    a.innerHTML = options;
+    b.innerHTML = options;
+  }
+
+  function computeCommon(){
+    const a = el("ccPlayA")?.value || "";
+    const b = el("ccPlayB")?.value || "";
+    const out = {a, b, common: []};
+    if(!a || !b || !INDEX) return out;
+    const setA = INDEX.playToPeople.get(a) || new Set();
+    const setB = INDEX.playToPeople.get(b) || new Set();
+    const common = [];
+    setA.forEach(x=>{ if(setB.has(x)) common.push(x); });
+    common.sort((x,y)=>x.localeCompare(y,'tr'));
+    out.common = common;
+    return out;
+  }
+
+  function renderCommon(){
+    const {a,b,common} = computeCommon();
+    const countEl = el("ccCommonCount");
+    if(countEl) countEl.textContent = String(common.length || 0);
+
+    const tableWrap = el("ccCommonTable");
+    if(!tableWrap) return;
+
+    if(!a || !b){
+      tableWrap.innerHTML = `<div class="empty">İki oyun seç.</div>`;
+      return;
+    }
+    if(!common.length){
+      tableWrap.innerHTML = `<div class="empty">Ortak personel yok.</div>`;
+      return;
+    }
+
+    // Build role summary per person per play
+    const rowsA = INDEX.playToRows.get(a) || [];
+    const rowsB = INDEX.playToRows.get(b) || [];
+    const mapA = new Map(), mapB = new Map();
+    for(const r of rowsA){
+      const person = norm(r.person);
+      if(!mapA.has(person)) mapA.set(person, new Set());
+      mapA.get(person).add(norm(r.role));
+    }
+    for(const r of rowsB){
+      const person = norm(r.person);
+      if(!mapB.has(person)) mapB.set(person, new Set());
+      mapB.get(person).add(norm(r.role));
+    }
+
+    const rowsHtml = common.map(person=>{
+      const rolesA = uniq(Array.from(mapA.get(person)||[]).filter(Boolean)).join(", ");
+      const rolesB = uniq(Array.from(mapB.get(person)||[]).filter(Boolean)).join(", ");
+      return `<tr>
+        <td>${escapeHtml(person)}</td>
+        <td>${escapeHtml(rolesA || "-")}</td>
+        <td>${escapeHtml(rolesB || "-")}</td>
+      </tr>`;
+    }).join("");
+
+    tableWrap.innerHTML = `
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Kişi</th><th>${escapeHtml(a)}</th><th>${escapeHtml(b)}</th></tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderQuickList(){
+    const title = el("ccListTitle");
+    const body = el("ccListBody");
+    if(!title || !body || !INDEX) return;
+    if(!quickPlay){
+      title.textContent = "Bir oyun seç";
+      body.innerHTML = `<div class="empty">Üstten veya “En Yoğun 15 Oyun” kartlarından bir oyun seç.</div>`;
+      return;
+    }
+    title.textContent = quickPlay;
+
+    const q = norm(el("ccSearch")?.value || "").toLocaleLowerCase('tr');
+    const figOnly = !!el("ccFigOnly")?.checked;
+
+    const rows = (INDEX.playToRows.get(quickPlay) || []).slice();
+    const filtered = rows.filter(r=>{
+      const person = norm(r.person);
+      const role = norm(r.role);
+      const cat = norm(r.category);
+      if(figOnly && !/figüran/i.test(cat) && !/figüran/i.test(role)) return false;
+      if(!q) return true;
+      const hay = `${person} ${role} ${cat}`.toLocaleLowerCase('tr');
+      return hay.includes(q);
+    });
+
+    // Render table
+    const trs = filtered.map(r=>`<tr>
+      <td>${escapeHtml(norm(r.category))}</td>
+      <td>${escapeHtml(norm(r.role))}</td>
+      <td>${escapeHtml(norm(r.person))}</td>
+    </tr>`).join("");
+
+    body.innerHTML = `
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead><tr><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
+          <tbody>${trs || ""}</tbody>
+        </table>
+      </div>
+    `;
+
+    // Store last list for copy
+    window.__IDT_CC_LAST_LIST = { play: quickPlay, rows: filtered };
+  }
+
+  function copyCommonTSV(){
+    const {a,b,common} = computeCommon();
+    if(!a || !b){
+      alert("İki oyun seç.");
+      return;
+    }
+    const tableWrap = el("ccCommonTable");
+    if(!common.length){
+      alert("Ortak personel yok.");
+      return;
+    }
+    // Recompute roles maps for TSV
+    const rowsA = INDEX.playToRows.get(a) || [];
+    const rowsB = INDEX.playToRows.get(b) || [];
+    const mapA = new Map(), mapB = new Map();
+    for(const r of rowsA){
+      const person = norm(r.person);
+      if(!mapA.has(person)) mapA.set(person, new Set());
+      mapA.get(person).add(norm(r.role));
+    }
+    for(const r of rowsB){
+      const person = norm(r.person);
+      if(!mapB.has(person)) mapB.set(person, new Set());
+      mapB.get(person).add(norm(r.role));
+    }
+
+    const lines = [];
+    lines.push(["Kişi", a, b].join("\t"));
+    common.forEach(person=>{
+      const rolesA = uniq(Array.from(mapA.get(person)||[]).filter(Boolean)).join(", ");
+      const rolesB = uniq(Array.from(mapB.get(person)||[]).filter(Boolean)).join(", ");
+      lines.push([person, rolesA||"-", rolesB||"-"].join("\t"));
+    });
+    openCopyModal(lines.join("\n"), "Ortakları Kopyala");
+  }
+
+  function copyListTSV(){
+    const pack = window.__IDT_CC_LAST_LIST;
+    if(!pack || !pack.rows) { alert("Önce bir oyun seç."); return; }
+    const lines = [];
+    lines.push(["Oyun","Kategori","Görev","Kişi"].join("\t"));
+    pack.rows.forEach(r=>{
+      lines.push([pack.play, norm(r.category), norm(r.role), norm(r.person)].join("\t"));
+    });
+    openCopyModal(lines.join("\n"), "Listeyi Kopyala");
+  }
+
+  function goPanel(){
+    // Navigate to panel; user can keep working with selections
+    location.hash = "#panel";
+  }
+
+  function wire(){
+    if(wired) return;
+    const root = el("ccTop15");
+    if(!root) return; // feature not present in this build
+    wired = true;
+
+    const rows = getRows();
+    INDEX = buildPlayPersonIndex(rows);
+
+    // Build sorted plays by unique person count
+    const counts = [];
+    let max = 0;
+    INDEX.playToPeople.forEach((set, play)=>{
+      const c = set.size;
+      if(c>max) max = c;
+      counts.push({play, count: c});
+    });
+    counts.sort((x,y)=>y.count-x.count || x.play.localeCompare(y.play,'tr'));
+    PLAYS_SORTED = counts.map(x=>({ ...x, pct: max? Math.round((x.count/max)*100):0 }));
+
+    populateSelects();
+    renderTop15(PLAYS_SORTED);
+
+    // Default quick play: top1
+    if(PLAYS_SORTED[0]) setQuickPlay(PLAYS_SORTED[0].play);
+
+    // Events
+    el("ccPlayA")?.addEventListener("change", renderCommon);
+    el("ccPlayB")?.addEventListener("change", renderCommon);
+    el("ccShowCommon")?.addEventListener("click", renderCommon);
+    el("ccCopyCommon")?.addEventListener("click", copyCommonTSV);
+
+    el("ccSearch")?.addEventListener("input", renderQuickList);
+    el("ccFigOnly")?.addEventListener("change", renderQuickList);
+    el("ccCopyList")?.addEventListener("click", copyListTSV);
+    el("ccToPanel")?.addEventListener("click", goPanel);
+
+    // Also allow clicking a top card title area
+    root.addEventListener("click", (e)=>{
+      const btn = e.target.closest('button[data-play]');
+      if(btn) return;
+    });
+
+    renderCommon();
+    renderQuickList();
+  }
+
+  // Utility: basic escaping (no external deps)
+  function escapeHtml(str){
+    return String(str ?? "").replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[s]));
+  }
+  function escapeAttr(str){
+    return escapeHtml(str).replace(/`/g,"&#96;");
+  }
+
+  // Public API expected by setActiveTab
+  window.IDTHeatmap = window.IDTHeatmap || {};
+  window.IDTHeatmap.render = function(){
+    try{ wire(); }catch(err){ console.error(err); }
+  };
+})();
