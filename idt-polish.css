@@ -717,14 +717,16 @@ table.idt-table tbody tr:hover,
 #globalLoading .glClose{ margin-top:12px; width:100%; }
 
 /* -------- Masaüstü 1.0: Yoğunluk Matrisi -------- */
-#heatmapBox{ overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--card); }
-.heatmapTable{ border-collapse:separate; border-spacing:0; width:max-content; min-width:100%; }
+#heatmapBox{ overflow:auto; overflow-x:hidden; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+.heatmapTable{ border-collapse:separate; border-spacing:0; width:100%; table-layout:fixed; }
 .heatmapTable th, .heatmapTable td{
   font-size:12px;
   padding:8px 10px;
   border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent);
   border-right:1px solid color-mix(in srgb, var(--line) 70%, transparent);
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
   vertical-align:middle;
 }
 .heatmapTable th{
@@ -739,6 +741,9 @@ table.idt-table tbody tr:hover,
   z-index:3;
   font-weight:600;
 }
+
+/* Sol sütun genişliği ve hücre sıkıştırma */
+.heatmapTable th.stickyLeft, .heatmapTable td.stickyLeft{ width:200px; max-width:200px; }
 .heatCell{
   cursor:pointer;
   text-align:center;
