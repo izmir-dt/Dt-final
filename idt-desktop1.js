@@ -128,3 +128,39 @@
     setupActiveFilters();
   });
 })();
+
+/* === IDT v1.0: Topbar nav glue + active highlight === */
+(function(){
+  function h(){ return (location.hash || "#panel").toLowerCase(); }
+
+  document.addEventListener("click", function(e){
+    const b = e.target && e.target.closest ? e.target.closest(".topNav2Btn") : null;
+    if(!b) return;
+    const id = b.getAttribute("data-go");
+    const el = id ? document.getElementById(id) : null;
+    if(el && el.click){
+      e.preventDefault(); e.stopPropagation();
+      el.click();
+    }
+  }, true);
+
+  function setActive(){
+    const hash = h();
+    document.querySelectorAll(".topNav2Btn").forEach(b=>{
+      const id = (b.getAttribute("data-go")||"").toLowerCase();
+      const on =
+        (hash.startsWith("#plays") && id==="sideplays") ||
+        (hash.startsWith("#people") && id==="sidepeople") ||
+        (hash.startsWith("#rows") && id==="siderows") ||
+        (hash.startsWith("#dist") && id==="sidedist") ||
+        (hash.startsWith("#matris") && id==="sideheatmap") ||
+        (hash.startsWith("#charts") && id==="sidecharts") ||
+        (hash.startsWith("#kesisim") && id==="sideintersect") ||
+        (hash.startsWith("#figuran") && id==="sidefiguran");
+      b.classList.toggle("is-active", !!on);
+    });
+  }
+  window.addEventListener("hashchange", ()=>setTimeout(setActive,0));
+  window.addEventListener("DOMContentLoaded", ()=>setTimeout(setActive,0));
+  setTimeout(setActive,60);
+})();
