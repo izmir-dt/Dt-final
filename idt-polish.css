@@ -1091,3 +1091,20 @@ table.idt-table tbody tr:hover,
   .nav-stats{justify-content:center;}
   .nav-links-wrapper{justify-content:center;}
 }
+/* === SİSTEMATİK ALTIN KURAL: GÖRSEL MÜHÜR === */
+.heatmap-scroll-area { 
+  overflow: auto; max-height: 72vh; border: 1.5px solid var(--line); border-radius: 14px; 
+}
+.idt-heatmap-main { border-collapse: separate !important; width: 100%; background: #fff; }
+.sticky-col-name { 
+  position: sticky !important; left: 0; z-index: 50; 
+  background: var(--card) !important; border-right: 2.5px solid var(--accent) !important; 
+  font-weight: 800; min-width: 180px; padding: 10px !important;
+}
+.h-cell.h-active { background: var(--accent) !important; color: white !important; font-weight: bold; text-align: center; }
+
+/* Bildirim Paneli Fix */
+#notifPanel { 
+  position: fixed !important; z-index: 99999 !important; 
+  top: 80px; right: 20px; border: 2px solid var(--accent) !important;
+}
