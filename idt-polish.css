@@ -1002,3 +1002,13 @@ table.idt-table tbody tr:hover,
     color: #fff;
     cursor: pointer;
 }
+
+
+
+/* === PATCH v3: Sidebar kaldır -> üst yatay bar === */
+.idt-sidebar{display:none !important;}
+/* If layout uses a left margin/padding, reset */
+.idt-shell, .idt-app, .idt-main, #app, main{margin-left:0 !important;}
+/* If grid layout defined, force single column */
+.idt-layout, .layout, .shell{grid-template-columns: 1fr !important;}
+
