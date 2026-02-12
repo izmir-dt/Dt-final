@@ -1,7 +1,6 @@
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-
   // ---------- Global Loading ----------
   function setupLoading(){
     const root = $('globalLoading');
