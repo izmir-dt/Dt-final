@@ -1,26 +1,11 @@
-/* === IDT V9 FINAL: GÖRSEL HİZALAMA === */
-.idt-h-wrapper { overflow: auto; max-height: 75vh; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
-.idt-h-table { border-collapse: separate !important; width: 100%; font-size: 13px; }
-.idt-sticky-x { 
-  position: sticky !important; left: 0; z-index: 10; 
+.idt-final-wrapper { overflow: auto; max-height: 75vh; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+.idt-final-table { border-collapse: separate !important; width: 100%; font-size: 13px; }
+.idt-sticky-col { 
+  position: sticky !important; left: 0; z-index: 20; 
   background: var(--card) !important; border-right: 2.5px solid var(--accent) !important; 
-  padding: 12px !important; font-weight: 800; min-width: 170px;
+  padding: 12px !important; font-weight: 800; min-width: 180px;
 }
-.idt-cell { border: 0.5px solid var(--line); text-align: center; height: 35px; }
+.idt-cell { border: 0.5px solid var(--line); text-align: center; height: 35px; width: 40px; }
 .idt-active { background: var(--accent) !important; color: white !important; font-weight: bold; }
-.idt-v-text { height: 140px; vertical-align: bottom; padding: 10px; }
-.idt-v-text div { transform: rotate(-45deg); width: 30px; }
-#notifPanel { position: fixed !important; z-index: 99999 !important; top: 85px; right: 25px; border: 2px solid var(--accent); }
-.h-wrap { overflow: auto; max-height: 75vh; border: 1.5px solid var(--line); border-radius: 14px; }
-.h-table { border-collapse: separate !important; width: 100%; background: #fff; }
-.s-col { position: sticky !important; left: 0; z-index: 10; background: var(--card) !important; border-right: 2.5px solid var(--accent) !important; font-weight: 800; min-width: 170px; padding: 10px !important; }
-.h-cell.active { background: var(--accent) !important; color: white !important; font-weight: bold; text-align: center; }
-.v-txt { height: 130px; vertical-align: bottom; padding: 10px; font-size: 11px; }
-.v-txt div { transform: rotate(-45deg); width: 30px; }
-.h-wrap { overflow: auto; max-height: 72vh; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
-.h-table { border-collapse: separate !important; width: 100%; font-size: 13px; }
-.s-col { position: sticky !important; left: 0; z-index: 10; background: var(--card) !important; border-right: 2.5px solid var(--accent) !important; padding: 12px !important; font-weight: 800; min-width: 170px; }
-.cell.active { background: var(--accent) !important; color: white !important; font-weight: bold; text-align: center; }
-.v-text { height: 140px; vertical-align: bottom; padding: 10px; }
-.v-text div { transform: rotate(-45deg); width: 30px; }
-#notifPanel { position: fixed !important; z-index: 99999 !important; top: 80px; right: 20px; }
+.idt-rotate { height: 140px; vertical-align: bottom; padding: 10px; }
+.idt-rotate div { transform: rotate(-45deg); width: 30px; }
