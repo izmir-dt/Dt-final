@@ -632,9 +632,55 @@
     const btnShow = $('ccShowCommon');
     const btnCopy = $('ccCopyCommon');
     if(btnShow) btnShow.addEventListener('click', showCommonAsDetail);
-    if(btnCopy) btnCopy.addEventListener('click', ()=>{
-      // ensure computed
-      updateCommonCount();
+    if(btnCopy) btnCopy.addEventListener('click', async ()=>{
+      /* BATCH: ccCopyCommon async */
+      try{
+        btnCopy.disabled = true;
+        btnCopy.classList.add('is-busy');
+        if(typeof window.setStatus === 'function') window.setStatus('⏳ Excel kopyası hazırlanıyor…', 'info');
+
+        // ensure computed (updates lastCommon)
+        updateCommonCount();
+        const common = lastCommon || [];
+
+        // Build TSV in a macrotask to avoid UI freeze
+        await new Promise(res=>setTimeout(res, 0));
+
+        const lines = new Array(common.length + 1);
+        lines[0] = ['Kişi','Oyun A Görev','Oyun B Görev'].join('	');
+        for(let i=0;i<common.length;i++){
+          const r = common[i];
+          lines[i+1] = [r.person, r.a, r.b].join('	');
+        }
+        const tsv = lines.join('
+');
+
+        // Prefer async clipboard
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(tsv);
+        }else if(typeof window.copyText === 'function'){
+          window.copyText(tsv);
+        }
+
+        if(typeof window.setStatus === 'function') window.setStatus('✅ Ortaklar Excel’e kopyalandı', 'ok');
+      }catch(err){
+        console.error(err);
+        if(typeof window.setStatus === 'function') window.setStatus('⚠️ Kopyalama başarısız. Tekrar dene.', 'warn');
+        // fallback: old copyText if clipboard failed
+        try{
+          if(typeof window.copyText === 'function'){
+            const common = lastCommon || [];
+            const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
+            for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
+            window.copyText(lines.join('
+'));
+          }
+        }catch(_e){}
+      }finally{
+        btnCopy.disabled = false;
+        btnCopy.classList.remove('is-busy');
+      }
+    });
       const a = selA ? selA.value : '';
       const b = selB ? selB.value : '';
       const common = lastCommon || [];
