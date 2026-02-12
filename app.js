@@ -2647,6 +2647,9 @@ function renderAssignTool(){
 (function(){
   // Guard: only wire once
   let wired = false;
+  let _wiredRoot = null;
+  let _wiredRowsLen = 0;
+  let _wiredAt = 0;
   let lastCcRoot = null;
   function uniq(arr){ return Array.from(new Set(arr)); }
   function norm(s){ return String(s||"").trim(); }
@@ -2939,8 +2942,10 @@ function renderCommon(){
     if(lastCcRoot!==root){ wired = false; }
     lastCcRoot = root;
     wired = true;
-
-    INDEX = buildPlayPersonIndex(rows0);
+    _wiredRoot = root;
+    _wiredRowsLen = (rows0 && rows0.length) ? rows0.length : 0;
+    _wiredAt = Date.now();
+INDEX = buildPlayPersonIndex(rows0);
 
     // Build sorted plays by unique person count
     const counts = [];
