@@ -1,34 +1,8 @@
-/* === IDT V9 FINAL: YOĞUNLUK TABLOSU === */
-window.window.setupHeatmap = function() {
-  const container = document.getElementById('ccList');
-  if(!container || !window.allDataRaw) return;
-
-  // Altın Kural 3: Default A (Aynı kişi aynı oyunda 1 kez görünür)
-  const data = window.allDataRaw.filter((v, i, a) => 
-    a.findIndex(t => (t.isim === v.isim && t.oyunAd === v.oyunAd)) === i
-  );
-
-  const plays = [...new Set(data.map(d => d.oyunAd))].sort();
-  const people = [...new Set(data.map(d => d.isim))].sort();
-
-  let h = `<div class="h-wrap"><table class="h-table"><thead><tr><th class="s-col">Personel</th>`;
-  plays.forEach(p => h += `<th class="v-txt"><div><span>${p}</span></div></th>`);
-  h += `</tr></thead><tbody>`;
-
-  people.forEach(per => {
-    h += `<tr><td class="s-col">${per}</td>`;
-    plays.forEach(pl => {
-      const m = data.find(d => d.isim === per && d.oyunAd === pl);
-      h += `<td class="h-cell ${m?'active':''}">${m?'1':''}</td>`;
-    });
-    h += `</tr>`;
-  });
-  container.innerHTML = h + `</tbody></table></div>`;
-}; = function() {
+window.setupHeatmap = function() {
   const container = document.getElementById('ccList');
   if(!container || !window.allDataRaw || window.allDataRaw.length === 0) return;
 
-  // Altın Kural 3: Default A (Aynı kişi & oyun teke düşer)
+  // ALTIN KURAL 3: DEFAULT A
   const data = window.allDataRaw.filter((v, i, a) => 
     a.findIndex(t => (t.isim === v.isim && t.oyunAd === v.oyunAd)) === i
   );
@@ -36,25 +10,17 @@ window.window.setupHeatmap = function() {
   const plays = [...new Set(data.map(d => d.oyunAd))].sort();
   const people = [...new Set(data.map(d => d.isim))].sort();
 
-  let html = `
-  <div class="idt-h-wrapper">
-    <table class="idt-h-table">
-      <thead>
-        <tr>
-          <th class="idt-sticky-x">PERSONEL / OYUN</th>
-          ${plays.map(p => `<th class="idt-v-text"><div><span>${p}</span></div></th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>`;
+  let html = `<div class="h-wrap"><table class="h-table"><thead><tr><th class="s-col">PERSONEL</th>`;
+  plays.forEach(p => html += `<th class="v-text"><div><span>${p}</span></div></th>`);
+  html += `</tr></thead><tbody>`;
 
   people.forEach(person => {
-    html += `<tr><td class="idt-sticky-x"><b>${person}</b></td>`;
+    html += `<tr><td class="s-col"><b>${person}</b></td>`;
     plays.forEach(play => {
       const match = data.find(d => d.isim === person && d.oyunAd === play);
-      html += `<td class="idt-cell ${match ? 'idt-active' : ''}">${match ? '1' : ''}</td>`;
+      html += `<td class="cell ${match ? 'active' : ''}">${match ? '1' : ''}</td>`;
     });
     html += `</tr>`;
   });
-
   container.innerHTML = html + `</tbody></table></div>`;
 };
