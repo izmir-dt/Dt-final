@@ -640,8 +640,7 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('
-');
+        const tsv = lines.join('\n');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -659,8 +658,7 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('
-'));
+            window.copyText(lines.join('\n'));
           }
         }catch(_e){}
       }finally{
@@ -810,30 +808,74 @@ function setupHeatmap(){
   });
 
 })();
-function setupHelp() {
-    const btn = $('helpBtn');
-    const modal = $('helpModal');
-    const overlay = $('helpOverlay');
 
-    if (!btn || !modal) return;
+/* === v9: Venn + Enhanced TSV (safe, no data-fetch touched) === */
+(function(){
+  function safeText(t){ return (t||"").replace(/\r?\n|\r/g, " ").trim(); }
 
-    modal.style.opacity = "0";
+  window.IDT_V9_RENDER_VENN = function(gameA, gameB){
+    const el = document.getElementById("venn-svg-container");
+    if(!el) return;
+    const data = window.allDataRaw || [];
+    const listA = data.filter(d => (d.oyunAd||d.oyun||d.oyunAdi) === gameA);
+    const listB = data.filter(d => (d.oyunAd||d.oyun||d.oyunAdi) === gameB);
+    const setB = new Set(listB.map(x => (x.isim||x.adSoyad||x.kisi||"").trim()));
+    const common = listA.filter(a => setB.has(((a.isim||a.adSoyad||a.kisi||"").trim())));
+    const svg =
+      '<svg width="400" height="220" viewBox="0 0 400 220" aria-label="Venn">' +
+        '<circle cx="150" cy="110" r="90" fill="var(--accent)" fill-opacity="0.10" stroke="var(--accent)" stroke-width="2" />' +
+        '<circle cx="250" cy="110" r="90" fill="var(--accent2)" fill-opacity="0.10" stroke="var(--accent2)" stroke-width="2" />' +
+        '<text x="200" y="115" text-anchor="middle" font-weight="900" font-size="20">' + common.length + '</text>' +
+      '</svg>';
+    el.innerHTML = svg;
+  };
 
-    btn.onclick = () => {
-      modal.classList.remove('hidden');
-      if (overlay) overlay.classList.remove('hidden');
-      requestAnimationFrame(() => { modal.style.opacity = "1"; });
+  window.IDT_V9_BUILD_ENHANCED_TSV = async function(){
+    const rows = Array.from(document.querySelectorAll("#ccList table tr"));
+    if(!rows.length) return null;
+    return rows.map(row => {
+      const cells = Array.from(row.querySelectorAll("th, td"));
+      return cells.map(cell => safeText(cell.innerText)).join("\t");
+    }).join("\n");
+  };
+
+  // Hook copy button without breaking existing handlers
+  document.addEventListener("click", async (e)=>{
+    const btn = e.target && e.target.closest ? e.target.closest("#ccCopyList") : null;
+    if(!btn) return;
+    try{
+      // Let existing handler run if our table isn't present
+      const tsv = await window.IDT_V9_BUILD_ENHANCED_TSV();
+      if(!tsv) return;
+      e.preventDefault(); e.stopPropagation();
+      btn.disabled = true;
+      if(window.setStatus) window.setStatus("⏳ Tablo Excel için hazırlanıyor…","info");
+      // yield
+      await new Promise(r=>setTimeout(r,0));
+      let ok = false;
+      if(window.idtCopyToClipboard) ok = await window.idtCopyToClipboard(tsv);
+      else if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(tsv); ok=true; }
+      else if(window.copyText){ window.copyText(tsv); ok=true; }
+      if(window.setStatus) window.setStatus(ok ? "✅ Tablo Excel için kopyalandı" : "⚠️ Kopyalanamadı (izin).", ok ? "ok":"warn");
+    }catch(err){
+      console.error(err);
+      if(window.setStatus) window.setStatus("⚠️ Kopyalama hatası.","warn");
+    }finally{
+      btn.disabled = false;
+    }
+  }, true);
+
+  // Hook intersect dropdowns if exist (ccGameA / ccGameB)
+  function wireVenn(){
+    const a = document.getElementById("ccGameA");
+    const b = document.getElementById("ccGameB");
+    if(!a || !b) return;
+    const run = ()=>{ 
+      const ga = a.value; const gb = b.value;
+      if(ga && gb) window.IDT_V9_RENDER_VENN(ga, gb);
     };
-
-    const close = () => {
-      modal.style.opacity = "0";
-      setTimeout(() => {
-        modal.classList.add('hidden');
-        if (overlay) overlay.classList.add('hidden');
-      }, 200);
-    };
-
-    const c = $('helpClose');
-    if (c) c.onclick = close;
-    if (overlay) overlay.onclick = close;
+    a.addEventListener("change", run);
+    b.addEventListener("change", run);
   }
+  window.addEventListener("DOMContentLoaded", wireVenn);
+})();
