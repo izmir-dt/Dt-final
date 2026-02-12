@@ -1657,6 +1657,21 @@ body{
   white-space:nowrap;
 }
 
+
+
+/* Yoğunluk & Çakışma Merkezi — seçilen oyun özeti */
+.cc-sel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px;}
+.cc-sel-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:12px 14px;box-shadow:0 8px 22px rgba(0,0,0,.06);}
+.cc-sel-k{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:rgba(0,0,0,.55);margin-bottom:6px}
+.cc-sel-v{font-weight:800;font-size:14px;line-height:1.15;min-height:32px;display:flex;align-items:center}
+.cc-sel-sub{margin-top:8px;color:rgba(0,0,0,.65);font-weight:700}
+.cc-sel-bar{height:10px;border-radius:999px;background:rgba(122,30,44,.12);overflow:hidden;margin-top:8px}
+.cc-sel-fill{height:100%;border-radius:999px;background:rgba(122,30,44,.55);width:0%}
+.cc-sel-ortak .cc-sel-bar{background:rgba(192,122,42,.14)}
+.cc-sel-ortak .cc-sel-fill{background:rgba(192,122,42,.70)}
+@media (max-width: 980px){
+  .cc-sel-grid{grid-template-columns:1fr}
+}
 </style>
 
 
@@ -1988,12 +2003,42 @@ body{
           </div>
         </div>
 
-        <!-- En yoğun oyunlar -->
-        <div class="cc-hd2">
-          <h3>En Yoğun 15 Oyun</h3>
-          
+        <!-- En yoğun oyunlar / Seçilen oyun özeti -->
+        <div id="ccTopWrap">
+          <div class="cc-hd2">
+            <h3 id="ccTopTitle">En Yoğun 15 Oyun</h3>
+          </div>
+          <div id="ccTop15" class="cc-games"></div>
         </div>
-        <div id="ccTopGames" class="cc-games"></div>
+
+        <div id="ccSelWrap" style="display:none">
+          <div class="cc-hd2">
+            <h3>Seçilen Oyun Özeti</h3>
+          </div>
+
+          <div class="cc-sel-grid">
+            <div class="cc-sel-card">
+              <div class="cc-sel-k">Oyun A</div>
+              <div id="ccSelAName" class="cc-sel-v">—</div>
+              <div class="cc-sel-bar"><div id="ccSelABar" class="cc-sel-fill" style="width:0%"></div></div>
+              <div id="ccSelACnt" class="cc-sel-sub">0 kişi</div>
+            </div>
+
+            <div class="cc-sel-card">
+              <div class="cc-sel-k">Oyun B</div>
+              <div id="ccSelBName" class="cc-sel-v">—</div>
+              <div class="cc-sel-bar"><div id="ccSelBBar" class="cc-sel-fill" style="width:0%"></div></div>
+              <div id="ccSelBCnt" class="cc-sel-sub">0 kişi</div>
+            </div>
+
+            <div class="cc-sel-card cc-sel-ortak">
+              <div class="cc-sel-k">Ortak</div>
+              <div id="ccSelOName" class="cc-sel-v">—</div>
+              <div class="cc-sel-bar"><div id="ccSelOBar" class="cc-sel-fill" style="width:0%"></div></div>
+              <div id="ccSelOCnt" class="cc-sel-sub">0 kişi</div>
+            </div>
+          </div>
+        </div>
 
         <!-- Detay liste -->
         <div class="cc-detail">
