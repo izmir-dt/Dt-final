@@ -640,7 +640,8 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('\n');
+        const tsv = lines.join('
+');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -658,7 +659,8 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('\n'));
+            window.copyText(lines.join('
+'));
           }
         }catch(_e){}
       }finally{
@@ -808,3 +810,30 @@ function setupHeatmap(){
   });
 
 })();
+function setupHelp() {
+    const btn = $('helpBtn');
+    const modal = $('helpModal');
+    const overlay = $('helpOverlay');
+
+    if (!btn || !modal) return;
+
+    modal.style.opacity = "0";
+
+    btn.onclick = () => {
+      modal.classList.remove('hidden');
+      if (overlay) overlay.classList.remove('hidden');
+      requestAnimationFrame(() => { modal.style.opacity = "1"; });
+    };
+
+    const close = () => {
+      modal.style.opacity = "0";
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (overlay) overlay.classList.add('hidden');
+      }, 200);
+    };
+
+    const c = $('helpClose');
+    if (c) c.onclick = close;
+    if (overlay) overlay.onclick = close;
+  }
