@@ -956,3 +956,49 @@ table.idt-table tbody tr:hover,
   .cc-actions{ justify-content:flex-start; }
   .cc-tools .input input{ width:160px; }
 }
+
+/* === YOĞUNLUK & ÇAKIŞMA MERKEZİ STABLE PATCH === */
+
+/* Narrow left black panel */
+.sidebar, .leftPanel, .sidePanel {
+    width: 220px !important;
+}
+
+/* Horizontal mini menu under Hazır */
+.quick-menu {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+.quick-menu button {
+    background: #222;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.quick-menu button:hover {
+    background: #333;
+}
+
+/* Active Oyun filter & Excel quick tools */
+.active-tools {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+.active-tools input {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+.active-tools button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    background: #7a1e2c;
+    color: #fff;
+    cursor: pointer;
+}
