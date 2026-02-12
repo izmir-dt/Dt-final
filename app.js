@@ -2991,3 +2991,55 @@ function renderCommon(){
     try{ wire(); }catch(err){ console.error(err); }
   };
 })();
+
+
+
+/* === PATCH: Quick mini nav + Aktif Oyun Excel Copy (UI-only) === */
+(function(){
+  // Mini top nav: click -> trigger existing sidebar nav item click (no state rewrite)
+  document.addEventListener("click", function(e){
+    const btn = e.target && e.target.closest ? e.target.closest(".miniNavBtn") : null;
+    if(!btn) return;
+    const id = btn.getAttribute("data-side");
+    if(!id) return;
+    const el = document.getElementById(id);
+    if(el && el.click){
+      e.preventDefault();
+      e.stopPropagation();
+      el.click();
+    }
+  }, true);
+
+  // Aktif Oyun: copy filtered plays list as TSV (Play \t Kişi \t Satır)
+  const copyBtn = document.getElementById("btnCopyActivePlays");
+  if(copyBtn){
+    copyBtn.addEventListener("click", function(){
+      try{
+        if(typeof activeMode !== "undefined" && activeMode !== "plays"){
+          toast("Bu kopyalama sadece 'Aktif Oyun' görünümünde çalışır.", "warn");
+          return;
+        }
+        const source = (typeof plays !== "undefined") ? plays : [];
+        const filtered = (typeof applyFilters === "function") ? applyFilters(source) : source;
+        if(!filtered || !filtered.length){
+          toast("Kopyalanacak veri yok.", "warn");
+          return;
+        }
+        const lines = [];
+        lines.push(["Oyun Adı","Kişi Sayısı","Satır Sayısı"].join("\\t"));
+        for(const it of filtered){
+          const title = it && it.title ? it.title : "";
+          const personCount = it && it.count ? it.count : 0;
+          const rowCount = it && it.rows ? it.rows.length : 0;
+          lines.push([title, String(personCount), String(rowCount)].join("\\t"));
+        }
+        copyText(lines.join("\\n"));
+        toast("Aktif Oyun listesi Excel için kopyalandı ✅", "ok");
+      }catch(err){
+        console.error(err);
+        toast("Kopyalama sırasında hata oluştu.", "bad");
+      }
+    });
+  }
+})();
+
