@@ -1145,7 +1145,7 @@ body.scope-person .qScopeBox{ display:none !important; }
 /* ===== v6.6 UI patches ===== */
 
 /* Sidebar: avoid truncation like "Toplam Perso..." */
-.idt-sidebar{ width: 240px !important; }
+.idt-sidebar{ width: 290px !important; }
 .idt-item b{ font-size: 13px !important; max-width: 190px !important; }
 #sidePeople b{ max-width: 220px !important; } /* ensure full text */
 
@@ -1471,44 +1471,6 @@ select{
   color: var(--muted);
 }
 
-
-/* === PATCH: Sol panel daralt + Hazır altı mini yatay menü === */
-.idt-top-left{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
-.idt-mini-nav{display:flex;gap:8px;flex-wrap:wrap}
-.idt-mini-nav .miniNavBtn{
-  background:#fff;
-  border:1px solid rgba(0,0,0,.10);
-  border-radius:999px;
-  padding:6px 10px;
-  font-weight:800;
-  font-size:12px;
-  cursor:pointer;
-}
-.idt-mini-nav .miniNavBtn:hover{border-color:rgba(0,0,0,.22)}
-
-
-/* === PATCH v3: Üst yatay menü barı === */
-.idt-topbar2{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  padding:8px 14px;
-  border-bottom:1px solid rgba(0,0,0,.08);
-  background:#fff;
-  flex-wrap:wrap;
-}
-.idt-topbar2 .topNav2Btn{
-  border:1px solid rgba(0,0,0,.10);
-  background:#fff;
-  border-radius:999px;
-  padding:7px 12px;
-  font-weight:800;
-  font-size:13px;
-  cursor:pointer;
-  white-space:nowrap;
-}
-.idt-topbar2 .topNav2Btn:hover{border-color:rgba(0,0,0,.22)}
-
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1741,8 +1703,7 @@ body{
 
     <main class="idt-main">
       <header class="idt-topnav">
-        <div class="idt-top-left">
-          <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div></div>
+        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
         <div class="idt-top-actions">
           <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
           <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
@@ -1759,7 +1720,6 @@ body{
   <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
   <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
   <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
-
   <div class="topbar2-spacer"></div>
   <div class="topbar2-tools" id="topbarTools" style="display:none">
     <input id="topbarActiveFilter" class="topbar2-input" type="text" placeholder="Aktif Oyun ara…" />
@@ -2964,30 +2924,5 @@ body{
     </div>
   </div>
 
-
-        <div class="active-tools">
-            <input type="text" placeholder="Aktif Oyun filtrele..." oninput="filterActive(this.value)">
-            <button onclick="copyActiveToExcel()">Excel Kopyala</button>
-        </div>
-
-        <script>
-        function filterActive(val){
-            const rows = document.querySelectorAll('.active-row');
-            rows.forEach(r=>{
-                r.style.display = r.innerText.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
-            });
-        }
-
-        function copyActiveToExcel(){
-            let text = "";
-            document.querySelectorAll('.active-row').forEach(r=>{
-                if(r.style.display !== 'none'){
-                    text += r.innerText + "\n";
-                }
-            });
-            navigator.clipboard.writeText(text);
-            alert("Excel için kopyalandı.");
-        }
-        </script>
-        </body>
+</body>
 </html>
