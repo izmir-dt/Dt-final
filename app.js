@@ -3167,3 +3167,63 @@ function renderCommon(){
   setTimeout(onRoute, 50);
 })();
 
+
+
+
+/* === PATCH v5: Matris/Yoğunluk init robust (DOM render sonrası garanti) === */
+(function reduceMatrisBug(){
+  let matrisTimer = null;
+  function wantMatris(){
+    return (location.hash || "").toLowerCase().startsWith("#matris");
+  }
+  function matrisReady(){
+    return !!document.getElementById("ccTop15") && !!document.getElementById("ccPlayA") && !!document.getElementById("ccPlayB");
+  }
+  function dataReady(){
+    try{
+      const r = (Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []));
+      return !!(r && r.length);
+    }catch(_e){ return false; }
+  }
+  function kick(){
+    try{
+      if(window.IDTHeatmap && typeof window.IDTHeatmap.render==="function"){
+        window.IDTHeatmap.render();
+      }
+    }catch(err){ console.error(err); }
+  }
+  function schedule(){
+    if(matrisTimer) return;
+    const start = Date.now();
+    matrisTimer = setInterval(()=>{
+      if(!wantMatris()){
+        clearInterval(matrisTimer); matrisTimer=null;
+        return;
+      }
+      // Wait for view to be in DOM + data ready
+      if(matrisReady() && dataReady()){
+        kick();
+        clearInterval(matrisTimer); matrisTimer=null;
+        return;
+      }
+      // Safety stop after 6s
+      if(Date.now()-start > 6000){
+        console.warn("Matris init timeout: domReady=", matrisReady(), "dataReady=", dataReady());
+        clearInterval(matrisTimer); matrisTimer=null;
+      }
+    }, 200);
+  }
+
+  window.addEventListener("hashchange", ()=>{
+    if(wantMatris()) schedule();
+  });
+  window.addEventListener("DOMContentLoaded", ()=>{
+    if(wantMatris()) schedule();
+  });
+  // Also if user navigates via in-app clicks that do not change hash instantly, observe
+  document.addEventListener("click", (e)=>{
+    const b = e.target && e.target.closest ? e.target.closest('[data-go="sideHeatmap"], #sideHeatmap') : null;
+    if(b) setTimeout(()=>{ if(wantMatris()) schedule(); }, 0);
+  }, true);
+})();
+
