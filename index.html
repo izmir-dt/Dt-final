@@ -1657,25 +1657,10 @@ body{
   white-space:nowrap;
 }
 
-
-
-/* Yoğunluk & Çakışma Merkezi — seçilen oyun özeti */
-.cc-sel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px;}
-.cc-sel-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:12px 14px;box-shadow:0 8px 22px rgba(0,0,0,.06);}
-.cc-sel-k{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:rgba(0,0,0,.55);margin-bottom:6px}
-.cc-sel-v{font-weight:800;font-size:14px;line-height:1.15;min-height:32px;display:flex;align-items:center}
-.cc-sel-sub{margin-top:8px;color:rgba(0,0,0,.65);font-weight:700}
-.cc-sel-bar{height:10px;border-radius:999px;background:rgba(122,30,44,.12);overflow:hidden;margin-top:8px}
-.cc-sel-fill{height:100%;border-radius:999px;background:rgba(122,30,44,.55);width:0%}
-.cc-sel-ortak .cc-sel-bar{background:rgba(192,122,42,.14)}
-.cc-sel-ortak .cc-sel-fill{background:rgba(192,122,42,.70)}
-@media (max-width: 980px){
-  .cc-sel-grid{grid-template-columns:1fr}
-}
 </style>
 
 
-  <link rel="stylesheet" href="idt-polish.css?v=1770920386">
+  <link rel="stylesheet" href="idt-polish.css">
   <script defer src="idt-performance.js"></script>
 
 </head>
@@ -1710,23 +1695,6 @@ body{
 <a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
         </div>
       </header>
-
-<div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
-  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
-  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
-  <div class="topbar2-spacer"></div>
-  <div class="topbar2-tools" id="topbarTools" style="display:none">
-    <input id="topbarActiveFilter" class="topbar2-input" type="text" placeholder="Aktif Oyun ara…" />
-    <button id="topbarActiveCopy" class="topbar2-action" type="button">📋 Excel</button>
-  </div>
-</div>
-
 
       <div class="idt-content">
         
@@ -1995,7 +1963,7 @@ body{
     <div class="card">
       <div class="hd">
         <h2>Yoğunluk & Çakışma Merkezi</h2>
-        
+        <div class="small">Yatay kaydırma yok. Üstten iki oyun seçip ortak personeli görebilir, alttan en yoğun oyunlardan hızlı liste alıp Excel’e kopyalayabilirsin.</div>
       </div>
       <div class="bd">
         <!-- Hızlı Çakışma -->
@@ -2020,42 +1988,33 @@ body{
           </div>
         </div>
 
-        <!-- En yoğun oyunlar / Seçilen oyun özeti -->
-        <div id="ccTopWrap">
-          <div class="cc-hd2">
-            <h3 id="ccTopTitle">En Yoğun 15 Oyun</h3>
+
+        <!-- Seçim Özeti (A/B seçilince görünür) -->
+        <div id="ccSelSummary" class="cc-sel-summary" style="display:none">
+          <div class="cc-sel-card">
+            <div class="k">Oyun A</div>
+            <div class="v" id="ccSumAName">—</div>
+            <div class="s" id="ccSumACnt">0 kişi</div>
           </div>
-          <div id="ccTop15" class="cc-games"></div>
+          <div class="cc-sel-card">
+            <div class="k">Ortak</div>
+            <div class="v" id="ccSumOCnt">0</div>
+            <div class="s">A ∩ B</div>
+          </div>
+          <div class="cc-sel-card">
+            <div class="k">Oyun B</div>
+            <div class="v" id="ccSumBName">—</div>
+            <div class="s" id="ccSumBCnt">0 kişi</div>
+          </div>
+          <button class="btn cc-clear" id="ccClearSel" type="button">Seçimleri Temizle</button>
         </div>
 
-        <div id="ccSelWrap" style="display:none">
-          <div class="cc-hd2">
-            <h3>Seçilen Oyun Özeti</h3>
-          </div>
-
-          <div class="cc-sel-grid">
-            <div class="cc-sel-card">
-              <div class="cc-sel-k">Oyun A</div>
-              <div id="ccSelAName" class="cc-sel-v">—</div>
-              <div class="cc-sel-bar"><div id="ccSelABar" class="cc-sel-fill" style="width:0%"></div></div>
-              <div id="ccSelACnt" class="cc-sel-sub">0 kişi</div>
-            </div>
-
-            <div class="cc-sel-card">
-              <div class="cc-sel-k">Oyun B</div>
-              <div id="ccSelBName" class="cc-sel-v">—</div>
-              <div class="cc-sel-bar"><div id="ccSelBBar" class="cc-sel-fill" style="width:0%"></div></div>
-              <div id="ccSelBCnt" class="cc-sel-sub">0 kişi</div>
-            </div>
-
-            <div class="cc-sel-card cc-sel-ortak">
-              <div class="cc-sel-k">Ortak</div>
-              <div id="ccSelOName" class="cc-sel-v">—</div>
-              <div class="cc-sel-bar"><div id="ccSelOBar" class="cc-sel-fill" style="width:0%"></div></div>
-              <div id="ccSelOCnt" class="cc-sel-sub">0 kişi</div>
-            </div>
-          </div>
+        <!-- En yoğun oyunlar -->
+        <div class="cc-hd2">
+          <h3>En Yoğun 15 Oyun</h3>
+          <div class="cc-hint">Bir oyuna tıkla → liste açılır → kopyala / Panel’e geç.</div>
         </div>
+        <div id="ccTopGames" class="cc-games"></div>
 
         <!-- Detay liste -->
         <div class="cc-detail">
@@ -2352,7 +2311,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=1770920386"></script>
+<script src="app.js?v=691"></script>
 
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 <script src="idt-desktop10.js?v=1"></script>
