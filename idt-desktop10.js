@@ -264,14 +264,35 @@
     }
 
     const limitSel = $('hmColLimit');
-    const colLimit = limitSel ? Number(limitSel.value||35) : 35;
+    const colLimit = limitSel ? Number(limitSel.value||15) : 15;
 
     // plays: window.plays is [{title,...}]
     const plays = Array.isArray(window.plays) ? window.plays.map(p=>p.title) : [];
     const people = Array.isArray(window.people) ? window.people.map(p=>p.title) : [];
 
-    // limit columns by alphabetic order (already sorted in groupByPlay)
-    const cols = plays.slice(0, Math.max(10, colLimit));
+    // Hücre sayısına göre (yoğunluk) en üst oyunları öne al
+    const playTotals = new Map();
+    for (const r of window.rows) {
+      const key = r && r.play ? r.play : '';
+      if (!key) continue;
+      playTotals.set(key, (playTotals.get(key) || 0) + 1);
+    }
+    const rankedPlays = plays
+      .slice()
+      .sort((a,b)=>{
+        const da = playTotals.get(a) || 0;
+        const db = playTotals.get(b) || 0;
+        if (db !== da) return db - da;
+        return String(a).localeCompare(String(b), 'tr');
+      });
+
+    // Yatay kaydırma istemiyoruz: varsayılan 15 ve tam olarak limit kadar oyun.
+    let cols = rankedPlays.slice(0, Math.max(1, colLimit));
+    // Seçili oyun varsa (state.oyun) listede yoksa en sona ekle
+    if (state.oyun && !cols.includes(state.oyun) && plays.includes(state.oyun)) {
+      cols = cols.slice(0, Math.max(1, colLimit - 1)).concat([state.oyun]);
+    }
+
     const idx = buildHeatIndex(window.rows);
 
     const esc = (s)=> String(s||'').replace(/[&<>"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
