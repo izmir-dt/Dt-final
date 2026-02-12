@@ -160,3 +160,38 @@ window.idtUpdateStats = function() {
     if(originalStatsFn) originalStatsFn();
     if(window.renderYoğunlukTablosu) window.renderYoğunlukTablosu();
 };
+/* === SİSTEMATİK ALTIN KURAL: DEFAULT A & GÖRSEL HİZALAMA === */
+window.setupHeatmap = function() {
+  const container = document.getElementById('ccList'); // Senin index.html'deki yerin
+  if(!container || !window.allDataRaw || window.allDataRaw.length === 0) return;
+
+  // Altın Kural: Default A (Bir isim, aynı oyunda sadece bir kez sayılır)
+  const data = window.allDataRaw.filter((v, i, a) => 
+    a.findIndex(t => (t.isim === v.isim && t.oyunAd === v.oyunAd)) === i
+  );
+
+  const plays = [...new Set(data.map(d => d.oyunAd))].sort();
+  const people = [...new Set(data.map(d => d.isim))].sort();
+
+  let html = `
+  <div class="heatmap-scroll-area">
+    <table class="idt-heatmap-main" id="heatmapTable">
+      <thead>
+        <tr>
+          <th class="sticky-col-name">PERSONEL / OYUN</th>
+          ${plays.map(p => `<th class="rotate-header"><div><span>${p}</span></div></th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>`;
+
+  people.forEach(person => {
+    html += `<tr><td class="sticky-col-name"><b>${person}</b></td>`;
+    plays.forEach(play => {
+      const match = data.find(d => d.isim === person && d.oyunAd === play);
+      html += `<td class="h-cell ${match ? 'h-active' : ''}">${match ? '1' : ''}</td>`;
+    });
+    html += `</tr>`;
+  });
+
+  container.innerHTML = html + `</tbody></table></div>`;
+};
