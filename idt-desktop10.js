@@ -628,11 +628,21 @@
       if(typeof window.copyText === 'function') window.copyText(lines.join('\n'));
     });
 
+    
+    let __ccRenderT = null;
+    function scheduleRenderDetailList(){
+      if(__ccRenderT) cancelAnimationFrame(__ccRenderT);
+      __ccRenderT = requestAnimationFrame(()=>{ 
+        // small timeout to let checkbox UI settle
+        setTimeout(()=>{ try{ renderDetailList(); }catch(e){} }, 0);
+      });
+    }
+
     const q = $('ccSearch');
-    if(q) q.addEventListener('input', ()=>{ renderDetailList(); });
+    if(q) q.addEventListener('input', ()=>{ scheduleRenderDetailList(); });
 
     const fig = $('ccFigOnly');
-    if(fig) fig.addEventListener('change', ()=>{ renderDetailList(); });
+    if(fig) fig.addEventListener('change', ()=>{ scheduleRenderDetailList(); });
 
     const copyList = $('ccCopyList');
     if(copyList) copyList.addEventListener('click', copyCurrentList);
