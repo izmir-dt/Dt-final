@@ -2777,6 +2777,8 @@ function renderCommon(){
     const countEl = el("ccCommonCount");
     if(countEl) countEl.textContent = String(common.length || 0);
 
+    updateCcSelectedSummary();
+
     const tableWrap = el("ccCommonTable");
     if(!tableWrap) return;
 
@@ -2924,13 +2926,18 @@ function renderCommon(){
   }
 
   function wire(){
-    if(wired) return;
     const root = el("ccTop15");
     if(!root) return; // feature not present in this build
+    const rows0 = getRows();
+    if(!rows0 || !rows0.length){
+      // veri henüz gelmediyse (ilk yükleme/yenile) tekrar dene
+      setTimeout(wire, 250);
+      return;
+    }
+    if(wired) return;
     wired = true;
 
-    const rows = getRows();
-    INDEX = buildPlayPersonIndex(rows);
+    INDEX = buildPlayPersonIndex(rows0);
 
     // Build sorted plays by unique person count
     const counts = [];
