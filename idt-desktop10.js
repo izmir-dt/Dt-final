@@ -255,93 +255,145 @@
     return idx;
   }
 
-  function renderHeatmap(){
-    const box = $('heatmapBox');
+  
+  // ===== Yoğunluk & Çakışma Merkezi (1 + 4) =====
+  function escHtml(s){
+    return String(s||'').replace(/[&<>"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function norm(s){ return String(s||'').toLocaleUpperCase('tr-TR'); }
+  function isFiguranRow(r){
+    const t = norm((r.role||'')+' '+(r.category||'')+' '+(r.person||''));
+    return /FİGÜRAN|FIGÜRAN|KURUMDAN EMEKL/.test(t) || /\(\s*FİGÜRAN\s*\)/.test(t);
+  }
+  function getAllPlays(){
+    const plays = Array.isArray(window.plays) ? window.plays.map(p=>p.title) : [];
+    return plays.filter(Boolean);
+  }
+  function getRows(){
+    return Array.isArray(window.rows) ? window.rows : [];
+  }
+  function buildPlayTotals(rows){
+    const totals = new Map();
+    for(const r of rows){
+      const p = r && r.play ? r.play : '';
+      if(!p) continue;
+      totals.set(p, (totals.get(p)||0) + 1);
+    }
+    return totals;
+  }
+  function getTopPlays(limit){
+    const rows = getRows();
+    const plays = getAllPlays();
+    const totals = buildPlayTotals(rows);
+    return plays.slice().sort((a,b)=>{
+      const da = totals.get(a)||0, db = totals.get(b)||0;
+      if(db!==da) return db-da;
+      return String(a).localeCompare(String(b),'tr');
+    }).slice(0, limit);
+  }
+  function rowsForPlay(play){
+    const rows = getRows();
+    return rows.filter(r=>r && r.play === play && (r.person||r.role||r.category));
+  }
+
+  // --- UI State (local to Center) ---
+  let centerSelectedPlay = '';
+  let lastCommon = []; // [{person, a, b}]
+
+  function setDetail(play){
+    centerSelectedPlay = play || '';
+    const title = $('ccDetailTitle');
+    const sub = $('ccDetailSub');
+    if(title) title.textContent = play ? play : 'Bir oyun seç';
+    if(sub){
+      sub.textContent = play ? 'Kişiler listesi hazır. İstersen ara / figüran filtresi uygula / Excel’e kopyala.' : 'Seçince kişiler listesi burada görünür.';
+    }
+    renderDetailList();
+  }
+
+  function renderTopGames(){
+    const box = $('ccTopGames');
     if(!box) return;
-    if(!Array.isArray(window.rows) || !window.rows.length){
+    const rows = getRows();
+    if(!rows.length){
       box.innerHTML = `<div class="empty">Veri yok.</div>`;
       return;
     }
+    const top = getTopPlays(15);
+    const totals = buildPlayTotals(rows);
+    const max = Math.max(1, ...top.map(p=>totals.get(p)||0));
+    box.innerHTML = top.map(p=>{
+      const n = totals.get(p)||0;
+      const w = Math.round((n/max)*100);
+      return `<div class="cc-game" data-play="${escHtml(p)}" title="${escHtml(p)}">
+        <div class="t">${escHtml(p)}</div>
+        <div class="m"><span>${n} kişi</span><span>Seç</span></div>
+        <div class="bar"><i style="width:${w}%"></i></div>
+      </div>`;
+    }).join('');
 
-    const limitSel = $('hmColLimit');
-    const colLimit = limitSel ? Number(limitSel.value||15) : 15;
-
-    // plays: window.plays is [{title,...}]
-    const plays = Array.isArray(window.plays) ? window.plays.map(p=>p.title) : [];
-    const people = Array.isArray(window.people) ? window.people.map(p=>p.title) : [];
-
-    // Hücre sayısına göre (yoğunluk) en üst oyunları öne al
-    const playTotals = new Map();
-    for (const r of window.rows) {
-      const key = r && r.play ? r.play : '';
-      if (!key) continue;
-      playTotals.set(key, (playTotals.get(key) || 0) + 1);
-    }
-    const rankedPlays = plays
-      .slice()
-      .sort((a,b)=>{
-        const da = playTotals.get(a) || 0;
-        const db = playTotals.get(b) || 0;
-        if (db !== da) return db - da;
-        return String(a).localeCompare(String(b), 'tr');
+    box.querySelectorAll('.cc-game').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const p = el.getAttribute('data-play') || '';
+        setState({oyun:p}); // reflect in active chips
+        setDetail(p);
       });
+    });
+  }
 
-    // Yatay kaydırma istemiyoruz: varsayılan 15 ve tam olarak limit kadar oyun.
-    let cols = rankedPlays.slice(0, Math.max(1, colLimit));
-    // Seçili oyun varsa (state.oyun) listede yoksa en sona ekle
-    if (state.oyun && !cols.includes(state.oyun) && plays.includes(state.oyun)) {
-      cols = cols.slice(0, Math.max(1, colLimit - 1)).concat([state.oyun]);
+  function renderDetailList(){
+    const list = $('ccList');
+    if(!list) return;
+    if(!centerSelectedPlay){
+      list.innerHTML = `<div class="empty">Bir oyun seçince burada liste oluşur.</div>`;
+      return;
+    }
+    const q = $('ccSearch') ? String($('ccSearch').value||'').trim() : '';
+    const figOnly = $('ccFigOnly') ? $('ccFigOnly').checked : false;
+
+    let rows = rowsForPlay(centerSelectedPlay);
+    if(figOnly) rows = rows.filter(isFiguranRow);
+    if(q){
+      const nq = norm(q);
+      rows = rows.filter(r => norm((r.person||'')+' '+(r.role||'')+' '+(r.category||'')).includes(nq));
     }
 
-    const idx = buildHeatIndex(window.rows);
+    // simple stable sort: category -> role -> person
+    rows.sort((a,b)=>{
+      const ca = String(a.category||'').localeCompare(String(b.category||''),'tr');
+      if(ca) return ca;
+      const ra = String(a.role||'').localeCompare(String(b.role||''),'tr');
+      if(ra) return ra;
+      return String(a.person||'').localeCompare(String(b.person||''),'tr');
+    });
 
-    const esc = (s)=> String(s||'').replace(/[&<>"']/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-    let html = `<table class="heatmapTable"><thead><tr><th class="stickyLeft">Kişi</th>`;
-    for(const p of cols){
-      html += `<th title="${esc(p)}">${esc(p)}</th>`;
-    }
-    html += `</tr></thead><tbody>`;
+    let html = `<table><thead><tr>
+      <th style="width:26%">Kategori</th>
+      <th style="width:32%">Görev</th>
+      <th style="width:42%">Kişi</th>
+    </tr></thead><tbody>`;
 
-    // Show at most 180 people for performance, prioritize selected
-    const maxPeople = 180;
-    let rowsPeople = people.slice(0, maxPeople);
-
-    if(state.kisi && !rowsPeople.includes(state.kisi) && people.includes(state.kisi)){
-      rowsPeople = [state.kisi, ...rowsPeople.filter(x=>x!==state.kisi)].slice(0, maxPeople);
-    }
-
-    for(const person of rowsPeople){
-      html += `<tr><td class="stickyLeft">${esc(person)}</td>`;
-      for(const play of cols){
-        const c = idx.get(person+'||'+play) || 0;
-        if(c){
-          const lvl = c>=4 ? 4 : c; // cap
-          const cls = `heatCell isOn heat${lvl}` + ((state.kisi===person && state.oyun===play) ? ' isSelected' : '');
-          html += `<td class="${cls}" data-person="${esc(person)}" data-play="${esc(play)}" title="${esc(person)} • ${esc(play)}">${c}</td>`;
-        }else{
-          html += `<td class="heatCell" data-person="${esc(person)}" data-play="${esc(play)}" title="${esc(person)} • ${esc(play)}"></td>`;
-        }
-      }
-      html += `</tr>`;
+    for(const r of rows){
+      html += `<tr class="ccRow" data-person="${escHtml(r.person)}" data-play="${escHtml(centerSelectedPlay)}">
+        <td>${escHtml(r.category||'')}</td>
+        <td>${escHtml(r.role||'')}</td>
+        <td>${escHtml(r.person||'')}</td>
+      </tr>`;
     }
     html += `</tbody></table>`;
-    box.innerHTML = html;
+    list.innerHTML = html;
 
-    // click handling
-    box.querySelectorAll('.heatCell').forEach(td=>{
-      td.addEventListener('click', ()=>{
-        const person = td.getAttribute('data-person') || '';
-        const play = td.getAttribute('data-play') || '';
-        setState({kisi: person, oyun: play});
-        // Panel'de detay açılınca ilgili kişiyi vurgulamak için (best-effort)
+    // row click: go to panel with focus on that person
+    list.querySelectorAll('.ccRow').forEach(tr=>{
+      tr.addEventListener('click', ()=>{
+        const person = tr.getAttribute('data-person') || '';
+        const play = tr.getAttribute('data-play') || '';
+        setState({kisi:person, oyun:play});
         try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
-        // go to Panel
-        const tabPanel = $('tabPanel');
-        if(tabPanel) tabPanel.click();
-        // try to open play in list (best-effort)
+        const tabPanel = $('tabPanel'); if(tabPanel) tabPanel.click();
+        // best-effort open play
         try{
           if(typeof window.renderList === 'function' && typeof window.renderDetails === 'function'){
-            // set to plays mode and find play item
             if(window.activeMode !== 'plays' && $('btnPlays')) $('btnPlays').click();
             const target = Array.isArray(window.plays) ? window.plays.find(x=>x.title===play) : null;
             if(target){
@@ -356,7 +408,196 @@
     });
   }
 
+  function buildCommon(playA, playB){
+    const ra = rowsForPlay(playA);
+    const rb = rowsForPlay(playB);
+    const aMap = new Map(); // person -> Set('Kategori — Görev')
+    for(const r of ra){
+      const person = r.person||'';
+      if(!person) continue;
+      const s = `${r.category||''} — ${r.role||''}`.replace(/\s+—\s+$/,'').trim();
+      if(!aMap.has(person)) aMap.set(person, new Set());
+      if(s) aMap.get(person).add(s);
+    }
+    const bMap = new Map();
+    for(const r of rb){
+      const person = r.person||'';
+      if(!person) continue;
+      const s = `${r.category||''} — ${r.role||''}`.replace(/\s+—\s+$/,'').trim();
+      if(!bMap.has(person)) bMap.set(person, new Set());
+      if(s) bMap.get(person).add(s);
+    }
+    const common = [];
+    for(const person of aMap.keys()){
+      if(!bMap.has(person)) continue;
+      const a = Array.from(aMap.get(person)).join(' | ');
+      const b = Array.from(bMap.get(person)).join(' | ');
+      common.push({person, a, b});
+    }
+    common.sort((x,y)=> String(x.person).localeCompare(String(y.person),'tr'));
+    return common;
+  }
+
+  function updateCommonCount(){
+    const a = $('ccPlayA') ? $('ccPlayA').value : '';
+    const b = $('ccPlayB') ? $('ccPlayB').value : '';
+    const out = $('ccCommonCount');
+    if(!out) return;
+    if(!a || !b || a===b){
+      out.textContent = '0';
+      lastCommon = [];
+      return;
+    }
+    lastCommon = buildCommon(a,b);
+    out.textContent = String(lastCommon.length);
+  }
+
+  function showCommonAsDetail(){
+    const a = $('ccPlayA') ? $('ccPlayA').value : '';
+    const b = $('ccPlayB') ? $('ccPlayB').value : '';
+    if(!a || !b || a===b){
+      setDetail('');
+      const list = $('ccList');
+      if(list) list.innerHTML = `<div class="empty">İki farklı oyun seç.</div>`;
+      return;
+    }
+    const list = $('ccList');
+    if(!list) return;
+
+    const common = lastCommon && lastCommon.length ? lastCommon : buildCommon(a,b);
+    const title = $('ccDetailTitle');
+    const sub = $('ccDetailSub');
+    centerSelectedPlay = ''; // detail is common view (not single play)
+    if(title) title.textContent = `Ortak Personel (${a} ∩ ${b})`;
+    if(sub) sub.textContent = `${common.length} kişi. Satıra tıklayınca Panel’de ilgili oyunu açar (önce Oyun A).`;
+
+    let html = `<table><thead><tr>
+      <th style="width:30%">Kişi</th>
+      <th style="width:35%">Oyun A Görev</th>
+      <th style="width:35%">Oyun B Görev</th>
+    </tr></thead><tbody>`;
+    for(const r of common){
+      html += `<tr class="ccCommonRow" data-person="${escHtml(r.person)}" data-a="${escHtml(a)}" data-b="${escHtml(b)}">
+        <td>${escHtml(r.person)}</td>
+        <td>${escHtml(r.a)}</td>
+        <td>${escHtml(r.b)}</td>
+      </tr>`;
+    }
+    html += `</tbody></table>`;
+    list.innerHTML = html;
+
+    list.querySelectorAll('.ccCommonRow').forEach(tr=>{
+      tr.addEventListener('click', ()=>{
+        const person = tr.getAttribute('data-person') || '';
+        const play = tr.getAttribute('data-a') || '';
+        setState({kisi:person, oyun:play});
+        try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
+        const tabPanel = $('tabPanel'); if(tabPanel) tabPanel.click();
+        try{
+          if(typeof window.renderList === 'function' && typeof window.renderDetails === 'function'){
+            if(window.activeMode !== 'plays' && $('btnPlays')) $('btnPlays').click();
+            const target = Array.isArray(window.plays) ? window.plays.find(x=>x.title===play) : null;
+            if(target){
+              window.activeId = target.id;
+              window.selectedItem = target;
+              window.renderList({preserveScroll:false});
+              window.renderDetails(target);
+            }
+          }
+        }catch(_e){}
+      });
+    });
+  }
+
+  function copyCurrentList(){
+    const list = $('ccList');
+    if(!list) return;
+    const table = list.querySelector('table');
+    if(!table) return;
+    const rows = [];
+    const trs = table.querySelectorAll('tbody tr');
+    const ths = Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent.trim());
+    rows.push(ths.join('\t'));
+    trs.forEach(tr=>{
+      const tds = Array.from(tr.querySelectorAll('td')).map(td=>td.textContent.trim());
+      rows.push(tds.join('\t'));
+    });
+    const text = rows.join('\n');
+    if(typeof window.copyText === 'function') window.copyText(text);
+  }
+
+  function setupCenter(){
+    // populate selects
+    const selA = $('ccPlayA');
+    const selB = $('ccPlayB');
+    if(selA && selB){
+      const plays = getAllPlays().slice().sort((a,b)=>String(a).localeCompare(String(b),'tr'));
+      const opt = (p)=> `<option value="${escHtml(p)}">${escHtml(p)}</option>`;
+      selA.innerHTML = `<option value="">Seç…</option>` + plays.map(opt).join('');
+      selB.innerHTML = `<option value="">Seç…</option>` + plays.map(opt).join('');
+      selA.addEventListener('change', updateCommonCount);
+      selB.addEventListener('change', updateCommonCount);
+    }
+
+    const btnShow = $('ccShowCommon');
+    const btnCopy = $('ccCopyCommon');
+    if(btnShow) btnShow.addEventListener('click', showCommonAsDetail);
+    if(btnCopy) btnCopy.addEventListener('click', ()=>{
+      // ensure computed
+      updateCommonCount();
+      const a = selA ? selA.value : '';
+      const b = selB ? selB.value : '';
+      const common = lastCommon || [];
+      const lines = [];
+      lines.push(['Kişi','Oyun A Görev','Oyun B Görev'].join('\t'));
+      for(const r of common){
+        lines.push([r.person, r.a, r.b].join('\t'));
+      }
+      if(typeof window.copyText === 'function') window.copyText(lines.join('\n'));
+    });
+
+    const q = $('ccSearch');
+    if(q) q.addEventListener('input', ()=>{ renderDetailList(); });
+
+    const fig = $('ccFigOnly');
+    if(fig) fig.addEventListener('change', ()=>{ renderDetailList(); });
+
+    const copyList = $('ccCopyList');
+    if(copyList) copyList.addEventListener('click', copyCurrentList);
+
+    const toPanel = $('ccToPanel');
+    if(toPanel) toPanel.addEventListener('click', ()=>{ const t=$('tabPanel'); if(t) t.click(); });
+
+    renderTopGames();
+    updateCommonCount();
+    setDetail(state.oyun || '');
+  }
+
+  function renderHeatmap(){
+    // compatibility: called when Heatmap tab is opened
+    if(!getRows().length){
+      const box = $('ccTopGames');
+      if(box) box.innerHTML = `<div class="empty">Veri yok.</div>`;
+      return;
+    }
+    renderTopGames();
+    updateCommonCount();
+    if(state.oyun) setDetail(state.oyun);
+    else if(centerSelectedPlay) setDetail(centerSelectedPlay);
+  }
+
   function setupHeatmap(){
+    window.IDTHeatmap = {
+      render: ()=>{
+        try{ window.IDTLoading && window.IDTLoading.show('Yoğunluk & Çakışma Merkezi hazırlanıyor…'); }catch(_e){}
+        setTimeout(()=>{
+          try{ renderHeatmap(); }finally{ window.IDTLoading && window.IDTLoading.hide(); }
+        }, 0);
+      }
+    };
+    setupCenter();
+  }
+function setupHeatmap(){
     const btn = $('hmRefresh');
     const toPanel = $('hmToPanel');
     const limit = $('hmColLimit');
