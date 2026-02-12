@@ -9,3 +9,10 @@
 .idt-active { background: var(--accent) !important; color: white !important; font-weight: bold; }
 .idt-rotate { height: 140px; vertical-align: bottom; padding: 10px; }
 .idt-rotate div { transform: rotate(-45deg); width: 30px; }
+.final-container { overflow: auto; max-height: 75vh; border: 1.5px solid #dccbb7; border-radius: 12px; background: #fff; }
+.final-table { border-collapse: separate !important; width: 100%; font-size: 13px; }
+.f-sticky { position: sticky !important; left: 0; z-index: 10; background: #fbf7f1 !important; border-right: 2px solid #7a1e2c !important; font-weight: 800; min-width: 180px; padding: 10px !important; }
+.f-cell { border: 0.5px solid #dccbb7; text-align: center; height: 35px; width: 45px; }
+.f-active { background: #7a1e2c !important; color: white !important; font-weight: bold; }
+.f-rotate { height: 140px; vertical-align: bottom; padding: 10px; }
+.f-rotate div { transform: rotate(-45deg); width: 30px; }
