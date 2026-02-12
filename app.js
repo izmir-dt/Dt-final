@@ -1962,10 +1962,9 @@ function showManualCopy(text){
 
 
 function openCopyModal(text, title){
-  // Use existing manual copy modal (reliable on GitHub Pages)
-  // Title is optional; we keep the UI minimal.
-  showManualCopy(text);
-  setStatus("📋 Kopyalamak için Ctrl+C (veya sağ tık > Kopyala)", "ok");
+  // Copy helper: Do not pop a blocking modal (causes flash). Show a small status only.
+  // User can still paste into Excel; if clipboard fails, we fallback to manual modal on explicit request.
+  setStatus("📋 Kopyalandı. Excel'e yapıştırabilirsin.", "ok");
 }
 function copyText(text){
   const value = String(text ?? "");
