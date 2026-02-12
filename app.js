@@ -1731,7 +1731,7 @@ function setActiveTab(which){
   el("view"+which).style.display="block";
 
   // URL hash (geri/ileri ve yenilemede aynı sekme)
-  const slugMap = { Panel:"panel", Distribution:"analiz", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
+  const slugMap = { Panel:"panel", Distribution:"analiz", Heatmap:"matris", Intersection:"kesisim", Figuran:"figuran", Charts:"grafikler",
     Assign:"gorev"
   };
   const slug = slugMap[which] || "panel";
@@ -1759,6 +1759,12 @@ els.tabIntersection.addEventListener("click", ()=>setActiveTab("Intersection"));
 els.tabFiguran.addEventListener("click", ()=>setActiveTab("Figuran"));
 els.tabCharts.addEventListener("click", ()=>setActiveTab("Charts"));
 els.tabHeatmap && els.tabHeatmap.addEventListener("click", ()=>setActiveTab("Heatmap"));
+
+// Sidebar: Yoğunluk Matrisi
+try{
+  const sideHM = document.getElementById('sideHeatmap');
+  if(sideHM) sideHM.addEventListener('click', ()=>setActiveTab('Heatmap'));
+}catch(_e){}
 els.tabAssign && els.tabAssign.addEventListener("click", ()=>setActiveTab("Assign"));
 
 function tabFromHash_(){
