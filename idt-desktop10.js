@@ -9,30 +9,23 @@
     const msg = $('glMsg');
     if(!root || !close || !msg) return;
 
-    const AUTOHIDE_MS = 1100;
-    let tAuto = null;
-
     const hide = () => {
       root.classList.add('hidden');
       root.setAttribute('aria-hidden','true');
       document.body.style.overflow = '';
-      if(tAuto){ clearTimeout(tAuto); tAuto=null; }
     };
-    const show = (text, opts={}) => {
+    const show = (text) => {
       if(text) msg.textContent = String(text);
       root.classList.remove('hidden');
       root.setAttribute('aria-hidden','false');
-      /* no lock */
+      /* non-blocking loading */
       document.body.style.overflow = '';
-      const force = !!opts.force;
-      if(!force){
-        if(tAuto) clearTimeout(tAuto);
-        tAuto = setTimeout(()=>{ try{ hide(); }catch(_e){} }, AUTOHIDE_MS);
-      }
+      if(window.__IDT_LOADING_AUTOT){ clearTimeout(window.__IDT_LOADING_AUTOT); }
+      window.__IDT_LOADING_AUTOT = setTimeout(()=>{ try{ hide(); }catch(_e){} }, 1400);
     };
 
     window.IDTLoading = {
-      show: (text, opts) => show(text || 'Lütfen bekleyin…', opts || {}),
+      show: (text) => show(text || 'Lütfen bekleyin…'),
       hide
     };
 
@@ -51,17 +44,14 @@
       try{
         const t = String(text||'');
         if(/yükleniyor/i.test(t) || /güncelleniyor/i.test(t)){
-          // avoid flash: show only if still loading after 500ms
+          // avoid flash: show only if still loading after 450ms
           if(!window.__IDT_LOADING_TIMER){
             window.__IDT_LOADING_TIMER = setTimeout(()=>{
               try{ window.IDTLoading && window.IDTLoading.show(t.replace(/^⏳\s*/,'')); }catch(_e){}
-            }, 500);
+            }, 450);
           }
         }else{
-          if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER=null; }
-
-          // don't hide aggressively, some screens may still compute
-          if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER=null; }
+          if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER = null; }
           window.IDTLoading && window.IDTLoading.hide();
         }
       }catch(_e){}
@@ -633,21 +623,19 @@
     const btnCopy = $('ccCopyCommon');
     if(btnShow) btnShow.addEventListener('click', showCommonAsDetail);
     if(btnCopy) btnCopy.addEventListener('click', async ()=>{
-      /* BATCH: ccCopyCommon async */
       try{
         btnCopy.disabled = true;
         btnCopy.classList.add('is-busy');
-        if(typeof window.setStatus === 'function') window.setStatus('⏳ Excel kopyası hazırlanıyor…', 'info');
+        if(typeof window.setStatus === 'function') window.setStatus('⏳ Ortaklar Excel için hazırlanıyor…','info');
 
-        // ensure computed (updates lastCommon)
         updateCommonCount();
         const common = lastCommon || [];
 
-        // Build TSV in a macrotask to avoid UI freeze
+        // yield to UI (prevents freeze)
         await new Promise(res=>setTimeout(res, 0));
 
         const lines = new Array(common.length + 1);
-        lines[0] = ['Kişi','Oyun A Görev','Oyun B Görev'].join('	');
+        lines[0] = 'Kişi	Oyun A Görev	Oyun B Görev';
         for(let i=0;i<common.length;i++){
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
@@ -655,20 +643,19 @@
         const tsv = lines.join('
 ');
 
-        // Prefer async clipboard
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
         }else if(typeof window.copyText === 'function'){
           window.copyText(tsv);
         }
 
-        if(typeof window.setStatus === 'function') window.setStatus('✅ Ortaklar Excel’e kopyalandı', 'ok');
+        if(typeof window.setStatus === 'function') window.setStatus('✅ Ortaklar Excel’e kopyalandı','ok');
       }catch(err){
         console.error(err);
-        if(typeof window.setStatus === 'function') window.setStatus('⚠️ Kopyalama başarısız. Tekrar dene.', 'warn');
-        // fallback: old copyText if clipboard failed
+        if(typeof window.setStatus === 'function') window.setStatus('⚠️ Kopyalama başarısız','warn');
         try{
           if(typeof window.copyText === 'function'){
+            updateCommonCount();
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
@@ -680,16 +667,6 @@
         btnCopy.disabled = false;
         btnCopy.classList.remove('is-busy');
       }
-    });
-      const a = selA ? selA.value : '';
-      const b = selB ? selB.value : '';
-      const common = lastCommon || [];
-      const lines = [];
-      lines.push(['Kişi','Oyun A Görev','Oyun B Görev'].join('\t'));
-      for(const r of common){
-        lines.push([r.person, r.a, r.b].join('\t'));
-      }
-      if(typeof window.copyText === 'function') window.copyText(lines.join('\n'));
     });
 
     
