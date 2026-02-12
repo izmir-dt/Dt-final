@@ -2749,3 +2749,13 @@ function idtUpdateStats(){
     setTimeout(()=>{ clearInterval(t1); setInterval(tick, 4000); }, 30000);
   });
 })();
+/* === SİSTEMATİK ALTIN KURAL: VERİ HABERLEŞME KÖPRÜSÜ === */
+(function() {
+  const originalUpdateStats = window.idtUpdateStats;
+  window.idtUpdateStats = function() {
+    if(originalUpdateStats) originalStats(); // Mevcut sayaçlar çalışsın
+    // Altın Kural: Veri geldiği an Yoğunluk Tablosunu tetikle
+    if(window.setupHeatmap) window.setupHeatmap(); 
+    console.log("⚓ Altın Kural: Veri akışı Yoğunluk Tablosuna bağlandı.");
+  };
+})();
