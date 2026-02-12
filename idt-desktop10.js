@@ -640,7 +640,8 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('\n');
+        const tsv = lines.join('
+');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -658,7 +659,8 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('\n'));
+            window.copyText(lines.join('
+'));
           }
         }catch(_e){}
       }finally{
@@ -794,6 +796,7 @@ function setupHeatmap(){
     setupLoading();
     patchSetStatus();
     setupHelp();
+    setupTopQuickbar();
     setupActiveFilters();
     setupHeatmap();
     setupSidebarNav();
@@ -806,5 +809,89 @@ function setupHeatmap(){
       }
     }catch(_e){}
   });
+
+
+  // ---------- Top Quickbar counts (Aktif Oyun / Personel / Figüran) ----------
+  function setupTopQuickbar(){
+    if(window.__IDT_TOPQB_WIRED) return;
+    window.__IDT_TOPQB_WIRED = true;
+
+    const topPlays = $('topPlays');
+    const topPeople = $('topPeople');
+    const topFig = $('topFig');
+    const cPlays = $('topPlaysCount');
+    const cPeople = $('topPeopleCount');
+    const cFig = $('topFigCount');
+
+    const kPlays = $('kpiPlays');
+    const kPeople = $('kpiPeople');
+    const kFig = $('kpiFiguran');
+
+    const setTxt = (el, v)=>{ if(el) el.textContent = (v==null || v==='' ? '-' : String(v)); };
+
+    const sync = ()=>{
+      setTxt(cPlays, kPlays ? kPlays.textContent.trim() : '-');
+      setTxt(cPeople, kPeople ? kPeople.textContent.trim() : '-');
+      setTxt(cFig, kFig ? kFig.textContent.trim() : '-');
+    };
+
+    // Observe KPI changes (no polling)
+    try{
+      const mo = new MutationObserver(sync);
+      [kPlays, kPeople, kFig].forEach(el=>{
+        if(el) mo.observe(el, {childList:true, subtree:true, characterData:true});
+      });
+    }catch(_e){}
+    sync();
+
+    function setActive(btn){
+      [topPlays, topPeople, topFig].forEach(b=>{ if(b) b.classList.remove('active'); });
+      if(btn) btn.classList.add('active');
+    }
+
+    const goPanel = ()=>{ const b = $('tabPanel'); if(b) b.click(); };
+
+    if(topPlays){
+      topPlays.addEventListener('click', ()=>{
+        goPanel();
+        try{
+          if(window.els && window.els.btnPlays) window.els.btnPlays.click();
+          else if(window.btnPlays) window.btnPlays.click();
+        }catch(_e){}
+        setActive(topPlays);
+      });
+    }
+    if(topPeople){
+      topPeople.addEventListener('click', ()=>{
+        goPanel();
+        try{
+          if(window.els && window.els.btnPeople) window.els.btnPeople.click();
+          else if(window.btnPeople) window.btnPeople.click();
+        }catch(_e){}
+        setActive(topPeople);
+      });
+    }
+    if(topFig){
+      topFig.addEventListener('click', ()=>{
+        const b = $('tabFiguran'); if(b) b.click();
+        setActive(topFig);
+      });
+    }
+
+    // Sync active highlight with existing UI
+    document.addEventListener('click', (e)=>{
+      const hit = e.target && e.target.closest ? e.target.closest('#tabPanel,#tabFiguran,#btnPlays,#btnPeople') : null;
+      if(!hit) return;
+      if(hit.id === 'tabFiguran') setActive(topFig);
+      if(hit.id === 'tabPanel'){
+        try{
+          if(window.activeMode === 'people') setActive(topPeople);
+          else setActive(topPlays);
+        }catch(_e){ setActive(topPlays); }
+      }
+      if(hit.id === 'btnPeople') setActive(topPeople);
+      if(hit.id === 'btnPlays') setActive(topPlays);
+    }, true);
+  }
 
 })();
