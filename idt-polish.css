@@ -1,3 +1,46 @@
+/* --- Profesyonel Operasyonel Görünüm --- */
+body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Üst Menü Modernizasyonu */
+.idt-topbar2 {
+    background: rgba(251, 247, 241, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.topNav2Btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600 !important;
+    border: 1px solid transparent !important;
+}
+
+.topNav2Btn:hover {
+    background: var(--accent) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+}
+
+/* Tablo Veri Okunabilirliği */
+.row-item {
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+}
+
+.row-item:hover {
+    background: #fff !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-color: var(--accent2);
+}
+
+
 /* ============================
    Masaüstü 1.0 Kabuk (UI)
    ============================ */
@@ -76,46 +119,6 @@
   --idtHeaderH: 64px;            /* adjust if your header height differs */
   --idtPanelGap: 14px;
   --idtPanelRadius: 16px;
-}
-
-
-
-/* --- Profesyonel Tablo ve Okunabilirlik Düzenlemeleri --- */
-
-/* Veri tabloları için 'Sticky' (Sabit) Başlık ve Excel Görünümü */
-#ccList table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-#ccList th {
-    position: sticky;
-    top: 0; /* Sayfa kaydıkça başlıkların yukarıda çakılı kalmasını sağlar */
-    background-color: var(--card);
-    z-index: 10;
-    border-bottom: 2px solid var(--line);
-    padding: 12px 10px;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 900;
-}
-
-/* Satır Renklendirme (Zebra Striping): Okunabilirliği %40 artırır */
-#ccList tr:nth-child(even) {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* Masaüstü için Hover Etkisi */
-#ccList tr:hover {
-    background-color: rgba(122, 30, 44, 0.04) !important;
-    transition: background 0.2s ease;
-}
-
-/* Rakamların hizalanması için özel font ayarı */
-.row-item span, td {
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.3px;
 }
 
 /* A11y: focus ring */
@@ -1084,3 +1087,20 @@ table.idt-table tbody tr:hover,
 #globalLoading .glClose{display:none !important;}
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
+
+
+/* --- Profesyonel Tablo ve Okunabilirlik Düzenlemeleri --- */
+#ccList table { width: 100%; border-collapse: separate; border-spacing: 0; }
+#ccList th {
+  position: sticky; top: 0;
+  background-color: var(--card);
+  z-index: 10;
+  border-bottom: 2px solid var(--line);
+  padding: 12px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+#ccList tr:nth-child(even){ background-color: rgba(0,0,0,0.02); }
+#ccList tr:hover{ background-color: rgba(122,30,44,0.04) !important; transition: background 0.2s ease; }
+.row-item span, td{ font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
