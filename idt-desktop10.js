@@ -439,17 +439,89 @@
   }
 
   function updateCommonCount(){
-    const a = $('ccPlayA') ? $('ccPlayA').value : '';
-    const b = $('ccPlayB') ? $('ccPlayB').value : '';
+    const selA = $('ccPlayA');
+    const selB = $('ccPlayB');
+    const a = selA ? selA.value : '';
+    const b = selB ? selB.value : '';
     const out = $('ccCommonCount');
     if(!out) return;
+
+    // If selects are empty but data exists, repopulate once
+    try{
+      if(selA && selB && selA.options && selA.options.length <= 1 && getRows().length){
+        const plays = getAllPlays().slice().sort((x,y)=>String(x).localeCompare(String(y),'tr'));
+        const opt = (p)=> `<option value="${escHtml(p)}">${escHtml(p)}</option>`;
+        const htmlOpt = `<option value="">Seç…</option>` + plays.map(opt).join('');
+        selA.innerHTML = htmlOpt;
+        selB.innerHTML = htmlOpt;
+      }
+    }catch(_e){}
+
+    const topHd = document.querySelector('#viewHeatmap .cc-hd2');
+    const topGames = $('ccTopGames');
+    const sum = $('ccSelSummary');
+    const clearBtn = $('ccClearSel');
+
+    // counts per play
+    const countPeople = (play)=>{
+      const rows = rowsForPlay(play);
+      const set = new Set();
+      rows.forEach(r=>{ if(r && r.person) set.add(r.person); });
+      return set.size;
+    };
+
+    // Toggle UI
+    const hasSel = !!(a || b);
+    if(sum && topHd && topGames){
+      if(hasSel){
+        sum.style.display = '';
+        topHd.style.display = 'none';
+        topGames.style.display = 'none';
+      }else{
+        sum.style.display = 'none';
+        topHd.style.display = '';
+        topGames.style.display = '';
+      }
+    }
+
+    // Clear selections
+    if(clearBtn && !clearBtn.__wired){
+      clearBtn.__wired = true;
+      clearBtn.addEventListener('click', ()=>{
+        if(selA) selA.value = '';
+        if(selB) selB.value = '';
+        lastCommon = [];
+        out.textContent = '0';
+        // restore top15
+        if(sum && topHd && topGames){
+          sum.style.display = 'none';
+          topHd.style.display = '';
+          topGames.style.display = '';
+        }
+        // reset detail
+        setDetail('');
+      });
+    }
+
+    // Update summary texts
+    const aName = $('ccSumAName'); const bName = $('ccSumBName');
+    const aCnt = $('ccSumACnt'); const bCnt = $('ccSumBCnt');
+    const oCnt = $('ccSumOCnt');
+    if(aName) aName.textContent = a ? a : '—';
+    if(bName) bName.textContent = b ? b : '—';
+    if(aCnt) aCnt.textContent = a ? (countPeople(a) + ' kişi') : '0 kişi';
+    if(bCnt) bCnt.textContent = b ? (countPeople(b) + ' kişi') : '0 kişi';
+
+    // Common compute
     if(!a || !b || a===b){
       out.textContent = '0';
+      if(oCnt) oCnt.textContent = '0';
       lastCommon = [];
       return;
     }
     lastCommon = buildCommon(a,b);
     out.textContent = String(lastCommon.length);
+    if(oCnt) oCnt.textContent = String(lastCommon.length);
   }
 
   function showCommonAsDetail(){
@@ -568,6 +640,7 @@
     const toPanel = $('ccToPanel');
     if(toPanel) toPanel.addEventListener('click', ()=>{ const t=$('tabPanel'); if(t) t.click(); });
 
+    try{ setupCenter(); }catch(_e){}
     renderTopGames();
     updateCommonCount();
     setDetail(state.oyun || '');
@@ -586,7 +659,7 @@
     else if(centerSelectedPlay) setDetail(centerSelectedPlay);
   }
 
-  function setupHeatmap(){
+  function setupHeatmapOld(){
     window.IDTHeatmap = {
       render: ()=>{
         try{ window.IDTLoading && window.IDTLoading.show('Yoğunluk & Çakışma Merkezi hazırlanıyor…'); }catch(_e){}
@@ -598,6 +671,9 @@
     setupCenter();
   }
 function setupHeatmap(){
+    // ensure center events/selects wired
+    try{ setupCenter(); }catch(_e){}
+
     const btn = $('hmRefresh');
     const toPanel = $('hmToPanel');
     const limit = $('hmColLimit');
