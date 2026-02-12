@@ -2647,6 +2647,7 @@ function renderAssignTool(){
 (function(){
   // Guard: only wire once
   let wired = false;
+  let lastCcRoot = null;
   function uniq(arr){ return Array.from(new Set(arr)); }
   function norm(s){ return String(s||"").trim(); }
   function getRows(){ return Array.isArray(window.rows) ? window.rows : (typeof rows !== "undefined" ? rows : []); }
@@ -2934,7 +2935,9 @@ function renderCommon(){
       setTimeout(wire, 250);
       return;
     }
-    if(wired) return;
+    if(wired && lastCcRoot===root) return;
+    if(lastCcRoot!==root){ wired = false; }
+    lastCcRoot = root;
     wired = true;
 
     INDEX = buildPlayPersonIndex(rows0);
