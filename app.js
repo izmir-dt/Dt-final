@@ -12,21 +12,22 @@ async function idtFetchAll() {
     const text = await res.text();
     const json = JSON.parse(text.substring(47, text.length - 2));
     
-    // Senin zipindeki gerçek kolon yapısı
+    // ALTIN KURAL 1: Senin orijinal kolon yapın (1:İsim, 2:Oyun)
     window.allDataRaw = json.table.rows.map(row => ({
       isim: (row.c[1] && row.c[1].v) ? String(row.c[1].v).trim() : "",
       oyunAd: (row.c[2] && row.c[2].v) ? String(row.c[2].v).trim() : ""
     })).filter(item => item.isim !== "" && item.oyunAd !== "");
 
-    // Veri bittiği an her şeyi tetikle
+    // Veri hazır olduğunda istatistikleri ve Matrisi (Heatmap) çalıştır
     if(window.idtUpdateStats) window.idtUpdateStats();
     if(window.setupHeatmap) window.setupHeatmap(); 
     
-  } catch (err) { console.error("Hata:", err); }
+  } catch (err) { console.error("Veri Hatası:", err); }
 }
 
 function idtUpdateStats() {
   const pEl = document.getElementById("stat-total-personel");
   if(pEl) pEl.textContent = String(window.allDataRaw.length);
 }
+
 document.addEventListener('DOMContentLoaded', idtFetchAll);
