@@ -3043,3 +3043,22 @@ function renderCommon(){
   }
 })();
 
+
+
+
+/* === PATCH v3: Sidebar kaldırıldı -> üst menü butonları eski nav click'lerini tetikler === */
+(function(){
+  document.addEventListener("click", function(e){
+    const b = e.target && e.target.closest ? e.target.closest(".topNav2Btn") : null;
+    if(!b) return;
+    const id = b.getAttribute("data-go");
+    if(!id) return;
+    const el = document.getElementById(id);
+    if(el && el.click){
+      e.preventDefault();
+      e.stopPropagation();
+      el.click();
+    }
+  }, true);
+})();
+
