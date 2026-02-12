@@ -767,3 +767,192 @@ table.idt-table tbody tr:hover,
   outline: 2px solid rgba(122,30,44,.35);
   outline-offset: -2px;
 }
+
+
+/* ===== Yoğunluk & Çakışma Merkezi (masaüstü) ===== */
+.cc-top{
+  display:grid;
+  grid-template-columns: 1fr 1fr auto 1.2fr;
+  gap:12px;
+  align-items:end;
+  margin-bottom:14px;
+}
+.cc-sel label{ display:block; font-size:12px; opacity:.8; margin:0 0 6px; }
+.cc-sel select{
+  width:100%;
+  height:38px;
+  border-radius:12px;
+  border:1px solid var(--line,#dccbb7);
+  background:var(--card,#fbf7f1);
+  padding:0 10px;
+}
+.cc-venn{
+  position:relative;
+  width:74px;
+  height:38px;
+  margin:0 auto;
+}
+.cc-venn .c{
+  position:absolute;
+  top:7px;
+  width:22px;height:22px;
+  border-radius:50%;
+  opacity:.9;
+  border:1px solid rgba(0,0,0,.08);
+}
+.cc-venn .a{ left:6px; background:rgba(122,30,44,.22); }
+.cc-venn .b{ left:32px; background:rgba(18,49,94,.18); }
+.cc-venn .m{ left:22px; background:rgba(96,37,99,.22); }
+.cc-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.cc-count{ font-size:13px; opacity:.9; margin-right:auto; }
+.cc-hd2{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin:8px 0 10px;
+}
+.cc-hd2 h3{ margin:0; font-size:16px; }
+.cc-hint{ font-size:12px; opacity:.75; }
+
+.cc-games{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.cc-game{
+  border:1px solid var(--line,#dccbb7);
+  background:var(--card,#fbf7f1);
+  border-radius:14px;
+  padding:10px 10px 9px;
+  cursor:pointer;
+  user-select:none;
+  transition:transform .08s ease;
+}
+.cc-game:hover{ transform:translateY(-1px); }
+.cc-game .t{
+  font-weight:700;
+  font-size:12.5px;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.cc-game .m{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:7px;
+  font-size:12px;
+  opacity:.85;
+}
+.cc-game .bar{
+  height:6px;
+  border-radius:999px;
+  background:rgba(0,0,0,.06);
+  margin-top:8px;
+  overflow:hidden;
+}
+.cc-game .bar > i{
+  display:block;
+  height:100%;
+  width:40%;
+  background:rgba(122,30,44,.35);
+}
+
+.cc-detail{
+  border-top:1px solid var(--line,#dccbb7);
+  padding-top:14px;
+}
+.cc-detail-hd{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.cc-title{ font-size:16px; font-weight:800; }
+.cc-sub{ font-size:12px; opacity:.75; margin-top:4px; }
+.cc-tools{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.cc-tools .input{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  border:1px solid var(--line,#dccbb7);
+  background:var(--card,#fbf7f1);
+  border-radius:12px;
+  padding:6px 10px;
+  height:38px;
+}
+.cc-tools .input input{
+  border:none;
+  outline:none;
+  background:transparent;
+  width:200px;
+  font:inherit;
+}
+.pill{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  border:1px solid var(--line,#dccbb7);
+  background:var(--card,#fbf7f1);
+  border-radius:999px;
+  padding:7px 12px;
+  height:38px;
+  cursor:pointer;
+  user-select:none;
+  font-size:12.5px;
+}
+.pill input{ accent-color: var(--accent,#7a1e2c); }
+
+.cc-list{
+  border:1px solid var(--line,#dccbb7);
+  border-radius:14px;
+  overflow:hidden;
+}
+.cc-list table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+.cc-list th, .cc-list td{
+  padding:10px 10px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  vertical-align:top;
+  font-size:13px;
+}
+.cc-list th{ text-align:left; font-size:12px; opacity:.75; }
+.cc-list td{ word-break:break-word; }
+.cc-list tr:last-child td{ border-bottom:none; }
+.cc-row-focus{
+  outline:2px solid rgba(122,30,44,.25);
+  outline-offset:-2px;
+  background:rgba(122,30,44,.06);
+}
+
+/* responsive grid for large/small desktop widths */
+@media (max-width: 1100px){
+  .cc-games{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cc-top{ grid-template-columns: 1fr 1fr auto 1fr; }
+}
+@media (max-width: 900px){
+  .cc-games{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cc-top{ grid-template-columns: 1fr 1fr; }
+  .cc-venn{ display:none; }
+  .cc-actions{ justify-content:flex-start; }
+  .cc-tools .input input{ width:160px; }
+}
