@@ -204,6 +204,39 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       background:var(--tabActiveBg);
       color:var(--tabActiveText);
     }
+    /* --- Quickbar (counts moved from sidebar) --- */
+    .quickbar{
+      display:flex; gap:8px; flex-wrap:wrap;
+      padding: 0 16px 12px;
+      align-items:center;
+    }
+    .qtab{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+      cursor:pointer;
+      font-size:13px;
+      display:inline-flex; align-items:center; gap:10px;
+      user-select:none;
+    }
+    .qtab:hover{border-color:color-mix(in srgb, var(--line) 55%, var(--accent) 45%)}
+    .qtab.active{
+      border-color: color-mix(in srgb, var(--accent) 28%, var(--line) 72%);
+      background: color-mix(in srgb, var(--accent) 10%, var(--card) 90%);
+    }
+    .qbadge{
+      min-width: 28px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: var(--card);
+      font-weight:900;
+      display:inline-flex; align-items:center; justify-content:center;
+      color: var(--accent);
+    }
+
 
     .card{
       background:var(--card);
@@ -1764,6 +1797,13 @@ body{
     <button class="tab" id="tabFiguran">Figüranlar</button>
     <button class="tab" id="tabCharts">Grafikler</button>
   </div>
+
+  <div class="quickbar" id="topQuickbar" aria-label="Hızlı Menüler">
+    <button class="qtab active" id="topPlays" type="button">🎭 Aktif Oyun <span class="qbadge" id="topPlaysCount">-</span></button>
+    <button class="qtab" id="topPeople" type="button">👥 Toplam Personel <span class="qbadge" id="topPeopleCount">-</span></button>
+    <button class="qtab" id="topFig" type="button">🎟 Figüran/Emekli <span class="qbadge" id="topFigCount">-</span></button>
+  </div>
+
 </header>
 
 <div class="wrap">
