@@ -1,5 +1,30 @@
 /* === IDT V9 FINAL: YOĞUNLUK TABLOSU === */
-window.setupHeatmap = function() {
+window.window.setupHeatmap = function() {
+  const container = document.getElementById('ccList');
+  if(!container || !window.allDataRaw) return;
+
+  // Altın Kural 3: Default A (Aynı kişi aynı oyunda 1 kez görünür)
+  const data = window.allDataRaw.filter((v, i, a) => 
+    a.findIndex(t => (t.isim === v.isim && t.oyunAd === v.oyunAd)) === i
+  );
+
+  const plays = [...new Set(data.map(d => d.oyunAd))].sort();
+  const people = [...new Set(data.map(d => d.isim))].sort();
+
+  let h = `<div class="h-wrap"><table class="h-table"><thead><tr><th class="s-col">Personel</th>`;
+  plays.forEach(p => h += `<th class="v-txt"><div><span>${p}</span></div></th>`);
+  h += `</tr></thead><tbody>`;
+
+  people.forEach(per => {
+    h += `<tr><td class="s-col">${per}</td>`;
+    plays.forEach(pl => {
+      const m = data.find(d => d.isim === per && d.oyunAd === pl);
+      h += `<td class="h-cell ${m?'active':''}">${m?'1':''}</td>`;
+    });
+    h += `</tr>`;
+  });
+  container.innerHTML = h + `</tbody></table></div>`;
+}; = function() {
   const container = document.getElementById('ccList');
   if(!container || !window.allDataRaw || window.allDataRaw.length === 0) return;
 
