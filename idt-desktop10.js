@@ -70,3 +70,32 @@
   });
 
 })();
+/* === SİSTEMATİK YAMA: YOĞUNLUK TABLOSU DÜZELTME === */
+window.renderYoğunlukTablosu = function() {
+  const container = document.getElementById('ccList');
+  const rawData = window.allDataRaw || [];
+  if (!container || rawData.length === 0) return;
+
+  // Altın Kural 3: Default A Mantığı (Mükerrerleri görselde temizler)
+  const data = rawData.filter((v, i, a) => 
+    a.findIndex(t => (t.isim === v.isim && t.oyunAd === v.oyunAd)) === i
+  );
+
+  const plays = [...new Set(data.map(d => d.oyunAd))].sort();
+  const people = [...new Set(data.map(d => d.isim))].sort();
+
+  let html = `<div class="heatmap-container"><table class="heatmap-table">
+    <thead><tr><th class="sticky-col">PERSONEL</th>`;
+  plays.forEach(p => html += `<th class="rotate-text"><div><span>${p}</span></div></th>`);
+  html += `</tr></thead><tbody>`;
+
+  people.forEach(person => {
+    html += `<tr><td class="sticky-col">${person}</td>`;
+    plays.forEach(play => {
+      const m = data.find(d => d.isim === person && d.oyunAd === play);
+      html += `<td class="heatmap-cell ${m ? 'lvl-active' : ''}">${m ? '1' : ''}</td>`;
+    });
+    html += `</tr>`;
+  });
+  container.innerHTML = html + `</tbody></table></div>`;
+};
