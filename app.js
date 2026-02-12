@@ -3062,3 +3062,108 @@ function renderCommon(){
   }, true);
 })();
 
+
+
+
+/* === PATCH v4: Top bar aktif görünüm + Aktif Oyun araçları + Matris init garanti === */
+(function(){
+  function curHash(){ return (location.hash || "#panel").toLowerCase(); }
+
+  function setActiveBtn(){
+    const h = curHash();
+    document.querySelectorAll(".topNav2Btn").forEach(b=>{
+      const id = (b.getAttribute("data-go")||"").toLowerCase();
+      // map ids to hashes roughly
+      const on =
+        (h.startsWith("#plays") && id==="sideplays") ||
+        (h.startsWith("#people") && id==="sidepeople") ||
+        (h.startsWith("#rows") && id==="siderows") ||
+        (h.startsWith("#dist") && id==="sidedist") ||
+        (h.startsWith("#matris") && id==="sideheatmap") ||
+        (h.startsWith("#charts") && id==="sidecharts") ||
+        (h.startsWith("#kesisim") && id==="sideintersect") ||
+        (h.startsWith("#figuran") && id==="sidefiguran");
+      b.classList.toggle("is-active", !!on);
+    });
+  }
+
+  function toggleTools(){
+    const tools = document.getElementById("topbarTools");
+    if(!tools) return;
+    const h = curHash();
+    // Aktif Oyun hash'i genelde #plays veya #panelde aktif seçimde; biz #plays'e bağlayalım.
+    const on = h.startsWith("#plays");
+    tools.style.display = on ? "" : "none";
+  }
+
+  // Aktif Oyun filtre: varsa sayfadaki mevcut inputa proxy et, yoksa client-side filtre (DOM)
+  function wireActiveTools(){
+    const inp = document.getElementById("topbarActiveFilter");
+    const btn = document.getElementById("topbarActiveCopy");
+    if(inp && !inp.__wired){
+      inp.__wired = true;
+      inp.addEventListener("input", ()=>{
+        // try existing active search input first
+        const target = document.getElementById("playsSearch") || document.getElementById("qText") || document.getElementById("searchInput");
+        if(target){
+          target.value = inp.value;
+          target.dispatchEvent(new Event("input", {bubbles:true}));
+          return;
+        }
+        // fallback: filter rows by text for elements with data-play card
+        const q = inp.value.toLowerCase();
+        document.querySelectorAll("[data-play], .playCard, .rowPlay").forEach(el=>{
+          const t = (el.innerText||"").toLowerCase();
+          el.style.display = t.includes(q) ? "" : "none";
+        });
+      });
+    }
+    if(btn && !btn.__wired){
+      btn.__wired = true;
+      btn.addEventListener("click", ()=>{
+        try{
+          // prefer existing copy function if any
+          const fn = window.copyActiveToExcel || window.copyPlaysTSV;
+          if(typeof fn === "function"){ fn(); return; }
+          // fallback: copy visible play cards titles as TSV
+          const lines = ["Oyun\tKişi"];
+          document.querySelectorAll("[data-play]").forEach(card=>{
+            if(card.offsetParent===null) return;
+            const t = (card.getAttribute("data-play")||card.innerText||"").trim();
+            if(t) lines.push(t.replace(/\s+/g," ")+"\t");
+          });
+          if(window.copyText) window.copyText(lines.join("\n"));
+          else navigator.clipboard.writeText(lines.join("\n"));
+          if(window.toast) window.toast("Aktif Oyun listesi kopyalandı ✅","ok");
+        }catch(err){
+          console.error(err);
+          alert("Kopyalama hatası.");
+        }
+      });
+    }
+  }
+
+  function ensureHeatmap(){
+    const h = curHash();
+    if(h.startsWith("#matris")){
+      try{
+        if(window.IDTHeatmap && typeof window.IDTHeatmap.render==="function"){
+          window.IDTHeatmap.render();
+        }
+      }catch(err){ console.error(err); }
+    }
+  }
+
+  function onRoute(){
+    setActiveBtn();
+    toggleTools();
+    wireActiveTools();
+    ensureHeatmap();
+  }
+
+  window.addEventListener("hashchange", ()=>setTimeout(onRoute, 0));
+  window.addEventListener("DOMContentLoaded", ()=>setTimeout(onRoute, 0));
+  // Also call once in case script loads after DOM
+  setTimeout(onRoute, 50);
+})();
+
