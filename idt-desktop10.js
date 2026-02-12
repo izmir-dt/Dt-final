@@ -640,8 +640,7 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('
-');
+        const tsv = lines.join('\n');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -659,8 +658,7 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('
-'));
+            window.copyText(lines.join('\n'));
           }
         }catch(_e){}
       }finally{
