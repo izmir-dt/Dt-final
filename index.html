@@ -1661,9 +1661,6 @@ body{
 
 
   <link rel="stylesheet" href="idt-polish.css">
-  <script defer src="idt-performance.js"></script>
-
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
   <div class="idt-shell">
@@ -2323,12 +2320,7 @@ body{
   }, 5000);
 })();
 </script>
-
-<script src="app.js?v=691"></script>
-
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
-<script src="idt-desktop10.js?v=1"></script>
-
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
 (function(){
@@ -2896,11 +2888,22 @@ body{
     </div>
   </div>
 
+
+  <!-- Core scripts (single-load, ordered) -->
+  <script defer src="idt-performance.js"></script>
+  <script defer src="app.js"></script>
+  <script defer src="idt-desktop10.js"></script>
+
 </body>
 </html>
- <script src="app.js" defer></script>
-  <script src="idt-desktop10.js" defer></script>
-  <script src="idt-desktop1.js" defer></script>
-  <script src="idt-performance.js" defer></script>
+
+
+
+
+  <!-- Core scripts (single-load, ordered) -->
+  <script defer src="idt-performance.js"></script>
+  <script defer src="app.js"></script>
+  <script defer src="idt-desktop10.js"></script>
+
 </body>
 </html>
