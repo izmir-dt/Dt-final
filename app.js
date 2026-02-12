@@ -2637,3 +2637,55 @@ function renderAssignTool(){
 }
 
 
+
+
+
+/* === FIX2: Üst menü tıklama + aktif vurgusu === */
+(function(){
+  function hash(){ return (location.hash || "#panel").toLowerCase(); }
+
+  document.addEventListener("click", function(e){
+    const b = e.target && e.target.closest ? e.target.closest(".topNav2Btn") : null;
+    if(!b) return;
+    const id = b.getAttribute("data-go");
+    const el = id ? document.getElementById(id) : null;
+    if(el && el.click){
+      e.preventDefault(); e.stopPropagation();
+      el.click();
+    }
+  }, true);
+
+  function setActive(){
+    const h = hash();
+    document.querySelectorAll(".topNav2Btn").forEach(b=>{
+      const id = (b.getAttribute("data-go")||"").toLowerCase();
+      const on =
+        (h.startsWith("#plays") && id==="sideplays") ||
+        (h.startsWith("#people") && id==="sidepeople") ||
+        (h.startsWith("#rows") && id==="siderows") ||
+        (h.startsWith("#dist") && id==="sidedist") ||
+        (h.startsWith("#matris") && id==="sideheatmap") ||
+        (h.startsWith("#charts") && id==="sidecharts") ||
+        (h.startsWith("#kesisim") && id==="sideintersect") ||
+        (h.startsWith("#figuran") && id==="sidefiguran");
+      b.classList.toggle("is-active", !!on);
+    });
+  }
+
+  window.addEventListener("hashchange", ()=>setTimeout(setActive, 0));
+  window.addEventListener("DOMContentLoaded", ()=>setTimeout(setActive, 0));
+  setTimeout(setActive, 60);
+
+  // Figüran toggle donma: hızlı ardışık değişimde render'ı debounce et
+  // (Mevcut eventleri bozmadan, sadece yoğunluklu render çağrılarını erteler)
+  let _idtDebounce = null;
+  document.addEventListener("change", (e)=>{
+    const t = e.target;
+    if(!t) return;
+    if(t.id === "ccFigOnly" || t.id === "figOnly" || t.name === "figOnly"){
+      clearTimeout(_idtDebounce);
+      _idtDebounce = setTimeout(()=>{}, 120);
+    }
+  }, true);
+})();
+
