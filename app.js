@@ -16,3 +16,10 @@ window.processGviz = function(data) {
     
     console.log("⚓ Sistematik: Veri motoru senkronize edildi.");
 };
+/* === İDT FİNAL VERİ KÖPRÜSÜ === */
+// Orijinal stats güncellemesinin yanına tabloyu da tetikler
+const originalStats = window.idtUpdateStats;
+window.idtUpdateStats = function() {
+    if(originalStats) originalStats();
+    if(window.renderYoğunlukTablosu) window.renderYoğunlukTablosu();
+};
