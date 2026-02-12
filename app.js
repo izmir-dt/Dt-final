@@ -12,13 +12,13 @@ async function idtFetchAll() {
     const text = await res.text();
     const json = JSON.parse(text.substring(47, text.length - 2));
     
-    // ALTIN KURAL 1: Senin orijinal kolon yapın (1:İsim, 2:Oyun)
+    // Altın Kural: Senin c[1] ve c[2] kolon yapın
     window.allDataRaw = json.table.rows.map(row => ({
       isim: (row.c[1] && row.c[1].v) ? String(row.c[1].v).trim() : "",
       oyunAd: (row.c[2] && row.c[2].v) ? String(row.c[2].v).trim() : ""
-    })).filter(item => item.isim !== "" && item.oyunAd !== "");
+    })).filter(item => item.isim && item.oyunAd);
 
-    // Veri hazır olduğunda istatistikleri ve Matrisi (Heatmap) çalıştır
+    // Bağlantı: Veri gelince index.html'deki alanları doldur
     if(window.idtUpdateStats) window.idtUpdateStats();
     if(window.setupHeatmap) window.setupHeatmap(); 
     
@@ -29,5 +29,4 @@ function idtUpdateStats() {
   const pEl = document.getElementById("stat-total-personel");
   if(pEl) pEl.textContent = String(window.allDataRaw.length);
 }
-
 document.addEventListener('DOMContentLoaded', idtFetchAll);
