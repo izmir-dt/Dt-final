@@ -1145,7 +1145,7 @@ body.scope-person .qScopeBox{ display:none !important; }
 /* ===== v6.6 UI patches ===== */
 
 /* Sidebar: avoid truncation like "Toplam Perso..." */
-.idt-sidebar{ width: 290px !important; }
+.idt-sidebar{ width: 240px !important; }
 .idt-item b{ font-size: 13px !important; max-width: 190px !important; }
 #sidePeople b{ max-width: 220px !important; } /* ensure full text */
 
@@ -1471,6 +1471,21 @@ select{
   color: var(--muted);
 }
 
+
+/* === PATCH: Sol panel daralt + Hazır altı mini yatay menü === */
+.idt-top-left{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.idt-mini-nav{display:flex;gap:8px;flex-wrap:wrap}
+.idt-mini-nav .miniNavBtn{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:999px;
+  padding:6px 10px;
+  font-weight:800;
+  font-size:12px;
+  cursor:pointer;
+}
+.idt-mini-nav .miniNavBtn:hover{border-color:rgba(0,0,0,.22)}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1703,7 +1718,15 @@ body{
 
     <main class="idt-main">
       <header class="idt-topnav">
-        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+        <div class="idt-top-left">
+          <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+          <div class="idt-mini-nav" aria-label="Hızlı Menü">
+            <button class="miniNavBtn" type="button" data-side="sidePlays">🎭 Aktif</button>
+            <button class="miniNavBtn" type="button" data-side="sideHeatmap">🧩 Yoğunluk</button>
+            <button class="miniNavBtn" type="button" data-side="sideIntersect">🧠 Kesişim</button>
+            <button class="miniNavBtn" type="button" data-side="sideCharts">📈 Grafik</button>
+          </div>
+        </div>
         <div class="idt-top-actions">
           <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
           <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
