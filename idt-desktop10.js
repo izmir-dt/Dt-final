@@ -352,6 +352,54 @@
     };
   }
 
+  // Sol menü yönlendirmesi (masaüstü 1.0 kabuk)
+  function setupSidebarNav(){
+    const map = {
+      sidePlays:   { hash:'#panel',   tab:'tabPanel',       modeBtn:'btnPlays' },
+      sidePeople:  { hash:'#panel',   tab:'tabPanel',       modeBtn:'btnPeople' },
+      sideRows:    { hash:'#gorev',   tab:'tabAssign' },
+      sideDist:    { hash:'#analiz',  tab:'tabDistribution' },
+      sideHeatmap: { hash:'#matris',  tab:'tabHeatmap' },
+      sideCharts:  { hash:'#grafikler', tab:'tabCharts' },
+      sideIntersect:{ hash:'#kesisim', tab:'tabIntersection' },
+      sideFiguran: { hash:'#figuran', tab:'tabFiguran' },
+    };
+
+    const setActive = (activeId)=>{
+      document.querySelectorAll('.idt-sidebar .idt-item').forEach(el=>el.classList.remove('active'));
+      const a = $(activeId);
+      if(a) a.classList.add('active');
+    };
+
+    Object.keys(map).forEach(id=>{
+      const cfg = map[id];
+      const el = $(id);
+      if(!el) return;
+      el.addEventListener('click', (e)=>{
+        e.preventDefault();
+        try{ if(cfg.hash) location.hash = cfg.hash; }catch(_e){}
+        try{ const t = $(cfg.tab); if(t) t.click(); }catch(_e){}
+        try{ if(cfg.modeBtn){ const mb = $(cfg.modeBtn); if(mb) mb.click(); } }catch(_e){}
+        setActive(id);
+      });
+    });
+
+    // hash ile gelindiyse aktif menüyü yakala
+    const syncFromHash = ()=>{
+      const h = String(location.hash||'').toLowerCase();
+      if(h==='#analiz') return setActive('sideDist');
+      if(h==='#matris') return setActive('sideHeatmap');
+      if(h==='#grafikler') return setActive('sideCharts');
+      if(h==='#kesisim') return setActive('sideIntersect');
+      if(h==='#figuran') return setActive('sideFiguran');
+      if(h==='#gorev') return setActive('sideRows');
+      // panel default
+      return setActive('sidePlays');
+    };
+    window.addEventListener('hashchange', syncFromHash);
+    syncFromHash();
+  }
+
   // ---------- Boot ----------
   document.addEventListener('DOMContentLoaded', () => {
     setupLoading();
@@ -359,6 +407,7 @@
     setupHelp();
     setupActiveFilters();
     setupHeatmap();
+    setupSidebarNav();
     setupObservers();
 
     // initial render heatmap if hash is matris
