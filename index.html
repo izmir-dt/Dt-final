@@ -1661,6 +1661,8 @@ body{
 
 
   <link rel="stylesheet" href="idt-polish.css">
+  <script defer src="idt-performance.js"></script>
+
 </head>
 <body>
   <div class="idt-shell">
@@ -2042,7 +2044,7 @@ body{
                 <input type="checkbox" id="ccFigOnly" />
                 Sadece Figüran
               </label>
-              <button class="btn" id="ccCopyList">Listeyi Excel’e Kopyala</button>
+              <button class="btn" id="ccCopyList" title="Excel'e tam uyumlu kopyalar">Tabloyu Excel için Kopyala</button>
               <button class="btn" id="ccToPanel">Panel’de Aç</button>
             </div>
           </div>
@@ -2320,6 +2322,7 @@ body{
   }, 5000);
 })();
 </script>
+
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -2889,21 +2892,9 @@ body{
   </div>
 
 
-  <!-- Core scripts (single-load, ordered) -->
-  <script defer src="idt-performance.js"></script>
-  <script defer src="app.js"></script>
-  <script defer src="idt-desktop10.js"></script>
-
-</body>
-</html>
-
-
-
-
-  <!-- Core scripts (single-load, ordered) -->
-  <script defer src="idt-performance.js"></script>
-  <script defer src="app.js"></script>
-  <script defer src="idt-desktop10.js"></script>
-
+  <script src="app.js" defer></script>
+  <script src="idt-desktop10.js" defer></script>
+  <script src="idt-desktop1.js" defer></script>
+  <script src="idt-performance.js" defer></script>
 </body>
 </html>
