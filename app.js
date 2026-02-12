@@ -2116,6 +2116,13 @@ async function load(isAuto=false){
           plays = groupByPlay(rows);
           people = groupByPerson(rows);
           playsList = plays.map(p=>p.title);
+
+          // Desktop 1.0 kabuk eklentileri (Yoğunluk Matrisi vb.) için veri köprüsü
+          // Veri çekme bloğunu değiştirmeden sadece global erişim sağlıyoruz.
+          window.rawRows = rawRows;
+          window.rows = rows;
+          window.plays = plays;
+          window.people = people;
           renderList();
           renderDetails(null);
           distribution = computeDistribution();
@@ -2147,6 +2154,12 @@ async function load(isAuto=false){
     plays = groupByPlay(rows);
     people = groupByPerson(rows);
     playsList = plays.map(p=>p.title);
+
+    // Desktop 1.0 kabuk eklentileri (Yoğunluk Matrisi vb.) için veri köprüsü
+    window.rawRows = rawRows;
+    window.rows = rows;
+    window.plays = plays;
+    window.people = people;
 
 
     renderList();
