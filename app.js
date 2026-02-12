@@ -1,4 +1,3 @@
-/* === IDT V9 FINAL: VERİ MOTORU === */
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   GID: "1233566992"
@@ -13,7 +12,7 @@ async function idtFetchAll() {
     const text = await res.text();
     const json = JSON.parse(text.substring(47, text.length - 2));
     
-    // Altın Kural: Kolonları senin sistemine göre (1:İsim, 2:Oyun) çekiyoruz
+    // Senin zipindeki gerçek kolon yapısı
     window.allDataRaw = json.table.rows.map(row => ({
       isim: (row.c[1] && row.c[1].v) ? String(row.c[1].v).trim() : "",
       oyunAd: (row.c[2] && row.c[2].v) ? String(row.c[2].v).trim() : ""
@@ -23,16 +22,11 @@ async function idtFetchAll() {
     if(window.idtUpdateStats) window.idtUpdateStats();
     if(window.setupHeatmap) window.setupHeatmap(); 
     
-  } catch (err) {
-    console.error("Veri hatası:", err);
-  }
+  } catch (err) { console.error("Hata:", err); }
 }
 
-function idtUpdateStats()// app.js'nin en altına ekle:
-if(window.setupHeatmap) window.setupHeatmap();
-console.log("⚓ Altın Kural 1: Veri çekimi bitti, tablo tetiklendi."); {
+function idtUpdateStats() {
   const pEl = document.getElementById("stat-total-personel");
   if(pEl) pEl.textContent = String(window.allDataRaw.length);
 }
-
 document.addEventListener('DOMContentLoaded', idtFetchAll);
