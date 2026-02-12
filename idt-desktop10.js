@@ -640,8 +640,7 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('
-');
+        const tsv = lines.join('\n');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -659,8 +658,7 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('
-'));
+            window.copyText(lines.join('\n'));
           }
         }catch(_e){}
       }finally{
@@ -810,53 +808,3 @@ function setupHeatmap(){
   });
 
 })();
-
-// Excel'e yapıştırıldığında hücrelerin kaymaması için geliştirilmiş kopyalama
-async function buildEnhancedTSV() {
-  const table = document.querySelector("#ccList table");
-  if (!table) return null;
-
-  const rows = Array.from(table.querySelectorAll("tr"));
-  return rows.map(row => {
-    const cells = Array.from(row.querySelectorAll("th, td"));
-    return cells.map(cell => {
-      let content = (cell.innerText || "").replace(/\r?\n|\r/g, " ").trim();
-      return content;
-    }).join("\t");
-  }).join("\n");
-}
-
-
-
-// IDT: ccCopyList -> Excel uyumlu tablo kopyalama (override)
-document.addEventListener("click", async (e) => {
-  const btn = e.target && e.target.closest ? e.target.closest("#ccCopyList") : null;
-  if (!btn) return;
-  e.preventDefault();
-  e.stopPropagation();
-  try {
-    btn.disabled = true;
-    if (window.setStatus) window.setStatus("⏳ Tablo hazırlanıyor…", "info");
-    const tsvData = await buildEnhancedTSV();
-    if (!tsvData) {
-      if (window.setStatus) window.setStatus("⚠️ Tablo bulunamadı.", "warn");
-      return;
-    }
-    // Use existing helper if present; fallback to copyText
-    const success = window.idtCopyToClipboard
-      ? await window.idtCopyToClipboard(tsvData)
-      : (window.copyText ? (window.copyText(tsvData), true) : false);
-
-    if (window.setStatus) {
-      window.setStatus(
-        success ? "✅ Tablo Excel formatında kopyalandı. Doğrudan Excel'e yapıştırabilirsiniz." : "⚠️ Kopyalanamadı (izin).",
-        success ? "ok" : "warn"
-      );
-    }
-  } catch (err) {
-    console.error(err);
-    if (window.setStatus) window.setStatus("⚠️ Kopyalama sırasında hata.", "warn");
-  } finally {
-    btn.disabled = false;
-  }
-}, true);
