@@ -1042,3 +1042,5 @@ table.idt-table tbody tr:hover,
   box-shadow: 0 18px 60px rgba(0,0,0,.18) !important;
 }
 #globalLoading .glClose{display:none !important;}
+/* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
+#globalLoading { display: none !important; }
