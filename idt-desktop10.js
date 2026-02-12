@@ -9,20 +9,30 @@
     const msg = $('glMsg');
     if(!root || !close || !msg) return;
 
+    const AUTOHIDE_MS = 1100;
+    let tAuto = null;
+
     const hide = () => {
       root.classList.add('hidden');
       root.setAttribute('aria-hidden','true');
       document.body.style.overflow = '';
+      if(tAuto){ clearTimeout(tAuto); tAuto=null; }
     };
-    const show = (text) => {
+    const show = (text, opts={}) => {
       if(text) msg.textContent = String(text);
       root.classList.remove('hidden');
       root.setAttribute('aria-hidden','false');
-      document.body.style.overflow = 'hidden';
+      /* no lock */
+      document.body.style.overflow = '';
+      const force = !!opts.force;
+      if(!force){
+        if(tAuto) clearTimeout(tAuto);
+        tAuto = setTimeout(()=>{ try{ hide(); }catch(_e){} }, AUTOHIDE_MS);
+      }
     };
 
     window.IDTLoading = {
-      show: (text) => show(text || 'Lütfen bekleyin…'),
+      show: (text, opts) => show(text || 'Lütfen bekleyin…', opts || {}),
       hide
     };
 
@@ -41,9 +51,17 @@
       try{
         const t = String(text||'');
         if(/yükleniyor/i.test(t) || /güncelleniyor/i.test(t)){
-          window.IDTLoading && window.IDTLoading.show(t.replace(/^⏳\s*/,''));
+          // avoid flash: show only if still loading after 500ms
+          if(!window.__IDT_LOADING_TIMER){
+            window.__IDT_LOADING_TIMER = setTimeout(()=>{
+              try{ window.IDTLoading && window.IDTLoading.show(t.replace(/^⏳\s*/,'')); }catch(_e){}
+            }, 500);
+          }
         }else{
+          if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER=null; }
+
           // don't hide aggressively, some screens may still compute
+          if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER=null; }
           window.IDTLoading && window.IDTLoading.hide();
         }
       }catch(_e){}
