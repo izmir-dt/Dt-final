@@ -1108,3 +1108,43 @@ table.idt-table tbody tr:hover,
   position: fixed !important; z-index: 99999 !important; 
   top: 80px; right: 20px; border: 2px solid var(--accent) !important;
 }
+/* === TEMA & PERFORMANS: GÖRSEL DÜZENLEME === */
+.heatmap-wrapper {
+  overflow: auto;
+  max-height: 75vh;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius2);
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.heatmap-table { 
+  border-collapse: separate !important; 
+  width: 100%; 
+  font-size: 13px;
+}
+
+/* Personel İsimlerini Sola Sabitle */
+.sticky-col {
+  position: sticky !important;
+  left: 0;
+  z-index: 10;
+  background: var(--card) !important;
+  border-right: 2.5px solid var(--accent) !important;
+  font-weight: 800;
+  padding: 12px !important;
+  color: var(--accent);
+}
+
+/* Bildirim Paneli (Always on Top) */
+#notifPanel {
+  position: fixed !important;
+  z-index: 10000 !important; /* En üst katman */
+  top: 85px;
+  right: 25px;
+  background: rgba(251, 247, 241, 0.95);
+  backdrop-filter: blur(10px);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
