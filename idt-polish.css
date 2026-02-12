@@ -1044,3 +1044,9 @@ table.idt-table tbody tr:hover,
 }
 #globalLoading .glClose{display:none !important;} /* otomatik kapanıyor, UI kirletmesin */
 
+
+
+
+/* === BATCH FIX: copy busy state === */
+#ccCopyCommon.is-busy{opacity:.7; cursor:progress;}
+
