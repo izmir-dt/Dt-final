@@ -1680,7 +1680,7 @@ body{
       <div class="idt-item" id="sideRows"><span>🧾</span><b>Sorgu & Karşılaştır</b><span class="idt-count" id="sideRowsCount">-</span></div>
 
       <div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
-      <div class="idt-item" id="sideHeatmap"><span>🟫</span><b>Yoğunluk Matrisi</b></div>
+      <div class="idt-item" id="sideHeatmap"><span>🟫</span><b>Yoğunluk & Çakışma Merkezi</b></div>
       <div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
       <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
       <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
@@ -1746,7 +1746,7 @@ body{
   <div class="nav">
     <button class="tab active" id="tabPanel">Panel</button>
     <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
-    <button class="tab" id="tabHeatmap">Yoğunluk Matrisi</button>
+    <button class="tab" id="tabHeatmap">Yoğunluk & Çakışma Merkezi</button>
       <button id="tabAssign" class="tab-btn">📑 Görev Ataması</button>
     <button class="tab" id="tabIntersection">Kesişim Analizi</button>
     <button class="tab" id="tabFiguran">Figüranlar</button>
@@ -1959,29 +1959,68 @@ body{
 
   <!-- YOĞUNLUK MATRİSİ -->
   <section id="viewHeatmap" style="display:none">
+    
     <div class="card">
       <div class="hd">
-        <h2>Yoğunluk Matrisi</h2>
-        <div class="small">Personel × Oyun görünümü. Hücreye tıklayınca Panel’de detay açılır.</div>
+        <h2>Yoğunluk & Çakışma Merkezi</h2>
+        <div class="small">Yatay kaydırma yok. Üstten iki oyun seçip ortak personeli görebilir, alttan en yoğun oyunlardan hızlı liste alıp Excel’e kopyalayabilirsin.</div>
       </div>
       <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="Görünen oyun sayısı">
-            🎭
-            <select id="hmColLimit">
-              <option value="15" selected>15 oyun</option>
-              <option value="25">25 oyun</option>
-              <option value="35">35 oyun</option>
-              <option value="45">45 oyun</option>
-              <option value="60">60 oyun</option>
-            </select>
+        <!-- Hızlı Çakışma -->
+        <div class="cc-top">
+          <div class="cc-sel">
+            <label for="ccPlayA">Oyun A</label>
+            <select id="ccPlayA"></select>
           </div>
-          <button class="btn" id="hmRefresh">Yenile</button>
-          <button class="btn" id="hmToPanel">Panel’e Git</button>
+          <div class="cc-sel">
+            <label for="ccPlayB">Oyun B</label>
+            <select id="ccPlayB"></select>
+          </div>
+
+          <div class="cc-venn" aria-hidden="true">
+            <span class="c a"></span><span class="c b"></span><span class="c m"></span>
+          </div>
+
+          <div class="cc-actions">
+            <div class="cc-count">Ortak: <b id="ccCommonCount">0</b></div>
+            <button class="btn" id="ccShowCommon">Ortakları Göster</button>
+            <button class="btn" id="ccCopyCommon">Ortakları Excel’e Kopyala</button>
+          </div>
         </div>
-        <div id="heatmapBox"></div>
+
+        <!-- En yoğun oyunlar -->
+        <div class="cc-hd2">
+          <h3>En Yoğun 15 Oyun</h3>
+          <div class="cc-hint">Bir oyuna tıkla → liste açılır → kopyala / Panel’e geç.</div>
+        </div>
+        <div id="ccTopGames" class="cc-games"></div>
+
+        <!-- Detay liste -->
+        <div class="cc-detail">
+          <div class="cc-detail-hd">
+            <div>
+              <div class="cc-title" id="ccDetailTitle">Bir oyun seç</div>
+              <div class="cc-sub" id="ccDetailSub">Seçince kişiler listesi burada görünür.</div>
+            </div>
+
+            <div class="cc-tools">
+              <div class="input">
+                🔎 <input id="ccSearch" placeholder="Listede ara…" />
+              </div>
+              <label class="pill">
+                <input type="checkbox" id="ccFigOnly" />
+                Sadece Figüran
+              </label>
+              <button class="btn" id="ccCopyList">Listeyi Excel’e Kopyala</button>
+              <button class="btn" id="ccToPanel">Panel’de Aç</button>
+            </div>
+          </div>
+
+          <div id="ccList" class="cc-list"></div>
+        </div>
       </div>
     </div>
+
   </section>
 
   <!-- KESİŞİM -->
