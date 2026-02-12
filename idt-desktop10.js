@@ -640,7 +640,8 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('\n');
+        const tsv = lines.join('
+');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -658,7 +659,8 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('\n'));
+            window.copyText(lines.join('
+'));
           }
         }catch(_e){}
       }finally{
@@ -808,77 +810,53 @@ function setupHeatmap(){
   });
 
 })();
-/* === IDT v1.0: Async Excel copy intercept (no freezes) === */
-(function(){
-  async function copyCommonAsync(){
-    try{
-      const btn = document.getElementById("ccCopyCommon");
-      if(btn){ btn.disabled = true; btn.classList.add("is-busy"); }
-      if(window.setStatus) window.setStatus("⏳ Excel kopyası hazırlanıyor…","info");
-      // Use existing computed list if present
-      let common = [];
-      try{ if(typeof lastCommon !== "undefined" && Array.isArray(lastCommon)) common = lastCommon; }catch(_e){}
-      if(!common.length){
-        try{ if(typeof updateCommonCount === "function") updateCommonCount(); }catch(_e){}
-        try{ if(typeof lastCommon !== "undefined" && Array.isArray(lastCommon)) common = lastCommon; }catch(_e){}
-      }
-      const lines = new Array(common.length + 1);
-      lines[0] = ["Kişi","Oyun A Görev","Oyun B Görev"].join("\t");
-      for(let i=0;i<common.length;i++){
-        const r = common[i] || {};
-        lines[i+1] = [(r.person||""),(r.a||""),(r.b||"")].join("\t");
-      }
-      const tsv = lines.join("\n");
-      if(window.idtYield) await window.idtYield(); else await new Promise(r=>setTimeout(r,0));
-      const ok = window.idtCopyToClipboard ? await window.idtCopyToClipboard(tsv) : (window.copyText ? (window.copyText(tsv), true) : false);
-      if(window.setStatus) window.setStatus(ok ? "✅ Ortaklar Excel’e kopyalandı" : "⚠️ Kopyalanamadı (izin).", ok ? "ok":"warn");
-    }catch(err){
-      console.error(err);
-      if(window.setStatus) window.setStatus("⚠️ Kopyalama sırasında hata.","warn");
-    }finally{
-      const btn = document.getElementById("ccCopyCommon");
-      if(btn){ btn.disabled = false; btn.classList.remove("is-busy"); }
-    }
-  }
 
-  async function copyListAsync(){
-    try{
-      const btn = document.getElementById("ccCopyList");
-      if(btn){ btn.disabled = true; btn.classList.add("is-busy"); }
-      if(window.setStatus) window.setStatus("⏳ Liste Excel’e hazırlanıyor…","info");
-      // Try to use existing function if present to build text
-      let tsv = "";
-      try{
-        if(typeof buildDetailListTSV === "function") tsv = buildDetailListTSV();
-      }catch(_e){}
-      if(!tsv){
-        // Fallback: read visible list rows
-        const rows = Array.from(document.querySelectorAll("#ccList .row, #ccList li, #ccList tr")).slice(0,2000);
-        const lines = ["Kişi\tOyun A\tOyun B"];
-        for(const r of rows){
-          const t = (r.textContent||"").trim();
-          if(t) lines.push(t.replace(/\s+\|\s+/g,"\t").replace(/\s{2,}/g,"\t"));
-        }
-        tsv = lines.join("\n");
-      }
-      if(window.idtYield) await window.idtYield(); else await new Promise(r=>setTimeout(r,0));
-      const ok = window.idtCopyToClipboard ? await window.idtCopyToClipboard(tsv) : (window.copyText ? (window.copyText(tsv), true) : false);
-      if(window.setStatus) window.setStatus(ok ? "✅ Liste Excel’e kopyalandı" : "⚠️ Kopyalanamadı (izin).", ok ? "ok":"warn");
-    }catch(err){
-      console.error(err);
-      if(window.setStatus) window.setStatus("⚠️ Kopyalama sırasında hata.","warn");
-    }finally{
-      const btn = document.getElementById("ccCopyList");
-      if(btn){ btn.disabled = false; btn.classList.remove("is-busy"); }
-    }
-  }
+// Excel'e yapıştırıldığında hücrelerin kaymaması için geliştirilmiş kopyalama
+async function buildEnhancedTSV() {
+  const table = document.querySelector("#ccList table");
+  if (!table) return null;
 
-  document.addEventListener("click", (e)=>{
-    const t = e.target && e.target.closest ? e.target.closest("#ccCopyCommon,#ccCopyList") : null;
-    if(!t) return;
-    // prevent legacy sync handler freeze
-    e.preventDefault(); e.stopPropagation();
-    if(t.id === "ccCopyCommon") copyCommonAsync();
-    if(t.id === "ccCopyList") copyListAsync();
-  }, true);
-})();
+  const rows = Array.from(table.querySelectorAll("tr"));
+  return rows.map(row => {
+    const cells = Array.from(row.querySelectorAll("th, td"));
+    return cells.map(cell => {
+      let content = (cell.innerText || "").replace(/\r?\n|\r/g, " ").trim();
+      return content;
+    }).join("\t");
+  }).join("\n");
+}
+
+
+
+// IDT: ccCopyList -> Excel uyumlu tablo kopyalama (override)
+document.addEventListener("click", async (e) => {
+  const btn = e.target && e.target.closest ? e.target.closest("#ccCopyList") : null;
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    btn.disabled = true;
+    if (window.setStatus) window.setStatus("⏳ Tablo hazırlanıyor…", "info");
+    const tsvData = await buildEnhancedTSV();
+    if (!tsvData) {
+      if (window.setStatus) window.setStatus("⚠️ Tablo bulunamadı.", "warn");
+      return;
+    }
+    // Use existing helper if present; fallback to copyText
+    const success = window.idtCopyToClipboard
+      ? await window.idtCopyToClipboard(tsvData)
+      : (window.copyText ? (window.copyText(tsvData), true) : false);
+
+    if (window.setStatus) {
+      window.setStatus(
+        success ? "✅ Tablo Excel formatında kopyalandı. Doğrudan Excel'e yapıştırabilirsiniz." : "⚠️ Kopyalanamadı (izin).",
+        success ? "ok" : "warn"
+      );
+    }
+  } catch (err) {
+    console.error(err);
+    if (window.setStatus) window.setStatus("⚠️ Kopyalama sırasında hata.", "warn");
+  } finally {
+    btn.disabled = false;
+  }
+}, true);
