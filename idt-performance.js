@@ -105,29 +105,21 @@
 
 })();
 
-
-
-// Veri basılırken tarayıcıyı kasmayan 'Akıllı Kuyruk' (Smart Queue)
+/* === Smart Queue: chunked render (donma azaltır) === */
 window.__IDT = window.__IDT || {};
 window.__IDT.renderInChunks = function(container, items, renderFn) {
   let index = 0;
   const chunkSize = 50;
-
-  function doBatch() {
+  function doBatch(){
     const end = Math.min(index + chunkSize, items.length);
     const fragment = document.createDocumentFragment();
-
-    for (let i = index; i < end; i++) {
-      const element = renderFn(items[i]);
-      if (element) fragment.appendChild(element);
+    for(let i=index;i<end;i++){
+      const el = renderFn(items[i]);
+      if(el) fragment.appendChild(el);
     }
-
     container.appendChild(fragment);
     index = end;
-
-    if (index < items.length) {
-      requestAnimationFrame(doBatch);
-    }
+    if(index < items.length) requestAnimationFrame(doBatch);
   }
   doBatch();
 };
