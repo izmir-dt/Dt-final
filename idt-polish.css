@@ -1023,3 +1023,24 @@ table.idt-table tbody tr:hover,
   box-shadow: 0 14px 40px rgba(0,0,0,.18) !important;
 }
 
+
+
+
+/* === FIX3: Veriler hazırlanıyor overlay -> mini toast === */
+#globalLoading{position:fixed; inset:0; z-index:9998;}
+#globalLoading .glBack{
+  background: rgba(0,0,0,.08) !important;
+  pointer-events: none !important; /* sayfayı kilitleme */
+}
+#globalLoading .glCard{
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  left: auto !important;
+  top: auto !important;
+  width: min(520px, calc(100vw - 32px)) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.18) !important;
+}
+#globalLoading .glClose{display:none !important;} /* otomatik kapanıyor, UI kirletmesin */
+
