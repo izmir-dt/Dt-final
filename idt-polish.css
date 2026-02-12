@@ -957,65 +957,13 @@ table.idt-table tbody tr:hover,
   .cc-tools .input input{ width:160px; }
 }
 
-/* === YOĞUNLUK & ÇAKIŞMA MERKEZİ STABLE PATCH === */
-
-/* Narrow left black panel */
-.sidebar, .leftPanel, .sidePanel {
-    width: 220px !important;
-}
-
-/* Horizontal mini menu under Hazır */
-.quick-menu {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-}
-.quick-menu button {
-    background: #222;
-    color: #fff;
-    border: 1px solid #444;
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.quick-menu button:hover {
-    background: #333;
-}
-
-/* Active Oyun filter & Excel quick tools */
-.active-tools {
-    display: flex;
-    gap: 10px;
-    margin: 10px 0;
-}
-.active-tools input {
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-.active-tools button {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: none;
-    background: #7a1e2c;
-    color: #fff;
-    cursor: pointer;
-}
 
 
-
-/* === PATCH v3: Sidebar kaldır -> üst yatay bar === */
+/* === ROOT CLEAN PATCH: Sidebar gizle + Üst bar === */
 .idt-sidebar{display:none !important;}
-/* If layout uses a left margin/padding, reset */
 .idt-shell, .idt-app, .idt-main, #app, main{margin-left:0 !important;}
-/* If grid layout defined, force single column */
 .idt-layout, .layout, .shell{grid-template-columns: 1fr !important;}
 
-
-
-
-/* === PATCH v4: Üst bar premium + araçlar === */
 .idt-topbar2{
   position: sticky;
   top: 0;
@@ -1024,14 +972,16 @@ table.idt-table tbody tr:hover,
   background: rgba(255,255,255,.92);
   box-shadow: 0 10px 24px rgba(0,0,0,.05);
   border-bottom: 1px solid rgba(0,0,0,.06);
+  display:flex;
+  align-items:center;
+  gap:10px;
   padding: 10px 14px;
-  gap: 10px;
   flex-wrap: nowrap;
   overflow-x: auto;
-  scrollbar-width: thin;
 }
 .idt-topbar2::-webkit-scrollbar{height:8px}
 .idt-topbar2::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:999px}
+
 .idt-topbar2 .topNav2Btn{
   border:1px solid rgba(0,0,0,.08);
   background: rgba(255,255,255,.85);
@@ -1042,22 +992,18 @@ table.idt-table tbody tr:hover,
   display:flex;
   align-items:center;
   gap:8px;
+  white-space:nowrap;
+  cursor:pointer;
 }
 .idt-topbar2 .topNav2Btn.is-active{
   background: rgba(122,30,44,.08);
   border-color: rgba(122,30,44,.28);
   box-shadow: inset 0 -2px 0 rgba(122,30,44,.55);
 }
-.topbar2-spacer{flex:1; min-width: 12px;}
-.topbar2-tools{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding-left: 6px;
-}
+.topbar2-spacer{flex:1; min-width: 10px;}
+.topbar2-tools{display:flex;align-items:center;gap:10px}
 .topbar2-input{
-  width: 220px;
-  max-width: 30vw;
+  width: 220px; max-width: 30vw;
   padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,.10);
@@ -1065,15 +1011,11 @@ table.idt-table tbody tr:hover,
   font-weight:700;
 }
 .topbar2-action{
-  border:none;
-  border-radius:999px;
+  border:none;border-radius:999px;
   padding:8px 12px;
-  background:#7a1e2c;
-  color:#fff;
-  font-weight:900;
-  cursor:pointer;
+  background:#7a1e2c;color:#fff;
+  font-weight:900;cursor:pointer;
 }
-.topbar2-action:hover{filter:brightness(1.05)}
 @media (max-width: 980px){
   .topbar2-input{width: 160px; max-width: 45vw;}
 }
