@@ -2724,7 +2724,55 @@ function renderAssignTool(){
     return out;
   }
 
-  function renderCommon(){
+  
+          function updateCcSelectedSummary(){
+            const topWrap = el('ccTopWrap');
+            const selWrap = el('ccSelWrap');
+            const a = ccPlayA.value.trim();
+            const b = ccPlayB.value.trim();
+            const hasSel = !!(a || b);
+
+            if(topWrap && selWrap){
+              topWrap.style.display = hasSel ? 'none' : 'block';
+              selWrap.style.display = hasSel ? 'block' : 'none';
+            }
+
+            // Yazılar
+            const aNameEl = el('ccSelAName'); const bNameEl = el('ccSelBName'); const oNameEl = el('ccSelOName');
+            const aCntEl  = el('ccSelACnt');  const bCntEl  = el('ccSelBCnt');  const oCntEl  = el('ccSelOCnt');
+            const aBarEl  = el('ccSelABar');  const bBarEl  = el('ccSelBBar');  const oBarEl  = el('ccSelOBar');
+
+            const aSet = a ? (INDEX.playToPeople.get(a) || new Set()) : new Set();
+            const bSet = b ? (INDEX.playToPeople.get(b) || new Set()) : new Set();
+
+            let commonCnt = 0;
+            if(a && b){
+              // küçük bir kesişim hesabı (renderCommon ayrıca detaylı listeyi üretiyor)
+              const small = (aSet.size <= bSet.size) ? aSet : bSet;
+              const big   = (small === aSet) ? bSet : aSet;
+              for(const p of small){ if(big.has(p)) commonCnt++; }
+            }
+
+            const cntA = aSet.size, cntB = bSet.size, cntO = commonCnt;
+            const base = Math.max(cntA, cntB, cntO, 1);
+
+            if(aNameEl) aNameEl.textContent = a || '—';
+            if(bNameEl) bNameEl.textContent = b || '—';
+            if(oNameEl) oNameEl.textContent = (a && b) ? 'A ∩ B' : '—';
+
+            if(aCntEl) aCntEl.textContent = `${cntA} kişi`;
+            if(bCntEl) bCntEl.textContent = `${cntB} kişi`;
+            if(oCntEl) oCntEl.textContent = `${cntO} kişi`;
+
+            if(aBarEl) aBarEl.style.width = `${Math.round((cntA/base)*100)}%`;
+            if(bBarEl) bBarEl.style.width = `${Math.round((cntB/base)*100)}%`;
+            if(oBarEl) oBarEl.style.width = `${Math.round((cntO/base)*100)}%`;
+
+            // Ortak butonlar: iki seçim yoksa pasif
+            ccShowCommon.disabled = !(a && b);
+            ccCopyCommon.disabled = !(a && b);
+          }
+function renderCommon(){
     const {a,b,common} = computeCommon();
     const countEl = el("ccCommonCount");
     if(countEl) countEl.textContent = String(common.length || 0);
