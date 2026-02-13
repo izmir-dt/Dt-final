@@ -2749,3 +2749,24 @@ function idtUpdateStats(){
     setTimeout(()=>{ clearInterval(t1); setInterval(tick, 4000); }, 30000);
   });
 })();
+// Panel metrik ve istatistik güncelleme (veri yüklendikten sonra çağır)
+function updatePanelMetricsAndStats() {
+  const data = window.allDataRaw || [];
+  
+  const totalGames = new Set(data.map(r => r.oyunAd || r.oyun || '').filter(Boolean)).size;
+  const totalPeople = new Set(data.map(r => r.isim || r.adSoyad || r.kisi || '').filter(Boolean)).size;
+
+  document.getElementById('stat-total-games')?.textContent = totalGames || '—';
+  document.getElementById('stat-total-personel')?.textContent = totalPeople || '—';
+  document.getElementById('stat-active-view')?.textContent = 'Tümü';  // filtre eklenirse güncellenir
+
+  const currentRows = document.querySelectorAll('#ccList tbody tr').length || 0;
+  document.getElementById('view-stats-current')?.textContent = `Bu görünümde ${currentRows} kayıt`;
+  document.getElementById('view-stats-total')?.textContent = `Toplam ${totalPeople || '—'} kişi`;
+}
+
+// Veri yüklendikten sonra otomatik çağır (mevcut kodunun uygun yerine ekle veya sonuna koy)
+window.addEventListener('DOMContentLoaded', () => {
+  // ... mevcut kodların varsa bırak ...
+  setTimeout(updatePanelMetricsAndStats, 500);  // veri geldikten sonra çalışsın
+});
