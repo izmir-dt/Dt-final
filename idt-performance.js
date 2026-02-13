@@ -104,3 +104,30 @@
   }, { passive: true });
 
 })();
+
+
+
+// Veri basılırken tarayıcıyı kasmayan 'Akıllı Kuyruk' (Smart Queue)
+window.__IDT = window.__IDT || {};
+window.__IDT.renderInChunks = function(container, items, renderFn) {
+  let index = 0;
+  const chunkSize = 50;
+
+  function doBatch() {
+    const end = Math.min(index + chunkSize, items.length);
+    const fragment = document.createDocumentFragment();
+
+    for (let i = index; i < end; i++) {
+      const element = renderFn(items[i]);
+      if (element) fragment.appendChild(element);
+    }
+
+    container.appendChild(fragment);
+    index = end;
+
+    if (index < items.length) {
+      requestAnimationFrame(doBatch);
+    }
+  }
+  doBatch();
+};
