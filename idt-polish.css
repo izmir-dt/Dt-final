@@ -1085,77 +1085,102 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === STATE THEATRE ALIGNMENT v5 (single CSS drop-in) =======================
-   Hedef: statetheatrecompany.com.au hissi → editorial + temiz + kırmızı vurgu.
-   Sadece CSS. JS/veri/bildirim bloklarına dokunmaz.
+/* === STATE THEATRE INSPIRED v6 (Less White / Less Fatigue) =================
+   Hedef: Daha az beyaz, daha “sahne/kağıt” hissi; başlık hiyerarşisi; daha az border gürültüsü.
+   UI-only. JS/veri/bildirim/global-state dokunulmadı.
 =========================================================================== */
 
-/* 1) Layout: sağ boşluk / dar içerik sorununu bitir */
+:root{
+  --bg: #f6f4f1;              /* warm paper */
+  --card: #ffffff;
+  --text: #111114;
+  --muted: rgba(17,17,20,.62);
+  --line: rgba(17,17,20,.10);
+
+  --accent: #c1121f;          /* curtain red */
+  --gold: rgba(193,18,31,.16);
+
+  --shadow: 0 8px 18px rgba(0,0,0,.04);
+  --radius: 14px;
+}
+
+/* Page background */
+html, body{ background: var(--bg) !important; color: var(--text) !important; }
+.wrap, main, .idt-main{ background: transparent !important; }
+
+/* Content: fill width better, reduce “right empty column” feel */
 .idt-content{
-  max-width: 1200px !important;
+  max-width: 1320px !important;
   width: 100% !important;
   margin: 0 auto !important;
-  padding-inline: 22px !important;
+  padding-inline: 20px !important;
 }
 
-/* Sidebar kaynaklı boşluk/karmaşa varsa tamamen kapat */
-.idt-sidebar{ display: none !important; }
-
-/* Main arka bant / gradient varsa kapat */
-.wrap, main, .idt-main{
-  background: #fff !important;
+/* Try collapsing possible 3rd empty column layouts safely */
+.idt-main{
+  grid-auto-flow: row !important;
 }
-
-/* 2) “IDT logo aşağıda” gibi duran iç logo/brand öğelerini gizle (top bar hariç) */
-.wrap .logo,
-.wrap .idt-logo,
-.wrap .brand,
-.wrap .idt-side-head{
+.idt-main > .right,
+.idt-main > .aside,
+.idt-main > .sidebar,
+.idt-main > .col-right{
   display: none !important;
 }
 
-/* 3) Üst bar: header gibi editorial */
+/* Top toolbar */
 header.idt-topnav{
-  position: sticky;
-  top: 0;
-  z-index: 80;
-  background: rgba(255,255,255,.92) !important;
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0,0,0,.10) !important;
+  background: color-mix(in srgb, #fff 80%, var(--bg)) !important;
+  border-bottom: 1px solid var(--line) !important;
   box-shadow: none !important;
 }
 
-/* “Hazır • saat” bloğu daha şık */
+/* Status less “badgey” */
 #statusMirror{
+  color: rgba(17,17,20,.80) !important;
   font-weight: 900 !important;
-  color: rgba(17,17,20,.86) !important;
 }
 
-/* 4) Nav chip'lerini bitir: text-only + underline */
-.nav,
-.idt-topbar2{
-  background: rgba(255,255,255,.94) !important;
-  border-bottom: 1px solid rgba(0,0,0,.10) !important;
+/* Buttons */
+.idt-top-actions .idt-pill,
+.idt-top-actions a.idt-pill,
+button.btn{
+  background: rgba(255,255,255,.70) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
   box-shadow: none !important;
 }
+.idt-top-actions .idt-pill:hover{ border-color: rgba(193,18,31,.45) !important; color: var(--accent) !important; }
+.idt-top-actions .idt-pill.primary{
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+.idt-badge{
+  background: #fff !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(193,18,31,.30) !important;
+  font-weight: 900 !important;
+}
 
-/* hem .nav button hem .topNav2Btn'yi kapsa */
+/* Nav: calmer pills → text tabs */
+.nav, .idt-topbar2{
+  background: color-mix(in srgb, #fff 84%, var(--bg)) !important;
+  border-bottom: 1px solid var(--line) !important;
+  box-shadow: none !important;
+}
 .nav button,
 .idt-topbar2 .topNav2Btn{
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
-  padding: 14px 8px !important;
+  padding: 12px 8px !important;
   font-weight: 800 !important;
   color: rgba(17,17,20,.78) !important;
 }
-
 .nav button:hover,
-.idt-topbar2 .topNav2Btn:hover{
-  color: var(--accent) !important;
-}
-
+.idt-topbar2 .topNav2Btn:hover{ color: var(--accent) !important; }
 .nav button.active,
 .nav button[aria-selected="true"],
 .idt-topbar2 .topNav2Btn.is-active{
@@ -1163,42 +1188,71 @@ header.idt-topnav{
   box-shadow: inset 0 -2px 0 var(--accent) !important;
 }
 
-/* 5) Buton dili: minimal outline, Bildirim primary */
-.idt-top-actions .idt-pill,
-.idt-top-actions a.idt-pill,
-button.btn{
-  background: transparent !important;
-  border: 1px solid rgba(0,0,0,.12) !important;
-  border-radius: 999px !important;
-  font-weight: 800 !important;
+/* Section headers: editorial (State Theatre-like) */
+h1,h2,h3{
+  letter-spacing: .005em !important;
 }
-
-.idt-top-actions .idt-pill.primary{
-  background: var(--accent) !important;
-  color: #fff !important;
-  border-color: var(--accent) !important;
+h2{
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  margin: 16px 0 8px !important;
 }
-
-.idt-badge{
-  background: #fff !important;
-  color: var(--accent) !important;
-  border: 1px solid rgba(0,0,0,.12) !important;
+.section-title, .panel-title, .card-title{
   font-weight: 900 !important;
 }
 
-/* 6) Kartlar: gölgeyi azalt, border ile profesyonel */
+/* Cards: less border noise, slight shadow */
 .card, .panel, .box, .section, .idt-card, .kpi{
-  box-shadow: none !important;
-  border: 1px solid rgba(0,0,0,.10) !important;
-  border-radius: 14px !important;
+  background: color-mix(in srgb, #fff 92%, var(--bg)) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
 }
 
-/* 7) Sağdaki “boş kolon” hissi: grid/flex min-width */
-.idt-shell, .idt-main, .wrap{ min-width: 0 !important; }
-.idt-shell *{ min-width: 0 !important; }
+/* Chips inside list: calm */
+.chip, .pill, .tag{
+  background: rgba(255,255,255,.65) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  color: rgba(17,17,20,.76) !important;
+}
+
+/* Tables: reduce harshness + zebra */
+table{
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+th{
+  background: rgba(255,255,255,.60) !important;
+  border-bottom: 1px solid rgba(0,0,0,.10) !important;
+  font-weight: 900 !important;
+}
+tr:nth-child(even) td{
+  background: rgba(255,255,255,.55) !important;
+}
+td{
+  border-bottom: 1px solid rgba(0,0,0,.06) !important;
+}
+
+/* Remove strong row highlight blocks if any */
+tr.selected td, .row-selected{
+  background: rgba(193,18,31,.08) !important;
+  outline: 1px solid rgba(193,18,31,.20) !important;
+}
+
+/* Inputs */
+input[type="text"], input[type="search"], select{
+  background: rgba(255,255,255,.70) !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 12px !important;
+}
+input:focus, select:focus{
+  outline: none !important;
+  border-color: rgba(193,18,31,.55) !important;
+  box-shadow: 0 0 0 3px rgba(193,18,31,.12) !important;
+}
 
 /* Mobile */
 @media (max-width: 720px){
   .idt-content{ padding-inline: 14px !important; }
-  .nav button, .idt-topbar2 .topNav2Btn{ padding: 12px 6px !important; }
+  h2{ font-size: 20px !important; }
 }
