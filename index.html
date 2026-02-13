@@ -1,92 +1,112 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>İzmir Devlet Tiyatrosu • Repertuvar Kişi Takip Sistemi</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>İDT Repertuvar Takip – Basit Versiyon</title>
   <style>
     :root {
-      --bg: #f8f5f0;           /* daha yumuşak arka plan */
-      --card: #ffffff;
-      --text: #1f2937;
+      --bg: #fdfaf5;
+      --card: white;
+      --text: #111827;
       --muted: #6b7280;
-      --line: #e5e7eb;
-      --accent: #991b1b;       /* bordo yumuşatıldı */
-      --accent-light: #ef4444;
+      --accent: #991b1b;
       --shadow: 0 4px 12px rgba(0,0,0,0.08);
-      --radius: 12px;
+      --radius: 10px;
     }
-
-    * { box-sizing: border-box; margin:0; padding:0; }
-    body { font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
-    header { position:sticky; top:0; z-index:40; background:white; border-bottom:1px solid var(--line); padding:12px 16px; box-shadow: var(--shadow); }
-    main { max-width:1200px; margin:0 auto; padding:24px 16px; }
-
-    .metrics-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
-    .metric-card {
-      flex:1 1 180px;
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:20px;
-      text-align:center;
-      box-shadow:var(--shadow);
-      border:1px solid var(--line);
-    }
-    .metric-value { font-size:2.5rem; font-weight:800; color:var(--accent); }
-    .metric-label { font-size:0.9rem; color:var(--muted); margin-top:8px; text-transform:uppercase; }
-
-    .view-stats { font-size:0.95rem; color:var(--muted); margin:16px 0; padding:12px; background:var(--card); border-radius:var(--radius); border:1px solid var(--line); text-align:center; }
-
-    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
-    .empty-state h2 { color:var(--text); margin-bottom:12px; }
-    .list-container { margin-top:24px; }
-
-    @media (max-width:768px) {
-      .metrics-row { gap:12px; }
-      .metric-card { padding:16px; }
-    }
+    body { font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); margin:0; padding:20px; line-height:1.5; }
+    header { text-align:center; margin-bottom:30px; }
+    h1 { color:var(--accent); }
+    .metrics { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin:20px 0; }
+    .card { background:var(--card); padding:20px; border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; border:1px solid #e5e7eb; }
+    .card-value { font-size:2.8rem; font-weight:bold; color:var(--accent); }
+    .card-label { color:var(--muted); margin-top:8px; font-size:0.95rem; text-transform:uppercase; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; background:white; box-shadow:var(--shadow); border-radius:var(--radius); overflow:hidden; }
+    th, td { padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; }
+    th { background:#f3f4f6; font-weight:600; }
+    .loading { text-align:center; font-size:1.2rem; color:var(--muted); padding:60px 0; }
+    .error { color:#dc2626; text-align:center; padding:40px; font-weight:500; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1 style="font-size:1.6rem; font-weight:700;">İDT Repertuvar Takip Paneli</h1>
+    <h1>İzmir Devlet Tiyatrosu Repertuvar Takip</h1>
+    <p>Basit Veri Görüntüleme (GViz ile çekiliyor)</p>
   </header>
 
-  <main>
-    <section id="viewPanel">
-      <div class="metrics-row">
-        <div class="metric-card">
-          <div class="metric-value" id="stat-total-games">—</div>
-          <div class="metric-label">Toplam Oyun</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" id="stat-total-personel">—</div>
-          <div class="metric-label">Toplam Personel</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" id="stat-active-view">Yükleniyor...</div>
-          <div class="metric-label">Aktif Görünüm</div>
-        </div>
-      </div>
+  <div id="metrics" class="metrics">
+    <div class="card">
+      <div class="card-value" id="games">—</div>
+      <div class="card-label">Toplam Oyun</div>
+    </div>
+    <div class="card">
+      <div class="card-value" id="people">—</div>
+      <div class="card-label">Toplam Personel</div>
+    </div>
+    <div class="card">
+      <div class="card-value" id="rows">—</div>
+      <div class="card-label">Toplam Satır</div>
+    </div>
+  </div>
 
-      <div class="view-stats">
-        <span id="view-stats-current">Bu görünümde — kayıt</span> • 
-        <span id="view-stats-total">Toplam — kayıt</span>
-      </div>
+  <div id="loading" class="loading">Veriler Google Sheets'ten çekiliyor...</div>
+  <div id="error" class="error" style="display:none;"></div>
 
-      <div class="empty-state" id="emptyState">
-        <h2>Veriler Yükleniyor...</h2>
-        <p>Lütfen bekleyin veya <button onclick="location.reload()">Yenile</button></p>
-      </div>
+  <table id="table" style="display:none;">
+    <thead><tr id="headers"></tr></thead>
+    <tbody id="body"></tbody>
+  </table>
 
-      <div class="list-container" id="dataList" style="display:none;">
-        <!-- Veri buraya render edilecek -->
-      </div>
-    </section>
-  </main>
+  <script>
+    const SHEET_ID = "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0";
+    const GID = "1233566992"; // BÜTÜN OYUNLAR GID'si
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
 
-  <script src="app.js" defer></script>
+    fetch(url)
+      .then(r => r.text())
+      .then(text => {
+        // GViz JSONP temizle
+        const jsonString = text.replace(/^\/\*O_o\*\//, '').replace(/^\)]\}'\n/, '');
+        const data = JSON.parse(jsonString);
+
+        const cols = data.table.cols.map(c => c.label || `Col${c.id}`);
+        const rows = data.table.rows.map(r => r.c.map(cell => cell?.v ?? ''));
+
+        // Metrikler
+        document.getElementById('games').textContent = new Set(rows.map(r => r[0])).size; // ilk sütun oyun varsayımı
+        document.getElementById('people').textContent = new Set(rows.map(r => r[3])).size; // 4. sütun kişi varsayımı – sheet'ine göre değiştir
+        document.getElementById('rows').textContent = rows.length;
+
+        // Tablo header
+        const headerRow = document.getElementById('headers');
+        cols.forEach(col => {
+          const th = document.createElement('th');
+          th.textContent = col;
+          headerRow.appendChild(th);
+        });
+
+        // Tablo body (ilk 100 satır göster, performans için)
+        const tbody = document.getElementById('body');
+        rows.slice(0, 100).forEach(row => {
+          const tr = document.createElement('tr');
+          row.forEach(cell => {
+            const td = document.createElement('td');
+            td.textContent = cell || '—';
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('table').style.display = 'table';
+      })
+      .catch(err => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = 'Hata: ' + err.message + ' (Sheet erişim izni veya GID hatalı olabilir)';
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
