@@ -78,6 +78,46 @@
   --idtPanelRadius: 16px;
 }
 
+
+
+/* --- Profesyonel Tablo ve Okunabilirlik Düzenlemeleri --- */
+
+/* Veri tabloları için 'Sticky' (Sabit) Başlık ve Excel Görünümü */
+#ccList table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#ccList th {
+    position: sticky;
+    top: 0; /* Sayfa kaydıkça başlıkların yukarıda çakılı kalmasını sağlar */
+    background-color: var(--card);
+    z-index: 10;
+    border-bottom: 2px solid var(--line);
+    padding: 12px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+/* Satır Renklendirme (Zebra Striping): Okunabilirliği %40 artırır */
+#ccList tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Masaüstü için Hover Etkisi */
+#ccList tr:hover {
+    background-color: rgba(122, 30, 44, 0.04) !important;
+    transition: background 0.2s ease;
+}
+
+/* Rakamların hizalanması için özel font ayarı */
+.row-item span, td {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.3px;
+}
+
 /* A11y: focus ring */
 :where(a,button,input,select,textarea,[tabindex]):focus-visible{
   outline: 2px solid rgba(122,30,44,.55);
@@ -1044,26 +1084,3 @@ table.idt-table tbody tr:hover,
 #globalLoading .glClose{display:none !important;}
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
-
-
-
-/* === IDT: Topbar wrap + mini brand (safe UI patch) === */
-.topNav2{ overflow-x:hidden; }
-.topNav2Inner, .topNav2{ flex-wrap:wrap; gap:10px; }
-.topNav2Btn{ max-width: 100%; }
-.idt-brand-mini{
-  display:flex; align-items:center; gap:10px;
-  padding:8px 12px; border-radius:14px;
-  background: rgba(255,255,255,.75);
-  border:1px solid var(--line);
-  box-shadow: 0 6px 18px rgba(24,16,8,.06);
-}
-.idt-brand-mini .material-icons{ color: var(--accent); font-size: 20px; }
-.idt-brand-mini .b1{ font-weight:900; font-size:13px; letter-spacing:.02em; color: var(--accent); line-height:1.1; }
-.idt-brand-mini .b2{ font-weight:700; font-size:11px; color: var(--muted); line-height:1.1; }
-
-/* prevent chip text clipping */
-.topNav2Btn, .chip, .topNavBtn { white-space: nowrap; }
-@media (max-width: 1100px){
-  .topNav2Btn span:last-child{ font-size: 12px; }
-}
