@@ -567,27 +567,28 @@
     list.innerHTML = html;
 
     list.querySelectorAll('.ccCommonRow').forEach(tr=>{
-      tr.addEventListener('click', ()=>{
-        const person = tr.getAttribute('data-person') || '';
-        const play = tr.getAttribute('data-a') || '';
-        setState({kisi:person, oyun:play});
-        try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
-        const tabPanel = $('tabPanel'); if(tabPanel) tabPanel.click();
-        try{
-          if(typeof window.renderList === 'function' && typeof window.renderDetails === 'function'){
-            if(window.activeMode !== 'plays' && $('btnPlays')) $('btnPlays').click();
-            const target = Array.isArray(window.plays) ? window.plays.find(x=>x.title===play) : null;
-            if(target){
-              window.activeId = target.id;
-              window.selectedItem = target;
-              window.renderList({preserveScroll:false});
-              window.renderDetails(target);
-            }
-          }
-        }catch(_e){}
-      });
+    tr.addEventListener('click', () => {
+      const name = tr.dataset.person || '';
+      if (!name) return;
+
+      // İstek: Yoğunluk & Çakışma listesinden kişi tıklanınca
+      // Oyunlara Göre Dağılım sekmesine geç ve filtreyi kişi adına göre uygula.
+      const dq = document.getElementById('dq');
+      if (dq) {
+        dq.value = name;
+        dq.dispatchEvent(new Event('input', { bubbles:true }));
+      }
+      if (typeof window.setActiveTab === 'function') {
+        window.setActiveTab('tabDistribution');
+      } else {
+        // fallback: hash
+        location.hash = '#dagilim';
+      }
+      // Görünür alana getir (üst kısım)
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { window.scrollTo(0,0); }
     });
-  }
+  });
+}
 
   function copyCurrentList(){
     const list = $('ccList');
@@ -620,7 +621,6 @@
     }
 
     const btnShow = $('ccShowCommon');
-    const btnCopy = $('ccCopyCommon');
     if(btnShow) btnShow.addEventListener('click', showCommonAsDetail);
     if(btnCopy) btnCopy.addEventListener('click', async ()=>{
       try{
@@ -640,7 +640,8 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('\n');
+        const tsv = lines.join('
+');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
@@ -658,7 +659,8 @@
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('\n'));
+            window.copyText(lines.join('
+'));
           }
         }catch(_e){}
       }finally{
