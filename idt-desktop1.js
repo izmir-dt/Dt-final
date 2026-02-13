@@ -879,3 +879,107 @@ function setupHeatmap(){
   }
   window.addEventListener("DOMContentLoaded", wireVenn);
 })();
+
+
+
+/* ===== IDT Topbar: More menü + sayaçlar + Excel kopyalama sağlamlaştırma ===== */
+(function(){
+  function qs(sel, root){ return (root||document).querySelector(sel); }
+  function qsa(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+
+  // 1) More menü
+  function initMoreMenu(){
+    const btn = document.getElementById('idtMoreBtn');
+    const menu = document.getElementById('idtMoreMenu');
+    if (!btn || !menu) return;
+
+    const close = () => {
+      menu.classList.add('hidden');
+      btn.setAttribute('aria-expanded','false');
+    };
+    const open = () => {
+      menu.classList.remove('hidden');
+      btn.setAttribute('aria-expanded','true');
+    };
+
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if (menu.classList.contains('hidden')) open(); else close();
+    });
+
+    // Menü item'ları mevcut .topNav2Btn handler'ına bırakıyoruz.
+    menu.addEventListener('click', (e)=>{
+      const it = e.target.closest('button[data-go]');
+      if (!it || it.disabled) return;
+      close();
+    });
+
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+  }
+
+  // 2) Sayaçlar (Oyun/Personel/Figüran)
+  function updateCounts(){
+    const elPlays = document.getElementById('stat-plays');
+    const elPeople = document.getElementById('stat-people');
+    const elFig = document.getElementById('stat-figuran');
+    if (!elPlays && !elPeople && !elFig) return;
+
+    const playsCount = Array.isArray(window.plays) ? window.plays.length : (window.plays && window.plays.size) ? window.plays.size : 0;
+    const peopleCount = Array.isArray(window.people) ? window.people.length : (window.people && window.people.size) ? window.people.size : 0;
+
+    let figCount = 0;
+    if (Array.isArray(window.figuranDataRaw)) figCount = window.figuranDataRaw.length;
+    else if (Array.isArray(window.figuranRows)) figCount = window.figuranRows.length;
+    else if (window.figuranSet && typeof window.figuranSet.size === 'number') figCount = window.figuranSet.size;
+
+    if (elPlays) elPlays.textContent = playsCount ? String(playsCount) : '—';
+    if (elPeople) elPeople.textContent = peopleCount ? String(peopleCount) : '—';
+    if (elFig) elFig.textContent = figCount ? String(figCount) : '—';
+  }
+
+  // Veriler gelince otomatik dolsun: kısa süreli dene
+  function startCountPump(){
+    let tries = 0;
+    const t = setInterval(()=>{
+      updateCounts();
+      tries++;
+      // veri geldiyse (en az biri dolu) dur
+      const filled = (Array.isArray(window.plays) && window.plays.length) || (Array.isArray(window.people) && window.people.length) || (Array.isArray(window.figuranDataRaw) && window.figuranDataRaw.length);
+      if (filled || tries > 90) clearInterval(t); // ~45sn
+    }, 500);
+  }
+
+  // 3) Excel kopyalama (fallback dahil) - mevcut fonksiyonu ezmeden güvenli override
+  window.idtCopyToClipboard = async function(text){
+    const t = String(text ?? '');
+    try{
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(t);
+        return true;
+      }
+    }catch(_){ /* fallback */ }
+
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = t;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      ta.style.top='-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(_){
+      return false;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    initMoreMenu();
+    startCountPump();
+  });
+})();
+
