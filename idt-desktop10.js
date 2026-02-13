@@ -2,6 +2,21 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
 
+  // ---------- UI feedback helpers (copy bar kapalı) ----------
+  function idtFlashBtn(btn, okText, ms=900){
+    if(!btn) return;
+    const span = btn.querySelector('span') || btn;
+    const old = span.textContent;
+    span.textContent = okText;
+    btn.classList.add('is-ok');
+    setTimeout(()=>{ span.textContent = old; btn.classList.remove('is-ok'); }, ms);
+  }
+  function idtBusyBtn(btn, busy){
+    if(!btn) return;
+    btn.classList.toggle('is-busy', !!busy);
+    btn.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+
   // ---------- Global Loading ----------
   function setupLoading(){
     const root = $('globalLoading');
@@ -589,21 +604,26 @@
     });
   }
 
-  function copyCurrentList(){
-    const list = $('ccList');
-    if(!list) return;
-    const table = list.querySelector('table');
-    if(!table) return;
-    const rows = [];
-    const trs = table.querySelectorAll('tbody tr');
-    const ths = Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent.trim());
-    rows.push(ths.join('\t'));
-    trs.forEach(tr=>{
-      const tds = Array.from(tr.querySelectorAll('td')).map(td=>td.textContent.trim());
-      rows.push(tds.join('\t'));
-    });
-    const text = rows.join('\n');
-    if(typeof window.copyText === 'function') window.copyText(text);
+  async function copyCurrentList(){
+    const btn = $('ccCopyList');
+    try{
+      if(btn) btn.disabled = true;
+      idtBusyBtn(btn,true);
+      const tsv = await buildEnhancedTSV();
+      if(!tsv) return;
+
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(tsv);
+      }else if(typeof window.copyText === 'function'){
+        window.copyText(tsv);
+      }
+      idtFlashBtn(btn,'✅ Kopyalandı');
+    }catch(err){
+      console.error(err);
+    }finally{
+      if(btn) btn.disabled = false;
+      idtBusyBtn(btn,false);
+    }
   }
 
   function setupCenter(){
@@ -625,8 +645,8 @@
     if(btnCopy) btnCopy.addEventListener('click', async ()=>{
       try{
         btnCopy.disabled = true;
-        btnCopy.classList.add('is-busy');
-        if(typeof window.setStatus === 'function') window.setStatus('⏳ Ortaklar Excel için hazırlanıyor…','info');
+        idtBusyBtn(btnCopy,true);
+
 
         updateCommonCount();
         const common = lastCommon || [];
@@ -644,14 +664,14 @@
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
+          idtFlashBtn(btnCopy,'✅ Kopyalandı');
         }else if(typeof window.copyText === 'function'){
           window.copyText(tsv);
+        idtFlashBtn(btnCopy,'✅ Kopyalandı');
         }
 
-        if(typeof window.setStatus === 'function') window.setStatus('✅ Ortaklar Excel’e kopyalandı','ok');
       }catch(err){
         console.error(err);
-        if(typeof window.setStatus === 'function') window.setStatus('⚠️ Kopyalama başarısız','warn');
         try{
           if(typeof window.copyText === 'function'){
             updateCommonCount();
@@ -663,7 +683,7 @@
         }catch(_e){}
       }finally{
         btnCopy.disabled = false;
-        btnCopy.classList.remove('is-busy');
+        idtBusyBtn(btnCopy,false);
       }
     });
 
