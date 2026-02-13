@@ -1085,29 +1085,65 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === PRO UI PATCH (B) v3: Layout + Hierarchy Fix ==========================
-   - Tek görünür üst bar: .idt-topnav + .idt-topbar2
-   - Legacy header/nav DOM'da kalsın (JS hook), ama görünmesin.
-   - Buton/menü dili: operasyonel, tutarlı.
-=========================================================================== */
-
-/* Legacy header/nav gizle (JS id'leri kaybolmasın) */
-.idt-legacy{
-  position: absolute !important;
-  left: -99999px !important;
-  top: -99999px !important;
-  width: 1px !important;
-  height: 1px !important;
-  overflow: hidden !important;
+  header.idt-topnav{ padding: 10px 12px; }
+  .idt-top-actions .idt-pill{ padding: 9px 10px; }
 }
 
-/* Üst toolbar: daha profesyonel */
+/* === PRO UI PATCH (B) v4: Typography + Spacing (Tabler-like) ===============
+   - Inter body font (UI readability)
+   - JetBrains Mono for numbers/counters
+   - Daha sıkı ölçüler: font-size/line-height/spacing
+=========================================================================== */
+
+:root{
+  --font-ui: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* Base typography */
+html{ font-size: 14px; }
+body{
+  font-family: var(--font-ui);
+  line-height: 1.45;
+  letter-spacing: .01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1,h2,h3{
+  font-family: var(--font-ui);
+  letter-spacing: .01em;
+}
+
+/* KPI / numeric emphasis */
+.kpi .value,
+#statusMirror,
+.idt-badge{
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+}
+
+/* Layout background band fix (beige strip) */
+.wrap{
+  background: transparent !important;
+}
+main, .idt-main{
+  background: transparent !important;
+}
+
+/* Buttons: consistent sizing */
+button, .btn, .idt-pill{
+  font-family: var(--font-ui);
+}
+
+/* Topbar fine-tune */
 header.idt-topnav{
   position: sticky;
   top: 0;
   z-index: 60;
-  background: rgba(255,255,255,.86);
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
 }
 
@@ -1116,87 +1152,74 @@ header.idt-topnav{
   align-items:center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 10px 16px;
 }
 
-#statusMirror{
-  display:flex;
-  align-items:center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-/* Üst aksiyonlar: tek dil */
 .idt-top-actions .idt-pill,
 .idt-top-actions a.idt-pill{
   border: 1px solid var(--line);
-  background: var(--card, #fff);
-  color: var(--text, #111);
+  background: var(--card);
+  color: var(--text);
   border-radius: 12px;
   padding: 10px 12px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .idt-top-actions .idt-pill.primary{
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-  background: color-mix(in srgb, var(--accent) 10%, #fff);
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: color-mix(in srgb, var(--accent) 9%, #fff);
   color: var(--accent);
 }
 
-.idt-top-actions .idt-pill.ok{
-  border-color: var(--line);
-  background: var(--card, #fff);
-  color: var(--text, #111);
+.idt-top-actions .idt-pill:hover{
+  border-color: color-mix(in srgb, var(--accent) 20%, var(--line));
+  background: color-mix(in srgb, var(--accent) 4%, #fff);
 }
 
-.idt-top-actions .idt-pill:hover,
-.idt-top-actions a.idt-pill:hover{
-  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
-  background: color-mix(in srgb, var(--accent) 5%, #fff);
-}
-
-/* Üst menü: underline nav */
 .idt-topbar2{
   position: sticky;
-  top: 52px; /* topnav yüksekliğine yakın */
+  top: 54px;
   z-index: 55;
   background: rgba(255,255,255,.92);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
-  padding: 10px 14px;
-  gap: 14px;
 }
 
+/* Nav: küçült + disiplin */
 .idt-topbar2 .topNav2Btn{
-  border: none;
-  background: transparent;
+  font-size: 13px;
+  font-weight: 800;
   padding: 10px 6px;
-  border-radius: 10px;
-  font-weight: 900;
-  color: color-mix(in srgb, var(--text) 78%, var(--muted));
 }
 
-.idt-topbar2 .topNav2Btn:hover{
-  background: color-mix(in srgb, var(--accent) 6%, #fff);
-  color: var(--text);
+/* Cards: border + shadow more subtle */
+.card, .panel, .box, .section, .idt-card, .kpi{
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.05);
 }
 
-.idt-topbar2 .topNav2Btn.is-active{
-  color: var(--accent);
-  box-shadow: inset 0 -2px 0 var(--gold, var(--accent2));
+/* Inside card spacing */
+.card, .panel, .box, .section, .idt-card{
+  padding: 14px;
 }
 
-/* İçerik üst boşluk: iki sticky bar'a göre */
-.idt-content{
-  padding-top: 8px;
+/* Form controls consistency */
+input[type="text"], input[type="search"], select{
+  font-family: var(--font-ui);
+  border-radius: 12px;
+  border: 1px solid var(--line);
 }
 
-/* Genel taşma kalkanı */
-.idt-shell, .idt-main, .idt-content, .idt-topbar2, header.idt-topnav{ min-width: 0; }
-.idt-shell *{ min-width: 0; }
+/* Reduce emoji/icon visual noise */
+.topNav2Btn .t2{
+  font-weight: 800;
+}
 
+/* Mobile */
 @media (max-width: 720px){
-  .idt-topbar2{ top: 56px; }
+  html{ font-size: 13px; }
   header.idt-topnav{ padding: 10px 12px; }
+  .idt-topbar2{ top: 56px; }
   .idt-top-actions .idt-pill{ padding: 9px 10px; }
 }
