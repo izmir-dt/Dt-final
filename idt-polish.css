@@ -1085,171 +1085,129 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === THEATRE B THEME v1 (UI-only) =========================================
-   Hedef: Tiyatro dokusu (bordo/altın) + operasyonel minimal panel.
-   Altın kural: JS/veri/bildirim/global-state yok. Sadece görünüm.
+/* === THEATRE B THEME v2 (Pro UI Pass) =====================================
+   Amaç: Referans admin paneller gibi (Tabler/Spektrix hissi) daha “net / kurumsal”
+   + tiyatro dokusu sadece vurgu olarak.
+   Not: UI-only. JS/veri/bildirim/global-state dokunulmadı.
 =========================================================================== */
 
 :root{
-  /* Nötr sahne arkası */
   --bg: #f4f2ef;
   --card: #ffffff;
-
-  /* Metin */
-  --text: #1b1b1f;
-  --muted: #6b6460;
-
-  /* Çizgi / ayrım */
+  --text: #17171c;
+  --muted: #6a6460;
   --line: #e6ded5;
 
-  /* Tiyatro */
   --accent: #7a1e2c;   /* bordo */
-  --gold:   #c7a14a;   /* altın vurgu */
-
-  /* Durum */
-  --ok:   #18794e;
-  --warn: #b45309;
-  --bad:  #b42318;
+  --gold:   #c7a14a;   /* altın */
 
   --shadow: 0 10px 24px rgba(0,0,0,.06);
   --radius: 12px;
+  --radius2: 10px;
 }
 
-/* Genel zemin / yazı */
-html, body{
+/* sayfa genel */
+body{
   background: var(--bg);
   color: var(--text);
 }
 
-/* İç konteynerin nefes alması */
+/* içerik: daha profesyonel merkez */
 .idt-content{
-  max-width: 1400px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding-inline: 14px;
+  padding-inline: 16px;
 }
 
 /* -------------------------------------------------------------------------
-   ÜST HEADER (brand + actions): .idt-content içindeki ana header
+   Üst küçük header (idt-topnav): sıkı, hizalı, “toolbar” gibi
 --------------------------------------------------------------------------- */
-.idt-content > header{
+header.idt-topnav{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Dot/status alanı büyümesin */
+#statusMirror{
+  font-weight: 900 !important;
+  color: var(--ok);
+  padding: 8px 10px;
+  border-radius: 999px;
   background: transparent;
-  padding: 10px 2px 2px;
-  margin-bottom: 6px;
-}
-
-.idt-content > header .top{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-/* Brand */
-.idt-content > header .brand{
-  display:flex;
-  align-items:center;
-  gap: 10px;
   min-width: 0;
+  white-space: nowrap;
 }
 
-.idt-content > header .brand .logo{
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  display:grid;
-  place-items:center;
-  font-weight: 900;
-  letter-spacing: .02em;
-  background: color-mix(in srgb, var(--accent) 12%, #fff);
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
-  color: var(--accent);
-}
-
-.idt-content > header .brand h1{
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.15;
-  font-weight: 900;
-  letter-spacing: .01em;
-}
-
-.idt-content > header .brand .brand-box{
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
-}
-
-.idt-content > header .brand .brand-divider{
-  color: color-mix(in srgb, var(--muted) 70%, var(--line));
-  padding-inline: 6px;
-}
-
-.idt-content > header .brand .brand-sub{
-  color: var(--muted);
-  font-weight: 800;
-}
-
-/* Actions unify */
-.idt-content > header .actions{
+/* Actions */
+.idt-top-actions{
   display:flex;
   align-items:center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
-.idt-content > header .btn,
-.idt-content > header .menu .btn{
+/* Tüm üst butonları aynı dil */
+.idt-top-actions .idt-pill,
+.idt-top-actions a.idt-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--text);
-  border-radius: 10px;
-  padding: 9px 11px;
-  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 900;
   box-shadow: 0 1px 0 rgba(0,0,0,.02);
 }
 
-.idt-content > header .btn:hover,
-.idt-content > header .menu .btn:hover{
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+.idt-top-actions .idt-pill:hover,
+.idt-top-actions a.idt-pill:hover{
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent) 5%, #fff);
 }
 
-.idt-content > header #reloadBtn{
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+/* Primary (Bildirimler): bordo ama bağırmadan */
+.idt-top-actions .idt-pill.primary{
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, #fff);
+  color: var(--accent);
 }
 
-.idt-content > header #reloadBtn:hover{
-  background: color-mix(in srgb, var(--accent) 6%, #fff);
+/* Excel: yeşil yerine nötr + küçük vurgu */
+.idt-top-actions .idt-pill.ok{
+  border-color: var(--line);
+  background: var(--card);
+  color: var(--text);
 }
 
-/* Status pill: daha ciddi */
-.idt-content > header .pill{
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, #fff 75%, var(--bg));
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 8px 10px;
-  font-weight: 800;
+/* Badge: altın vurgu */
+.idt-badge{
+  background: var(--gold) !important;
+  color: #1b1b1f !important;
+  border: 1px solid color-mix(in srgb, var(--gold) 60%, var(--line));
+  font-weight: 900;
 }
 
 /* -------------------------------------------------------------------------
-   ÜST NAV (sekme barı): underline nav (chip değil)
+   Üst menü: chip değil → underline nav (daha profesyonel)
 --------------------------------------------------------------------------- */
 .idt-topbar2{
-  background: color-mix(in srgb, #fff 88%, var(--bg));
+  background: rgba(255,255,255,.90);
   border-bottom: 1px solid var(--line);
-  box-shadow: none;
-  padding: 10px 14px;
-  gap: 14px;
+  padding: 10px 16px;
+  gap: 16px;
 }
 
+/* butonlar */
 .idt-topbar2 .topNav2Btn{
   border: none;
   background: transparent;
-  padding: 8px 4px;
-  border-radius: 8px;
+  padding: 10px 4px;
+  border-radius: 10px;
   font-weight: 900;
   color: color-mix(in srgb, var(--text) 78%, var(--muted));
   box-shadow: none;
@@ -1260,28 +1218,41 @@ html, body{
   color: var(--text);
 }
 
+/* aktif: altın underline + bordo yazı */
 .idt-topbar2 .topNav2Btn.is-active{
-  background: transparent;
   color: var(--accent);
   box-shadow: inset 0 -2px 0 var(--gold);
 }
 
-/* Nav taşmayı "hafif" yap: scrollbar görünümünü yumuşat */
-.idt-topbar2::-webkit-scrollbar{ height: 8px }
-.idt-topbar2::-webkit-scrollbar-thumb{
-  background: color-mix(in srgb, var(--muted) 22%, transparent);
-  border-radius: 999px;
+/* -------------------------------------------------------------------------
+   KPI: daha az “oyuncak”, daha çok “panel”
+--------------------------------------------------------------------------- */
+.kpis{
+  gap: 12px;
 }
 
-/* -------------------------------------------------------------------------
-   KPI kartları: premium ama hafif
---------------------------------------------------------------------------- */
 .kpi{
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+  box-shadow: 0 10px 24px rgba(0,0,0,.05);
+  transition: transform .08s ease, border-color .12s ease;
 }
+
+.kpi:hover{
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  transform: translateY(-1px);
+}
+
+/* soft renkleri “fill” yerine “üst çizgi” yap */
+.kpi.soft1, .kpi.soft2, .kpi.soft3, .kpi.soft4{
+  background: var(--card) !important;
+}
+
+.kpi.soft1{ box-shadow: 0 10px 24px rgba(0,0,0,.05), inset 0 2px 0 color-mix(in srgb, var(--accent) 20%, #fff); }
+.kpi.soft2{ box-shadow: 0 10px 24px rgba(0,0,0,.05), inset 0 2px 0 rgba(24,121,78,.18); }
+.kpi.soft3{ box-shadow: 0 10px 24px rgba(0,0,0,.05), inset 0 2px 0 rgba(180,83,9,.18); }
+.kpi.soft4{ box-shadow: 0 10px 24px rgba(0,0,0,.05), inset 0 2px 0 rgba(122,30,44,.18); }
 
 .kpi .label{
   color: var(--muted);
@@ -1290,35 +1261,49 @@ html, body{
 }
 
 .kpi .value{
-  font-feature-settings: "tnum" 1; /* tabular nums (destekleyen fontlarda) */
-}
-
-.kpi:hover{
-  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+  font-weight: 1000;
 }
 
 /* -------------------------------------------------------------------------
-   Kartlar / paneller genel: çizgi + gölge minimal
+   Kartlar/paneller: tek sistem
 --------------------------------------------------------------------------- */
 .card, .panel, .box, .section, .idt-card{
+  border-radius: var(--radius);
   border-color: var(--line);
 }
 
-.card, .panel, .box, .section, .idt-card{
-  border-radius: var(--radius);
+/* başlıklar daha net */
+h1,h2,h3{
+  letter-spacing: .01em;
 }
 
 /* -------------------------------------------------------------------------
-   Mobil: header daha sıkı
+   Yatay taşma kalkanı: flex çocuklarında min-width 0
 --------------------------------------------------------------------------- */
-@media (max-width: 720px){
-  .idt-content > header .top{
-    align-items: flex-start;
+.idt-shell, .idt-content, .idt-topbar2, .idt-top-actions{ min-width: 0; }
+.idt-shell *{ min-width: 0; }
+
+/* -------------------------------------------------------------------------
+   Mobil düzen: toolbar kırılması daha kontrollü
+--------------------------------------------------------------------------- */
+@media (max-width: 820px){
+  .idt-topbar2{
+    padding: 10px 12px;
+    gap: 10px;
   }
-  .idt-content > header .brand h1{
-    font-size: 14px;
+  .idt-top-actions .idt-pill{
+    padding: 9px 12px;
   }
-  .idt-content > header .btn{
+}
+
+@media (max-width: 560px){
+  header.idt-topnav{
+    padding-top: 2px;
+  }
+  .idt-top-actions{
+    gap: 8px;
+  }
+  .idt-top-actions .idt-pill{
     padding: 8px 10px;
   }
 }
