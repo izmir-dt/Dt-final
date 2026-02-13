@@ -1347,3 +1347,29 @@ html, body { overflow-x: hidden !important; }
   margin: 0 !important;
   padding: 0 !important;
 }
+
+/* === UI v22 (ONLY 2 FIXES) ================================================
+   1) Üst bar başlıklarında "..." (ellipsis) yok: isimler tam yazsın.
+   2) Üstteki beyaz bar sağa yaslansın ve tamamen beyaz olsun.
+   NOT: Başka hiçbir şeye dokunmaz.
+============================================================================ */
+
+.idt-topbar2{
+  justify-content: flex-end !important;   /* sağa yasla */
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  background: #fff !important;           /* tamamen beyaz */
+}
+
+/* Ellipsis kaldır: başlıklar tam görünsün */
+.idt-topbar2 .navTxt{
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* Butonlar sıkışıp kısalmasın */
+.idt-topbar2 .topNav2Btn{
+  flex: 0 0 auto !important;
+}
