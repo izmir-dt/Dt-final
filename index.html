@@ -1697,14 +1697,15 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">🎭 Aktif Oyun</span></button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">👥 Toplam Personel</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">🧾 Sorgu &amp; Karşılaştır</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">📊 Oyunlara Göre Dağılım</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">🧩 Yoğunluk &amp; Çakışma</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">📈 Grafikler</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="dot" aria-hidden="true"></span><span class="navTxt">🧠 Kesişim Analizi</span></button>
+  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="masks" aria-hidden="true"></span><span class="navTxt">AKTİF OYUN</span></button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="users" aria-hidden="true"></span><span class="navTxt">TOPLAM PERSONEL</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="search" aria-hidden="true"></span><span class="navTxt">SORGU &amp; KARŞILAŞTIR</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="bars" aria-hidden="true"></span><span class="navTxt">OYUNLARA GÖRE DAĞILIM</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="shuffle" aria-hidden="true"></span><span class="navTxt">YOĞUNLUK &amp; ÇAKIŞMA</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="line" aria-hidden="true"></span><span class="navTxt">GRAFİKLER</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="venn" aria-hidden="true"></span><span class="navTxt">KESİŞİM ANALİZİ</span></button>
   <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="navIcon" data-ico="ticket" aria-hidden="true"></span><span class="navTxt">FİGÜRAN/EMEKLİ</span></button>
+  <details class="topNav2More"><summary class="topNav2Btn" role="button"><span class="navIcon" data-ico="more" aria-hidden="true"></span><span class="navTxt">DAHA FAZLA</span></summary><div class="moreMenu" role="menu"><a href="#panel" role="menuitem">Panel</a><a href="#matris" role="menuitem">Yoğunluk & Çakışma</a><a href="#kesisim" role="menuitem">Kesişim</a><span class="soon">Yeni sekmeler burada listelenecek…</span></div></details>
 </div>
 
 
@@ -1768,9 +1769,18 @@ body{
 
 <div class="wrap">
   <div class="dash">
-    <div class="dashTitle">Ana Kontrol Paneli</div>
+    <div class="dashTitle">ANA KONTROL PANELİ</div>
     <div class="dashSub">En hızlı erişim için aşağıdaki kısayollardan birini kullan. Seçimlerin üstte “Aktif Seçimler” şeridinde görünür.</div>
-  </div>
+<details class="tipsBox">
+  <summary>İPUÇLARI</summary>
+  <ul>
+    <li>Üst menüden mod seç (Aktif Oyun, Toplam Personel, Sorgu, Dağılım, Yoğunluk, Grafikler, Kesişim, Figüran).</li>
+    <li>Yoğunluk & Çakışma: Üstten iki oyun seç → <b>Ortakları Göster</b> veya <b>Excel’e Kopyala</b>.</li>
+    <li>Panel/Liste: Soldan oyun seç → sağdaki detay tablosu oluşur → <b>Kopyala (Excel)</b>.</li>
+    <li>Grafikler: Filtreleri daraltarak okumayı netleştir; gerekirse Excel’e aktar.</li>
+    <li>Bildirimler: Sheet’te yaptığın değişiklikler yenileyince gelir.</li>
+  </ul>
+</details>
   <div class="kpis" id="kpis">
     <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
     <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
@@ -1975,7 +1985,7 @@ body{
     <div class="card">
       <div class="hd">
         <h2>Yoğunluk & Çakışma Merkezi</h2>
-        <div class="small">Yatay kaydırma yok. Üstten iki oyun seçip ortak personeli görebilir, alttan en yoğun oyunlardan hızlı liste alıp Excel’e kopyalayabilirsin.</div>
+        <div class="small"></div>
       </div>
       <div class="bd">
         <!-- Hızlı Çakışma -->
@@ -2024,7 +2034,7 @@ body{
         <!-- En yoğun oyunlar -->
         <div class="cc-hd2">
           <h3>En Yoğun 15 Oyun</h3>
-          <div class="cc-hint">Bir oyuna tıkla → liste açılır → kopyala / Panel’e geç.</div>
+          <div class="cc-hint"></div>
         </div>
         <div id="ccTopGames" class="cc-games"></div>
 
@@ -2033,7 +2043,7 @@ body{
           <div class="cc-detail-hd">
             <div>
               <div class="cc-title" id="ccDetailTitle">Bir oyun seç</div>
-              <div class="cc-sub" id="ccDetailSub">Seçince kişiler listesi burada görünür.</div>
+              <div class="cc-sub" id="ccDetailSub"></div>
             </div>
 
             <div class="cc-tools">
