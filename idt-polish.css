@@ -1425,3 +1425,22 @@ header,
 .topNav2More[open] .moreMenu {
   display: block !important;
 }
+/* ===== SADECE "DAHA FAZLA" dropdown: uzun/okunaklı olsun ===== */
+
+.topNav2More .moreMenu{
+  min-width: 260px !important;
+  padding: 10px !important;
+
+  /* kısa kalmasın */
+  max-height: 70vh !important;       /* ekranın %70'i kadar uzayabilsin */
+  overflow-y: auto !important;       /* çok uzunsa içinde scroll */
+}
+
+.topNav2More .moreMenu a,
+.topNav2More .moreMenu button{
+  display: block !important;
+  width: 100% !important;
+  padding: 10px 12px !important;     /* satırlar genişlesin */
+  line-height: 1.25 !important;
+  white-space: nowrap !important;     /* tek satır kalsın */
+}
