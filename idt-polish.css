@@ -1314,3 +1314,36 @@ html, body { overflow-x: hidden !important; }
 /* Any leftover tips footer blocks are hidden (safety) */
 .detailCard footer{ display: none !important; }
 .tipsBox{ display: none !important; }
+
+
+/* === UI v21 (ONLY: More menu no layout shift + restore full-width white bar) === */
+
+/* 1) White bar under top titles: stretch full width, no floating card */
+.idt-topbar2{
+  width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #fff !important;
+  border-bottom: 1px solid rgba(20,20,22,.08) !important;
+}
+
+/* 2) "DAHA FAZLA" dropdown: open as overlay (must NOT push bar down) */
+.topNav2More{
+  position: relative !important;
+}
+.topNav2More .moreMenu{
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  right: 0 !important;
+}
+.topNav2More[open] .moreMenu{
+  position: absolute !important;
+}
+/* Ensure the bar doesn't grow because of details default styling */
+.topNav2More,
+.topNav2More summary{
+  margin: 0 !important;
+  padding: 0 !important;
+}
