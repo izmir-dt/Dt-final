@@ -1697,18 +1697,116 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
-  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
-  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
+  <div class="idt-topbar-inner">
+    <div class="idt-brand" aria-label="IDT Panel">
+      <img src="theater.png" class="idt-logo" alt="İzmir Devlet Tiyatrosu"/>
+      <div class="idt-brandText">
+        <div class="idt-brandTitle">İDT PANEL</div>
+        <div class="idt-brandSub">Repertuvar Kişi Takip Sistemi</div>
+      </div>
+    </div>
+
+    <div class="idt-tabs" role="tablist" aria-label="Bölümler">
+      <button class="topNav2Btn" type="button" data-go="sidePlays" title="Aktif Oyunlar">
+        <span class="mi" aria-hidden="true">🎭</span><span class="lbl">Oyunlar</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sidePeople" title="Toplam Personel">
+        <span class="mi" aria-hidden="true">👥</span><span class="lbl">Kişiler</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sideRows" title="Sorgu & Karşılaştır">
+        <span class="mi" aria-hidden="true">🔎</span><span class="lbl">Sorgu</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sideDist" title="Oyunlara Göre Dağılım">
+        <span class="mi" aria-hidden="true">📊</span><span class="lbl">Dağılım</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sideHeatmap" title="Yoğunluk & Çakışma">
+        <span class="mi" aria-hidden="true">🧩</span><span class="lbl">Yoğunluk</span>
+      </button>
+
+      <div class="idt-more">
+        <button id="idtMoreBtn" class="topNav2Btn ghost" type="button" aria-haspopup="menu" aria-expanded="false" title="Diğer">
+          <span class="mi" aria-hidden="true">⋯</span><span class="lbl">Diğer</span>
+        </button>
+        <div id="idtMoreMenu" class="idt-moreMenu hidden" role="menu" aria-label="Diğer Bölümler">
+          <button class="idt-menuItem topNav2Btn" type="button" role="menuitem" data-go="sideCharts">📈 Grafikler</button>
+          <button class="idt-menuItem topNav2Btn" type="button" role="menuitem" data-go="sideIntersect">🫶 Kesişim</button>
+          <button class="idt-menuItem topNav2Btn" type="button" role="menuitem" data-go="sideFiguran">🎟️ Figüran/Emekli</button>
+          <div class="idt-menuSep" role="separator" aria-hidden="true"></div>
+          <button class="idt-menuItem is-disabled" type="button" role="menuitem" disabled>🗄️ Arşiv (yakında)</button>
+          <button class="idt-menuItem is-disabled" type="button" role="menuitem" disabled>🚫 Görevli olmayan (yakında)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="idt-stats" aria-label="Sayaçlar">
+      <div class="idt-badge" title="Toplam Oyun">
+        <div class="b-lab">OYUN</div>
+        <div id="stat-plays" class="b-val">—</div>
+      </div>
+      <div class="idt-badge" title="Toplam Personel">
+        <div class="b-lab">PERSONEL</div>
+        <div id="stat-people" class="b-val">—</div>
+      </div>
+      <div class="idt-badge" title="Toplam Figüran">
+        <div class="b-lab">FİGÜRAN</div>
+        <div id="stat-figuran" class="b-val">—</div>
+      </div>
+    </div>
+  </div>
 </div>
+<div class="idt-brandSub">Repertuvar Kişi Takip Sistemi</div>
+      </div>
+    </div>
 
+    <div class="idt-tabs" role="tablist" aria-label="Bölümler">
+      <button class="topNav2Btn" type="button" data-go="sidePlays" title="Aktif Oyunlar">
+        <span class="mi" aria-hidden="true">🎭</span><span class="lbl">Oyunlar</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sidePeople" title="Toplam Personel">
+        <span class="mi" aria-hidden="true">👥</span><span class="lbl">Kişiler</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sideRows" title="Sorgu & Karşılaştır">
+        <span class="mi" aria-hidden="true">🔎</span><span class="lbl">Sorgu</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sideDist" title="Oyunlara Göre Dağılım">
+        <span class="mi" aria-hidden="true">📊</span><span class="lbl">Dağılım</span>
+      </button>
+      <button class="topNav2Btn" type="button" data-go="sideHeatmap" title="Yoğunluk & Çakışma">
+        <span class="mi" aria-hidden="true">🧩</span><span class="lbl">Yoğunluk</span>
+      </button>
 
-      <div class="idt-content">
+      <div class="idt-more">
+        <button id="idtMoreBtn" class="topNav2Btn ghost" type="button" aria-haspopup="menu" aria-expanded="false" title="Diğer">
+          <span class="mi" aria-hidden="true">⋯</span><span class="lbl">Diğer</span>
+        </button>
+        <div id="idtMoreMenu" class="idt-moreMenu hidden" role="menu" aria-label="Diğer Bölümler">
+          <button class="idt-menuItem" type="button" role="menuitem" data-go="sideCharts">📈 Grafikler</button>
+          <button class="idt-menuItem" type="button" role="menuitem" data-go="sideIntersect">🫶 Kesişim</button>
+          <button class="idt-menuItem" type="button" role="menuitem" data-go="sideFiguran">🎟️ Figüran/Emekli</button>
+          <div class="idt-menuSep" role="separator" aria-hidden="true"></div>
+          <button class="idt-menuItem is-disabled" type="button" role="menuitem" disabled>🗄️ Arşiv (yakında)</button>
+          <button class="idt-menuItem is-disabled" type="button" role="menuitem" disabled>🚫 Görevli olmayan (yakında)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="idt-stats" aria-label="Sayaçlar">
+      <div class="idt-badge" title="Toplam Oyun">
+        <div class="b-lab">OYUN</div>
+        <div id="stat-plays" class="b-val">—</div>
+      </div>
+      <div class="idt-badge" title="Toplam Personel">
+        <div class="b-lab">PERSONEL</div>
+        <div id="stat-people" class="b-val">—</div>
+      </div>
+      <div class="idt-badge" title="Toplam Figüran">
+        <div class="b-lab">FİGÜRAN</div>
+        <div id="stat-figuran" class="b-val">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="idt-content">
         
 <header>
   <div class="top">
@@ -1820,13 +1918,9 @@ body{
               <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
 </div>
             <div class="bd" id="details">
-              <div class="empty">Soldan bir oyun veya kişi seç.</div>
+              <div class="empty">Listeden bir oyun veya kişi seç — detay burada görünsün.</div>
             </div>
-            <footer>
-              <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
-              <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
-            </footer>
-          </div>
+</div>
         </div>
       </div>
     </div>
@@ -1996,8 +2090,7 @@ body{
           <div class="cc-actions">
             <div class="cc-count">Ortak: <b id="ccCommonCount">0</b></div>
             <button class="btn" id="ccShowCommon">Ortakları Göster</button>
-            <button class="btn" id="ccCopyCommon">Ortakları Excel’e Kopyala</button>
-          </div>
+            </div>
         </div>
 
 
@@ -2077,10 +2170,7 @@ body{
         </div>
         <div id="intersectionBox"></div>
       </div>
-      <footer>
-        Not: Kesişim için kişi hücresindeki “virgül / ve / / / satır sonu” ayrımları otomatik yapılır.
-      </footer>
-    </div>
+</div>
   </section>
 
   <!-- FİGÜRAN -->
