@@ -1200,3 +1200,41 @@ html, body { overflow-x: hidden !important; }
   transform: scaleX(.90);
   opacity: 1;
 }
+/* ===== TOP PANEL FINAL FIX (tek satır + ortalı + scroll gizli) ===== */
+
+html, body { overflow-x: hidden !important; }
+
+.idt-topbar2{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;     /* ALTA DÜŞME BİTER */
+  gap: 12px !important;
+  padding: 10px 12px !important;
+
+  overflow-x: auto !important;      /* sığmazsa kayar */
+  overflow-y: hidden !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important;
+}
+.idt-topbar2::-webkit-scrollbar{ display:none !important; } /* Chrome */
+
+.idt-topbar2 .topNav2Btn{
+  font-size: 12px !important;       /* sığması için */
+  letter-spacing: .02em !important; /* “yana sünme” biter */
+  font-stretch: normal !important;
+  white-space: nowrap !important;
+  font-weight: 800 !important;
+}
+
+.dashTitle, .dashSub{
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.dashSub{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: min(1000px, 95vw) !important;
+}
