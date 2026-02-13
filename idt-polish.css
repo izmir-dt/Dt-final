@@ -1085,32 +1085,32 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === STATE THEATRE INSPIRED v7 (Cohesion + No-IDT-Badge) ===================
-   İstekler:
-   - “IDT” yuvarlak logo/kalkan kaldır
-   - “Hazır” ve “Bildirimler” sırıtmadan, aynı bütünün parçası gibi
-   - Başlık hiyerarşisi (site mantığı): küçük üst yazı + net başlık + ince çizgi
-   UI-only. JS/veri/bildirim/global-state yok.
+/* === LA SCALA INSPIRED v8 (Cohesion + No IDT Logo + No Word Split) =========
+   İlham: teatroallascala.org — koyu bordo + sıcak kağıt + altın vurgu, yüksek kalite.
+   NOT: Birebir kopya değil; benzer renk dili ve hiyerarşi.
+   UI-only. JS/veri/bildirim/global-state dokunulmadı.
 =========================================================================== */
 
 :root{
-  --bg: #f6f4f1;              /* warm paper */
+  --bg: #f6f1ea;              /* warm paper */
   --card: rgba(255,255,255,.86);
-  --text: #111114;
-  --muted: rgba(17,17,20,.62);
-  --line: rgba(17,17,20,.10);
+  --text: #141416;            /* ink */
+  --muted: rgba(20,20,22,.62);
+  --line: rgba(20,20,22,.10);
 
-  --accent: #c1121f;          /* curtain red */
-  --accentSoft: rgba(193,18,31,.10);
+  --accent: #6f1020;          /* Scala-like burgundy */
+  --gold:   #c7a14a;          /* warm gold */
+  --accentSoft: rgba(111,16,32,.10);
 
-  --shadow: 0 10px 22px rgba(0,0,0,.05);
+  --shadow: 0 12px 28px rgba(0,0,0,.06);
   --radius: 14px;
 }
 
+/* Background */
 html, body{ background: var(--bg) !important; color: var(--text) !important; }
 .wrap, main, .idt-main{ background: transparent !important; }
 
-/* Content fill */
+/* Content width */
 .idt-content{
   max-width: 1320px !important;
   width: 100% !important;
@@ -1118,99 +1118,101 @@ html, body{ background: var(--bg) !important; color: var(--text) !important; }
   padding-inline: 20px !important;
 }
 
-/* Remove any in-page IDT badge/logo blocks (not the topbar buttons) */
-.idt-content .logo,
-.idt-content .idt-logo,
-.idt-content .brandmark,
-.idt-content .idt-badge-logo,
-.idt-content .idtMark,
-.idt-content .idtEmblem{
-  display: none !important;
-}
+/* 1) IDT logo + legacy header tamamen gizle (JS hook'lar dursun) */
+.idt-content > header{ display:none !important; }   /* <header> içinde logo/IDT PANEL */
+.idt-content .tabs{ display:none !important; }      /* eski tab bar varsa */
 
-/* Also hide the circular "IDT" badge if it's a standalone button/div */
-.idt-content .badge,
-.idt-content .mark,
-.idt-content .emblem{
-  /* careful: only if it is the first block-like badge near top */
-}
-.idt-content > .badge,
-.idt-content > .mark,
-.idt-content > .emblem{
-  display:none !important;
-}
-
-/* Top toolbar: calmer, integrated */
+/* 2) Üst bar bütünlük: “Hazır” + aksiyonlar aynı sistem */
 header.idt-topnav{
-  background: color-mix(in srgb, #fff 78%, var(--bg)) !important;
-  border-bottom: 1px solid var(--line) !important;
-  box-shadow: none !important;
-}
-
-/* Status line should not look like a “big feature” */
-#statusMirror{
-  font-weight: 800 !important;
-  color: rgba(17,17,20,.70) !important;
-}
-
-/* Buttons: same system, no “fat red pill” */
-.idt-top-actions .idt-pill,
-.idt-top-actions a.idt-pill,
-button.btn{
-  background: rgba(255,255,255,.55) !important;
-  border: 1px solid rgba(0,0,0,.12) !important;
-  border-radius: 999px !important;
-  font-weight: 800 !important;
-  box-shadow: none !important;
-  color: rgba(17,17,20,.82) !important;
-}
-
-/* Notifications: outline + red text (not full red) */
-.idt-top-actions .idt-pill.primary{
-  background: rgba(255,255,255,.55) !important;
-  color: var(--accent) !important;
-  border-color: rgba(193,18,31,.35) !important;
-}
-.idt-top-actions .idt-pill.primary:hover{
-  background: rgba(193,18,31,.06) !important;
-  border-color: rgba(193,18,31,.55) !important;
-}
-
-/* Badge: small and quiet */
-.idt-badge{
-  background: transparent !important;
-  color: var(--accent) !important;
-  border: 1px solid rgba(193,18,31,.28) !important;
-  font-weight: 900 !important;
-  padding: 2px 8px !important;
-}
-
-/* Nav: text tabs */
-.nav, .idt-topbar2{
   background: color-mix(in srgb, #fff 74%, var(--bg)) !important;
   border-bottom: 1px solid var(--line) !important;
   box-shadow: none !important;
 }
+#statusMirror{
+  font-weight: 800 !important;
+  color: rgba(20,20,22,.70) !important;
+}
+
+/* Buttons: tek dil */
+.idt-top-actions .idt-pill,
+.idt-top-actions a.idt-pill,
+button.btn{
+  background: rgba(255,255,255,.55) !important;
+  border: 1px solid rgba(20,20,22,.12) !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+  color: rgba(20,20,22,.82) !important;
+}
+
+/* Bildirimler: dolu kırmızı yerine sofistike outline + bordo */
+.idt-top-actions .idt-pill.primary{
+  background: rgba(255,255,255,.55) !important;
+  color: var(--accent) !important;
+  border-color: rgba(111,16,32,.35) !important;
+}
+.idt-top-actions .idt-pill.primary:hover{
+  background: rgba(111,16,32,.06) !important;
+  border-color: rgba(111,16,32,.55) !important;
+}
+
+/* Badge: altın vurgu, küçük */
+.idt-badge{
+  background: rgba(199,161,74,.18) !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(199,161,74,.35) !important;
+  font-weight: 900 !important;
+  padding: 2px 8px !important;
+}
+
+/* 3) Nav: tek satır + yatay scroll; KELİME KESİLME YOK */
+.nav, .idt-topbar2{
+  background: color-mix(in srgb, #fff 70%, var(--bg)) !important;
+  border-bottom: 1px solid var(--line) !important;
+  box-shadow: none !important;
+
+  display:flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  gap: 10px !important;
+  padding-inline: 14px !important;
+}
+
+/* scrollbarı gizleme (temiz) */
+.nav::-webkit-scrollbar,
+.idt-topbar2::-webkit-scrollbar{ height: 8px; }
+.nav::-webkit-scrollbar-thumb,
+.idt-topbar2::-webkit-scrollbar-thumb{ background: rgba(20,20,22,.10); border-radius: 999px; }
+
 .nav button,
 .idt-topbar2 .topNav2Btn{
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
-  padding: 12px 8px !important;
+  padding: 12px 6px !important;
   font-weight: 800 !important;
-  color: rgba(17,17,20,.74) !important;
+  color: rgba(20,20,22,.74) !important;
+
+  /* KELİME KESİLME FIX */
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
 }
+
 .nav button:hover,
 .idt-topbar2 .topNav2Btn:hover{ color: var(--accent) !important; }
+
 .nav button.active,
 .nav button[aria-selected="true"],
 .idt-topbar2 .topNav2Btn.is-active{
   color: var(--accent) !important;
-  box-shadow: inset 0 -2px 0 var(--accent) !important;
+  box-shadow: inset 0 -2px 0 var(--gold) !important;
 }
 
-/* Section title system (State Theatre-like): eyebrow + title + rule */
+/* 4) Başlık hiyerarşisi: büyük başlık + ince çizgi */
 h2{
   font-size: 22px !important;
   font-weight: 900 !important;
@@ -1224,49 +1226,52 @@ h2::after{
   margin-top: 10px;
   background: var(--line);
 }
-
-/* If there is a subtitle paragraph right after headings, style as eyebrow */
 h2 + p{
   margin-top: 6px !important;
   margin-bottom: 14px !important;
-  color: rgba(17,17,20,.58) !important;
+  color: rgba(20,20,22,.58) !important;
   font-weight: 600 !important;
 }
 
-/* Cards: cohesive paper-on-paper */
+/* 5) Kartlar: paper-on-paper */
 .card, .panel, .box, .section, .idt-card, .kpi{
   background: var(--card) !important;
-  border: 1px solid rgba(0,0,0,.08) !important;
+  border: 1px solid rgba(20,20,22,.08) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow) !important;
 }
 
-/* Reduce chip noise inside cards */
-.chip, .pill, .tag{
+/* 6) Chip/tag kırılma ve taşma */
+.chip, .pill, .tag, .cat-chip{
   background: rgba(255,255,255,.55) !important;
-  border: 1px solid rgba(0,0,0,.08) !important;
-  color: rgba(17,17,20,.70) !important;
+  border: 1px solid rgba(20,20,22,.08) !important;
+  color: rgba(20,20,22,.70) !important;
+
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  max-width: 100%;
 }
 
-/* Tables: calm */
-th{
-  background: rgba(255,255,255,.35) !important;
-  border-bottom: 1px solid rgba(0,0,0,.10) !important;
-  font-weight: 900 !important;
+/* 7) Genel kelime bölünmesi engeli (özellikle dar alanlarda) */
+*{
+  hyphens: none;
 }
-tr:nth-child(even) td{ background: rgba(255,255,255,.30) !important; }
-td{ border-bottom: 1px solid rgba(0,0,0,.06) !important; }
+.idt-content, .card, .panel, .box, .section, .idt-card{
+  overflow-wrap: anywhere; /* çok dar alanda taşmayı engelle ama kelimeyi parçalama: button/chip zaten nowrap */
+}
 
 /* Inputs */
 input[type="text"], input[type="search"], select{
   background: rgba(255,255,255,.60) !important;
-  border: 1px solid rgba(0,0,0,.10) !important;
+  border: 1px solid rgba(20,20,22,.10) !important;
   border-radius: 12px !important;
 }
 input:focus, select:focus{
   outline: none !important;
-  border-color: rgba(193,18,31,.55) !important;
-  box-shadow: 0 0 0 3px rgba(193,18,31,.12) !important;
+  border-color: rgba(111,16,32,.55) !important;
+  box-shadow: 0 0 0 3px rgba(111,16,32,.12) !important;
 }
 
 /* Mobile */
