@@ -1136,3 +1136,27 @@ html, body { overflow-x: hidden !important; }
   letter-spacing: .02em !important;   /* “yana sündürme” hissi biter */
   font-weight: 800 !important;
 }
+/* ===== TOPBAR FINAL KİLİT (tek satır + ortalı + bar görünmez) ===== */
+html, body { overflow-x: hidden !important; }
+
+.idt-topbar2{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex-wrap:nowrap !important;        /* ALTA DÜŞME YOK */
+  gap: 12px !important;
+  padding: 10px 12px !important;
+
+  overflow-x:auto !important;         /* sığmazsa kayar */
+  overflow-y:hidden !important;
+  scrollbar-width:none !important;
+  -ms-overflow-style:none !important;
+}
+.idt-topbar2::-webkit-scrollbar{ display:none !important; }
+
+.idt-topbar2 .topNav2Btn{
+  white-space:nowrap !important;
+  font-size: 12px !important;         /* gerekirse 11 */
+  letter-spacing: .02em !important;   /* “yana yayılma” biter */
+  font-weight: 800 !important;
+}
