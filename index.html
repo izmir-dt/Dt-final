@@ -1661,7 +1661,9 @@ body{
 
 
   <link rel="stylesheet" href="idt-polish.css">
-  </head>
+  <script defer src="idt-performance.js"></script>
+
+</head>
 <body>
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
@@ -2321,7 +2323,11 @@ body{
 })();
 </script>
 
+<!-- app.js is loaded once (defer) at the end of body. -->
+
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
+<script src="idt-desktop10.js?v=1"></script>
+
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
 (function(){
@@ -2889,10 +2895,12 @@ body{
     </div>
   </div>
 
-
-  <script src="idt-performance.js?v=1" defer></script>
-  <script src="idt-desktop10.js?v=1" defer></script>
-  <script src="app.js?v=1" defer></script>
-
+</body>
+</html>
+ <script src="app.js" defer></script>
+ <script src="topbar-more.js" defer></script>
+  <script src="idt-desktop10.js" defer></script>
+  <script src="idt-desktop1.js" defer></script>
+  <script src="idt-performance.js" defer></script>
 </body>
 </html>
