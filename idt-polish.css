@@ -1,3 +1,37 @@
+/* IDT ICON FONT FIX */
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  vertical-align: -3px;
+}
+.material-symbols-outlined, .mi {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  vertical-align: -3px;
+}
+
 /* ============================
    Masaüstü 1.0 Kabuk (UI)
    ============================ */
@@ -1044,143 +1078,3 @@ table.idt-table tbody tr:hover,
 #globalLoading .glClose{display:none !important;}
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
-
-
-
-/* ===== IDT v9 Topbar (UI patch - data kodlarına dokunmaz) ===== */
-.idt-topbar2{
-  background: rgba(251,247,241,.86);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.idt-topbar2 .nav-content{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:10px 16px;
-}
-
-.idt-topbar2 .nav-brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width: 260px;
-}
-
-.idt-topbar2 .nav-logo{
-  height:36px;
-  width:auto;
-  filter: grayscale(1) brightness(.55);
-}
-
-.idt-topbar2 .nav-title-group{ line-height: 1.05; }
-.idt-topbar2 .nav-main-title{
-  display:block;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: var(--accent);
-  font-size: 14px;
-}
-.idt-topbar2 .nav-sub-title{
-  display:block;
-  font-weight: 600;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.idt-topbar2 .nav-links-wrapper{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex: 1 1 auto;
-  overflow:auto;
-  padding: 2px 4px;
-  scrollbar-width: thin;
-}
-
-.topNav2Btn{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 12px;
-  background: #fff;
-  border:1px solid var(--line);
-  border-radius: 14px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.topNav2Btn .material-icons{ font-size: 18px; opacity: .9; }
-.topNav2Btn .btnText{ font-size: 12px; }
-.topNav2Btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(24,16,8,.08);
-}
-
-.topNav2Btn.is-active{
-  background: var(--accent) !important;
-  color: #fff !important;
-  border-color: transparent !important;
-}
-.topNav2Btn.is-active .material-icons{ color:#fff; opacity: 1; }
-
-.navBadge{
-  margin-left: 6px;
-  font-size: 11px;
-  font-weight: 900;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.06);
-  color: var(--text);
-}
-
-.nav-stats{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.stat-unit{
-  text-align:center;
-  padding: 6px 10px;
-  border-radius: 12px;
-  background: rgba(0,0,0,.035);
-}
-.stat-unit.border-left{ border-left: 2px solid var(--line); padding-left: 14px; margin-left: 4px; }
-.stat-label{
-  display:block;
-  font-size: 9px;
-  font-weight: 900;
-  color: var(--muted);
-  letter-spacing: .06em;
-}
-.stat-num{
-  display:block;
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.help-btn{
-  height: 38px;
-  width: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: #fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.help-btn .material-icons{ font-size: 20px; }
-.help-btn:hover{ box-shadow: 0 6px 18px rgba(24,16,8,.08); transform: translateY(-1px); }
-
-/* Mobile wrap */
-@media (max-width: 900px){
-  .idt-topbar2 .nav-brand{ min-width: auto; }
-  .idt-topbar2 .nav-sub-title{ display:none; }
-  .idt-topbar2 .nav-links-wrapper{ gap:8px; }
-  .stat-unit{ display:none; } /* mobilde kalabalık olmasın */
-}
