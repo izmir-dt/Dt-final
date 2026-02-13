@@ -2,6 +2,21 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
 
+  // ---------- UI feedback helpers (copy bar kapalı) ----------
+  function idtFlashBtn(btn, okText, ms=900){
+    if(!btn) return;
+    const span = btn.querySelector('span') || btn;
+    const old = span.textContent;
+    span.textContent = okText;
+    btn.classList.add('is-ok');
+    setTimeout(()=>{ span.textContent = old; btn.classList.remove('is-ok'); }, ms);
+  }
+  function idtBusyBtn(btn, busy){
+    if(!btn) return;
+    btn.classList.toggle('is-busy', !!busy);
+    btn.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+
   // ---------- Global Loading ----------
   function setupLoading(){
     const root = $('globalLoading');
@@ -569,41 +584,51 @@
     list.querySelectorAll('.ccCommonRow').forEach(tr=>{
       tr.addEventListener('click', ()=>{
         const person = tr.getAttribute('data-person') || '';
-        const play = tr.getAttribute('data-a') || '';
-        setState({kisi:person, oyun:play});
-        try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
-        const tabPanel = $('tabPanel'); if(tabPanel) tabPanel.click();
-        try{
-          if(typeof window.renderList === 'function' && typeof window.renderDetails === 'function'){
-            if(window.activeMode !== 'plays' && $('btnPlays')) $('btnPlays').click();
-            const target = Array.isArray(window.plays) ? window.plays.find(x=>x.title===play) : null;
-            if(target){
-              window.activeId = target.id;
-              window.selectedItem = target;
-              window.renderList({preserveScroll:false});
-              window.renderDetails(target);
-            }
+
+        // Ortak kişi tıklanınca: Detay/PANEL yerine "Oyunlara Göre Dağılım" sekmesine git ve kişiyi filtrele.
+        const goBtn = document.querySelector('[data-go="sideDist"]');
+        if (goBtn) {
+          goBtn.click();
+        } else {
+          try{ location.hash = "#analiz"; }catch(_e){}
+          const tab = $('tabDistribution');
+          if (tab) tab.click();
+        }
+
+        // Dağılım aramasına kişiyi bas ve listeyi otomatik üret
+        setTimeout(() => {
+          const dq = $('dq');
+          if (dq) {
+            dq.value = person;
+            dq.dispatchEvent(new Event('input', { bubbles: true }));
+            dq.dispatchEvent(new Event('change', { bubbles: true }));
+            dq.focus();
           }
-        }catch(_e){}
+        }, 60);
       });
     });
-  }
+}
 
-  function copyCurrentList(){
-    const list = $('ccList');
-    if(!list) return;
-    const table = list.querySelector('table');
-    if(!table) return;
-    const rows = [];
-    const trs = table.querySelectorAll('tbody tr');
-    const ths = Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent.trim());
-    rows.push(ths.join('\t'));
-    trs.forEach(tr=>{
-      const tds = Array.from(tr.querySelectorAll('td')).map(td=>td.textContent.trim());
-      rows.push(tds.join('\t'));
-    });
-    const text = rows.join('\n');
-    if(typeof window.copyText === 'function') window.copyText(text);
+  async function copyCurrentList(){
+    const btn = $('ccCopyList');
+    try{
+      if(btn) btn.disabled = true;
+      idtBusyBtn(btn,true);
+      const tsv = await buildEnhancedTSV();
+      if(!tsv) return;
+
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(tsv);
+      }else if(typeof window.copyText === 'function'){
+        window.copyText(tsv);
+      }
+      idtFlashBtn(btn,'✅ Kopyalandı');
+    }catch(err){
+      console.error(err);
+    }finally{
+      if(btn) btn.disabled = false;
+      idtBusyBtn(btn,false);
+    }
   }
 
   function setupCenter(){
@@ -625,8 +650,8 @@
     if(btnCopy) btnCopy.addEventListener('click', async ()=>{
       try{
         btnCopy.disabled = true;
-        btnCopy.classList.add('is-busy');
-        if(typeof window.setStatus === 'function') window.setStatus('⏳ Ortaklar Excel için hazırlanıyor…','info');
+        idtBusyBtn(btnCopy,true);
+
 
         updateCommonCount();
         const common = lastCommon || [];
@@ -640,32 +665,30 @@
           const r = common[i];
           lines[i+1] = [r.person, r.a, r.b].join('	');
         }
-        const tsv = lines.join('
-');
+        const tsv = lines.join('\n');
 
         if(navigator.clipboard && navigator.clipboard.writeText){
           await navigator.clipboard.writeText(tsv);
+          idtFlashBtn(btnCopy,'✅ Kopyalandı');
         }else if(typeof window.copyText === 'function'){
           window.copyText(tsv);
+        idtFlashBtn(btnCopy,'✅ Kopyalandı');
         }
 
-        if(typeof window.setStatus === 'function') window.setStatus('✅ Ortaklar Excel’e kopyalandı','ok');
       }catch(err){
         console.error(err);
-        if(typeof window.setStatus === 'function') window.setStatus('⚠️ Kopyalama başarısız','warn');
         try{
           if(typeof window.copyText === 'function'){
             updateCommonCount();
             const common = lastCommon || [];
             const lines = ['Kişi	Oyun A Görev	Oyun B Görev'];
             for(const r of common) lines.push([r.person,r.a,r.b].join('	'));
-            window.copyText(lines.join('
-'));
+            window.copyText(lines.join('\n'));
           }
         }catch(_e){}
       }finally{
         btnCopy.disabled = false;
-        btnCopy.classList.remove('is-busy');
+        idtBusyBtn(btnCopy,false);
       }
     });
 
