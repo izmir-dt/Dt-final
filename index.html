@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>İDT | Repertuvar Kişi Takip Sistemi</title>
 
-  <meta charset="utf-8"/>
+  <link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" rel=\"stylesheet\">
+<meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
@@ -1696,19 +1697,45 @@ body{
         </div>
       </header>
 
-<div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
-  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
-  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
-</div>
 
+<nav class="idt-topbar2" role="navigation" aria-label="Üst Menü">
+  <div class="nav-content">
+    <div class="nav-brand">
+      <img src="theater.png" alt="İDT Logo" class="nav-logo">
+      <div class="nav-title-group">
+        <span class="nav-main-title">İDT PANEL</span>
+        <span class="nav-sub-title">Repertuvar Kişi Takip Sistemi</span>
+      </div>
+    </div>
 
-      <div class="idt-content">
+    <div class="nav-links-wrapper" role="tablist" aria-label="Bölümler">
+      <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="material-icons" aria-hidden="true">theater_comedy</span><span class="btnText">Aktif Oyun</span> <span class="navBadge" id="badge-aktif-oyun">0</span></button>
+      <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="material-icons" aria-hidden="true">groups</span><span class="btnText">Toplam Personel</span> <span class="navBadge" id="badge-toplam-personel">0</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideRows"><span class="material-icons" aria-hidden="true">manage_search</span><span class="btnText">Sorgu & Karşılaştır</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideDist"><span class="material-icons" aria-hidden="true">account_tree</span><span class="btnText">Oyunlara Göre Dağılım</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="material-icons" aria-hidden="true">troubleshoot</span><span class="btnText">Yoğunluk & Çakışma</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="material-icons" aria-hidden="true">analytics</span><span class="btnText">Grafikler</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="material-icons" aria-hidden="true">device_hub</span><span class="btnText">Kesişim Analizi</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="material-icons" aria-hidden="true">confirmation_number</span><span class="btnText">Figüran/Emekli</span> <span class="navBadge" id="badge-figuran">0</span></button>
+    </div>
+
+    <div class="nav-stats">
+      <div class="stat-unit" title="Toplam Personel">
+        <span class="stat-label">PERSONEL</span>
+        <span id="stat-total-personel" class="stat-num">0</span>
+      </div>
+      <div class="stat-unit border-left" title="Toplam Figüran">
+        <span class="stat-label">FİGÜRAN</span>
+        <span id="stat-total-figuran" class="stat-num">0</span>
+      </div>
+      <button id="helpBtn" class="help-btn" type="button" title="Rehber" aria-label="Yardım">
+        <span class="material-icons" aria-hidden="true">help_outline</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="idt-content">
         
 <header>
   <div class="top">
@@ -2850,7 +2877,6 @@ body{
 </script>
 
 <!-- Yardım (tamamen Türkçe) -->
-<button class="helpFab" id="helpBtn" type="button" aria-label="Yardım">?</button>
 <div class="helpOverlay hidden" id="helpOverlay" aria-hidden="true"></div>
 <div class="helpModal hidden" id="helpModal" role="dialog" aria-label="Yardım">
   <div class="helpHd">
