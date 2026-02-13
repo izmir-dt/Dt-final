@@ -27,7 +27,6 @@
       --radius2:14px;
     }
 
-
 /* --- Alias tokens (compat) --- */
 :root{
   --r: var(--radius);
@@ -425,7 +424,6 @@ width:48px;
 
 /* Dark mode düğmesini gizle (tema sabit) */
 
-
 /* Mobilde detay modalı daha geniş ve okunur */
 @media (max-width: 900px){
   .modal{ width:min(92vw, 720px) !important; }
@@ -457,7 +455,6 @@ width:48px;
 
 /* Grafik yazıları daha okunur */
 .chartWrap svg text{ font-size: 12px; fill: var(--text); }
-
 
 /* --- Notifications (chat bubble) --- */
 .notif-bubble{
@@ -494,8 +491,6 @@ width:48px;
   .mobile-breadcrumb{position:sticky;top:8px;z-index:5}
 }
 
-
-
     /* --- Responsive: mobilde canvas gizle, renkli liste göster --- */
     @media (max-width: 820px){
   #chartMain{ display:none !important; }
@@ -506,11 +501,7 @@ width:48px;
       .miniItem b{ font-size:16px; }
     }
 
-
-
 body.drawerOpen{ overflow:auto; }
-
-
 
 /* Enforce theme text colors */
 body{ background:var(--bg); color:var(--text); }
@@ -518,8 +509,6 @@ a{ color:inherit; }
 .table th, .table td{ color:var(--text); }
 .btn{ color:var(--text); }
 .input input, .input select, input, select, textarea{ color:var(--text); background:transparent; }
-
-
 
     /* Dark mode – bazı tarayıcılarda siyah kalan metinleri zorla düzelt */
     html[data-theme="dark"] body{ color: var(--text); }
@@ -555,10 +544,7 @@ a{ color:inherit; }
     /* SVG içinde text (ikon vb.) */
     html[data-theme="dark"] svg text{ fill: var(--text); }
 
-
-
     #distributionBox th:nth-child(2){white-space:normal; width:110px}
-
 
 /* UX: tıklanabilir liste öğeleri */
 .miniItem, .miniRow{
@@ -623,7 +609,6 @@ a{ color:inherit; }
 @media (max-width: 980px){
   .modalHead{ position:sticky; top:0; background:var(--card); z-index:2; }
 }
-
 
 /* --- Mobile polishing (layout fixes) --- */
 @media (max-width: 760px){
@@ -725,7 +710,6 @@ select.q-scope{
   cursor:pointer;
 }
 
-
 /* --- Masaüstü sekme sırası: Grafikler 1, Panel 2 --- */
 .nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 #tabCharts{order:1;}
@@ -734,7 +718,6 @@ select.q-scope{
 #tabIntersection{order:4;}
 #tabFiguran{order:5;}
 #advBtn{order:6;}
-
 
 /* =========================
    v26 HOTFIX (SAFE)
@@ -925,7 +908,6 @@ html[data-theme="dark"] #notifPanel .notif-bubble.seen{
   canvas{ border:0 !important; }
 }
 
-
 /* --- Mobile Tab Bar (thumb-driven) --- */
 .tabbar{display:none;}
 @media (max-width: 980px){
@@ -977,7 +959,6 @@ header .brand-box{ display:none !important; } /* hide "İDT PANEL | SANAT TEKNİ
 /* Keep content spacing nice after hiding nav */
 header{ margin-bottom: 0 !important; }
 
-
 /* ===== Sidebar header & counts ===== */
 .idt-side-head{display:flex;align-items:center;gap:12px;height:70px;margin:0 0 16px;padding:0 10px;border-bottom:1px solid rgba(255,255,255,.12);}
 .idt-mini-logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:900;letter-spacing:.6px;box-shadow:0 12px 28px rgba(0,0,0,.35);}
@@ -1013,7 +994,6 @@ header{ margin-bottom: 0 !important; }
 #viewPanel .filters .qScopeBox{flex:0 0 auto;}
 #viewPanel .filters .btn, #viewPanel .filters button{white-space:normal;}
 
-
 /* ===== Stabil v6.1 UI-only patch (no logic changes) ===== */
 /* Sidebar count overflow fix */
 .idt-item{ gap:10px; }
@@ -1044,7 +1024,6 @@ header{ margin-bottom: 0 !important; }
 #notifPanel .n{ margin: 10px 14px !important; padding: 12px 12px !important; }
 #notifPanel::-webkit-scrollbar{ width: 10px; }
 #notifPanel::-webkit-scrollbar-thumb{ background: rgba(16,24,40,.16); border-radius: 999px; }
-
 
 /* ===== v6.3 UI patch (no fetch/process changes) ===== */
 
@@ -1102,7 +1081,6 @@ header{ margin-bottom: 0 !important; }
 /* Hide scope dropdown when in person mode */
 body.scope-person .qScopeBox{ display:none !important; }
 
-
 /* ===== Notif panel v6.4 (more premium, theme-aligned) ===== */
 #notifPanel{
   border-radius: 20px !important;
@@ -1135,12 +1113,10 @@ body.scope-person .qScopeBox{ display:none !important; }
   text-overflow: ellipsis !important;
 }
 
-
 /* ===== Sidebar counts: prevent wrap/overflow ===== */
 .idt-item{ position:relative; }
 .idt-item b{ min-width:0; max-width: 150px; }
 .idt-count{ max-width: 56px; display:inline-flex; justify-content:center; }
-
 
 /* ===== v6.6 UI patches ===== */
 
@@ -1171,7 +1147,6 @@ body.scope-person .qScopeBox{ display:none !important; }
 
 /* Sticky detail card (JS will set on the card) */
 
-
 /* Manual copy modal (v6.6) */
 .mc.hidden{ display:none !important; }
 .mc{ position:fixed; inset:0; z-index:9999; display:block; }
@@ -1189,7 +1164,6 @@ body.scope-person .qScopeBox{ display:none !important; }
 #distManualText{ width:100%; height:240px; resize:vertical; border-radius:14px; border:1px solid var(--line); padding:12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; box-sizing:border-box; }
 .mcBtns{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
 
-
 /* Notif premium (v6.6) */
 #notifPanel{ border-radius:20px !important; box-shadow:0 24px 70px rgba(24,16,8,.26) !important; }
 #notifPanel .notifHd{ background: linear-gradient(180deg, rgba(122,30,44,.10), rgba(255,255,255,.96)) !important; border-bottom:1px solid var(--line) !important; }
@@ -1202,7 +1176,6 @@ body.scope-person .qScopeBox{ display:none !important; }
   margin:10px 0 !important;
 }
 #notifPanel .notifBd *{ white-space:normal; overflow:hidden; text-overflow:ellipsis; }
-
 
 /* ===== v6.7 UI patches ===== */
 
@@ -1237,7 +1210,6 @@ select{
 
 /* Filter bars: same height + symmetric */
 .filters input, .filters select, .filters button{ height: 38px !important; border-radius: 12px !important; }
-
 
 /* ===== v6.9 priority fixes ===== */
 /* Keep detail panel visible while scrolling */
@@ -1346,7 +1318,6 @@ select{
 .cmpLine .p{ font-weight: 900; }
 .cmpLine .r{ margin-top: 2px; color: var(--muted); font-size: 12.5px; }
 
-
 /* Hide sidebar badge for tools, row count shown inside the page */
 #sideRowsCount{display:none !important;}
 
@@ -1386,14 +1357,11 @@ select{
   overflow: auto;
 }
 
-
 /* Ensure detail pane scrolls inside (sticky) */
 #detailBox .bd, .detailBox .bd{
   max-height: calc(100vh - 180px);
   overflow: auto;
 }
-
-
 
 /* === Final polish: compact notifications + tidy name columns === */
 .notifMeta{color:var(--muted);font-size:12px;margin-top:2px}
@@ -1421,7 +1389,6 @@ select{
 }
 #distributionBox .table th:nth-child(2), #distributionBox .table td:nth-child(2){width:33%}
 #distributionBox .table th:nth-child(3), #distributionBox .table td:nth-child(3){width:33%}
-
 
 /* --- PATCH: Dağılım tablosu daha kompakt + satır kısaltma --- */
 #viewDistribution .table td, #viewDistribution .table th{
@@ -1476,7 +1443,6 @@ select{
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
 
 <style>
 /* ===== IDT Theme Shell (UI-only) ===== */
@@ -1624,7 +1590,6 @@ body{
   .idt-content{ padding:14px; }
 }
 
-
 /* --- PATCH: Dağılım tablosu daha kompakt + satır kısaltma --- */
 #viewDistribution .table td, #viewDistribution .table th{
   padding:8px 10px;
@@ -1659,9 +1624,10 @@ body{
 
 </style>
 
-
   <link rel="stylesheet" href="idt-polish.css">
-  </head>
+  
+
+</head>
 <body>
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
@@ -1695,16 +1661,16 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
-  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
-  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
+  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="masks" aria-hidden="true"></span><span class="navTxt">AKTİF OYUN</span></button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="users" aria-hidden="true"></span><span class="navTxt">TOPLAM PERSONEL</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="search" aria-hidden="true"></span><span class="navTxt">SORGU &amp; KARŞILAŞTIR</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="bars" aria-hidden="true"></span><span class="navTxt">OYUNLARA GÖRE DAĞILIM</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="shuffle" aria-hidden="true"></span><span class="navTxt">YOĞUNLUK &amp; ÇAKIŞMA</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="line" aria-hidden="true"></span><span class="navTxt">GRAFİKLER</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="venn" aria-hidden="true"></span><span class="navTxt">KESİŞİM ANALİZİ</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="navIcon" data-ico="ticket" aria-hidden="true"></span><span class="navTxt">FİGÜRAN/EMEKLİ</span></button>
+  <details class="topNav2More"><summary class="topNav2Btn" role="button"><span class="navIcon" data-ico="more" aria-hidden="true"></span><span class="navTxt">DAHA FAZLA</span></summary><div class="moreMenu" role="menu"><a href="#panel" role="menuitem">Panel</a><a href="#matris" role="menuitem">Yoğunluk & Çakışma</a><a href="#kesisim" role="menuitem">Kesişim</a><span class="soon">Yeni sekmeler burada listelenecek…</span></div></details>
 </div>
-
 
       <div class="idt-content">
         
@@ -1766,9 +1732,18 @@ body{
 
 <div class="wrap">
   <div class="dash">
-    <div class="dashTitle">Ana Kontrol Paneli</div>
+    <div class="dashTitle">ANA KONTROL PANELİ</div>
     <div class="dashSub">En hızlı erişim için aşağıdaki kısayollardan birini kullan. Seçimlerin üstte “Aktif Seçimler” şeridinde görünür.</div>
-  </div>
+<details class="tipsBox">
+  <summary>İPUÇLARI</summary>
+  <ul>
+    <li>Üst menüden mod seç (Aktif Oyun, Toplam Personel, Sorgu, Dağılım, Yoğunluk, Grafikler, Kesişim, Figüran).</li>
+    <li>Yoğunluk & Çakışma: Üstten iki oyun seç → <b>Ortakları Göster</b> veya <b>Excel’e Kopyala</b>.</li>
+    <li>Panel/Liste: Soldan oyun seç → sağdaki detay tablosu oluşur → <b>Kopyala (Excel)</b>.</li>
+    <li>Grafikler: Filtreleri daraltarak okumayı netleştir; gerekirse Excel’e aktar.</li>
+    <li>Bildirimler: Sheet’te yaptığın değişiklikler yenileyince gelir.</li>
+  </ul>
+</details>
   <div class="kpis" id="kpis">
     <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
     <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
@@ -1966,14 +1941,13 @@ body{
     </div>
   </section>
 
-
   <!-- YOĞUNLUK MATRİSİ -->
   <section id="viewHeatmap" style="display:none">
     
     <div class="card">
       <div class="hd">
         <h2>Yoğunluk & Çakışma Merkezi</h2>
-        <div class="small">Yatay kaydırma yok. Üstten iki oyun seçip ortak personeli görebilir, alttan en yoğun oyunlardan hızlı liste alıp Excel’e kopyalayabilirsin.</div>
+        <div class="small"></div>
       </div>
       <div class="bd">
         <!-- Hızlı Çakışma -->
@@ -1998,7 +1972,6 @@ body{
           </div>
         </div>
 
-
         <!-- Seçim Özeti (A/B seçilince görünür) -->
         <div id="ccSelSummary" class="cc-sel-summary" style="display:none">
           <div class="cc-sel-card">
@@ -2022,7 +1995,7 @@ body{
         <!-- En yoğun oyunlar -->
         <div class="cc-hd2">
           <h3>En Yoğun 15 Oyun</h3>
-          <div class="cc-hint">Bir oyuna tıkla → liste açılır → kopyala / Panel’e geç.</div>
+          <div class="cc-hint"></div>
         </div>
         <div id="ccTopGames" class="cc-games"></div>
 
@@ -2031,7 +2004,7 @@ body{
           <div class="cc-detail-hd">
             <div>
               <div class="cc-title" id="ccDetailTitle">Bir oyun seç</div>
-              <div class="cc-sub" id="ccDetailSub">Seçince kişiler listesi burada görünür.</div>
+              <div class="cc-sub" id="ccDetailSub"></div>
             </div>
 
             <div class="cc-tools">
@@ -2151,8 +2124,6 @@ body{
 
 </div>
 
-
-
   <!-- Mobile detail modal -->
   <div id="mobileOverlay" class="overlay hidden" aria-hidden="true"></div>
   <div id="mobileModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detay">
@@ -2163,7 +2134,6 @@ body{
     <div id="mobileContent" class="modalBody"></div>
   </div>
 
-
   <!-- Mobile Tab Bar -->
   <nav class="tabbar" id="tabbar" aria-label="Alt Menü">
     <button class="tb active" data-tab="Panel" type="button"><span class="ico">🏠</span><span class="lbl">Panel</span></button>
@@ -2171,7 +2141,6 @@ body{
     <button class="tb" data-tab="Figuran" type="button"><span class="ico">🎟️</span><span class="lbl">Figüran</span></button>
     <button class="tb" data-tab="Grafikler" type="button"><span class="ico">📈</span><span class="lbl">Grafikler</span></button>
 </nav>
-
 
       </div>
     
@@ -2292,7 +2261,6 @@ body{
   setInterval(syncBadge, 700); syncBadge();
 })();</script>
 
-
 <script>
 /* UI-only Diagnostics (mantığa dokunmaz) */
 (function(){
@@ -2322,6 +2290,7 @@ body{
 </script>
 
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
+
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
 (function(){
@@ -2388,7 +2357,6 @@ body{
 })();
 </script>
 
-
 <script>
 /* v6.4 UI-only: Dağılım Excel'e Kopyala -> MANUEL KOPYALAMA ekranını aç */
 (function(){
@@ -2405,7 +2373,6 @@ body{
   else bind();
 })();
 </script>
-
 
 <script>
 /* v6.4 UI-only: Sidebar quick filters (no fetch changes) */
@@ -2445,7 +2412,6 @@ body{
   else init();
 })();
 </script>
-
 
 <script>
 /* v6.6 UI-only patches (NO fetch/process changes) */
@@ -2608,7 +2574,6 @@ body{
   else init();
 })();
 </script>
-
 
 <script>
 /* ===== v6.7 JS UI patches (no fetch/process changes) ===== */
@@ -2778,7 +2743,6 @@ body{
 })();
 </script>
 
-
 <script>
 /* ===== v6.9 sidebar mode mapping (priority) ===== */
 (function(){
@@ -2875,7 +2839,6 @@ body{
   </div>
 </div>
 
-
   <!-- YÜKLENİYOR -->
   <div id="globalLoading" class="hidden" aria-hidden="true">
     <div class="glBack"></div>
@@ -2889,10 +2852,22 @@ body{
     </div>
   </div>
 
+  <script src="idt-performance.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="idt-desktop10.js" defer></script>
+  <script src="idt-desktop1.js" defer></script>
 
-  <script src="idt-performance.js?v=1" defer></script>
-  <script src="idt-desktop10.js?v=1" defer></script>
-  <script src="app.js?v=1" defer></script>
+</body>
+</html>
+ 
+  
+  
+  
+
+  <script src="idt-performance.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="idt-desktop10.js" defer></script>
+  <script src="idt-desktop1.js" defer></script>
 
 </body>
 </html>
