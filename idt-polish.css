@@ -1373,3 +1373,19 @@ html, body { overflow-x: hidden !important; }
 .idt-topbar2 .topNav2Btn{
   flex: 0 0 auto !important;
 }
+/* DAHA FAZLA – aşağı doğru açılsın */
+.topbar .dropdown-menu {
+  left: 0 !important;
+  right: auto !important;
+  top: 100% !important;
+  transform: none !important;
+}
+
+/* Eğer absolute konum varsa düzelt */
+.topbar .dropdown {
+  position: relative !important;
+}
+
+.topbar .dropdown-menu {
+  position: absolute !important;
+}
