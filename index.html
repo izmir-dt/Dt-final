@@ -1688,11 +1688,37 @@ body{
 
     <main class="idt-main">
       <header class="idt-topnav">
-        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+        <div class="idt-top-left">
+          <div id="statusMirror" class="idt-statusdot" aria-hidden="true">●</div>
+          <div class="idt-brand">
+            <div class="idt-brand-title">İDT • Repertuvar</div>
+            <div class="idt-brand-sub">Kişi Takip Sistemi</div>
+          </div>
+        </div>
+
+        <div class="idt-top-mid" aria-label="Özet sayaçlar">
+          <div class="idt-counter" title="Oyun">
+            <span class="k">Oyun</span>
+            <span class="v" id="topPlaysCount">-</span>
+          </div>
+          <div class="idt-counter" title="Kişi">
+            <span class="k">Kişi</span>
+            <span class="v" id="topPeopleCount">-</span>
+          </div>
+          <div class="idt-counter" title="Satır">
+            <span class="k">Satır</span>
+            <span class="v" id="topRowsCount">-</span>
+          </div>
+          <div class="idt-counter" title="Figüran">
+            <span class="k">Fig.</span>
+            <span class="v" id="topFigCount">-</span>
+          </div>
+        </div>
+
         <div class="idt-top-actions">
           <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
           <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
-<a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
+          <a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
         </div>
       </header>
 
@@ -2279,6 +2305,12 @@ body{
     set('sidePeopleCount', people);
     set('sideRowsCount', rows);
     set('sideFigCount', fig);
+
+    // Mirror counts into topbar
+    set('topPlaysCount', plays);
+    set('topPeopleCount', people);
+    set('topRowsCount', rows);
+    set('topFigCount', fig);
   };
   setInterval(syncCounts, 700); syncCounts();
 
@@ -2323,90 +2355,90 @@ body{
 })();
 </script>
 
-<script src="app.js?v=691"></script>
+<script src="app.js?v=691" defer></script>
 
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
-<script src="idt-desktop10.js?v=1"></script>
+<script src="idt-desktop10.js?v=1" defer></script>
 
 <script>
-/* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
+/* v7.0 UI-only: Dağılım Excel'e Kopyala (tek handler, tutarlı TSV, S.N/No sütunu hariç) */
 (function(){
-  const byId = (id)=>document.getElementById(id);
-  const setBodyScope = (name)=>{
-    document.body.classList.remove('scope-person');
-    if(name==='person') document.body.classList.add('scope-person');
-  };
+  function buildTSV(root){
+    const table = root ? root.querySelector('table') : null;
+    if(!table) return null;
 
-  const setScopeValue = (val)=>{
-    const s = byId('qScope'); if(!s) return;
-    const opts = Array.from(s.options||[]);
-    const hit = opts.find(o => (o.value||'')===val) || opts.find(o => (o.textContent||'').toLowerCase().includes(val));
-    if(hit){ s.value = hit.value; s.dispatchEvent(new Event('change',{bubbles:true})); }
-  };
+    const rows = Array.from(table.querySelectorAll('tr'));
+    if(!rows.length) return null;
 
-  const clearQ = ()=>{
-    const q = byId('q'); if(!q) return;
-    q.value = '';
-    q.dispatchEvent(new Event('input',{bubbles:true}));
-  };
+    // decide if first column is an index column
+    const headCells = Array.from(rows[0].querySelectorAll('th,td')).map(c => (c.textContent||'').trim().toLowerCase());
+    const dropFirst =
+      headCells.length > 1 && (
+        /^(#|no|s\.?n|sıra|sira)$/.test(headCells[0]) ||
+        headCells[0].includes('sıra') || headCells[0].includes('sira') || headCells[0].includes('no') || headCells[0].includes('sn')
+      );
 
-  function bindSide(id, scopeVal, bodyScope){
-    const el = byId(id);
-    if(!el) return;
-    el.addEventListener('click', ()=>{
-      // ensure panel view
-      const t = byId('tabPanel'); if(t) t.click();
-      clearQ();
-      setScopeValue(scopeVal);
-      setBodyScope(bodyScope);
-    }, true);
+    const lines = rows.map((r)=>{
+      const cells = Array.from(r.querySelectorAll('th,td')).map(c => (c.textContent||'').replace(/\s+/g,' ').trim());
+      if(!cells.length) return '';
+      let out = cells;
+
+      // if header indicates index column, drop it everywhere
+      if(dropFirst) out = out.slice(1);
+      // else heuristic: if first cell is just digits and there are other columns, drop it
+      else if(out.length>1 && /^\d+$/.test(out[0])) out = out.slice(1);
+
+      return out.join('\t').trim();
+    }).filter(Boolean);
+
+    return lines.join('\n').trim();
   }
 
-  // match existing option values in HTML: all / play / person
-  bindSide('sidePlays',  'play',   'play');
-  bindSide('sidePeople', 'person', 'person');
-  // "rows" mode is still handled by KPI click in app; we keep scope as 'all' so it doesn't look wrong
-  bindSide('sideRows',   'all',    'rows');
-
-  // Distribution copy
-  const btn = byId('distCopyBtn');
-  if(btn){
-    btn.addEventListener('click', async ()=>{
-      const box = byId('distributionBox');
-      if(!box){ alert('Dağılım listesi bulunamadı.'); return; }
-      const text = (box.innerText || box.textContent || '').trim();
-      if(!text){ alert('Kopyalanacak veri yok. Önce arama ile filtrele.'); return; }
-      try{
-        await navigator.clipboard.writeText(text);
-        btn.textContent = '✅ Kopyalandı';
-        setTimeout(()=>btn.textContent='📋 Excel’e Kopyala', 900);
-      }catch(e){
-        // fallback
-        const ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta);
-        ta.select(); document.execCommand('copy');
-        document.body.removeChild(ta);
-        btn.textContent = '✅ Kopyalandı';
-        setTimeout(()=>btn.textContent='📋 Excel’e Kopyala', 900);
-      }
-    });
+  async function copyText(text){
+    if(!text) return false;
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      return true;
+    }
   }
-})();
-</script>
 
-
-<script>
-/* v6.4 UI-only: Dağılım Excel'e Kopyala -> MANUEL KOPYALAMA ekranını aç */
-(function(){
   function bind(){
-    var dc = document.getElementById('distCopyBtn');
-    if(!dc) return;
-    dc.addEventListener('click', function(){
-      // Prefer manual copy button if exists
-      var b = document.getElementById('copyBtn') || document.getElementById('manualCopyBtn');
-      if(b) b.click();
-    });
+    const btn = document.getElementById('distCopyBtn');
+    if(!btn) return;
+
+    btn.addEventListener('click', async (ev)=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      const box = document.getElementById('distributionBox');
+      if(!box){ alert('Dağılım listesi bulunamadı.'); return; }
+
+      let text = buildTSV(box);
+
+      // fallback: plain text, satır başı sıra numaralarını kırp
+      if(!text){
+        text = (box.innerText || box.textContent || '').replace(/^\s*\d+\s+/gm,'').trim();
+      }
+
+      if(!text){ alert('Kopyalanacak veri yok. Önce filtrele.'); return; }
+
+      const ok = await copyText(text);
+      if(ok){
+        const old = btn.textContent;
+        btn.textContent = '✅ Kopyalandı';
+        setTimeout(()=>btn.textContent=old, 900);
+      }
+    }, {passive:false});
   }
+
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
   else bind();
 })();
@@ -2895,11 +2927,5 @@ body{
     </div>
   </div>
 
-</body>
-</html>
- <script src="app.js" defer></script>
-  <script src="idt-desktop10.js" defer></script>
-  <script src="idt-desktop1.js" defer></script>
-  <script src="idt-performance.js" defer></script>
 </body>
 </html>
