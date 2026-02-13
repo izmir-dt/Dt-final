@@ -1223,3 +1223,162 @@ input[type="text"], input[type="search"], select{
   .idt-topbar2{ top: 56px; }
   .idt-top-actions .idt-pill{ padding: 9px 10px; }
 }
+
+/* === STATE THEATRE INSPIRED LAYER (UI-only) ================================
+   İlham: statetheatrecompany.com.au — yüksek kontrast, temiz tipografi,
+   az renk (kırmızı vurgu), bol boşluk. (Birebir kopya değil.)
+=========================================================================== */
+
+/* Stage-like neutral → daha “site” hissi, dashboard gibi ağır değil */
+:root{
+  --bg: #ffffff;
+  --card: #ffffff;
+  --text: #111114;
+  --muted: rgba(17,17,20,.62);
+  --line: rgba(17,17,20,.10);
+
+  --accent: #c1121f; /* curtain red (cleaner) */
+  --gold:   rgba(193,18,31,.18);
+
+  --shadow: 0 0 0 rgba(0,0,0,0); /* gölgeyi neredeyse sıfırla */
+  --radius: 14px;
+}
+
+/* Background bandı tamamen kaldır */
+body, .wrap, main, .idt-main{ background: #fff !important; }
+.idt-content{ max-width: 1200px; }
+
+/* Typography: daha “editorial” */
+html{ font-size: 14px; }
+body{
+  font-family: var(--font-ui, "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif);
+  line-height: 1.5;
+  letter-spacing: .01em;
+  color: var(--text);
+}
+
+/* Section titles: büyük, net */
+h1,h2{
+  font-weight: 900;
+  letter-spacing: .005em;
+}
+h2{
+  font-size: 22px;
+  margin: 14px 0 6px;
+}
+p{ color: var(--muted); }
+
+/* Top toolbar: düz, ince border — “site header” gibi */
+header.idt-topnav{
+  background: rgba(255,255,255,.92);
+  border-bottom: 1px solid var(--line);
+  box-shadow: none;
+}
+#statusMirror{ color: var(--text); }
+#statusMirror .dot{ filter: saturate(1.2); }
+
+/* Buttons: minimal outline + kırmızı hover */
+.idt-top-actions .idt-pill,
+.idt-top-actions a.idt-pill{
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 800;
+}
+.idt-top-actions .idt-pill:hover,
+.idt-top-actions a.idt-pill:hover{
+  border-color: rgba(193,18,31,.55);
+  color: var(--accent);
+}
+.idt-top-actions .idt-pill.primary{
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.idt-top-actions .idt-pill.ok{
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+/* Badge: küçük, net */
+.idt-badge{
+  background: #fff !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(193,18,31,.35) !important;
+  font-weight: 900;
+}
+
+/* Nav: text-only + red underline active */
+.idt-topbar2{
+  background: rgba(255,255,255,.94);
+  border-bottom: 1px solid var(--line);
+  box-shadow: none;
+}
+.idt-topbar2 .topNav2Btn{
+  font-weight: 800;
+  font-size: 13px;
+  padding: 12px 6px;
+  color: rgba(17,17,20,.82);
+}
+.idt-topbar2 .topNav2Btn:hover{
+  background: transparent;
+  color: var(--accent);
+}
+.idt-topbar2 .topNav2Btn.is-active{
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+/* Cards: sadece border, no shadow */
+.card, .panel, .box, .section, .idt-card, .kpi, .cc-sel-summary .cc-sel-card{
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+/* Inputs: clean outline */
+input[type="text"], input[type="search"], select{
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+input:focus, select:focus{
+  outline: none;
+  border-color: rgba(193,18,31,.55);
+  box-shadow: 0 0 0 3px rgba(193,18,31,.12);
+}
+
+/* Mini cards in "En Yoğun 15 Oyun": daha editorial */
+.hot15 .mini,
+.top15 .mini,
+.cards .mini{
+  box-shadow: none;
+}
+
+/* If there are "mini play cards", give them a subtle red hover line */
+.mini, .pick, .hotCard, .top15Card{
+  position: relative;
+}
+.mini:hover::after, .pick:hover::after, .hotCard:hover::after, .top15Card:hover::after{
+  content:"";
+  position:absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  height: 2px;
+  background: rgba(193,18,31,.45);
+  border-radius: 999px;
+}
+
+/* Reduce visual noise of separators */
+hr{ border-color: var(--line); }
+
+/* Mobile */
+@media (max-width: 720px){
+  h2{ font-size: 20px; }
+  .idt-top-actions .idt-pill{ padding: 9px 12px; }
+  .idt-topbar2 .topNav2Btn{ padding: 10px 6px; }
+}
