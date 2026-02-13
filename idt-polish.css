@@ -1085,78 +1085,173 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
+/* === UI v12 (Steppenwolf-like header logic, NO circles on tabs) =============
+   - Üst menü: pill/daire yok, underline hover/active
+   - Başlık: ANA KONTROL PANELİ (caps) + biraz yukarı
+   - Dash açıklama: tek satır
+   - Gereksiz açıklamalar kaldırıldı; İPUÇLARI kutusunda toplandı
+   - DAHA FAZLA dropdown eklendi (JS yok)
+=========================================================================== */
 
+html, body{ overflow-x: hidden; }
 
-/* === TOPBAR2: tek satır, ortalı, taşma olursa yatay kaydır === */
+.dash{ padding-top: 10px !important; margin-top: -6px !important; }
+.dashTitle{ text-transform: uppercase !important; letter-spacing: .02em; margin-top: 0 !important; }
+.dashSub{
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 110ch;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+/* Tips box */
+.tipsBox{
+  max-width: 1080px;
+  margin: 12px auto 0;
+  padding: 0 12px;
+}
+.tipsBox summary{
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(20,20,22,.80);
+}
+.tipsBox ul{
+  margin: 10px 0 0;
+  padding: 12px 16px 12px 22px;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(20,20,22,.10);
+  border-radius: 12px;
+}
+.tipsBox li{ margin: 6px 0; color: rgba(20,20,22,.72); font-weight: 650; }
+
+/* Topbar2: remove circles/pills completely */
 .idt-topbar2{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  padding:10px 12px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  white-space:nowrap;
-  -webkit-overflow-scrolling:touch;
+  justify-content: center;
+  gap: 26px;
+  padding: 10px 14px;
 }
-.idt-topbar2::-webkit-scrollbar{ height:8px; }
-.idt-topbar2::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.12); border-radius:8px; }
 .idt-topbar2 .topNav2Btn{
-  flex:0 0 auto;
-  white-space:nowrap;
-  font-size:12px;        /* gerektiğinde küçülür */
-  letter-spacing:.08em;
-  text-transform:uppercase;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 10px 0 !important;
+  box-shadow: none !important;
+  text-transform: uppercase !important;
+  font-weight: 950 !important;
+  font-size: 13.5px !important;
+  letter-spacing: .08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  color: rgba(20,20,22,.78);
 }
-@media (min-width: 1100px){
-  .idt-topbar2{ overflow-x:hidden; }
-  .idt-topbar2 .topNav2Btn{ font-size:13px; }
+
+/* Monochrome icons */
+.navIcon{
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  -webkit-mask-image: var(--ico);
+  mask-image: var(--ico);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  opacity: .92;
+  flex: 0 0 16px;
 }
-/* ===== TOPBAR FINAL (single row, centered, no visible scrollbar) ===== */
-html, body { overflow-x: hidden !important; }
+.navIcon[data-ico="masks"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%204h7v8c0%203-2%205-5%205S1%2015%201%2012V7c0-1.7%201.3-3%203-3zm9%200h7c1.7%200%203%201.3%203%203v5c0%203-2%205-5%205s-5-2-5-5V4z'/></svg>"); }
+.navIcon[data-ico="users"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M8%2011c1.7%200%203-1.3%203-3S9.7%205%208%205%205%206.3%205%208s1.3%203%203%203zm8%200c1.7%200%203-1.3%203-3s-1.3-3-3-3-3%201.3-3%203%201.3%203%203%203zM0%2019v-2c0-2.7%205.3-4%208-4s8%201.3%208%204v2H0z'/></svg>"); }
+.navIcon[data-ico="search"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M10%2018a8%208%200%201%201%205.3-14%208%208%200%200%201%201.6%2010.9l4.1%204.1-1.4%201.4-4.1-4.1A7.9%207.9%200%200%201%2010%2018zm0-2a6%206%200%201%200%200-12%206%206%200%200%200%200%2012z'/></svg>"); }
+.navIcon[data-ico="bars"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%2019h16v2H2V3h2v16zm3-2V9h3v8H7zm5%200V5h3v12h-3zm5%200v-6h3v6h-3z'/></svg>"); }
+.navIcon[data-ico="shuffle"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M17%203h4v4l-1.5-1.5-3%203a4%204%200%200%201-5.7%200L9%206.2A2%202%200%200%200%206.2%206H3V4h3.2a4%204%200%200%201%202.8%201.2l1.8%201.8a2%202%200%200%200%202.8%200l3-3L17%203zM3%2016.4V14h3.2l2.2%202.2a2%202%200%200%200%202.8%200l1.8-1.8%201.4%201.4-1.8%201.7a4%204%200%200%201-5.7%200L3%2016.4z'/></svg>"); }
+.navIcon[data-ico="line"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M3%2019h18v2H1V3h2v16zm4-4%204-5%203%203%205-7%202%201.3-6.4%209L11%2012l-3.1%203.9L7%2015z'/></svg>"); }
+.navIcon[data-ico="venn"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M9%204a7%207%200%200%200%200%2014h6a7%207%200%200%200%200-14H9zm0%202h3a5%205%200%200%200%200%2010H9A5%205%200%200%201%209%206zm9%200a5%205%200%200%201%200%2010h-3a7%207%200%200%200%200-10h3z'/></svg>"); }
+.navIcon[data-ico="ticket"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M21%2010a2%202%200%200%200%200%204v4H3v-4a2%202%200%200%200%200-4V6h18v4zM8%208v8h2V8H8zm4%200v8h2V8h-2z'/></svg>"); }
+.navIcon[data-ico="more"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M6%2010a2%202%200%201%200%200%204%202%202%200%200%200%200-4zm6%200a2%202%200%201%200%200%204%202%202%200%200%200%200-4zm6%200a2%202%200%201%200%200%204%202%202%200%200%200%200-4z'/></svg>"); }
+.navIcon[data-ico="dot"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><circle%20cx='12'%20cy='12'%20r='3'%20fill='currentColor'/></svg>"); }
 
-.idt-topbar2{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  flex-wrap:nowrap !important;        /* asla alta düşmez */
-  gap: 12px !important;
-  padding: 10px 12px !important;
-
-  overflow-x:auto !important;         /* sığmazsa kayar */
-  overflow-y:hidden !important;
-  scrollbar-width:none !important;
-  -ms-overflow-style:none !important;
+/* underline hover */
+.idt-topbar2 .topNav2Btn::after{
+  content:"";
+  position:absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 999px;
+  background: transparent;
+  transform: scaleX(.2);
+  opacity: 0;
+  transition: transform .16s ease, opacity .16s ease, background .16s ease;
 }
-.idt-topbar2::-webkit-scrollbar{ display:none !important; }
-
-.idt-topbar2 .topNav2Btn{
-  white-space:nowrap !important;
-  font-size: 12px !important;         /* gerekirse 11 yap */
-  letter-spacing: .02em !important;   /* “yana sündürme” hissi biter */
-  font-weight: 800 !important;
+.idt-topbar2 .topNav2Btn:hover{ color: var(--accent); }
+.idt-topbar2 .topNav2Btn:hover::after{
+  background: rgba(111,16,32,.35);
+  transform: scaleX(.72);
+  opacity: 1;
 }
-/* ===== TOPBAR FINAL KİLİT (tek satır + ortalı + bar görünmez) ===== */
-html, body { overflow-x: hidden !important; }
-
-.idt-topbar2{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  flex-wrap:nowrap !important;        /* ALTA DÜŞME YOK */
-  gap: 12px !important;
-  padding: 10px 12px !important;
-
-  overflow-x:auto !important;         /* sığmazsa kayar */
-  overflow-y:hidden !important;
-  scrollbar-width:none !important;
-  -ms-overflow-style:none !important;
+.idt-topbar2 .topNav2Btn.is-active{ color: var(--accent); }
+.idt-topbar2 .topNav2Btn.is-active::after{
+  background: var(--accent2);
+  transform: scaleX(.86);
+  opacity: 1;
 }
-.idt-topbar2::-webkit-scrollbar{ display:none !important; }
 
-.idt-topbar2 .topNav2Btn{
-  white-space:nowrap !important;
-  font-size: 12px !important;         /* gerekirse 11 */
-  letter-spacing: .02em !important;   /* “yana yayılma” biter */
-  font-weight: 800 !important;
+/* DAHA FAZLA dropdown */
+.topNav2More{ position: relative; }
+.topNav2More summary{ list-style:none; }
+.topNav2More summary::-webkit-details-marker{ display:none; }
+.topNav2More .moreMenu{
+  position:absolute;
+  top: 44px;
+  right: 0;
+  min-width: 260px;
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(20,20,22,.12);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10);
+  padding: 10px;
+  z-index: 50;
+}
+.topNav2More .moreMenu a{
+  display:block;
+  padding: 10px 10px;
+  border-radius: 10px;
+  color: rgba(20,20,22,.86);
+  text-decoration:none;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+.topNav2More .moreMenu a:hover{
+  background: rgba(111,16,32,.06);
+  color: var(--accent);
+}
+.topNav2More .moreMenu .soon{
+  display:block;
+  padding: 8px 10px;
+  color: rgba(20,20,22,.55);
+  font-weight: 650;
+  font-size: 12px;
+}
+
+/* Mobile: scrollable nav */
+@media (max-width: 980px){
+  .idt-topbar2{
+    justify-content:flex-start;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    gap: 18px;
+  }
 }
