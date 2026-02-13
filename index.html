@@ -7,103 +7,86 @@
 
   <style>
     :root {
-      --bg: #e9ded1;
-      --card: #fbf7f1;
-      --text: #16161a;
-      --muted: #5a5560;
-      --line: #dccbb7;
-      --accent: #7a1e2c;
-      --accent2: #c07a2a;
-      --ok: #18794e;
-      --warn: #b45309;
-      --bad: #b42318;
-      --shadow: 0 10px 30px rgba(24,16,8,.12);
-      --radius: 18px;
-      --radius2: 14px;
+      --bg: #f8f5f0;           /* daha yumuşak arka plan */
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #991b1b;       /* bordo yumuşatıldı */
+      --accent-light: #ef4444;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --radius: 12px;
     }
 
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
-    header { position:sticky; top:0; z-index:40; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom:1px solid var(--line); }
-    .wrap { max-width:1220px; margin:0 auto; padding:16px; }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+    header { position:sticky; top:0; z-index:40; background:white; border-bottom:1px solid var(--line); padding:12px 16px; box-shadow: var(--shadow); }
+    main { max-width:1200px; margin:0 auto; padding:24px 16px; }
 
-    /* Yeni eklenen metrik kartları stili */
-    .metrics-and-stats { margin: 16px 0 24px; }
-    .metrics-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .metrics-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
     .metric-card {
-      flex: 1 1 160px;
-      background: var(--card);
-      border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      text-align: center;
-      border: 1px solid var(--line);
+      flex:1 1 180px;
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:20px;
+      text-align:center;
+      box-shadow:var(--shadow);
+      border:1px solid var(--line);
     }
-    .metric-value { font-size: 2.2rem; font-weight: 900; color: var(--accent); line-height: 1.1; }
-    .metric-label { font-size: 0.85rem; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size:2.5rem; font-weight:800; color:var(--accent); }
+    .metric-label { font-size:0.9rem; color:var(--muted); margin-top:8px; text-transform:uppercase; }
 
-    .view-stats-bar {
-      font-size: 13px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 0;
-      border-top: 1px solid var(--line);
+    .view-stats { font-size:0.95rem; color:var(--muted); margin:16px 0; padding:12px; background:var(--card); border-radius:var(--radius); border:1px solid var(--line); text-align:center; }
+
+    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
+    .empty-state h2 { color:var(--text); margin-bottom:12px; }
+    .list-container { margin-top:24px; }
+
+    @media (max-width:768px) {
+      .metrics-row { gap:12px; }
+      .metric-card { padding:16px; }
     }
-    .view-stats-bar .separator { color: #d1d5db; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="wrap top">
-      <!-- mevcut üst bar içeriğin varsa buraya bırak, yoksa boş bırakabilirsin -->
-    </div>
+    <h1 style="font-size:1.6rem; font-weight:700;">İDT Repertuvar Takip Paneli</h1>
   </header>
 
-  <main class="wrap">
-    <!-- Panel görünümü – metrikler en üstte -->
-    <div id="viewPanel">
-      <div class="metrics-and-stats">
-        <div class="metrics-row">
-          <div class="metric-card">
-            <div class="metric-value" id="stat-total-games">—</div>
-            <div class="metric-label">Toplam Oyun</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-value" id="stat-total-personel">—</div>
-            <div class="metric-label">Toplam Personel</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-value" id="stat-active-view">Tümü</div>
-            <div class="metric-label">Aktif Görünüm</div>
-          </div>
+  <main>
+    <section id="viewPanel">
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-value" id="stat-total-games">—</div>
+          <div class="metric-label">Toplam Oyun</div>
         </div>
-
-        <div class="view-stats-bar">
-          <span id="view-stats-current">Bu görünümde — kayıt</span>
-          <span class="separator">•</span>
-          <span id="view-stats-total">Toplam — kayıt</span>
+        <div class="metric-card">
+          <div class="metric-value" id="stat-total-personel">—</div>
+          <div class="metric-label">Toplam Personel</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="stat-active-view">Yükleniyor...</div>
+          <div class="metric-label">Aktif Görünüm</div>
         </div>
       </div>
 
-      <!-- Mevcut panel içeriğin (liste, tablo vs.) buraya gelecek, silme -->
-      <!-- Örnek placeholder -->
-      <div id="ccList"> <!-- buraya mevcut tablon gelecek --></div>
-    </div>
+      <div class="view-stats">
+        <span id="view-stats-current">Bu görünümde — kayıt</span> • 
+        <span id="view-stats-total">Toplam — kayıt</span>
+      </div>
+
+      <div class="empty-state" id="emptyState">
+        <h2>Veriler Yükleniyor...</h2>
+        <p>Lütfen bekleyin veya <button onclick="location.reload()">Yenile</button></p>
+      </div>
+
+      <div class="list-container" id="dataList" style="display:none;">
+        <!-- Veri buraya render edilecek -->
+      </div>
+    </section>
   </main>
 
-  <!-- Yardım FAB ve modal (mevcutsa bırak) -->
-  <button class="helpFab" id="helpBtn">?</button>
-  <!-- ... mevcut yardım overlay ve modal ... -->
-
-  <!-- Global loading (mevcutsa bırak) -->
-  <div id="globalLoading" class="hidden">...</div>
-
   <script src="app.js" defer></script>
-  <script src="idt-desktop10.js" defer></script>
-  <script src="idt-desktop1.js" defer></script>
-  <script src="idt-performance.js" defer></script>
 </body>
 </html>
