@@ -1085,30 +1085,101 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
+/* ================================
+   TOP BAR (single-line, centered)
+   UI-only patch (does not touch data logic)
+================================= */
 
-
-/* === TOPBAR2: tek satır, ortalı, taşma olursa yatay kaydır === */
 .idt-topbar2{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:12px;
-  padding:10px 12px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  white-space:nowrap;
-  -webkit-overflow-scrolling:touch;
+  flex-wrap:nowrap;
+  gap:18px;
+  padding:12px 18px;
+  margin:0 auto;
+  max-width:1180px;
+  overflow:hidden; /* desktop: avoid horizontal scroll */
 }
-.idt-topbar2::-webkit-scrollbar{ height:8px; }
-.idt-topbar2::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.12); border-radius:8px; }
+
 .idt-topbar2 .topNav2Btn{
-  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
   white-space:nowrap;
-  font-size:12px;        /* gerektiğinde küçülür */
-  letter-spacing:.08em;
+  font-size:12px;
+  letter-spacing:.18em;
   text-transform:uppercase;
+  padding:10px 12px;
+  border-radius:999px;
 }
-@media (min-width: 1100px){
-  .idt-topbar2{ overflow-x:hidden; }
-  .idt-topbar2 .topNav2Btn{ font-size:13px; }
+
+.idt-topbar2 .topNav2Btn .idt-ico{
+  display:inline-flex;
+  width:18px;
+  height:18px;
+  align-items:center;
+  justify-content:center;
+  filter: grayscale(1) brightness(0.05);
+  opacity:.92;
+  transform: translateY(-.5px);
+}
+
+/* "More" dropdown */
+.idt-moreWrap{ position:relative; }
+.idt-moreBtn{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  white-space:nowrap;
+  font-size:12px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  cursor:pointer;
+}
+.idt-moreBtn:hover{ border-color: rgba(0,0,0,.22); }
+.idt-moreMenu{
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  min-width:260px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:14px;
+  box-shadow:0 18px 48px rgba(0,0,0,.12);
+  padding:8px;
+  display:none;
+  z-index:9999;
+}
+.idt-moreWrap[data-open="1"] .idt-moreMenu{ display:block; }
+.idt-moreItem{
+  width:100%;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font-size:13px;
+}
+.idt-moreItem:hover{ background:rgba(0,0,0,.05); }
+
+/* Responsive: allow horizontal scroll on smaller widths instead of wrapping */
+@media (max-width: 1200px){
+  .idt-topbar2{
+    max-width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    justify-content:flex-start;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .idt-topbar2::-webkit-scrollbar{ height:0; }
 }
