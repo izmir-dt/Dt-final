@@ -1661,8 +1661,7 @@ body{
 
 
   <link rel="stylesheet" href="idt-polish.css">
-
-</head>
+  </head>
 <body>
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
@@ -1696,25 +1695,18 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays" data-icon="plays"><span class="ico" aria-hidden="true"></span><span class="lbl">AKTİF OYUN</span></button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople" data-icon="people"><span class="ico" aria-hidden="true"></span><span class="lbl">TOPLAM PERSONEL</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideRows" data-icon="search"><span class="ico" aria-hidden="true"></span><span class="lbl">SORGU & KARŞILAŞTIR</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideDist" data-icon="dist"><span class="ico" aria-hidden="true"></span><span class="lbl">OYUNLARA GÖRE DAĞILIM</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap" data-icon="heat"><span class="ico" aria-hidden="true"></span><span class="lbl">YOĞUNLUK & ÇAKIŞMA</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts" data-icon="chart"><span class="ico" aria-hidden="true"></span><span class="lbl">GRAFİKLER</span></button>
-
-  <div class="topMore">
-    <button class="topNav2Btn topMoreBtn" id="topMoreBtn" type="button" data-icon="more" aria-haspopup="true" aria-expanded="false">
-      <span class="ico" aria-hidden="true"></span><span class="lbl">DAHA FAZLA</span>
-    </button>
-    <div class="topMorePanel hidden" id="topMorePanel" role="menu" aria-label="Daha Fazla">
-      <button class="topMoreItem" type="button" data-go="sideIntersect" data-icon="inter"><span class="ico" aria-hidden="true"></span><span class="lbl">KESİŞİM ANALİZİ</span></button>
-      <button class="topMoreItem" type="button" data-go="sideFiguran" data-icon="ticket"><span class="ico" aria-hidden="true"></span><span class="lbl">FİGÜRAN/EMEKLİ</span></button>
-    </div>
-  </div>
+  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
+  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
+  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
 </div>
 
-<div class="idt-content">
+
+      <div class="idt-content">
         
 <header>
   <div class="top">
@@ -2328,6 +2320,7 @@ body{
   }, 5000);
 })();
 </script>
+
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -2896,75 +2889,10 @@ body{
     </div>
   </div>
 
-</body>
-</html>
- <script src="app.js" defer></script>
-  <script src="idt-desktop10.js" defer></script>
-  <script src="idt-desktop1.js" defer></script>
-  <script src="idt-performance.js" defer></script>
-<script>
-(()=> {
-  function $(sel, root=document){ return root.querySelector(sel); }
-  function $all(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-  function safeClickById(id){
-    const el = document.getElementById(id);
-    if(el) el.click();
-  }
+  <script src="idt-performance.js?v=1" defer></script>
+  <script src="idt-desktop10.js?v=1" defer></script>
+  <script src="app.js?v=1" defer></script>
 
-  function wireTopbar(){
-    const bar = document.querySelector('.idt-topbar2');
-    if(!bar) return;
-
-    // Main buttons
-    bar.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-go]');
-      if(!btn) return;
-      const id = btn.getAttribute('data-go');
-      if(!id) return;
-      // close dropdown if open
-      const panel = document.getElementById('topMorePanel');
-      const moreBtn = document.getElementById('topMoreBtn');
-      if(panel && moreBtn){
-        panel.classList.add('hidden');
-        moreBtn.setAttribute('aria-expanded','false');
-      }
-      safeClickById(id);
-    });
-
-    // Dropdown toggle
-    const moreBtn = document.getElementById('topMoreBtn');
-    const panel = document.getElementById('topMorePanel');
-    if(moreBtn && panel){
-      moreBtn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const open = !panel.classList.contains('hidden');
-        panel.classList.toggle('hidden', open);
-        moreBtn.setAttribute('aria-expanded', String(!open));
-      });
-
-      document.addEventListener('click', (e)=>{
-        if(panel.classList.contains('hidden')) return;
-        if(e.target.closest('#topMorePanel') || e.target.closest('#topMoreBtn')) return;
-        panel.classList.add('hidden');
-        moreBtn.setAttribute('aria-expanded','false');
-      });
-
-      document.addEventListener('keydown', (e)=>{
-        if(e.key !== 'Escape') return;
-        if(panel.classList.contains('hidden')) return;
-        panel.classList.add('hidden');
-        moreBtn.setAttribute('aria-expanded','false');
-      });
-    }
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', wireTopbar, { once:true });
-  } else {
-    wireTopbar();
-  }
-})();
-</script>
 </body>
 </html>
