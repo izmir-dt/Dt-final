@@ -1389,3 +1389,39 @@ html, body { overflow-x: hidden !important; }
 .topbar .dropdown-menu {
   position: absolute !important;
 }
+/* ===== SADECE "DAHA FAZLA" dropdown görünür + aşağı açılsın ===== */
+
+/* Üst bar / header içinde dropdown kesilmesin */
+.idt-topbar2,
+.idt-topbar,
+.idt-topbarWrap,
+header,
+.topbar {
+  overflow-y: visible !important;
+}
+
+/* Yatay davranışa dokunma: x tarafını kapalı tut */
+.idt-topbar2 {
+  overflow-x: hidden !important;
+}
+
+/* Dropdown anchor */
+.topNav2More {
+  position: relative !important;
+}
+
+/* Menü: aşağı açılsın, üstte kalmasın */
+.topNav2More .moreMenu {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;  /* AŞAĞI */
+  right: 0 !important;
+  left: auto !important;
+  z-index: 99999 !important;
+
+  display: none !important;           /* kapalıyken görünmesin */
+}
+
+/* Sadece open iken göster */
+.topNav2More[open] .moreMenu {
+  display: block !important;
+}
