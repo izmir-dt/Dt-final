@@ -1085,300 +1085,120 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-  header.idt-topnav{ padding: 10px 12px; }
-  .idt-top-actions .idt-pill{ padding: 9px 10px; }
-}
-
-/* === PRO UI PATCH (B) v4: Typography + Spacing (Tabler-like) ===============
-   - Inter body font (UI readability)
-   - JetBrains Mono for numbers/counters
-   - Daha sıkı ölçüler: font-size/line-height/spacing
+/* === STATE THEATRE ALIGNMENT v5 (single CSS drop-in) =======================
+   Hedef: statetheatrecompany.com.au hissi → editorial + temiz + kırmızı vurgu.
+   Sadece CSS. JS/veri/bildirim bloklarına dokunmaz.
 =========================================================================== */
 
-:root{
-  --font-ui: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+/* 1) Layout: sağ boşluk / dar içerik sorununu bitir */
+.idt-content{
+  max-width: 1200px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding-inline: 22px !important;
 }
 
-/* Base typography */
-html{ font-size: 14px; }
-body{
-  font-family: var(--font-ui);
-  line-height: 1.45;
-  letter-spacing: .01em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Sidebar kaynaklı boşluk/karmaşa varsa tamamen kapat */
+.idt-sidebar{ display: none !important; }
+
+/* Main arka bant / gradient varsa kapat */
+.wrap, main, .idt-main{
+  background: #fff !important;
 }
 
-/* Headings */
-h1,h2,h3{
-  font-family: var(--font-ui);
-  letter-spacing: .01em;
+/* 2) “IDT logo aşağıda” gibi duran iç logo/brand öğelerini gizle (top bar hariç) */
+.wrap .logo,
+.wrap .idt-logo,
+.wrap .brand,
+.wrap .idt-side-head{
+  display: none !important;
 }
 
-/* KPI / numeric emphasis */
-.kpi .value,
-#statusMirror,
-.idt-badge{
-  font-family: var(--font-mono);
-  letter-spacing: 0;
-}
-
-/* Layout background band fix (beige strip) */
-.wrap{
-  background: transparent !important;
-}
-main, .idt-main{
-  background: transparent !important;
-}
-
-/* Buttons: consistent sizing */
-button, .btn, .idt-pill{
-  font-family: var(--font-ui);
-}
-
-/* Topbar fine-tune */
+/* 3) Üst bar: header gibi editorial */
 header.idt-topnav{
   position: sticky;
   top: 0;
-  z-index: 60;
-  background: rgba(255,255,255,.88);
+  z-index: 80;
+  background: rgba(255,255,255,.92) !important;
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(0,0,0,.10) !important;
+  box-shadow: none !important;
 }
 
-header.idt-topnav{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
+/* “Hazır • saat” bloğu daha şık */
+#statusMirror{
+  font-weight: 900 !important;
+  color: rgba(17,17,20,.86) !important;
 }
 
-.idt-top-actions .idt-pill,
-.idt-top-actions a.idt-pill{
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--text);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-weight: 800;
-}
-
-.idt-top-actions .idt-pill.primary{
-  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
-  background: color-mix(in srgb, var(--accent) 9%, #fff);
-  color: var(--accent);
-}
-
-.idt-top-actions .idt-pill:hover{
-  border-color: color-mix(in srgb, var(--accent) 20%, var(--line));
-  background: color-mix(in srgb, var(--accent) 4%, #fff);
-}
-
+/* 4) Nav chip'lerini bitir: text-only + underline */
+.nav,
 .idt-topbar2{
-  position: sticky;
-  top: 54px;
-  z-index: 55;
-  background: rgba(255,255,255,.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,.94) !important;
+  border-bottom: 1px solid rgba(0,0,0,.10) !important;
+  box-shadow: none !important;
 }
 
-/* Nav: küçült + disiplin */
+/* hem .nav button hem .topNav2Btn'yi kapsa */
+.nav button,
 .idt-topbar2 .topNav2Btn{
-  font-size: 13px;
-  font-weight: 800;
-  padding: 10px 6px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 14px 8px !important;
+  font-weight: 800 !important;
+  color: rgba(17,17,20,.78) !important;
 }
 
-/* Cards: border + shadow more subtle */
-.card, .panel, .box, .section, .idt-card, .kpi{
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.05);
+.nav button:hover,
+.idt-topbar2 .topNav2Btn:hover{
+  color: var(--accent) !important;
 }
 
-/* Inside card spacing */
-.card, .panel, .box, .section, .idt-card{
-  padding: 14px;
+.nav button.active,
+.nav button[aria-selected="true"],
+.idt-topbar2 .topNav2Btn.is-active{
+  color: var(--accent) !important;
+  box-shadow: inset 0 -2px 0 var(--accent) !important;
 }
 
-/* Form controls consistency */
-input[type="text"], input[type="search"], select{
-  font-family: var(--font-ui);
-  border-radius: 12px;
-  border: 1px solid var(--line);
-}
-
-/* Reduce emoji/icon visual noise */
-.topNav2Btn .t2{
-  font-weight: 800;
-}
-
-/* Mobile */
-@media (max-width: 720px){
-  html{ font-size: 13px; }
-  header.idt-topnav{ padding: 10px 12px; }
-  .idt-topbar2{ top: 56px; }
-  .idt-top-actions .idt-pill{ padding: 9px 10px; }
-}
-
-/* === STATE THEATRE INSPIRED LAYER (UI-only) ================================
-   İlham: statetheatrecompany.com.au — yüksek kontrast, temiz tipografi,
-   az renk (kırmızı vurgu), bol boşluk. (Birebir kopya değil.)
-=========================================================================== */
-
-/* Stage-like neutral → daha “site” hissi, dashboard gibi ağır değil */
-:root{
-  --bg: #ffffff;
-  --card: #ffffff;
-  --text: #111114;
-  --muted: rgba(17,17,20,.62);
-  --line: rgba(17,17,20,.10);
-
-  --accent: #c1121f; /* curtain red (cleaner) */
-  --gold:   rgba(193,18,31,.18);
-
-  --shadow: 0 0 0 rgba(0,0,0,0); /* gölgeyi neredeyse sıfırla */
-  --radius: 14px;
-}
-
-/* Background bandı tamamen kaldır */
-body, .wrap, main, .idt-main{ background: #fff !important; }
-.idt-content{ max-width: 1200px; }
-
-/* Typography: daha “editorial” */
-html{ font-size: 14px; }
-body{
-  font-family: var(--font-ui, "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif);
-  line-height: 1.5;
-  letter-spacing: .01em;
-  color: var(--text);
-}
-
-/* Section titles: büyük, net */
-h1,h2{
-  font-weight: 900;
-  letter-spacing: .005em;
-}
-h2{
-  font-size: 22px;
-  margin: 14px 0 6px;
-}
-p{ color: var(--muted); }
-
-/* Top toolbar: düz, ince border — “site header” gibi */
-header.idt-topnav{
-  background: rgba(255,255,255,.92);
-  border-bottom: 1px solid var(--line);
-  box-shadow: none;
-}
-#statusMirror{ color: var(--text); }
-#statusMirror .dot{ filter: saturate(1.2); }
-
-/* Buttons: minimal outline + kırmızı hover */
+/* 5) Buton dili: minimal outline, Bildirim primary */
 .idt-top-actions .idt-pill,
-.idt-top-actions a.idt-pill{
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-weight: 800;
-}
-.idt-top-actions .idt-pill:hover,
-.idt-top-actions a.idt-pill:hover{
-  border-color: rgba(193,18,31,.55);
-  color: var(--accent);
-}
-.idt-top-actions .idt-pill.primary{
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-.idt-top-actions .idt-pill.ok{
-  background: transparent;
-  color: var(--text);
-  border-color: var(--line);
+.idt-top-actions a.idt-pill,
+button.btn{
+  background: transparent !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
 }
 
-/* Badge: küçük, net */
+.idt-top-actions .idt-pill.primary{
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+
 .idt-badge{
   background: #fff !important;
   color: var(--accent) !important;
-  border: 1px solid rgba(193,18,31,.35) !important;
-  font-weight: 900;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  font-weight: 900 !important;
 }
 
-/* Nav: text-only + red underline active */
-.idt-topbar2{
-  background: rgba(255,255,255,.94);
-  border-bottom: 1px solid var(--line);
-  box-shadow: none;
-}
-.idt-topbar2 .topNav2Btn{
-  font-weight: 800;
-  font-size: 13px;
-  padding: 12px 6px;
-  color: rgba(17,17,20,.82);
-}
-.idt-topbar2 .topNav2Btn:hover{
-  background: transparent;
-  color: var(--accent);
-}
-.idt-topbar2 .topNav2Btn.is-active{
-  color: var(--accent);
-  box-shadow: inset 0 -2px 0 var(--accent);
+/* 6) Kartlar: gölgeyi azalt, border ile profesyonel */
+.card, .panel, .box, .section, .idt-card, .kpi{
+  box-shadow: none !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 14px !important;
 }
 
-/* Cards: sadece border, no shadow */
-.card, .panel, .box, .section, .idt-card, .kpi, .cc-sel-summary .cc-sel-card{
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: none;
-}
-
-/* Inputs: clean outline */
-input[type="text"], input[type="search"], select{
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-}
-input:focus, select:focus{
-  outline: none;
-  border-color: rgba(193,18,31,.55);
-  box-shadow: 0 0 0 3px rgba(193,18,31,.12);
-}
-
-/* Mini cards in "En Yoğun 15 Oyun": daha editorial */
-.hot15 .mini,
-.top15 .mini,
-.cards .mini{
-  box-shadow: none;
-}
-
-/* If there are "mini play cards", give them a subtle red hover line */
-.mini, .pick, .hotCard, .top15Card{
-  position: relative;
-}
-.mini:hover::after, .pick:hover::after, .hotCard:hover::after, .top15Card:hover::after{
-  content:"";
-  position:absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 10px;
-  height: 2px;
-  background: rgba(193,18,31,.45);
-  border-radius: 999px;
-}
-
-/* Reduce visual noise of separators */
-hr{ border-color: var(--line); }
+/* 7) Sağdaki “boş kolon” hissi: grid/flex min-width */
+.idt-shell, .idt-main, .wrap{ min-width: 0 !important; }
+.idt-shell *{ min-width: 0 !important; }
 
 /* Mobile */
 @media (max-width: 720px){
-  h2{ font-size: 20px; }
-  .idt-top-actions .idt-pill{ padding: 9px 12px; }
-  .idt-topbar2 .topNav2Btn{ padding: 10px 6px; }
+  .idt-content{ padding-inline: 14px !important; }
+  .nav button, .idt-topbar2 .topNav2Btn{ padding: 12px 6px !important; }
 }
