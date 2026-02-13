@@ -1085,28 +1085,39 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === UI v14 HOTFIX (We were good → restore flat underline nav; keep bottom guide) */
+/* === UI v15 FIX (No horizontal scroll, centered nav, monochrome icons) === */
 
 html, body { overflow-x: hidden !important; }
+* { max-width: 100%; box-sizing: border-box; }
 
-/* Title center + spacing */
-.dashTitle { text-align:center !important; text-transform: uppercase !important; letter-spacing:.02em; }
-.dashSub {
+.dashTitle{
+  text-align:center !important;
+  text-transform: uppercase !important;
+  letter-spacing: .03em;
+  margin-top: 6px !important;
+}
+.dashSub{
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  max-width: 110ch;
+  max-width: 95vw !important;
   margin-left:auto !important;
   margin-right:auto !important;
 }
 
-/* Topbar2: NO pills, underline logic */
-.idt-topbar2 {
-  justify-content: center !important;
-  gap: 26px !important;
+/* Top nav: wrap instead of scroll, center, remove any separators */
+.idt-topbar2{
+  display:flex !important;
+  justify-content:center !important;
+  flex-wrap: wrap !important;
+  gap: 18px 28px !important;
+  overflow: hidden !important; /* kills the horizontal bar you see */
   padding: 10px 14px !important;
 }
-.idt-topbar2 .topNav2Btn {
+.idt-topbar2::-webkit-scrollbar{ display:none !important; }
+
+/* Buttons: flat + underline. Icons monochrome (same color as text) */
+.idt-topbar2 .topNav2Btn{
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -1114,114 +1125,62 @@ html, body { overflow-x: hidden !important; }
   box-shadow: none !important;
   text-transform: uppercase !important;
   font-weight: 950 !important;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
   letter-spacing: .08em !important;
-  display: inline-flex !important;
-  align-items: center !important;
+  color: rgba(15,15,18,.86) !important; /* "siyah" hissi */
+  display:inline-flex !important;
+  align-items:center !important;
   gap: 10px !important;
   position: relative !important;
-  color: rgba(20,20,22,.78) !important;
+  white-space: nowrap !important;
 }
-.navIcon {
-  width: 16px; height: 16px;
-  background: currentColor;
-  -webkit-mask-image: var(--ico);
-  mask-image: var(--ico);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  opacity: .92;
-  flex: 0 0 16px;
-}
-.navIcon[data-ico="masks"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%204h7v8c0%203-2%205-5%205S1%2015%201%2012V7c0-1.7%201.3-3%203-3zm9%200h7c1.7%200%203%201.3%203%203v5c0%203-2%205-5%205s-5-2-5-5V4z'/></svg>"); }
-.navIcon[data-ico="users"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M8%2011c1.7%200%203-1.3%203-3S9.7%205%208%205%205%206.3%205%208s1.3%203%203%203zm8%200c1.7%200%203-1.3%203-3s-1.3-3-3-3-3%201.3-3%203%201.3%203%203%203zM0%2019v-2c0-2.7%205.3-4%208-4s8%201.3%208%204v2H0z'/></svg>"); }
-.navIcon[data-ico="search"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M10%2018a8%208%200%201%201%205.3-14%208%208%200%200%201%201.6%2010.9l4.1%204.1-1.4%201.4-4.1-4.1A7.9%207.9%200%200%201%2010%2018zm0-2a6%206%200%201%200%200-12%206%206%200%200%200%200%2012z'/></svg>"); }
-.navIcon[data-ico="bars"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%2019h16v2H2V3h2v16zm3-2V9h3v8H7zm5%200V5h3v12h-3zm5%200v-6h3v6h-3z'/></svg>"); }
-.navIcon[data-ico="shuffle"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M17%203h4v4l-1.5-1.5-3%203a4%204%200%200%201-5.7%200L9%206.2A2%202%200%200%200%206.2%206H3V4h3.2a4%204%200%200%201%202.8%201.2l1.8%201.8a2%202%200%200%200%202.8%200l3-3L17%203zM3%2016.4V14h3.2l2.2%202.2a2%202%200%200%200%202.8%200l1.8-1.8%201.4%201.4-1.8%201.7a4%204%200%200%201-5.7%200L3%2016.4z'/></svg>"); }
-.navIcon[data-ico="line"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M3%2019h18v2H1V3h2v16zm4-4%204-5%203%203%205-7%202%201.3-6.4%209L11%2012l-3.1%203.9L7%2015z'/></svg>"); }
-.navIcon[data-ico="venn"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M9%204a7%207%200%200%200%200%2014h6a7%207%200%200%200%200-14H9zm0%202h3a5%205%200%200%200%200%2010H9A5%205%200%200%201%209%206zm9%200a5%205%200%200%201%200%2010h-3a7%207%200%200%200%200-10h3z'/></svg>"); }
-.navIcon[data-ico="ticket"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M21%2010a2%202%200%200%200%200%204v4H3v-4a2%202%200%200%200%200-4V6h18v4zM8%208v8h2V8H8zm4%200v8h2V8h-2z'/></svg>"); }
-.navIcon[data-ico="more"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M6%2010a2%202%200%201%200%200%204%202%202%200%200%200%200-4zm6%200a2%202%200%201%200%200%204%202%202%200%200%200%200-4zm6%200a2%202%200%201%200%200%204%202%202%200%200%200%200-4z'/></svg>"); }
-.navIcon[data-ico="dot"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><circle%20cx='12'%20cy='12'%20r='3'%20fill='currentColor'/></svg>"); }
+.idt-topbar2 .topNav2Btn .navTxt{ line-height: 1 !important; }
 
-.idt-topbar2 .topNav2Btn::after {
+/* Ensure icons are not colored “image-like”: force monochrome via currentColor mask */
+.idt-topbar2 .topNav2Btn .navIcon{
+  width: 16px !important;
+  height: 16px !important;
+  background: currentColor !important;
+  opacity: .95 !important;
+  filter: none !important;
+}
+
+/* Underline interaction */
+.idt-topbar2 .topNav2Btn::after{
   content:"";
   position:absolute;
-  left: 0; right: 0;
-  bottom: 4px;
+  left:0; right:0;
+  bottom: 3px;
   height: 2px;
   border-radius: 999px;
   background: transparent;
-  transform: scaleX(.2);
+  transform: scaleX(.15);
   opacity: 0;
   transition: transform .16s ease, opacity .16s ease, background .16s ease;
 }
-.idt-topbar2 .topNav2Btn:hover { color: var(--accent) !important; }
-.idt-topbar2 .topNav2Btn:hover::after {
-  background: rgba(111,16,32,.35);
-  transform: scaleX(.72);
+.idt-topbar2 .topNav2Btn:hover{
+  color: rgba(111,16,32,.96) !important;
+}
+.idt-topbar2 .topNav2Btn:hover::after{
+  background: rgba(111,16,32,.38);
+  transform: scaleX(.78);
   opacity: 1;
 }
-.idt-topbar2 .topNav2Btn.is-active {
-  color: var(--accent) !important;
+.idt-topbar2 .topNav2Btn.is-active{
+  color: rgba(111,16,32,1) !important;
 }
-.idt-topbar2 .topNav2Btn.is-active::after {
-  background: var(--accent2);
-  transform: scaleX(.86);
+.idt-topbar2 .topNav2Btn.is-active::after{
+  background: rgba(20,20,22,.88);
+  transform: scaleX(.90);
   opacity: 1;
 }
 
-/* More dropdown */
-.topNav2More { position: relative; }
-.topNav2More summary { list-style:none; }
-.topNav2More summary::-webkit-details-marker { display:none; }
-.topNav2More .moreMenu {
-  position:absolute;
-  top: 44px;
-  right: 0;
-  min-width: 260px;
-  background: rgba(255,255,255,.96);
-  border: 1px solid rgba(20,20,22,.12);
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(0,0,0,.10);
-  padding: 10px;
-  z-index: 50;
-}
-.topNav2More .moreMenu a {
-  display:block;
-  padding: 10px 10px;
-  border-radius: 10px;
-  color: rgba(20,20,22,.86);
-  text-decoration:none;
-  font-weight: 900;
-}
-.topNav2More .moreMenu a:hover {
-  background: rgba(111,16,32,.06);
-  color: var(--accent);
-}
-.topNav2More .moreMenu .soon {
-  display:block;
-  padding: 8px 10px;
-  color: rgba(20,20,22,.55);
-  font-weight: 650;
-  font-size: 12px;
-}
+/* If something still causes overflow, clamp content wrapper */
+.idt-content, .idt-main, .container, main{ overflow-x: hidden !important; }
 
-/* Mobile nav scroll */
-@media (max-width: 980px) {
-  .idt-topbar2 {
-    justify-content:flex-start !important;
-    overflow-x:auto !important;
-    -webkit-overflow-scrolling:touch;
-    gap: 18px !important;
-  }
-}
-
-/* Bottom guide stays (from v13 styles if present). Tables wrap */
-th, td {
+/* Tables and long cells: wrap to prevent sideways */
+table{ width: 100% !important; max-width: 100% !important; }
+th, td{
   white-space: normal !important;
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
