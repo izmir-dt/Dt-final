@@ -1,14 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="tr">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>İDT | Repertuvar Kişi Takip Sistemi</title>
-
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
+<style>
 
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
@@ -1472,12 +1472,9 @@ select{
 }
 
 </style>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
-
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet"/>
 <style>
 /* ===== IDT Theme Shell (UI-only) ===== */
 :root{
@@ -1658,519 +1655,490 @@ body{
 }
 
 </style>
-
-
-  <link rel="stylesheet" href="idt-polish.css">
-  <script defer src="idt-performance.js"></script>
+<link href="idt-polish.css" rel="stylesheet"/>
 
 </head>
 <body>
-  <div class="idt-shell">
-    <aside class="idt-sidebar" aria-label="Menü">
-      <div class="idt-side-head">
-      <div class="idt-mini-logo" aria-hidden="true"><img src="theater.png" alt="" /></div>
-        <div class="idt-head-txt">
-          <div class="h1">İDT Panel</div>
-          <div class="h2">Sanat Teknik Bürosu</div>
-        </div>
-      </div>
-
-      <div class="idt-item active" id="sidePlays"><span>🎭</span><b>Aktif Oyun</b><span class="idt-count" id="sidePlaysCount">-</span></div>
-      <div class="idt-item" id="sidePeople"><span>👥</span><b>Toplam Personel</b><span class="idt-count" id="sidePeopleCount">-</span></div>
-      <div class="idt-item" id="sideRows"><span>🧾</span><b>Sorgu & Karşılaştır</b><span class="idt-count" id="sideRowsCount">-</span></div>
-
-      <div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
-      <div class="idt-item" id="sideHeatmap"><span>🟫</span><b>Yoğunluk & Çakışma Merkezi</b></div>
-      <div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
-      <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
-      <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
+<div class="idt-shell">
+<aside aria-label="Menü" class="idt-sidebar">
+<div class="idt-side-head">
+<div aria-hidden="true" class="idt-mini-logo"><img alt="" src="theater.png"/></div>
+<div class="idt-head-txt">
+<div class="h1">İDT Panel</div>
+<div class="h2">Sanat Teknik Bürosu</div>
+</div>
+</div>
+<div class="idt-item active" id="sidePlays"><span>🎭</span><b>Aktif Oyun</b><span class="idt-count" id="sidePlaysCount">-</span></div>
+<div class="idt-item" id="sidePeople"><span>👥</span><b>Toplam Personel</b><span class="idt-count" id="sidePeopleCount">-</span></div>
+<div class="idt-item" id="sideRows"><span>🧾</span><b>Sorgu &amp; Karşılaştır</b><span class="idt-count" id="sideRowsCount">-</span></div>
+<div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
+<div class="idt-item" id="sideHeatmap"><span>🟫</span><b>Yoğunluk &amp; Çakışma Merkezi</b></div>
+<div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
+<div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
+<div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
 </aside>
-
-    <main class="idt-main">
-      <header class="idt-topnav">
-        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
-        <div class="idt-top-actions">
-          <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
-          <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
-<a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
-        </div>
-      </header>
-
-
-<div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <div class="idt-topbar2-inner">
-    <div class="idt-topbar2-brand" aria-label="İzmir Devlet Tiyatrosu">
-      <img src="theater.png" alt="İDT" class="idt-logo" loading="lazy" decoding="async">
-      <div class="idt-brandText">
-        <div class="idt-brandTitle">İDT PANEL</div>
-        <div class="idt-brandSub">Repertuvar Kişi Takip Sistemi</div>
-      </div>
-    </div>
-
-    <div class="idt-topbar2-nav" role="tablist" aria-label="Bölümler">
-      <button class="topNav2Btn" data-go="sideplays" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">theater_comedy</span>
-        <span class="lbl">Aktif Oyun</span>
-      </button>
-      <button class="topNav2Btn" data-go="sidepeople" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">groups</span>
-        <span class="lbl">Toplam Personel</span>
-      </button>
-      <button class="topNav2Btn" data-go="sidequery" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">manage_search</span>
-        <span class="lbl">Sorgu & Karşılaştır</span>
-      </button>
-      <button class="topNav2Btn" data-go="sidedist" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">account_tree</span>
-        <span class="lbl">Oyunlara Göre Dağılım</span>
-      </button>
-      <button class="topNav2Btn" data-go="sidematrix" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">grid_view</span>
-        <span class="lbl">Yoğunluk & Çakışma</span>
-      </button>
-      <button class="topNav2Btn" data-go="sidecharts" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">analytics</span>
-        <span class="lbl">Grafikler</span>
-      </button>
-      <button class="topNav2Btn" data-go="sideintersect" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">troubleshoot</span>
-        <span class="lbl">Kesişim Analizi</span>
-      </button>
-      <button class="topNav2Btn" data-go="sidefig" role="tab" aria-selected="false">
-        <span class="material-icons" aria-hidden="true">sell</span>
-        <span class="lbl">Figüran/Emekli</span>
-      </button>
-    </div>
-
-    <div class="idt-topbar2-kpis" aria-label="Özet Sayılar">
-      <div class="kpiPill" title="Toplam oyun sayısı">
-        <span class="kpiLab">Oyun</span><span id="topPlaysCount" class="kpiVal">0</span>
-      </div>
-      <div class="kpiPill" title="Toplam personel kaydı">
-        <span class="kpiLab">Personel</span><span id="topPeopleCount" class="kpiVal">0</span>
-      </div>
-      <div class="kpiPill" title="Toplam figüran kaydı">
-        <span class="kpiLab">Figüran</span><span id="topFigCount" class="kpiVal">0</span>
-      </div>
-    </div>
-  </div>
+<main class="idt-main">
+<header class="idt-topnav">
+<div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+<div class="idt-top-actions">
+<button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
+<button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
+<a class="idt-pill ok" href="javascript:void(0)" id="topSheet">📊 Excel</a>
 </div>
-
-
+</header>
+<div aria-label="Üst Menü" class="idt-topbar2" role="navigation">
+<button class="topNav2Btn" data-go="sidePlays" type="button">🎭 Aktif Oyun</button>
+<button class="topNav2Btn" data-go="sidePeople" type="button">👥 Toplam Personel</button>
+<button class="topNav2Btn" data-go="sideRows" type="button">🧾 Sorgu &amp; Karşılaştır</button>
+<button class="topNav2Btn" data-go="sideDist" type="button">📊 Oyunlara Göre Dağılım</button>
+<button class="topNav2Btn" data-go="sideHeatmap" type="button">🧩 Yoğunluk &amp; Çakışma</button>
+<button class="topNav2Btn" data-go="sideCharts" type="button">📈 Grafikler</button>
+<button class="topNav2Btn" data-go="sideIntersect" type="button">🧠 Kesişim Analizi</button>
+<button class="topNav2Btn" data-go="sideFiguran" type="button">🎟 Figüran/Emekli</button>
+</div>
+<div class="idt-content">
+<header>
+<div class="top">
+<div class="brand">
+<div class="logo">IDT</div>
+<div>
+<h1><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></h1>
+</div>
+</div>
+<div class="actions">
+<button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
+<span class="pill" id="status">⏳ Yükleniyor…</span>
+<button class="btn" id="reloadBtn">↻ Yenile</button>
+<div class="menu">
+<button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
+<div aria-label="Ek Araçlar" class="menuPanel hidden" id="advMenu" role="menu">
+<div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
+<div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
+</div>
+</div>
+<div class="notif">
+<button class="btn" id="notifBtn" title="Bildirimler (LOG)">
+          🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
+</button>
+<div aria-label="Bildirimler" class="notifPanel hidden" id="notifPanel" role="dialog">
+<div class="notifHd">
+<div>
+<b>Bildirimler</b>
+<div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
+</div>
+<div class="row" style="gap:8px">
+<button class="btn" id="notifRefresh">↻</button>
+<button class="btn" id="notifClose">✕</button>
+</div>
+</div>
+<div class="notifBd" id="notifList">
+<div class="empty">LOG okunuyor…</div>
+</div>
+</div>
+</div>
+<a class="btn primary" href="#" id="sheetBtn" rel="noreferrer" target="_blank">📄 Google Sheet’i Aç</a>
+</div>
+</div>
+<div class="nav">
+<button class="tab active" id="tabPanel">Panel</button>
+<button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
+<button class="tab" id="tabHeatmap">Yoğunluk &amp; Çakışma Merkezi</button>
+<button class="tab-btn" id="tabAssign">📑 Görev Ataması</button>
+<button class="tab" id="tabIntersection">Kesişim Analizi</button>
+<button class="tab" id="tabFiguran">Figüranlar</button>
+<button class="tab" id="tabCharts">Grafikler</button>
+</div>
+</header>
+<div class="wrap">
+<div class="dash">
+<div class="dashTitle">Ana Kontrol Paneli</div>
+<div class="dashSub">En hızlı erişim için aşağıdaki kısayollardan birini kullan. Seçimlerin üstte “Aktif Seçimler” şeridinde görünür.</div>
+</div>
+<div class="kpis" id="kpis">
+<div aria-label="Oyun listesine git" class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
+<div aria-label="Kişi listesine git" class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
+<div aria-label="Panele git" class="kpi soft3" data-go="Panel" data-mode="rows" role="button" tabindex="0"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
+<div aria-label="Figüran listesine git" class="kpi soft4" data-go="Figuran" data-mode="figuran" role="button" tabindex="0"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+</div>
+<div aria-label="Aktif Seçimler" class="activeFilters hidden" id="activeFilters">
+<div class="afTitle">Aktif Seçimler</div>
+<div class="afChips" id="afChips"></div>
+<button class="btn afClear" id="afClear" title="Tüm seçimleri temizle" type="button">Temizle</button>
+</div>
+<!-- PANEL -->
 <section id="viewPanel">
-    <div class="card">
-      <div class="hd">
-        <h2>Liste</h2>
-        <div class="filters">
-          <div class="input" title="Ara">
-            🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
-            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
-              <option value="all">Tümü</option>
-              <option value="play">Oyun</option>
-              <option value="person">Kişi</option>
-              <option value="role">Görev</option>
-            </select></div>
-            <button class="q-clear" id="qClear" title="Temizle">✕</button>
-          </div>
-<div class="seg" title="Görünüm">
-            <button id="btnPlays" class="active">🎭 Oyunlar</button>
-            <button id="btnPeople">👥 Kişiler</button>
-          </div>
-
-          <button class="btn" id="clearBtn">Temizle</button>
-        </div>
-      </div>
-      <div class="bd">
-        <div class="grid">
-          <div class="idt-panel-left" data-idt-sticky="1" data-idt-panel="1">
-            <div class="list" id="list" data-idt-scroll="1"></div>
-            <div class="small" id="hint" style="margin-top:10px"></div>
-          </div>
-          <div class="card idt-sticky-panel" style="box-shadow:none" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
-            <div class="hd" data-idt-panel-header="1">
-              <h2>Detay</h2>
-              <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
+<div class="card">
+<div class="hd">
+<h2>Liste</h2>
+<div class="filters">
+<div class="input" title="Ara">
+            🔎 <input autocomplete="off" id="q" placeholder="Oyun / kişi / görev ara…" type="search"/>
+<div class="qScopeBox"><select class="q-scope" id="qScope" title="Arama kapsamı">
+<option value="all">Tümü</option>
+<option value="play">Oyun</option>
+<option value="person">Kişi</option>
+<option value="role">Görev</option>
+</select></div>
+<button class="q-clear" id="qClear" title="Temizle">✕</button>
 </div>
-            <div class="bd" id="details">
-              <div class="empty">Soldan bir oyun veya kişi seç.</div>
-            </div>
-            <footer>
-              <div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
-              <div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
-            </footer>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-<section id="viewAssign" class="view" style="display:none">
-  <div class="card">
-    <div class="secHead">
-      <div>
-        <h2 class="h2">Sorgulama & Karşılaştırma</h2>
-        <div class="muted small">Sorgulama ve karşılaştırma aracı.</div>
-        <div class="muted small" id="assignRowCount" style="margin-top:4px;"></div>
-      </div>
-      <div class="toolbar">
-        <div class="seg" role="tablist" aria-label="Görev Ataması Modu">
-          <button id="assignModeFilter" class="segBtn active" role="tab" aria-selected="true">🔍 Filtrele & Listele</button>
-          <button id="assignModeCompare" class="segBtn" role="tab" aria-selected="false">🔄 Karşılaştır</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODE: FILTER & LIST -->
-    <div id="assignPaneFilter" class="assignPane">
-      <div class="toolGrid">
-        <div class="toolCard">
-          <div class="toolTitle">Filtreler</div>
-          <div class="toolSub">Birden fazla seçim yapabilirsin. Seçim yaptıkça tablo anında güncellenir.</div>
-
-          <div class="toolRow">
-            <div class="toolLabel">Görevler</div>
-            <details class="ms" id="msRoles">
-              <summary class="msSum"><span class="msTxt" id="msRolesTxt">Seç…</span><span class="msBadge" id="msRolesBadge">0</span></summary>
-              <div class="msPanel"><input class="msSearch" id="msRolesSearch" type="text" placeholder="Görev ara…"/><div class="msList" id="msRolesList"></div></div>
-            </details>
-          <button class="msClear" type="button" data-target="msRoles" aria-label="Görevler temizle" title="Görevler temizle">✕</button>
-          </div>
-
-          <div class="toolRow">
-            <div class="toolLabel">Oyunlar</div>
-            <details class="ms" id="msPlays">
-              <summary class="msSum"><span class="msTxt" id="msPlaysTxt">Seç…</span><span class="msBadge" id="msPlaysBadge">0</span></summary>
-              <div class="msPanel"><input class="msSearch" id="msPlaysSearch" type="text" placeholder="Oyun ara…"/><div class="msList" id="msPlaysList"></div></div>
-            </details>
-          <button class="msClear" type="button" data-target="msPlays" aria-label="Oyunlar temizle" title="Oyunlar temizle">✕</button>
-          </div>
-
-          <div class="toolRow">
-            <div class="toolLabel">Kişiler</div>
-            <details class="ms" id="msPeople">
-              <summary class="msSum"><span class="msTxt" id="msPeopleTxt">Seç…</span><span class="msBadge" id="msPeopleBadge">0</span></summary>
-              <div class="msPanel"><input class="msSearch" id="msPeopleSearch" type="text" placeholder="Kişi ara…"/><div class="msList" id="msPeopleList"></div></div>
-            </details>
-          <button class="msClear" type="button" data-target="msPeople" aria-label="Kişiler temizle" title="Kişiler temizle">✕</button>
-          </div>
-
-          <div class="toolActions">
-            <button id="assignFilterCopy" class="btnSoft">📋 Excel’e Kopyala</button>
-            <button id="assignFilterClear" class="btnGhost">Temizle</button>
-          </div>
-        </div>
-
-        <div class="toolCard toolCardSticky" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
-          <div class="toolTitle">Sonuç</div>
-          <div class="toolSub" id="assignFilterMeta">—</div>
-          <div class="tableWrap" style="margin-top:10px">
-            <table class="tbl" data-idt-table="1" data-idt-table="1" id="assignFilterTable">
-              <thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
-              <tbody id="assignFilterTbody"><tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODE: COMPARE -->
-    <div id="assignPaneCompare" class="assignPane" hidden>
-      <div class="toolGrid" style="grid-template-columns: 1fr">
-        <div class="toolCard">
-          <div class="toolTitle">Karşılaştır</div>
-          <div class="toolSub">İki kişiyi seç. Aşağıda 3 kart oluşur: Sadece A / Ortak Oyunlar / Sadece B. Kartların içinde o oyundaki görevler listelenir.</div>
-
-          <div class="compareTop">
-            <div class="comparePick">
-              <div class="toolLabel">Kişi A</div>
-              <div class="input toolInput" title="Kişi A ara">
-                🔎 <input id="assignPersonA" type="text" placeholder="Kişi A seç…" autocomplete="off" />
-              </div>
-              <div id="cmpSuggestA" class="cmpSuggest" hidden></div>
-            </div>
-<div class="comparePick">
-              <div class="toolLabel">Kişi B</div>
-              <div class="input toolInput" title="Kişi B ara">
-                🔎 <input id="assignPersonB" type="text" placeholder="Kişi B seç…" autocomplete="off" />
-              </div>
-              <div id="cmpSuggestB" class="cmpSuggest" hidden></div>
-            </div>
-            <div class="compareActions">
-              <button id="assignCompareSwap" class="btnGhost" title="Değiştir">⇄</button>
-              <button id="assignCompareCopy" class="btnSoft">📋 Excel’e Kopyala</button>
-            </div>
-          </div>
-
-          <div class="compareGrid">
-            <div class="cmpCard cmpOnlyACard">
-              <div class="cmpTitle">Sadece A</div>
-              <div id="cmpOnlyA" class="cmpBody"><div class="emptyHint">—</div></div>
-            </div>
-            <div class="cmpCard cmpOnlyBCard">
-              <div class="cmpTitle">Sadece B</div>
-              <div id="cmpOnlyB" class="cmpBody"><div class="emptyHint">—</div></div>
-            </div>
-            <div class="cmpCard cmpCommonCard">
-              <div class="cmpTitle">Ortak Oyunlar</div>
-              <div id="cmpCommon" class="cmpBody"><div class="emptyHint">İki kişi seç.</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="seg" title="Görünüm">
+<button class="active" id="btnPlays">🎭 Oyunlar</button>
+<button id="btnPeople">👥 Kişiler</button>
+</div>
+<button class="btn" id="clearBtn">Temizle</button>
+</div>
+</div>
+<div class="bd">
+<div class="grid">
+<div class="idt-panel-left" data-idt-panel="1" data-idt-sticky="1">
+<div class="list" data-idt-scroll="1" id="list"></div>
+<div class="small" id="hint" style="margin-top:10px"></div>
+</div>
+<div class="card idt-sticky-panel" data-idt-panel="1" data-idt-scroll="1" data-idt-sticky="1" style="box-shadow:none">
+<div class="hd" data-idt-panel-header="1">
+<h2>Detay</h2>
+<button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
+</div>
+<div class="bd" id="details">
+<div class="empty">Soldan bir oyun veya kişi seç.</div>
+</div>
+<footer>
+<div><b>Canlı:</b> Sheet’te yaptığın değişiklikler <b>yenileyince</b> gelir.</div>
+<div style="margin-top:6px"><b>Paylaşım:</b> Sheet → Paylaş → <code>Bağlantıya sahip herkes: Görüntüleyebilir</code></div>
+</footer>
+</div>
+</div>
+</div>
+</div>
 </section>
-
-  <!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
-  <section id="viewDistribution" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Oyunlara Göre Personel Dağılımı</h2>
-        <div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
-      </div>
-      <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="Ara">
-            🔎 <input id="dq" type="search" placeholder="Kişi veya oyun ara…" autocomplete="off"/><button class="btn" id="distCopyBtn" type="button" title="Filtreli dağılım listesini Excel\'e kopyala">📋 Excel’e Kopyala</button>
-          </div>
-          <button class="btn" id="dClear">Temizle</button>
-        </div>
-        <div id="distributionBox"></div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- YOĞUNLUK MATRİSİ -->
-  <section id="viewHeatmap" style="display:none">
-    
-    <div class="card">
-      <div class="hd">
-        <h2>Yoğunluk & Çakışma Merkezi</h2>
-        <div class="small">Yatay kaydırma yok. Üstten iki oyun seçip ortak personeli görebilir, alttan en yoğun oyunlardan hızlı liste alıp Excel’e kopyalayabilirsin.</div>
-      </div>
-      <div class="bd">
-        <!-- Hızlı Çakışma -->
-        <div class="cc-top">
-          <div class="cc-sel">
-            <label for="ccPlayA">Oyun A</label>
-            <select id="ccPlayA"></select>
-          </div>
-          <div class="cc-sel">
-            <label for="ccPlayB">Oyun B</label>
-            <select id="ccPlayB"></select>
-          </div>
-
-          <div class="cc-venn" aria-hidden="true">
-            <span class="c a"></span><span class="c b"></span><span class="c m"></span>
-          </div>
-
-          <div class="cc-actions">
-            <div class="cc-count">Ortak: <b id="ccCommonCount">0</b></div>
-            <button class="btn" id="ccShowCommon">Ortakları Göster</button>
-            <button class="btn" id="ccCopyCommon">Ortakları Excel’e Kopyala</button>
-          </div>
-        </div>
-
-
-        <!-- Seçim Özeti (A/B seçilince görünür) -->
-        <div id="ccSelSummary" class="cc-sel-summary" style="display:none">
-          <div class="cc-sel-card">
-            <div class="k">Oyun A</div>
-            <div class="v" id="ccSumAName">—</div>
-            <div class="s" id="ccSumACnt">0 kişi</div>
-          </div>
-          <div class="cc-sel-card">
-            <div class="k">Ortak</div>
-            <div class="v" id="ccSumOCnt">0</div>
-            <div class="s">A ∩ B</div>
-          </div>
-          <div class="cc-sel-card">
-            <div class="k">Oyun B</div>
-            <div class="v" id="ccSumBName">—</div>
-            <div class="s" id="ccSumBCnt">0 kişi</div>
-          </div>
-          <button class="btn cc-clear" id="ccClearSel" type="button">Seçimleri Temizle</button>
-        </div>
-
-        <!-- En yoğun oyunlar -->
-        <div class="cc-hd2">
-          <h3>En Yoğun 15 Oyun</h3>
-          <div class="cc-hint">Bir oyuna tıkla → liste açılır → kopyala / Panel’e geç.</div>
-        </div>
-        <div id="ccTopGames" class="cc-games"></div>
-
-        <!-- Detay liste -->
-        <div class="cc-detail">
-          <div class="cc-detail-hd">
-            <div>
-              <div class="cc-title" id="ccDetailTitle">Bir oyun seç</div>
-              <div class="cc-sub" id="ccDetailSub">Seçince kişiler listesi burada görünür.</div>
-            </div>
-
-            <div class="cc-tools">
-              <div class="input">
-                🔎 <input id="ccSearch" placeholder="Listede ara…" />
-              </div>
-              <label class="pill">
-                <input type="checkbox" id="ccFigOnly" />
+<section class="view" id="viewAssign" style="display:none">
+<div class="card">
+<div class="secHead">
+<div>
+<h2 class="h2">Sorgulama &amp; Karşılaştırma</h2>
+<div class="muted small">Sorgulama ve karşılaştırma aracı.</div>
+<div class="muted small" id="assignRowCount" style="margin-top:4px;"></div>
+</div>
+<div class="toolbar">
+<div aria-label="Görev Ataması Modu" class="seg" role="tablist">
+<button aria-selected="true" class="segBtn active" id="assignModeFilter" role="tab">🔍 Filtrele &amp; Listele</button>
+<button aria-selected="false" class="segBtn" id="assignModeCompare" role="tab">🔄 Karşılaştır</button>
+</div>
+</div>
+</div>
+<!-- MODE: FILTER & LIST -->
+<div class="assignPane" id="assignPaneFilter">
+<div class="toolGrid">
+<div class="toolCard">
+<div class="toolTitle">Filtreler</div>
+<div class="toolSub">Birden fazla seçim yapabilirsin. Seçim yaptıkça tablo anında güncellenir.</div>
+<div class="toolRow">
+<div class="toolLabel">Görevler</div>
+<details class="ms" id="msRoles">
+<summary class="msSum"><span class="msTxt" id="msRolesTxt">Seç…</span><span class="msBadge" id="msRolesBadge">0</span></summary>
+<div class="msPanel"><input class="msSearch" id="msRolesSearch" placeholder="Görev ara…" type="text"/><div class="msList" id="msRolesList"></div></div>
+</details>
+<button aria-label="Görevler temizle" class="msClear" data-target="msRoles" title="Görevler temizle" type="button">✕</button>
+</div>
+<div class="toolRow">
+<div class="toolLabel">Oyunlar</div>
+<details class="ms" id="msPlays">
+<summary class="msSum"><span class="msTxt" id="msPlaysTxt">Seç…</span><span class="msBadge" id="msPlaysBadge">0</span></summary>
+<div class="msPanel"><input class="msSearch" id="msPlaysSearch" placeholder="Oyun ara…" type="text"/><div class="msList" id="msPlaysList"></div></div>
+</details>
+<button aria-label="Oyunlar temizle" class="msClear" data-target="msPlays" title="Oyunlar temizle" type="button">✕</button>
+</div>
+<div class="toolRow">
+<div class="toolLabel">Kişiler</div>
+<details class="ms" id="msPeople">
+<summary class="msSum"><span class="msTxt" id="msPeopleTxt">Seç…</span><span class="msBadge" id="msPeopleBadge">0</span></summary>
+<div class="msPanel"><input class="msSearch" id="msPeopleSearch" placeholder="Kişi ara…" type="text"/><div class="msList" id="msPeopleList"></div></div>
+</details>
+<button aria-label="Kişiler temizle" class="msClear" data-target="msPeople" title="Kişiler temizle" type="button">✕</button>
+</div>
+<div class="toolActions">
+<button class="btnSoft" id="assignFilterCopy">📋 Excel’e Kopyala</button>
+<button class="btnGhost" id="assignFilterClear">Temizle</button>
+</div>
+</div>
+<div class="toolCard toolCardSticky" data-idt-panel="1" data-idt-scroll="1" data-idt-sticky="1">
+<div class="toolTitle">Sonuç</div>
+<div class="toolSub" id="assignFilterMeta">—</div>
+<div class="tableWrap" style="margin-top:10px">
+<table class="tbl" data-idt-table="1" id="assignFilterTable">
+<thead><tr><th>Oyun</th><th>Kategori</th><th>Görev</th><th>Kişi</th></tr></thead>
+<tbody id="assignFilterTbody"><tr><td colspan="4"><div class="emptyHint">Filtre seçerek başlayabilirsin.</div></td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- MODE: COMPARE -->
+<div class="assignPane" hidden="" id="assignPaneCompare">
+<div class="toolGrid" style="grid-template-columns: 1fr">
+<div class="toolCard">
+<div class="toolTitle">Karşılaştır</div>
+<div class="toolSub">İki kişiyi seç. Aşağıda 3 kart oluşur: Sadece A / Ortak Oyunlar / Sadece B. Kartların içinde o oyundaki görevler listelenir.</div>
+<div class="compareTop">
+<div class="comparePick">
+<div class="toolLabel">Kişi A</div>
+<div class="input toolInput" title="Kişi A ara">
+                🔎 <input autocomplete="off" id="assignPersonA" placeholder="Kişi A seç…" type="text"/>
+</div>
+<div class="cmpSuggest" hidden="" id="cmpSuggestA"></div>
+</div>
+<div class="comparePick">
+<div class="toolLabel">Kişi B</div>
+<div class="input toolInput" title="Kişi B ara">
+                🔎 <input autocomplete="off" id="assignPersonB" placeholder="Kişi B seç…" type="text"/>
+</div>
+<div class="cmpSuggest" hidden="" id="cmpSuggestB"></div>
+</div>
+<div class="compareActions">
+<button class="btnGhost" id="assignCompareSwap" title="Değiştir">⇄</button>
+<button class="btnSoft" id="assignCompareCopy">📋 Excel’e Kopyala</button>
+</div>
+</div>
+<div class="compareGrid">
+<div class="cmpCard cmpOnlyACard">
+<div class="cmpTitle">Sadece A</div>
+<div class="cmpBody" id="cmpOnlyA"><div class="emptyHint">—</div></div>
+</div>
+<div class="cmpCard cmpOnlyBCard">
+<div class="cmpTitle">Sadece B</div>
+<div class="cmpBody" id="cmpOnlyB"><div class="emptyHint">—</div></div>
+</div>
+<div class="cmpCard cmpCommonCard">
+<div class="cmpTitle">Ortak Oyunlar</div>
+<div class="cmpBody" id="cmpCommon"><div class="emptyHint">İki kişi seç.</div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- OYUNLARA GÖRE PERSONEL DAĞILIMI -->
+<section id="viewDistribution" style="display:none">
+<div class="card">
+<div class="hd">
+<h2>Oyunlara Göre Personel Dağılımı</h2>
+<div class="small">Aynı personelin birden fazla oyunda yer alması “dağılım yoğunluğu” olarak listelenir.</div>
+</div>
+<div class="bd">
+<div class="filters" style="margin-bottom:10px">
+<div class="input" title="Ara">
+            🔎 <input autocomplete="off" id="dq" placeholder="Kişi veya oyun ara…" type="search"/><button class="btn" id="distCopyBtn" title="Filtreli dağılım listesini Excel\'e kopyala" type="button">📋 Excel’e Kopyala</button>
+</div>
+<button class="btn" id="dClear">Temizle</button>
+</div>
+<div id="distributionBox"></div>
+</div>
+</div>
+</section>
+<!-- YOĞUNLUK MATRİSİ -->
+<section id="viewHeatmap" style="display:none">
+<div class="card">
+<div class="hd">
+<h2>Yoğunluk &amp; Çakışma Merkezi</h2>
+<div class="small">Yatay kaydırma yok. Üstten iki oyun seçip ortak personeli görebilir, alttan en yoğun oyunlardan hızlı liste alıp Excel’e kopyalayabilirsin.</div>
+</div>
+<div class="bd">
+<!-- Hızlı Çakışma -->
+<div class="cc-top">
+<div class="cc-sel">
+<label for="ccPlayA">Oyun A</label>
+<select id="ccPlayA"></select>
+</div>
+<div class="cc-sel">
+<label for="ccPlayB">Oyun B</label>
+<select id="ccPlayB"></select>
+</div>
+<div aria-hidden="true" class="cc-venn">
+<span class="c a"></span><span class="c b"></span><span class="c m"></span>
+</div>
+<div class="cc-actions">
+<div class="cc-count">Ortak: <b id="ccCommonCount">0</b></div>
+<button class="btn" id="ccShowCommon">Ortakları Göster</button>
+<button class="btn" id="ccCopyCommon">Ortakları Excel’e Kopyala</button>
+</div>
+</div>
+<!-- Seçim Özeti (A/B seçilince görünür) -->
+<div class="cc-sel-summary" id="ccSelSummary" style="display:none">
+<div class="cc-sel-card">
+<div class="k">Oyun A</div>
+<div class="v" id="ccSumAName">—</div>
+<div class="s" id="ccSumACnt">0 kişi</div>
+</div>
+<div class="cc-sel-card">
+<div class="k">Ortak</div>
+<div class="v" id="ccSumOCnt">0</div>
+<div class="s">A ∩ B</div>
+</div>
+<div class="cc-sel-card">
+<div class="k">Oyun B</div>
+<div class="v" id="ccSumBName">—</div>
+<div class="s" id="ccSumBCnt">0 kişi</div>
+</div>
+<button class="btn cc-clear" id="ccClearSel" type="button">Seçimleri Temizle</button>
+</div>
+<!-- En yoğun oyunlar -->
+<div class="cc-hd2">
+<h3>En Yoğun 15 Oyun</h3>
+<div class="cc-hint">Bir oyuna tıkla → liste açılır → kopyala / Panel’e geç.</div>
+</div>
+<div class="cc-games" id="ccTopGames"></div>
+<!-- Detay liste -->
+<div class="cc-detail">
+<div class="cc-detail-hd">
+<div>
+<div class="cc-title" id="ccDetailTitle">Bir oyun seç</div>
+<div class="cc-sub" id="ccDetailSub">Seçince kişiler listesi burada görünür.</div>
+</div>
+<div class="cc-tools">
+<div class="input">
+                🔎 <input id="ccSearch" placeholder="Listede ara…"/>
+</div>
+<label class="pill">
+<input id="ccFigOnly" type="checkbox"/>
                 Sadece Figüran
               </label>
-              <button class="btn" id="ccCopyList" title="Excel'e tam uyumlu kopyalar">Tabloyu Excel için Kopyala</button>
-              <button class="btn" id="ccToPanel">Panel’de Aç</button>
-            </div>
-          </div>
-
-          <div id="ccList" class="cc-list"></div>
-        </div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- KESİŞİM -->
-  <section id="viewIntersection" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Kesişim Analizi</h2>
-        <div class="small">İki oyunu seç — ortak personeli ve görevlerini gösterir.</div>
-      </div>
-      <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="1. Oyun">
+<button class="btn" id="ccCopyList" title="Excel'e tam uyumlu kopyalar">Tabloyu Excel için Kopyala</button>
+<button class="btn" id="ccToPanel">Panel’de Aç</button>
+</div>
+</div>
+<div class="cc-list" id="ccList"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- KESİŞİM -->
+<section id="viewIntersection" style="display:none">
+<div class="card">
+<div class="hd">
+<h2>Kesişim Analizi</h2>
+<div class="small">İki oyunu seç — ortak personeli ve görevlerini gösterir.</div>
+</div>
+<div class="bd">
+<div class="filters" style="margin-bottom:10px">
+<div class="input" title="1. Oyun">
             1️⃣
             <select id="p1"></select>
-          </div>
-          <div class="input" title="2. Oyun">
+</div>
+<div class="input" title="2. Oyun">
             2️⃣
             <select id="p2"></select>
-          </div>
-          <button class="btn" id="swapBtn">⇄ Değiştir</button>
-        </div>
-        <div id="intersectionBox"></div>
-      </div>
-      <footer>
+</div>
+<button class="btn" id="swapBtn">⇄ Değiştir</button>
+</div>
+<div id="intersectionBox"></div>
+</div>
+<footer>
         Not: Kesişim için kişi hücresindeki “virgül / ve / / / satır sonu” ayrımları otomatik yapılır.
       </footer>
-    </div>
-  </section>
-
-  <!-- FİGÜRAN -->
-  <section id="viewFiguran" style="display:none">
-    <div class="card">
-      <div class="hd">
-        <h2>Figüranlar</h2>
-        <div class="small">Apps Script mantığıyla: çoklu kişi varsa sadece <code>(Figüran)</code> etiketi olanlar alınır.</div>
-      </div>
-      <div class="bd">
-        <div class="filters" style="margin-bottom:10px">
-          <div class="input" title="Ara">
-            🔎 <input id="fq" type="search" placeholder="Figüran / oyun ara…" autocomplete="off"/>
-          </div>
-          <button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
-                    <button class="btn" id="fClear">Temizle</button>
-        </div>
-        <div id="figuranBox"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- GRAFİKLER -->
-  <section id="viewCharts" style="display:none">
-    <div class="chartsNav">
-      <button class="tab active" id="chartTabRoles">Görevlere Göre Dağılım</button>
-      <button class="tab" id="chartTabCats">Kategori Dağılımı</button>
-    </div>
-
-    <div class="grid" style="grid-template-columns: 1.1fr .9fr">
-      <div class="card">
-        <div class="hd">
-          <h2 id="chartTitle">Görevlere Göre Dağılım</h2>
-          <div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
-        </div>
-        <div class="bd">
-          <canvas id="chartMain" width="900" height="340"></canvas>
-          <div class="mobileChartWrap">
-            <div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
-            <div class="mobileChartList" id="chartMobileList"></div>
-          </div>
-        </div>
-      </div>
-
-      <aside class="drawer hidden" id="chartDrawer" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
-        <div class="hd" data-idt-panel-header="1">
-          <div>
-            <div class="drawerTitle" id="drawerTitle">Seçim</div>
-            <div class="drawerSub" id="drawerSub">—</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn" id="drawerCopyAll" title="Excel'e Kopyala (Özet)" style="display:none">Excel’e Kopyala (Özet)</button>
-            <button class="btn" id="drawerCopyVisible" title="Excel'e Kopyala (Görünen)" style="display:none">Excel’e Kopyala (Görünen)</button>
-            <button class="btn" id="drawerCopyExpanded" title="Excel'e Kopyala (Satır Satır)" style="display:none">Excel’e Kopyala (Satır Satır)</button>
-            <button class="btn" id="drawerBack" title="Geri" style="display:none">←</button>
-            <button class="btn" id="drawerClose">✕</button>
-          </div>
-        </div>
-        <div class="bd">
-          <div class="input" style="min-width:unset" title="Ara">
-            🔎 <input id="drawerSearch" type="search" placeholder="İsim / oyun ara…" autocomplete="off"/>
-          </div>
-          <div class="miniList" id="drawerList"></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-  <!-- İSTATİSTİKLER -->
-  
-
 </div>
-
-
-
-  <!-- Mobile detail modal -->
-  <div id="mobileOverlay" class="overlay hidden" aria-hidden="true"></div>
-  <div id="mobileModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detay">
-    <div class="modalHead">
-      <div class="modalTitle">Detay</div>
-      <button id="modalClose" class="btn sm">Kapat</button>
-    </div>
-    <div id="mobileContent" class="modalBody"></div>
-  </div>
-
-
-  <!-- Mobile Tab Bar -->
-  <nav class="tabbar" id="tabbar" aria-label="Alt Menü">
-    <button class="tb active" data-tab="Panel" type="button"><span class="ico">🏠</span><span class="lbl">Panel</span></button>
-    <button class="tb" data-tab="Analiz" type="button"><span class="ico">🧩</span><span class="lbl">Analiz</span></button>
-    <button class="tb" data-tab="Figuran" type="button"><span class="ico">🎟️</span><span class="lbl">Figüran</span></button>
-    <button class="tb" data-tab="Grafikler" type="button"><span class="ico">📈</span><span class="lbl">Grafikler</span></button>
+</section>
+<!-- FİGÜRAN -->
+<section id="viewFiguran" style="display:none">
+<div class="card">
+<div class="hd">
+<h2>Figüranlar</h2>
+<div class="small">Apps Script mantığıyla: çoklu kişi varsa sadece <code>(Figüran)</code> etiketi olanlar alınır.</div>
+</div>
+<div class="bd">
+<div class="filters" style="margin-bottom:10px">
+<div class="input" title="Ara">
+            🔎 <input autocomplete="off" id="fq" placeholder="Figüran / oyun ara…" type="search"/>
+</div>
+<button class="btn" id="figDownloadAllBtn">📋 Excel’e Kopyala (Tümü)</button>
+<button class="btn" id="fClear">Temizle</button>
+</div>
+<div id="figuranBox"></div>
+</div>
+</div>
+</section>
+<!-- GRAFİKLER -->
+<section id="viewCharts" style="display:none">
+<div class="chartsNav">
+<button class="tab active" id="chartTabRoles">Görevlere Göre Dağılım</button>
+<button class="tab" id="chartTabCats">Kategori Dağılımı</button>
+</div>
+<div class="grid" style="grid-template-columns: 1.1fr .9fr">
+<div class="card">
+<div class="hd">
+<h2 id="chartTitle">Görevlere Göre Dağılım</h2>
+<div class="small" id="chartHint">İpucu: grafik dilimine/bara tıkla → sağda liste açılır.</div><div style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
+</div>
+<div class="bd">
+<canvas height="340" id="chartMain" width="900"></canvas>
+<div class="mobileChartWrap">
+<div class="small" style="margin:10px 0 6px">Mobil ipucu: kategoriye dokun → detay listesi açılır.</div>
+<div class="mobileChartList" id="chartMobileList"></div>
+</div>
+</div>
+</div>
+<aside class="drawer hidden" data-idt-panel="1" data-idt-scroll="1" data-idt-sticky="1" id="chartDrawer">
+<div class="hd" data-idt-panel-header="1">
+<div>
+<div class="drawerTitle" id="drawerTitle">Seçim</div>
+<div class="drawerSub" id="drawerSub">—</div>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<button class="btn" id="drawerCopyAll" style="display:none" title="Excel'e Kopyala (Özet)">Excel’e Kopyala (Özet)</button>
+<button class="btn" id="drawerCopyVisible" style="display:none" title="Excel'e Kopyala (Görünen)">Excel’e Kopyala (Görünen)</button>
+<button class="btn" id="drawerCopyExpanded" style="display:none" title="Excel'e Kopyala (Satır Satır)">Excel’e Kopyala (Satır Satır)</button>
+<button class="btn" id="drawerBack" style="display:none" title="Geri">←</button>
+<button class="btn" id="drawerClose">✕</button>
+</div>
+</div>
+<div class="bd">
+<div class="input" style="min-width:unset" title="Ara">
+            🔎 <input autocomplete="off" id="drawerSearch" placeholder="İsim / oyun ara…" type="search"/>
+</div>
+<div class="miniList" id="drawerList"></div>
+</div>
+</aside>
+</div>
+</section>
+<!-- İSTATİSTİKLER -->
+</div>
+<!-- Mobile detail modal -->
+<div aria-hidden="true" class="overlay hidden" id="mobileOverlay"></div>
+<div aria-label="Detay" aria-modal="true" class="modal hidden" id="mobileModal" role="dialog">
+<div class="modalHead">
+<div class="modalTitle">Detay</div>
+<button class="btn sm" id="modalClose">Kapat</button>
+</div>
+<div class="modalBody" id="mobileContent"></div>
+</div>
+<!-- Mobile Tab Bar -->
+<nav aria-label="Alt Menü" class="tabbar" id="tabbar">
+<button class="tb active" data-tab="Panel" type="button"><span class="ico">🏠</span><span class="lbl">Panel</span></button>
+<button class="tb" data-tab="Analiz" type="button"><span class="ico">🧩</span><span class="lbl">Analiz</span></button>
+<button class="tb" data-tab="Figuran" type="button"><span class="ico">🎟️</span><span class="lbl">Figüran</span></button>
+<button class="tb" data-tab="Grafikler" type="button"><span class="ico">📈</span><span class="lbl">Grafikler</span></button>
 </nav>
-
-
-      </div>
-    
-<!-- ===== Distribution Manual Copy Modal (v6.6, UI-only) ===== -->
-<div id="distManualModal" class="mc hidden" role="dialog" aria-modal="true" aria-label="Manuel Kopyalama">
-  <div class="mcBack"></div>
-  <div class="mcCard">
-    <div class="mcHd">
-      <div class="mcT">📋 Manuel Kopyalama</div>
-      <button class="mcX" id="distManualClose" aria-label="Kapat">✕</button>
-    </div>
-    <div class="mcBd">
-      <p class="mcHint">Aşağıdaki tablo Excel’e yapıştırılmak üzere hazırlanmıştır. (Ctrl+A → Ctrl+C)</p>
-      <textarea id="distManualText" spellcheck="false"></textarea>
-      <div class="mcBtns">
-        <button class="btn" id="distManualSelect">Hepsini Seç</button>
-        <button class="btn" id="distManualCopy">Kopyala</button>
-      </div>
-    </div>
-  </div>
 </div>
-
+<!-- ===== Distribution Manual Copy Modal (v6.6, UI-only) ===== -->
+<div aria-label="Manuel Kopyalama" aria-modal="true" class="mc hidden" id="distManualModal" role="dialog">
+<div class="mcBack"></div>
+<div class="mcCard">
+<div class="mcHd">
+<div class="mcT">📋 Manuel Kopyalama</div>
+<button aria-label="Kapat" class="mcX" id="distManualClose">✕</button>
+</div>
+<div class="mcBd">
+<p class="mcHint">Aşağıdaki tablo Excel’e yapıştırılmak üzere hazırlanmıştır. (Ctrl+A → Ctrl+C)</p>
+<textarea id="distManualText" spellcheck="false"></textarea>
+<div class="mcBtns">
+<button class="btn" id="distManualSelect">Hepsini Seç</button>
+<button class="btn" id="distManualCopy">Kopyala</button>
+</div>
+</div>
+</div>
+</div>
 </main>
-  </div>
-
+</div>
 <script>
 /* UI Köprüsü: Mantığı bozmaz, sadece mevcut butonlara tıklar */
 (function(){
@@ -2251,16 +2219,7 @@ body{
     set('sidePeopleCount', people);
     set('sideRowsCount', rows);
     set('sideFigCount', fig);
-  
-    // Topbar KPI'lar (Oyun/Personel/Figüran)
-    const tp = document.getElementById("topPlaysCount");
-    const tpe = document.getElementById("topPeopleCount");
-    const tf = document.getElementById("topFigCount");
-    if (tp) tp.textContent = String(p || 0);
-    if (tpe) tpe.textContent = String(pe || 0);
-    if (tf) tf.textContent = String(f || 0);
-
-};
+  };
   setInterval(syncCounts, 700); syncCounts();
 
   // Badge mirror
@@ -2274,8 +2233,6 @@ body{
   };
   setInterval(syncBadge, 700); syncBadge();
 })();</script>
-
-
 <script>
 /* UI-only Diagnostics (mantığa dokunmaz) */
 (function(){
@@ -2304,10 +2261,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=691"></script>
-
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
-<script src="idt-desktop10.js?v=1"></script>
 
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
@@ -2374,8 +2328,6 @@ body{
   }
 })();
 </script>
-
-
 <script>
 /* v6.4 UI-only: Dağılım Excel'e Kopyala -> MANUEL KOPYALAMA ekranını aç */
 (function(){
@@ -2392,8 +2344,6 @@ body{
   else bind();
 })();
 </script>
-
-
 <script>
 /* v6.4 UI-only: Sidebar quick filters (no fetch changes) */
 (function(){
@@ -2432,8 +2382,6 @@ body{
   else init();
 })();
 </script>
-
-
 <script>
 /* v6.6 UI-only patches (NO fetch/process changes) */
 (function(){
@@ -2595,8 +2543,6 @@ body{
   else init();
 })();
 </script>
-
-
 <script>
 /* ===== v6.7 JS UI patches (no fetch/process changes) ===== */
 (function(){
@@ -2764,8 +2710,6 @@ body{
   else init();
 })();
 </script>
-
-
 <script>
 /* ===== v6.9 sidebar mode mapping (priority) ===== */
 (function(){
@@ -2829,58 +2773,54 @@ body{
   });
 })();
 </script>
-
 <!-- Yardım (tamamen Türkçe) -->
-<button class="helpFab" id="helpBtn" type="button" aria-label="Yardım">?</button>
-<div class="helpOverlay hidden" id="helpOverlay" aria-hidden="true"></div>
-<div class="helpModal hidden" id="helpModal" role="dialog" aria-label="Yardım">
-  <div class="helpHd">
-    <b>Yardım</b>
-    <button class="btn" id="helpClose" type="button">✕</button>
-  </div>
-  <div class="helpBd">
-    <div class="helpBlock">
-      <div class="helpT">Hızlı başlangıç</div>
-      <ol class="helpList">
-        <li><b>Panel</b> sekmesinde oyun veya kişi seç.</li>
-        <li>Detaylar sağ tarafta açılır.</li>
-        <li>Excel’e aktarmak için <b>Tab ile Kopyala</b> butonunu kullan.</li>
-      </ol>
-    </div>
-    <div class="helpBlock">
-      <div class="helpT">Aktif Seçimler</div>
-      <div class="helpP">Seçtiğin oyun/kişi/filtreler üstte etiket olarak görünür. Etiketin yanındaki ✕ ile kaldırabilirsin.</div>
-    </div>
-    <div class="helpBlock">
-      <div class="helpT">Grafikler</div>
-      <div class="helpP">Grafikte bir dilime/çubuğa tıklayınca ilgili liste açılır.</div>
-    </div>
-    <div class="helpBlock">
-      <div class="helpT">Kesişim Analizi</div>
-      <div class="helpP">İki oyun seçerek ortak personeli ve görevlerini görürsün.</div>
-    </div>
-  </div>
+<button aria-label="Yardım" class="helpFab" id="helpBtn" type="button">?</button>
+<div aria-hidden="true" class="helpOverlay hidden" id="helpOverlay"></div>
+<div aria-label="Yardım" class="helpModal hidden" id="helpModal" role="dialog">
+<div class="helpHd">
+<b>Yardım</b>
+<button class="btn" id="helpClose" type="button">✕</button>
 </div>
-
-
-  <!-- YÜKLENİYOR -->
-  <div id="globalLoading" class="hidden" aria-hidden="true">
-    <div class="glBack"></div>
-    <div class="glCard" role="dialog" aria-modal="true" aria-labelledby="glTitle">
-      <div id="glTitle" class="glTitle">Veriler hazırlanıyor…</div>
-      <div class="glRow">
-        <span class="spinnerSm"></span>
-        <div class="glMsg" id="glMsg">Lütfen bekleyin…</div>
-      </div>
-      <button class="btn glClose" id="glClose" type="button">Kapat</button>
-    </div>
-  </div>
-
-</body>
+<div class="helpBd">
+<div class="helpBlock">
+<div class="helpT">Hızlı başlangıç</div>
+<ol class="helpList">
+<li><b>Panel</b> sekmesinde oyun veya kişi seç.</li>
+<li>Detaylar sağ tarafta açılır.</li>
+<li>Excel’e aktarmak için <b>Tab ile Kopyala</b> butonunu kullan.</li>
+</ol>
+</div>
+<div class="helpBlock">
+<div class="helpT">Aktif Seçimler</div>
+<div class="helpP">Seçtiğin oyun/kişi/filtreler üstte etiket olarak görünür. Etiketin yanındaki ✕ ile kaldırabilirsin.</div>
+</div>
+<div class="helpBlock">
+<div class="helpT">Grafikler</div>
+<div class="helpP">Grafikte bir dilime/çubuğa tıklayınca ilgili liste açılır.</div>
+</div>
+<div class="helpBlock">
+<div class="helpT">Kesişim Analizi</div>
+<div class="helpP">İki oyun seçerek ortak personeli ve görevlerini görürsün.</div>
+</div>
+</div>
+</div>
+<!-- YÜKLENİYOR -->
+<div aria-hidden="true" class="hidden" id="globalLoading">
+<div class="glBack"></div>
+<div aria-labelledby="glTitle" aria-modal="true" class="glCard" role="dialog">
+<div class="glTitle" id="glTitle">Veriler hazırlanıyor…</div>
+<div class="glRow">
+<span class="spinnerSm"></span>
+<div class="glMsg" id="glMsg">Lütfen bekleyin…</div>
+</div>
+<button class="btn glClose" id="glClose" type="button">Kapat</button>
+</div>
+</div>
+<script defer="defer" src="app.js"></script><script defer="defer" src="idt-desktop10.js"></script><script defer="defer" src="idt-desktop1.js"></script><script defer="defer" src="idt-performance.js"></script></body>
 </html>
- <script src="app.js" defer></script>
-  <script src="idt-desktop10.js" defer></script>
-  <script src="idt-desktop1.js" defer></script>
-  <script src="idt-performance.js" defer></script>
-</body>
-</html>
+
+
+
+
+
+
