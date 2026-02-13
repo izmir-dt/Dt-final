@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="tr">
 <head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>İDT | Repertuvar Kişi Takip Sistemi</title>
 
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
-  <style>
+<style>
 
 :root{
       --bg:#e9ded1;            /* premium warm ivory */
@@ -1472,7 +1474,7 @@ select{
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 
 
 <style>
@@ -1658,9 +1660,7 @@ body{
 
 
   <link rel="stylesheet" href="idt-polish.css">
-  <script defer src="idt-performance.js"></script>
-
-</head>
+  </head>
 <body>
   <div class="idt-shell">
     <aside class="idt-sidebar" aria-label="Menü">
@@ -1694,78 +1694,19 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays">Aktif Oyun</button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople">Toplam Personel</button>
-  <button class="topNav2Btn" type="button" data-go="sideRows">Sorgu & Karşılaştır</button>
-  <button class="topNav2Btn" type="button" data-go="sideDist">Oyunlara Göre Dağılım</button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap">Yoğunluk & Çakışma</button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts">Grafikler</button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect">Kesişim Analizi</button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran">Figüran/Emekli</button>
+  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
+  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
+  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
 </div>
 
 
       <div class="idt-content">
-
-<!-- LEGACY (kept for JS hooks; visually hidden by CSS) -->
-<div class="idt-legacy" aria-hidden="true">
-<header>
-  <div class="top">
-    <div class="brand">
-      <div class="logo">IDT</div>
-      <div>
-        <h1><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></h1>
-        </div>
-    </div>
-    <div class="actions">
-      <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
-      <span id="status" class="pill">⏳ Yükleniyor…</span>
-      <button class="btn" id="reloadBtn">↻ Yenile</button>
-
-      <div class="menu">
-        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
-        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
-          <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
-          <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
-        </div>
-      </div>
-
-      <div class="notif">
-        <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
-          🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
-        </button>
-        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
-          <div class="notifHd">
-            <div>
-              <b>Bildirimler</b>
-              <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
-            </div>
-            <div class="row" style="gap:8px">
-              <button class="btn" id="notifRefresh">↻</button>
-              <button class="btn" id="notifClose">✕</button>
-            </div>
-          </div>
-          <div class="notifBd" id="notifList">
-            <div class="empty">LOG okunuyor…</div>
-          </div>
-        </div>
-      </div>
-      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
-    </div>
-  </div>
-
-  <div class="nav">
-    <button class="tab active" id="tabPanel">Panel</button>
-    <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
-    <button class="tab" id="tabHeatmap">Yoğunluk & Çakışma Merkezi</button>
-      <button id="tabAssign" class="tab-btn">📑 Görev Ataması</button>
-    <button class="tab" id="tabIntersection">Kesişim Analizi</button>
-    <button class="tab" id="tabFiguran">Figüranlar</button>
-    <button class="tab" id="tabCharts">Grafikler</button>
-  </div>
-</header>
-</div>
-
+        
 <div class="wrap">
   <div class="dash">
     <div class="dashTitle">Ana Kontrol Paneli</div>
@@ -2323,11 +2264,7 @@ body{
 })();
 </script>
 
-<script src="app.js?v=691"></script>
-
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
-<script src="idt-desktop10.js?v=1"></script>
-
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
 (function(){
@@ -2895,11 +2832,19 @@ body{
     </div>
   </div>
 
+
+<script defer src="idt-performance.js"></script>
+<script defer src="app.js"></script>
+<script defer src="idt-desktop10.js"></script>
+<script defer src="idt-desktop1.js"></script>
+<script defer src="ui-patch.js"></script>
 </body>
 </html>
- <script src="app.js" defer></script>
-  <script src="idt-desktop10.js" defer></script>
-  <script src="idt-desktop1.js" defer></script>
-  <script src="idt-performance.js" defer></script>
+ 
+<script defer src="idt-performance.js"></script>
+<script defer src="app.js"></script>
+<script defer src="idt-desktop10.js"></script>
+<script defer src="idt-desktop1.js"></script>
+<script defer src="ui-patch.js"></script>
 </body>
 </html>
