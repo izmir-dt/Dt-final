@@ -584,25 +584,30 @@
     list.querySelectorAll('.ccCommonRow').forEach(tr=>{
       tr.addEventListener('click', ()=>{
         const person = tr.getAttribute('data-person') || '';
-        const play = tr.getAttribute('data-a') || '';
-        setState({kisi:person, oyun:play});
-        try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
-        const tabPanel = $('tabPanel'); if(tabPanel) tabPanel.click();
-        try{
-          if(typeof window.renderList === 'function' && typeof window.renderDetails === 'function'){
-            if(window.activeMode !== 'plays' && $('btnPlays')) $('btnPlays').click();
-            const target = Array.isArray(window.plays) ? window.plays.find(x=>x.title===play) : null;
-            if(target){
-              window.activeId = target.id;
-              window.selectedItem = target;
-              window.renderList({preserveScroll:false});
-              window.renderDetails(target);
-            }
+
+        // Ortak kişi tıklanınca: Detay/PANEL yerine "Oyunlara Göre Dağılım" sekmesine git ve kişiyi filtrele.
+        const goBtn = document.querySelector('[data-go="sideDist"]');
+        if (goBtn) {
+          goBtn.click();
+        } else {
+          try{ location.hash = "#analiz"; }catch(_e){}
+          const tab = $('tabDistribution');
+          if (tab) tab.click();
+        }
+
+        // Dağılım aramasına kişiyi bas ve listeyi otomatik üret
+        setTimeout(() => {
+          const dq = $('dq');
+          if (dq) {
+            dq.value = person;
+            dq.dispatchEvent(new Event('input', { bubbles: true }));
+            dq.dispatchEvent(new Event('change', { bubbles: true }));
+            dq.focus();
           }
-        }catch(_e){}
+        }, 60);
       });
     });
-  }
+}
 
   async function copyCurrentList(){
     const btn = $('ccCopyList');
