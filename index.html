@@ -3,13 +3,11 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>İDT | Repertuvar Kişi Takip Sistemi</title>
 
-
-  
-  <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
-<meta charset="utf-8"/>
-  
-    
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
 
 :root{
@@ -1659,11 +1657,12 @@ body{
   white-space:nowrap;
 }
 
-</style>  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
+</style>
 
 
   <link rel="stylesheet" href="idt-polish.css">
+  <script defer src="idt-performance.js"></script>
+
 </head>
 <body>
   <div class="idt-shell">
@@ -1698,14 +1697,26 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays">🎭 Aktif Oyun</button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel</button>
-  <button class="topNav2Btn" type="button" data-go="sideRows">🧾 Sorgu & Karşılaştır</button>
-  <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk & Çakışma</button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect">🧠 Kesişim Analizi</button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran">🎟 Figüran/Emekli</button>
+  <div class="idtTopbarInner">
+    <div class="idtBrandMini" aria-label="İDT Panel">
+      <img src="theater.png" alt="İDT" class="idtBrandLogo">
+      <div class="idtBrandText">
+        <div class="idtBrandTitle">İDT PANEL</div>
+        <div class="idtBrandSub">Repertuvar Kişi Takip Sistemi</div>
+      </div>
+    </div>
+
+    <div class="afChips" role="tablist" aria-label="Sekmeler">
+      <button class="topNav2Btn" type="button" data-go="sidePlays">🏆 Aktif Oyun <span class="chipCount" id="cnt-plays" title="Aktif oyun sayısı">0</span></button>
+      <button class="topNav2Btn" type="button" data-go="sidePeople">👥 Toplam Personel <span class="chipCount" id="cnt-people" title="Toplam personel sayısı">0</span></button>
+      <button class="topNav2Btn" type="button" data-go="sideQuery">🧾 Sorgu &amp; Karşılaştır</button>
+      <button class="topNav2Btn" type="button" data-go="sideDist">📊 Oyunlara Göre Dağılım</button>
+      <button class="topNav2Btn" type="button" data-go="sideHeatmap">🧩 Yoğunluk &amp; Çakışma</button>
+      <button class="topNav2Btn" type="button" data-go="sideCharts">📈 Grafikler</button>
+      <button class="topNav2Btn" type="button" data-go="sideIntersect">🩷 Kesişim Analizi</button>
+      <button class="topNav2Btn" type="button" data-go="sideFiguran">✒ Figüran/Emekli <span class="chipCount chipCount--muted" id="cnt-figuran" title="Figüran sayısı">0</span></button>
+    </div>
+  </div>
 </div>
 
 
@@ -1997,7 +2008,8 @@ body{
           <div class="cc-actions">
             <div class="cc-count">Ortak: <b id="ccCommonCount">0</b></div>
             <button class="btn" id="ccShowCommon">Ortakları Göster</button>
-</div>
+            <button class="btn" id="ccCopyCommon">Ortakları Excel’e Kopyala</button>
+          </div>
         </div>
 
 
@@ -2895,10 +2907,9 @@ body{
     </div>
   </div>
 
-<script sr
-
-  <!-- Scripts (tekilleştirilmiş) -->
-  <script src="app.js" defer></script>
+</body>
+</html>
+ <script src="app.js" defer></script>
   <script src="idt-desktop10.js" defer></script>
   <script src="idt-desktop1.js" defer></script>
   <script src="idt-performance.js" defer></script>
