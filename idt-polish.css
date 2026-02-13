@@ -1085,51 +1085,33 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === UI FINAL POLISH v10 (Tabs no pills + icons + no wrap subtitle) =========
-   İstekler:
-   - Başlık ortalı, alt yazı tek satır (wrap yok)
-   - Başlık altındaki ok yok
-   - Üst menü: daire/pill yok, underline hover + altın active
-   - Üst menü yazıları CAPS değil
-   - Daha Fazla: JS yok, details dropdown ile tepki var
-   - Profesyonel ikonlar eklendi (SVG)
-=========================================================================== */
+/* === UI v11 (Pills stay + ALL CAPS + mono icons + subtitle no-wrap) ========= */
 
-.dash{ text-align:center !important; }
-.dashTitle{ text-align:center !important; text-transform:none !important; }
+.dashTitle{ text-align:center !important; }
 .dashSub{
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  max-width: 86ch;
+  max-width: 96ch;
   margin-left:auto !important;
   margin-right:auto !important;
+  font-size: 14px !important;
 }
 
-/* Top nav: remove pills */
-.idt-topbar2{
-  justify-content: center !important;
-  gap: 18px !important;
-}
-
+/* Keep pill style; only add underline interaction + CAPS + bigger */
 .idt-topbar2 .topNav2Btn{
-  display:inline-flex;
-  align-items:center;
-  gap: 10px;
-  border: 0 !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  padding: 12px 6px !important;
-  font-weight: 800 !important;
-  text-transform: none !important;
+  text-transform: uppercase !important;
+  font-weight: 900 !important;
+  font-size: 13px !important;
   position: relative;
-  color: rgba(20,20,22,.78);
 }
 
+.idt-topbar2 .topNav2Btn .navTxt{ letter-spacing: .02em; }
+
+/* monochrome icon (same color as text) */
 .navIcon{
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 16px;
+  height: 16px;
   background: currentColor;
   -webkit-mask-image: var(--ico);
   mask-image: var(--ico);
@@ -1139,26 +1121,28 @@ table.idt-table tbody tr:hover,
   mask-position: center;
   -webkit-mask-size: contain;
   mask-size: contain;
-  opacity: .9;
+  opacity: .95;
+  flex: 0 0 16px;
 }
 
-.navIcon[data-ico="masks"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%204h7v8c0%203-2%205-5%205S1%2015%201%2012V7c0-1.7%201.3-3%203-3zm9%200h7c1.7%200%203%201.3%203%203v5c0%203-2%205-5%205s-5-2-5-5V4zm-8%205c.6%200%201%20.4%201%201s-.4%201-1%201-1-.4-1-1%20.4-1%201-1zm4%200c.6%200%201%20.4%201%201s-.4%201-1%201-1-.4-1-1%20.4-1%201-1zm10%200c.6%200%201%20.4%201%201s-.4%201-1%201-1-.4-1-1%20.4-1%201-1zm-4%200c.6%200%201%20.4%201%201s-.4%201-1%201-1-.4-1-1%20.4-1%201-1z'/></svg>"); }
-.navIcon[data-ico="users"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M16%2011c1.7%200%203-1.3%203-3s-1.3-3-3-3-3%201.3-3%203%201.3%203%203%203zM8%2011c1.7%200%203-1.3%203-3S9.7%205%208%205%205%206.3%205%208s1.3%203%203%203zm0%202c-2.7%200-8%201.3-8%204v2h12v-2c0-2.7-5.3-4-4-4zm8%200c-.3%200-.6%200-1%20.1%201.2.8%202%201.9%202%203.4V19h7v-2c0-2.7-5.3-4-8-4z'/></svg>"); }
+.navIcon[data-ico="masks"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%204h7v8c0%203-2%205-5%205S1%2015%201%2012V7c0-1.7%201.3-3%203-3zm9%200h7c1.7%200%203%201.3%203%203v5c0%203-2%205-5%205s-5-2-5-5V4z'/></svg>"); }
+.navIcon[data-ico="users"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M8%2011c1.7%200%203-1.3%203-3S9.7%205%208%205%205%206.3%205%208s1.3%203%203%203zm8%200c1.7%200%203-1.3%203-3s-1.3-3-3-3-3%201.3-3%203%201.3%203%203%203zM0%2019v-2c0-2.7%205.3-4%208-4s8%201.3%208%204v2H0zm16-6c.3%200%20.7%200%201%20.1%202.2.3%207%201.6%207%203.9v2h-6v-2c0-1.3-.7-2.4-2-3.2.3-.1.6-.1%201-.1z'/></svg>"); }
 .navIcon[data-ico="search"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M10%2018a8%208%200%201%201%205.3-14%208%208%200%200%201%201.6%2010.9l4.1%204.1-1.4%201.4-4.1-4.1A7.9%207.9%200%200%201%2010%2018zm0-2a6%206%200%201%200%200-12%206%206%200%200%200%200%2012z'/></svg>"); }
 .navIcon[data-ico="bars"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M4%2019h16v2H2V3h2v16zm3-2V9h3v8H7zm5%200V5h3v12h-3zm5%200v-6h3v6h-3z'/></svg>"); }
-.navIcon[data-ico="shuffle"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M17%203h4v4l-1.5-1.5-3%203a4%204%200%200%201-5.7%200L9%206.2A2%202%200%200%200%206.2%206H3V4h3.2a4%204%200%200%201%202.8%201.2l1.8%201.8a2%202%200%200%200%202.8%200l3-3L17%203zm-6.2%2015.5a4%204%200%200%201-5.7%200L3%2016.4V14h3.2l2.2%202.2a2%202%200%200%200%202.8%200l1.8-1.8%201.4%201.4-1.8%201.7zM21%2017v4h-4l1.5-1.5-2.9-2.9%201.4-1.4%202.9%202.9L21%2017z'/></svg>"); }
+.navIcon[data-ico="shuffle"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M17%203h4v4l-1.5-1.5-3%203a4%204%200%200%201-5.7%200L9%206.2A2%202%200%200%200%206.2%206H3V4h3.2a4%204%200%200%201%202.8%201.2l1.8%201.8a2%202%200%200%200%202.8%200l3-3L17%203zM3%2016.4V14h3.2l2.2%202.2a2%202%200%200%200%202.8%200l1.8-1.8%201.4%201.4-1.8%201.7a4%204%200%200%201-5.7%200L3%2016.4zM21%2017v4h-4l1.5-1.5-2.9-2.9%201.4-1.4%202.9%202.9L21%2017z'/></svg>"); }
 .navIcon[data-ico="line"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M3%2019h18v2H1V3h2v16zm4-4%204-5%203%203%205-7%202%201.3-6.4%209L11%2012l-3.1%203.9L7%2015z'/></svg>"); }
 .navIcon[data-ico="venn"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M9%204a7%207%200%200%200%200%2014h6a7%207%200%200%200%200-14H9zm0%202h3a5%205%200%200%200%200%2010H9A5%205%200%200%201%209%206zm9%200a5%205%200%200%201%200%2010h-3a7%207%200%200%200%200-10h3z'/></svg>"); }
 .navIcon[data-ico="ticket"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M21%2010a2%202%200%200%200%200%204v4H3v-4a2%202%200%200%200%200-4V6h18v4zM8%208v8h2V8H8zm4%200v8h2V8h-2z'/></svg>"); }
 .navIcon[data-ico="more"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><path%20fill='currentColor'%20d='M6%2010a2%202%200%201%200%200%204%202%202%200%200%200%200-4zm6%200a2%202%200%201%200%200%204%202%202%200%200%200%200-4zm6%200a2%202%200%201%200%200%204%202%202%200%200%200%200-4z'/></svg>"); }
+.navIcon[data-ico="dot"]{ --ico:url("data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'><circle%20cx='12'%20cy='12'%20r='3'%20fill='currentColor'/></svg>"); }
 
-/* underline interaction */
+/* underline hover */
 .idt-topbar2 .topNav2Btn::after{
   content:"";
   position:absolute;
-  left: 0;
-  right: 0;
-  bottom: 6px;
+  left: 18px;  /* start after icon */
+  right: 10px;
+  bottom: 8px;
   height: 2px;
   border-radius: 999px;
   background: transparent;
@@ -1166,41 +1150,32 @@ table.idt-table tbody tr:hover,
   opacity: 0;
   transition: transform .16s ease, opacity .16s ease, background .16s ease;
 }
-.idt-topbar2 .topNav2Btn:hover{
-  color: var(--accent);
-}
 .idt-topbar2 .topNav2Btn:hover::after{
   background: rgba(111,16,32,.35);
-  transform: scaleX(.62);
+  transform: scaleX(.68);
   opacity: 1;
-}
-.idt-topbar2 .topNav2Btn.is-active{
-  color: var(--accent);
 }
 .idt-topbar2 .topNav2Btn.is-active::after{
   background: var(--gold);
-  transform: scaleX(.78);
+  transform: scaleX(.86);
   opacity: 1;
 }
 
-/* details dropdown for Daha Fazla */
-.topNav2More{
-  position: relative;
-}
-.topNav2More summary{
-  list-style:none;
-}
+/* Details dropdown for DAHA FAZLA */
+.topNav2More{ position: relative; }
+.topNav2More summary{ list-style:none; }
 .topNav2More summary::-webkit-details-marker{ display:none; }
 .topNav2More .moreMenu{
   position:absolute;
-  top: 44px;
-  left: 0;
-  min-width: 220px;
-  background: rgba(255,255,255,.92);
+  top: 50px;
+  right: 0;
+  min-width: 240px;
+  background: rgba(255,255,255,.94);
   border: 1px solid rgba(20,20,22,.12);
   border-radius: 12px;
   box-shadow: 0 16px 30px rgba(0,0,0,.08);
   padding: 10px;
+  z-index: 20;
 }
 .topNav2More .moreMenu a{
   display:block;
@@ -1208,7 +1183,7 @@ table.idt-table tbody tr:hover,
   border-radius: 10px;
   color: rgba(20,20,22,.86);
   text-decoration:none;
-  font-weight: 700;
+  font-weight: 800;
 }
 .topNav2More .moreMenu a:hover{
   background: rgba(111,16,32,.06);
@@ -1220,9 +1195,4 @@ table.idt-table tbody tr:hover,
   color: rgba(20,20,22,.55);
   font-weight: 600;
   font-size: 12px;
-}
-
-/* Mobile: left align with scroll */
-@media (max-width: 820px){
-  .idt-topbar2{ justify-content:flex-start !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 }
