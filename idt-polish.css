@@ -512,6 +512,126 @@ table.idt-table tbody tr:hover,
   max-width: 100%;
 }
 
+
+/* ============================
+   ÜST BAR 2.0 (UI-only)
+   - 3 kolon: brand / sayaç / aksiyon
+   - taşma yok, küçük ekranda stack
+   ============================ */
+
+.idt-topnav{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  justify-content:space-between;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 88%, var(--bg) 12%);
+}
+
+.idt-top-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.idt-statusdot{
+  width:14px;
+  height:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  color: var(--ok);
+  flex:0 0 auto;
+}
+
+.idt-brand{
+  min-width:0;
+  line-height:1.1;
+}
+.idt-brand-title{
+  font-weight:950;
+  letter-spacing:.2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 240px;
+}
+.idt-brand-sub{
+  font-size:12px;
+  color: var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 240px;
+}
+
+.idt-top-mid{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+}
+.idt-counter{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  padding:8px 10px;
+  border:1px solid color-mix(in srgb, var(--line) 85%, transparent 15%);
+  background: color-mix(in srgb, var(--card) 92%, var(--bg) 8%);
+  border-radius:12px;
+  min-width:0;
+}
+.idt-counter .k{
+  font-size:12px;
+  color: var(--muted);
+  white-space:nowrap;
+}
+.idt-counter .v{
+  font-weight:950;
+  font-size:14px;
+  white-space:nowrap;
+  max-width:70px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.idt-top-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex:0 0 auto;
+  min-width:0;
+}
+
+@media (max-width: 920px){
+  .idt-topnav{
+    flex-wrap:wrap;
+  }
+  .idt-top-mid{
+    order:3;
+    width:100%;
+    justify-content:flex-start;
+    overflow:auto;
+    padding-bottom:2px;
+  }
+  .idt-counter{
+    flex:0 0 auto;
+  }
+}
+
+/* Yatay taşma kalkanı (sadece kabuk) */
+.idt-shell,
+.idt-main,
+.idt-content{
+  min-width:0;
+}
+
 /* Üst aksiyon butonları: taşma ve okunabilirlik */
 .idt-topnav .idt-pill{
   min-height: 40px;
