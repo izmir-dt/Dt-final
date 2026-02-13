@@ -1255,3 +1255,62 @@ html, body{ overflow-x: hidden; }
     gap: 18px;
   }
 }
+
+/* === UI v20 (Requested): Remove tips/subtexts, fix topbar center + no horizontal scroll === */
+
+/* Hard stop any horizontal scrolling anywhere */
+html, body { overflow-x: hidden !important; }
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Top navigation: centered, single row, NO horizontal scroll */
+.idt-topbar2{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+  gap: 14px !important;
+  padding: 10px 14px !important;
+  overflow: hidden !important;      /* no side scroll */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Make labels less “stretched” */
+.idt-topbar2 .topNav2Btn{
+  letter-spacing: .03em !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+  min-width: 0 !important;
+}
+
+/* Prevent long labels from forcing overflow (ellipsis rather than scroll) */
+.idt-topbar2 .topNav2Btn .navTxt{
+  display: inline-block;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+/* Slightly tighter on smaller desktops */
+@media (max-width: 1280px){
+  .idt-topbar2{ gap: 12px !important; max-width: 1100px; }
+  .idt-topbar2 .topNav2Btn{ font-size: 11px !important; letter-spacing: .02em !important; }
+  .idt-topbar2 .topNav2Btn .navTxt{ max-width: 180px; }
+}
+@media (max-width: 1100px){
+  .idt-topbar2{ gap: 10px !important; max-width: 980px; }
+  .idt-topbar2 .topNav2Btn .navTxt{ max-width: 150px; }
+}
+
+/* Title stays perfectly centered */
+.dashTitle{
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Any leftover tips footer blocks are hidden (safety) */
+.detailCard footer{ display: none !important; }
+.tipsBox{ display: none !important; }
