@@ -1085,30 +1085,32 @@ table.idt-table tbody tr:hover,
 /* === HOTFIX: "Veri yükleniyor" overlay tamamen kapalı === */
 #globalLoading { display: none !important; }
 
-/* === STATE THEATRE INSPIRED v6 (Less White / Less Fatigue) =================
-   Hedef: Daha az beyaz, daha “sahne/kağıt” hissi; başlık hiyerarşisi; daha az border gürültüsü.
-   UI-only. JS/veri/bildirim/global-state dokunulmadı.
+/* === STATE THEATRE INSPIRED v7 (Cohesion + No-IDT-Badge) ===================
+   İstekler:
+   - “IDT” yuvarlak logo/kalkan kaldır
+   - “Hazır” ve “Bildirimler” sırıtmadan, aynı bütünün parçası gibi
+   - Başlık hiyerarşisi (site mantığı): küçük üst yazı + net başlık + ince çizgi
+   UI-only. JS/veri/bildirim/global-state yok.
 =========================================================================== */
 
 :root{
   --bg: #f6f4f1;              /* warm paper */
-  --card: #ffffff;
+  --card: rgba(255,255,255,.86);
   --text: #111114;
   --muted: rgba(17,17,20,.62);
   --line: rgba(17,17,20,.10);
 
   --accent: #c1121f;          /* curtain red */
-  --gold: rgba(193,18,31,.16);
+  --accentSoft: rgba(193,18,31,.10);
 
-  --shadow: 0 8px 18px rgba(0,0,0,.04);
+  --shadow: 0 10px 22px rgba(0,0,0,.05);
   --radius: 14px;
 }
 
-/* Page background */
 html, body{ background: var(--bg) !important; color: var(--text) !important; }
 .wrap, main, .idt-main{ background: transparent !important; }
 
-/* Content: fill width better, reduce “right empty column” feel */
+/* Content fill */
 .idt-content{
   max-width: 1320px !important;
   width: 100% !important;
@@ -1116,56 +1118,76 @@ html, body{ background: var(--bg) !important; color: var(--text) !important; }
   padding-inline: 20px !important;
 }
 
-/* Try collapsing possible 3rd empty column layouts safely */
-.idt-main{
-  grid-auto-flow: row !important;
-}
-.idt-main > .right,
-.idt-main > .aside,
-.idt-main > .sidebar,
-.idt-main > .col-right{
+/* Remove any in-page IDT badge/logo blocks (not the topbar buttons) */
+.idt-content .logo,
+.idt-content .idt-logo,
+.idt-content .brandmark,
+.idt-content .idt-badge-logo,
+.idt-content .idtMark,
+.idt-content .idtEmblem{
   display: none !important;
 }
 
-/* Top toolbar */
+/* Also hide the circular "IDT" badge if it's a standalone button/div */
+.idt-content .badge,
+.idt-content .mark,
+.idt-content .emblem{
+  /* careful: only if it is the first block-like badge near top */
+}
+.idt-content > .badge,
+.idt-content > .mark,
+.idt-content > .emblem{
+  display:none !important;
+}
+
+/* Top toolbar: calmer, integrated */
 header.idt-topnav{
-  background: color-mix(in srgb, #fff 80%, var(--bg)) !important;
+  background: color-mix(in srgb, #fff 78%, var(--bg)) !important;
   border-bottom: 1px solid var(--line) !important;
   box-shadow: none !important;
 }
 
-/* Status less “badgey” */
+/* Status line should not look like a “big feature” */
 #statusMirror{
-  color: rgba(17,17,20,.80) !important;
-  font-weight: 900 !important;
+  font-weight: 800 !important;
+  color: rgba(17,17,20,.70) !important;
 }
 
-/* Buttons */
+/* Buttons: same system, no “fat red pill” */
 .idt-top-actions .idt-pill,
 .idt-top-actions a.idt-pill,
 button.btn{
-  background: rgba(255,255,255,.70) !important;
-  border: 1px solid var(--line) !important;
+  background: rgba(255,255,255,.55) !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
   border-radius: 999px !important;
   font-weight: 800 !important;
   box-shadow: none !important;
-}
-.idt-top-actions .idt-pill:hover{ border-color: rgba(193,18,31,.45) !important; color: var(--accent) !important; }
-.idt-top-actions .idt-pill.primary{
-  background: var(--accent) !important;
-  color: #fff !important;
-  border-color: var(--accent) !important;
-}
-.idt-badge{
-  background: #fff !important;
-  color: var(--accent) !important;
-  border: 1px solid rgba(193,18,31,.30) !important;
-  font-weight: 900 !important;
+  color: rgba(17,17,20,.82) !important;
 }
 
-/* Nav: calmer pills → text tabs */
+/* Notifications: outline + red text (not full red) */
+.idt-top-actions .idt-pill.primary{
+  background: rgba(255,255,255,.55) !important;
+  color: var(--accent) !important;
+  border-color: rgba(193,18,31,.35) !important;
+}
+.idt-top-actions .idt-pill.primary:hover{
+  background: rgba(193,18,31,.06) !important;
+  border-color: rgba(193,18,31,.55) !important;
+}
+
+/* Badge: small and quiet */
+.idt-badge{
+  background: transparent !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(193,18,31,.28) !important;
+  font-weight: 900 !important;
+  padding: 2px 8px !important;
+}
+
+/* Nav: text tabs */
 .nav, .idt-topbar2{
-  background: color-mix(in srgb, #fff 84%, var(--bg)) !important;
+  background: color-mix(in srgb, #fff 74%, var(--bg)) !important;
   border-bottom: 1px solid var(--line) !important;
   box-shadow: none !important;
 }
@@ -1177,7 +1199,7 @@ button.btn{
   border-radius: 0 !important;
   padding: 12px 8px !important;
   font-weight: 800 !important;
-  color: rgba(17,17,20,.78) !important;
+  color: rgba(17,17,20,.74) !important;
 }
 .nav button:hover,
 .idt-topbar2 .topNav2Btn:hover{ color: var(--accent) !important; }
@@ -1188,60 +1210,56 @@ button.btn{
   box-shadow: inset 0 -2px 0 var(--accent) !important;
 }
 
-/* Section headers: editorial (State Theatre-like) */
-h1,h2,h3{
-  letter-spacing: .005em !important;
-}
+/* Section title system (State Theatre-like): eyebrow + title + rule */
 h2{
   font-size: 22px !important;
   font-weight: 900 !important;
-  margin: 16px 0 8px !important;
+  margin: 18px 0 6px !important;
+  letter-spacing: .005em !important;
 }
-.section-title, .panel-title, .card-title{
-  font-weight: 900 !important;
+h2::after{
+  content:"";
+  display:block;
+  height:1px;
+  margin-top: 10px;
+  background: var(--line);
 }
 
-/* Cards: less border noise, slight shadow */
+/* If there is a subtitle paragraph right after headings, style as eyebrow */
+h2 + p{
+  margin-top: 6px !important;
+  margin-bottom: 14px !important;
+  color: rgba(17,17,20,.58) !important;
+  font-weight: 600 !important;
+}
+
+/* Cards: cohesive paper-on-paper */
 .card, .panel, .box, .section, .idt-card, .kpi{
-  background: color-mix(in srgb, #fff 92%, var(--bg)) !important;
+  background: var(--card) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow) !important;
 }
 
-/* Chips inside list: calm */
+/* Reduce chip noise inside cards */
 .chip, .pill, .tag{
-  background: rgba(255,255,255,.65) !important;
+  background: rgba(255,255,255,.55) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
-  color: rgba(17,17,20,.76) !important;
+  color: rgba(17,17,20,.70) !important;
 }
 
-/* Tables: reduce harshness + zebra */
-table{
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
-}
+/* Tables: calm */
 th{
-  background: rgba(255,255,255,.60) !important;
+  background: rgba(255,255,255,.35) !important;
   border-bottom: 1px solid rgba(0,0,0,.10) !important;
   font-weight: 900 !important;
 }
-tr:nth-child(even) td{
-  background: rgba(255,255,255,.55) !important;
-}
-td{
-  border-bottom: 1px solid rgba(0,0,0,.06) !important;
-}
-
-/* Remove strong row highlight blocks if any */
-tr.selected td, .row-selected{
-  background: rgba(193,18,31,.08) !important;
-  outline: 1px solid rgba(193,18,31,.20) !important;
-}
+tr:nth-child(even) td{ background: rgba(255,255,255,.30) !important; }
+td{ border-bottom: 1px solid rgba(0,0,0,.06) !important; }
 
 /* Inputs */
 input[type="text"], input[type="search"], select{
-  background: rgba(255,255,255,.70) !important;
+  background: rgba(255,255,255,.60) !important;
   border: 1px solid rgba(0,0,0,.10) !important;
   border-radius: 12px !important;
 }
