@@ -168,3 +168,31 @@
     init();
   }
 })();
+// topbar-more.js
+// Sadece UI davranışı: Daha Fazla açılırını aşağı doğru kontrol eder.
+// Güvenli: veri çekme / global state ile oynamaz.
+
+(function(){
+  document.addEventListener('click', (ev) => {
+    const summary = ev.target.closest('.topNav2More > summary, .topNav2More summary *');
+    if (summary) {
+      // toggle open durumu, native details element ile uyumlu
+      const details = summary.closest('.topNav2More');
+      if (!details) return;
+      // allow native toggle to happen then force menu to be positioned
+      setTimeout(()=> {
+        if (details.hasAttribute('open')) {
+          details.classList.add('open');
+          // ensure menu stays below topbar and aligns right
+          const menu = details.querySelector('.moreMenu');
+          if (menu) {
+            menu.style.top = (details.getBoundingClientRect().height + 8) + 'px';
+          }
+        } else {
+          details.classList.remove('open');
+        }
+      }, 20);
+      ev.preventDefault();
+    }
+  }, {passive:false});
+})();
