@@ -1,3 +1,4 @@
+if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); } else { window.__idt_desktop1_inited = true; }
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
