@@ -1,9 +1,26 @@
-// <<< ADD AT TOP OF app.js >>>
-if(window.__IDT_APP_INITIALIZED){
-  console.info("IDT already initialized — skipping duplicate init.");
-  throw new Error("skip-init"); // veya return; (senin app başlangıcına göre)
+if(window.__idtInited){console.warn('idt: init skipped');}else{window.__idtInited=true;
+
+
+/* === cachedGvizFetch: cache GViz responses in localStorage for ttl seconds === */
+async function cachedGvizFetch(url, ttlSeconds=120){
+  try{
+    const key = 'idt_cache:' + url;
+    const raw = localStorage.getItem(key);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Date.now() - parsed.ts < ttlSeconds*1000){
+        return new Response(parsed.text, { headers: {'Content-Type':'text/plain'} });
+      }
+    }
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+    localStorage.setItem(key, JSON.stringify({ ts: Date.now(), text }));
+    return new Response(text, { headers: {'Content-Type':'text/plain'} });
+  }catch(e){
+    console.warn('cachedGvizFetch failed', e);
+    return fetch(url);
+  }
 }
-window.__IDT_APP_INITIALIZED = true;
 
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
@@ -434,7 +451,7 @@ async function tryLoadApiJsonp(){
 }
 
 async function tryLoadGviz(){
-  const res = await fetch(CONFIG.gvizUrl(), {cache:"no-store"});
+  const res = await cachedGvizFetch(CONFIG.gvizUrl(), {cache:"no-store"});
   if(!res.ok) throw new Error(`GViz indirilemedi (${res.status}).`);
   const txt = await res.text();
   return buildFromGviz(parseGviz(txt));
@@ -2752,7 +2769,9 @@ function idtUpdateStats(){
   window.addEventListener("DOMContentLoaded", ()=>{
     tick();
     // first 30s frequent
-    const t1 = setInterval(tick, 800);
-    setTimeout(()=>{ clearInterval(t1); setInterval(tick, 4000); }, 30000);
+    const t1 = setInterval(tick, 2000);
+    setTimeout(()=>{ clearInterval(t1); setInterval(tick, 6000); }, 30000);
   });
 })();
+
+}
