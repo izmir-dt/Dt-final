@@ -1,3 +1,4 @@
+if (window.__idt_app_inited) { console.warn('idt-app: init skipped'); } else { window.__idt_app_inited = true; }
 if(window.__idtInited){console.warn('idt: init skipped');}else{window.__idtInited=true;
 
 
