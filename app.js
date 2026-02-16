@@ -1,3 +1,5 @@
+if (window.__idt_started) throw new Error("STOP_DUPLICATE_INIT");
+window.__idt_started = true;
 // === IDT INIT GUARD & FETCH GUARD ===
 // Paste this at the VERY TOP of app.js (before any other code).
 if (window.__IDT_ALREADY_INIT) {
