@@ -1,6 +1,62 @@
 if (window.__idt_started) throw new Error("STOP_DUPLICATE_INIT");
 window.__idt_started = true;
 // === IDT INIT GUARD & FETCH GUARD ===
+// ---------- UI quick-fix (REMOVE "Ayrıntılar" + compress top nav) ----------
+(function uiQuickFix(){
+  // 1) Güvenli bekleme: DOM hazır olunca uygula
+  const ready = (fn) => {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn, {once:true});
+    else setTimeout(fn, 50);
+  };
+
+  ready(() => {
+    try {
+      // 2) Remove any nav item whose visible text starts with "Ayrınt" (case-insensitive)
+      document.querySelectorAll('.topNav2Btn, .topNavBtn, .top-nav button, nav button, .topbar button').forEach(btn=>{
+        const txt = (btn.textContent||'').trim().toLowerCase();
+        if (txt.startsWith('ayrınt')) {
+          btn.remove();
+        }
+      });
+
+      // 3) Inject compacting CSS (non-destructive; only visual)
+      const css = `
+        /* compact top nav (safe selectors used) */
+        .topNav2Btn, .topNavBtn, .top-nav button, nav button {
+          font-family: Inter, "Helvetica Neue", Arial, sans-serif !important;
+          font-size: 13px !important;
+          padding: 6px 10px !important;
+          line-height: 1 !important;
+          white-space: nowrap !important;
+          max-width: 220px !important; /* don't let a single item blow out layout */
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        /* reduce gap and let nav scroll horizontally if needed */
+        .topNav, .topNav2, .top-nav { gap: 8px !important; }
+        .topNav, .topNav2 { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+        /* subtle visual tuck for the white bar area so it stays aligned */
+        .page-header, .page-topbar, header, .topbar { align-items: center; }
+        /* make sure mobile/overflow doesn't hide the important right-side buttons */
+        .topbar .actions, .topbar .right-actions { flex-shrink: 0; }
+      `;
+      const style = document.createElement('style');
+      style.setAttribute('id','idt-ui-quickfix-style');
+      style.appendChild(document.createTextNode(css));
+      document.head.appendChild(style);
+
+      // 4) small accessibility: if removal didn't find anything, try containing 'Ayrıntı' variant
+      if (!document.querySelector('[id="idt-ui-quickfix-style"]')) {
+        console.warn('idt-ui-quickfix: style injection failed');
+      }
+
+      console.info('idt-ui-quickfix: Applied (removed "Ayrıntılar" + compacted top nav).');
+    } catch (err) {
+      console.error('idt-ui-quickfix error', err);
+    }
+  });
+})(); 
+// -------------------------------------------------------------------------
 // Paste this at the VERY TOP of app.js (before any other code).
 if (window.__IDT_ALREADY_INIT) {
   console.warn('IDT init skipped — already initialized');
