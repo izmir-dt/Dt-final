@@ -1,3 +1,120 @@
+/* ===== IDT: Global fetch/XHR de-dupe + init guard ===== */
+
+/* prevent duplicate app.js initialization (if app.js accidentally loaded twice) */
+if (window.__IDT_FETCH_GUARD__) {
+  console.warn("IDT: duplicate app init blocked");
+} else {
+  window.__IDT_FETCH_GUARD__ = true;
+
+  /* per-URL promise cache */
+  window.__IDT_FETCH_CACHE__ = window.__IDT_FETCH_CACHE__ || new Map();
+
+  /* helper: decide cache key for request (GET + URL) */
+  function __idt_cache_key_for(input, init){
+    try{
+      let url = typeof input === "string" ? input : (input && input.url) || String(input);
+      // add query-less variant? keep full URL to be safe:
+      return (init && init.method ? init.method.toUpperCase() : "GET") + "::" + url;
+    }catch(e){
+      return "GET::" + String(input);
+    }
+  }
+
+  /* wrap window.fetch */
+  (function(){
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = function(input, init){
+      const method = (init && init.method) ? init.method.toUpperCase() : "GET";
+      const key = __idt_cache_key_for(input, init);
+
+      // Only dedupe safe GET-like requests (avoid caching POST/PUT/DELETE)
+      if (method !== "GET" && method !== "HEAD") {
+        return originalFetch(input, init);
+      }
+
+      // if cached promise exists, return it (log for debugging)
+      if (window.__IDT_FETCH_CACHE__.has(key)) {
+        // console.debug("IDT: fetch cache hit", key);
+        return window.__IDT_FETCH_CACHE__.get(key).then(r => r.clone());
+      }
+
+      // otherwise call fetch, cache the promise (and keep a cloned response)
+      const p = originalFetch(input, init).then(res => {
+        // successful responses cached; keep original Response object but clone for subsequent callers
+        return res;
+      }).catch(err => {
+        // on error remove cache entry so next attempt can retry
+        window.__IDT_FETCH_CACHE__.delete(key);
+        throw err;
+      });
+
+      window.__IDT_FETCH_CACHE__.set(key, p);
+      return p.then(r => r.clone());
+    };
+  })();
+
+  /* wrap XMLHttpRequest for GET requests (simple cache by URL) */
+  (function(){
+    const OriginalXHR = window.XMLHttpRequest;
+    function PatchedXHR(){
+      const xhr = new OriginalXHR();
+
+      let _method = null;
+      let _url = null;
+      let _sendArgs = null;
+
+      const origOpen = xhr.open;
+      xhr.open = function(method, url, async, user, password){
+        _method = (method || "GET").toUpperCase();
+        _url = url;
+        return origOpen.apply(xhr, arguments);
+      };
+
+      const origSend = xhr.send;
+      xhr.send = function(body){
+        // only intercept GET/HEAD and only if no body
+        if ((_method === "GET" || _method === "HEAD") && !_url) {
+          return origSend.apply(xhr, arguments);
+        }
+
+        // Build cache key
+        const key = (_method || "GET") + "::" + _url;
+        if ((_method === "GET" || _method === "HEAD") && window.__IDT_FETCH_CACHE__.has(key)) {
+          // We have a cached Promise of fetch(); emulate XHR completion by issuing a fetch and piping result
+          window.__IDT_FETCH_CACHE__.get(key).then(res => res.text()).then(text => {
+            try {
+              // emulate load event: set readyState and responseText, then call onload if present
+              xhr.readyState = 4;
+              xhr.status = 200;
+              xhr.responseText = text;
+              if (typeof xhr.onload === "function") xhr.onload({ target: xhr });
+              if (typeof xhr.onreadystatechange === "function") xhr.onreadystatechange({ target: xhr });
+            } catch(e) { /* ignore */ }
+          }).catch(err => {
+            if (typeof xhr.onerror === "function") xhr.onerror(err);
+          });
+          return;
+        }
+
+        // No cache — just send, and for success, optionally store into cache via fetch fallback
+        return origSend.apply(xhr, arguments);
+      };
+      return xhr;
+    }
+    // copy prototype chain
+    PatchedXHR.prototype = OriginalXHR.prototype;
+    window.XMLHttpRequest = PatchedXHR;
+  })();
+
+  /* helper to clear cache for debugging or force refresh */
+  window.__IDT_CLEAR_FETCH_CACHE__ = function(){
+    window.__IDT_FETCH_CACHE__ && window.__IDT_FETCH_CACHE__.clear();
+    console.info("IDT: fetch cache cleared");
+  };
+
+  console.info("IDT: fetch dedupe wrapper installed");
+} /* end guard */
+
 /* ==== GLOBAL FETCH GUARD ==== */
 if (window.__IDT_FETCH_GUARD__) {
     console.warn("IDT: second app.js init blocked");
