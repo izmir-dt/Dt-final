@@ -1,3 +1,40 @@
+// === IDT INIT GUARD & FETCH GUARD ===
+// Paste this at the VERY TOP of app.js (before any other code).
+if (window.__IDT_ALREADY_INIT) {
+  console.warn('IDT init skipped — already initialized');
+  // If app.js is wrapped in an IIFE, you can `return;` here.
+} else {
+  window.__IDT_ALREADY_INIT = true;
+}
+
+// Simple fetch guard to avoid tight polling / duplicate fetches
+window.__IDT_fetchGuard = window.__IDT_fetchGuard || {
+  isFetching: false,
+  lastFetchTime: 0,
+  minIntervalMs: 15000 // 15s minimum between fetches
+};
+
+async function guardedFetchWrapper(fetchFn) {
+  const g = window.__IDT_fetchGuard;
+  const now = Date.now();
+  if (g.isFetching) {
+    console.warn('guardedFetchWrapper: skipping because already fetching');
+    return null;
+  }
+  if (now - g.lastFetchTime < g.minIntervalMs) {
+    console.warn('guardedFetchWrapper: skipping because minInterval not passed', now - g.lastFetchTime);
+    return null;
+  }
+  try {
+    g.isFetching = true;
+    const res = await fetchFn();
+    g.lastFetchTime = Date.now();
+    return res;
+  } finally {
+    g.isFetching = false;
+  }
+}
+
 if (window.__idt_app_inited) { console.warn('idt-app: init skipped'); } else { window.__idt_app_inited = true; }
 if(window.__idtInited){console.warn('idt: init skipped');}else{window.__idtInited=true;
 
