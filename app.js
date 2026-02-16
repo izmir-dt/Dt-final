@@ -1,3 +1,18 @@
+/* ==== GLOBAL FETCH GUARD ==== */
+if (window.__IDT_FETCH_GUARD__) {
+    console.warn("IDT: second app.js init blocked");
+    throw new Error("duplicate init prevented");
+}
+window.__IDT_FETCH_GUARD__ = true;
+
+/* veri sadece 1 kez indirilecek */
+window.__IDT_DATA_PROMISE__ = null;
+
+async function __idt_fetch_once(fetcher){
+    if(window.__IDT_DATA_PROMISE__) return window.__IDT_DATA_PROMISE__;
+    window.__IDT_DATA_PROMISE__ = fetcher();
+    return window.__IDT_DATA_PROMISE__;
+}
 if (window.__idt_started) throw new Error("STOP_DUPLICATE_INIT");
 window.__idt_started = true;
 // === IDT INIT GUARD & FETCH GUARD ===
