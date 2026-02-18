@@ -1,3 +1,7 @@
+/* IDT BOOT GUARD */
+window.__IDT_DATA_READY__=false;
+window.__IDT_START_HASH__=location.hash||"";
+history.replaceState(null,null,location.pathname);
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -1734,6 +1738,7 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
+ if(!window.__IDT_DATA_READY__) return;
   // Track active tab so we can safely re-render after data load
   try{ window.__idtActiveTab = which; }catch(_e){}
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabHeatmap","viewHeatmap"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
