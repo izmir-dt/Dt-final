@@ -1,3 +1,5 @@
+<script src="app.js"></script>
+
 /* ===== IDT: Global fetch/XHR de-dupe + init guard ===== */
 
 /* prevent duplicate app.js initialization (if app.js accidentally loaded twice) */
