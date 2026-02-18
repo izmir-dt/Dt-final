@@ -4,10 +4,9 @@
 if (window.__IDT_FETCH_GUARD__) {
   console.warn("IDT: second app.js init blocked");
   throw new Error("duplicate init prevented");
-}
 window.__IDT_FETCH_GUARD__ = true;
   console.warn("IDT: duplicate app init blocked");
-} else {
+else {
   window.__IDT_FETCH_GUARD__ = true;
 
   /* per-URL promise cache */
