@@ -1,3 +1,13 @@
+/* ===== DOM RESET GUARD ===== */
+function __idtResetView(){
+  const main = document.querySelector(".idt-main");
+  if(!main) return;
+
+  // Detay paneli hariç her şeyi temizle
+  const keep = main.querySelector(".idt-topnav");
+  main.innerHTML = "";
+  if(keep) main.appendChild(keep);
+}
 /* ===== IDT STABILITY LOCK ===== */
 /* veri çekmeye dokunmaz — sadece tekrar başlatmayı engeller */
 
