@@ -1661,17 +1661,25 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="masks" aria-hidden="true"></span><span class="navTxt">AKTİF OYUN</span></button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="users" aria-hidden="true"></span><span class="navTxt">TOPLAM PERSONEL</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="search" aria-hidden="true"></span><span class="navTxt">SORGU &amp; KARŞILAŞTIR</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="bars" aria-hidden="true"></span><span class="navTxt">OYUNLARA GÖRE DAĞILIM</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="shuffle" aria-hidden="true"></span><span class="navTxt">YOĞUNLUK &amp; ÇAKIŞMA</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="line" aria-hidden="true"></span><span class="navTxt">GRAFİKLER</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="venn" aria-hidden="true"></span><span class="navTxt">KESİŞİM ANALİZİ</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="navIcon" data-ico="ticket" aria-hidden="true"></span><span class="navTxt">FİGÜRAN/EMEKLİ</span></button>
-  <details class="topNav2More"><summary class="topNav2Btn" role="button"><span class="navIcon" data-ico="more" aria-hidden="true"></span><span class="navTxt">DAHA FAZLA</span></summary><div class="moreMenu" role="menu"><a href="#panel" role="menuitem">Panel</a><a href="#matris" role="menuitem">Yoğunluk & Çakışma</a><a href="#kesisim" role="menuitem">Kesişim</a><span class="soon">Yeni sekmeler burada listelenecek…</span></div></details>
-</div>
+  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="masks"></span><span class="navTxt">AKTİF OYUN</span></button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="users"></span><span class="navTxt">TOPLAM PERSONEL</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="search"></span><span class="navTxt">SORGU & KARŞILAŞTIR</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="bars"></span><span class="navTxt">OYUN DAĞILIMI</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="shuffle"></span><span class="navTxt">YOĞUNLUK & ÇAKIŞMA</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="line"></span><span class="navTxt">GRAFİKLER</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="venn"></span><span class="navTxt">KESİŞİM</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="navIcon" data-ico="ticket"></span><span class="navTxt">FİGÜRAN</span></button>
 
+  <!-- 3 nokta menüsü -->
+  <div class="topNav2More">
+    <button id="moreBtn" class="topNav2Btn"><span class="navIcon" data-ico="more"></span><span class="navTxt">⋯</span></button>
+    <div class="moreMenu" id="moreMenu">
+      <a href="#panel">Panel</a>
+      <a href="#matris">Yoğunluk & Çakışma</a>
+      <a href="#kesisim">Kesişim</a>
+    </div>
+  </div>
+</div>
       <div class="idt-content">
         
 <header>
