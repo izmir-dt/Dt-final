@@ -1,3 +1,20 @@
+/* ===== IDT MASTER LOAD LOCK ===== */
+window.__IDT_DATA_READY__ = false;
+window.__IDT_LOADING__ = false;
+window.__IDT_WAITERS__ = [];
+
+function __idtWaitData(){
+  return new Promise(res=>{
+    if(window.__IDT_DATA_READY__) return res();
+    window.__IDT_WAITERS__.push(res);
+  });
+}
+
+function __idtDataFinished(){
+  window.__IDT_DATA_READY__ = true;
+  window.__IDT_WAITERS__.forEach(f=>f());
+  window.__IDT_WAITERS__ = [];
+}
 /* ===== DOM RESET GUARD ===== */
 function __idtResetView(){
   const main = document.querySelector(".idt-main");
@@ -459,6 +476,7 @@ async function tryLoadGviz(){
   if(!res.ok) throw new Error(`GViz indirilemedi (${res.status}).`);
   const txt = await res.text();
   return buildFromGviz(parseGviz(txt));
+  __idtDataFinished();
 }
 async function tryLoadCsv(){
   const res = await fetch(CONFIG.csvUrl(), {cache:"no-store"});
