@@ -5,6 +5,33 @@
     console.warn("IDT blocked duplicate start");
     return;
   }
+/* ===== IDT GLOBAL DATA SINGLETON ===== */
+(function(){
+
+  const cache = new Map();
+  const originalFetch = window.fetch;
+
+  window.fetch = function(url, options){
+
+    if (typeof url === "string" && url.includes("script.google.com")) {
+
+      if (cache.has(url)) {
+        return cache.get(url).then(r => r.clone());
+      }
+
+      const p = originalFetch(url, options).then(r => {
+        cache.set(url, Promise.resolve(r.clone()));
+        return r.clone();
+      });
+
+      cache.set(url, p);
+      return p;
+    }
+
+    return originalFetch(url, options);
+  };
+
+})();
 
   window.__IDT_APP_STARTED__ = true;
 
