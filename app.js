@@ -118,7 +118,8 @@ if (window.__IDT_FETCH_GUARD__) {
 /* ==== GLOBAL FETCH GUARD ==== */
 if (window.__IDT_FETCH_GUARD__) {
     console.warn("IDT: second app.js init blocked");
-    throw new Error("duplicate init prevented");
+    console.warn("duplicate init prevented");
+return;
 }
 window.__IDT_FETCH_GUARD__ = true;
 
