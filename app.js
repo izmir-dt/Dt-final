@@ -1,48 +1,3 @@
-/* ===== IDT MASTER LOAD LOCK ===== */
-window.__IDT_DATA_READY__ = false;
-window.__IDT_LOADING__ = false;
-window.__IDT_WAITERS__ = [];
-
-function __idtWaitData(){
-  return new Promise(res=>{
-    if(window.__IDT_DATA_READY__) return res();
-    window.__IDT_WAITERS__.push(res);
-  });
-}
-
-function __idtDataFinished(){
-  window.__IDT_DATA_READY__ = true;
-  window.__IDT_WAITERS__.forEach(f=>f());
-  window.__IDT_WAITERS__ = [];
-}
-/* ===== DOM RESET GUARD ===== */
-function __idtResetView(){
-  const main = document.querySelector(".idt-main");
-  if(!main) return;
-
-  // Detay paneli hariç her şeyi temizle
-  const keep = main.querySelector(".idt-topnav");
-  main.innerHTML = "";
-  if(keep) main.appendChild(keep);
-}
-/* ===== IDT STABILITY LOCK ===== */
-/* veri çekmeye dokunmaz — sadece tekrar başlatmayı engeller */
-
-window.__IDT_UI_STARTED__ = false;
-window.__IDT_DATA_READY__ = false;
-
-document.addEventListener("readystatechange", () => {
-  if (document.readyState === "complete") {
-    if (window.__IDT_UI_STARTED__) return;
-    window.__IDT_UI_STARTED__ = true;
-  }
-});
-
-/* hash router tekrar başlatmasın */
-window.addEventListener("hashchange", (e) => {
-  if (!window.__IDT_DATA_READY__) return;
-  e.stopImmediatePropagation();
-}, true);
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -476,7 +431,6 @@ async function tryLoadGviz(){
   if(!res.ok) throw new Error(`GViz indirilemedi (${res.status}).`);
   const txt = await res.text();
   return buildFromGviz(parseGviz(txt));
-  __idtDataFinished();
 }
 async function tryLoadCsv(){
   const res = await fetch(CONFIG.csvUrl(), {cache:"no-store"});
@@ -2766,40 +2720,3 @@ async function idtCopyToClipboard(text){
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
 
-
-
-/* IDT TOPNAV DELEGATION FIX */
-document.addEventListener("click", function(e){
-  const btn=e.target.closest(".topNav2Btn");
-  if(!btn) return;
-  const target=btn.getAttribute("data-go");
-  if(!target) return;
-  try{
-    if(typeof setActiveTab==="function") setActiveTab("#"+target);
-  }catch(err){console.warn("nav fail",err);}
-});
-/* veri ilk kez geldiğinde sistemi kilitle */
-setTimeout(() => {
-  window.__IDT_DATA_READY__ = true;
-}, 1500);
-/* ===== MEMORY HARD RESET (bfcache fix) ===== */
-window.addEventListener("pagehide", () => {
-  try{
-    for (let k in window) {
-      if (k.startsWith("__IDT_")) delete window[k];
-    }
-
-    if (window.__IDT_FETCH_CACHE__ && window.__IDT_FETCH_CACHE__.clear)
-      window.__IDT_FETCH_CACHE__.clear();
-
-  }catch(e){}
-});
-/* her hash değişiminde önce ekranı öldür */
-window.addEventListener("hashchange", () => {
-  __idtResetView();
-});
-
-/* ilk açılışta da çalış */
-window.addEventListener("DOMContentLoaded", () => {
-  __idtResetView();
-});
