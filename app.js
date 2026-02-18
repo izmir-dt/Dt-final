@@ -1,27 +1,4 @@
 <script src="app.js"></script>
-
-/* ===== IDT: Global fetch/XHR de-dupe + init guard ===== */
-
-/* prevent duplicate app.js initialization (if app.js accidentally loaded twice) */
-if (window.__IDT_FETCH_GUARD__) {
-  console.warn("IDT: duplicate app init blocked");
-} else {
-  window.__IDT_FETCH_GUARD__ = true;
-
-  /* per-URL promise cache */
-  window.__IDT_FETCH_CACHE__ = window.__IDT_FETCH_CACHE__ || new Map();
-
-  /* helper: decide cache key for request (GET + URL) */
-  function __idt_cache_key_for(input, init){
-    try{
-      let url = typeof input === "string" ? input : (input && input.url) || String(input);
-      // add query-less variant? keep full URL to be safe:
-      return (init && init.method ? init.method.toUpperCase() : "GET") + "::" + url;
-    }catch(e){
-      return "GET::" + String(input);
-    }
-  }
-
   /* wrap window.fetch */
   (function(){
     const originalFetch = window.fetch.bind(window);
