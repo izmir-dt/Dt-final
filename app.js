@@ -1733,11 +1733,6 @@ function renderIntersection(){
 }
 
 /* ---------- navigation ---------- */
-if (typeof assignState === "undefined") {
-  console.warn("State not ready yet — delaying tab activation");
-  window.addEventListener("load", () => setActiveTab(location.hash || "#panel"));
-  return;
-}
 function setActiveTab(which){
   // Track active tab so we can safely re-render after data load
   try{ window.__idtActiveTab = which; }catch(_e){}
