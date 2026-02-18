@@ -1588,3 +1588,39 @@ html, body { overflow-x: hidden !important; }
 .moreMenu a:hover{
   background:#f2f2f2;
 }
+/* ===== ÜST BAR EXPAND MENU ===== */
+
+.idt-topbar2{
+position:relative;
+flex-wrap:wrap;
+max-height:42px;
+overflow:hidden;
+transition:max-height .35s ease;
+}
+
+/* açık hali */
+.idt-topbar2.open{
+max-height:200px;
+padding-bottom:8px;
+}
+
+/* üç nokta sağa yapışık */
+.moreToggle{
+margin-left:auto;
+font-size:18px;
+}
+
+/* buton ayraç çizgileri */
+.topNav2Btn{
+position:relative;
+}
+
+.topNav2Btn:not(:last-child)::after{
+content:"";
+position:absolute;
+right:-3px;
+top:7px;
+width:1px;
+height:18px;
+background:rgba(0,0,0,.15);
+}
