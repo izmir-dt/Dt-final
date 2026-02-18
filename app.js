@@ -1,3 +1,21 @@
+/* ===== IDT STABILITY LOCK ===== */
+/* veri çekmeye dokunmaz — sadece tekrar başlatmayı engeller */
+
+window.__IDT_UI_STARTED__ = false;
+window.__IDT_DATA_READY__ = false;
+
+document.addEventListener("readystatechange", () => {
+  if (document.readyState === "complete") {
+    if (window.__IDT_UI_STARTED__) return;
+    window.__IDT_UI_STARTED__ = true;
+  }
+});
+
+/* hash router tekrar başlatmasın */
+window.addEventListener("hashchange", (e) => {
+  if (!window.__IDT_DATA_READY__) return;
+  e.stopImmediatePropagation();
+}, true);
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -2732,3 +2750,7 @@ document.addEventListener("click", function(e){
     if(typeof setActiveTab==="function") setActiveTab("#"+target);
   }catch(err){console.warn("nav fail",err);}
 });
+/* veri ilk kez geldiğinde sistemi kilitle */
+setTimeout(() => {
+  window.__IDT_DATA_READY__ = true;
+}, 1500);
