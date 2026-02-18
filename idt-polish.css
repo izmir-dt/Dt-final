@@ -1655,3 +1655,8 @@ width:1px;
 height:18px;
 background:rgba(0,0,0,.15);
 }
+
+.idt-counters{display:flex;gap:18px;padding:8px 14px;font-weight:700;border-bottom:1px solid #ddd}
+.idt-counters div{display:flex;gap:6px;align-items:center}
+.idt-topbar2{white-space:nowrap;overflow:hidden}
+.topNav2Btn{border-right:1px solid #e5e5e5;padding-right:12px;margin-right:12px}
