@@ -1533,3 +1533,11 @@ html, body { overflow-x: hidden !important; }
   }
 
 }
+/* Menü yazıları biraz kompakt */
+@media (min-width: 1200px){
+  .tab{ font-size:13px; }
+}
+
+@media (min-width: 1500px){
+  .tab{ font-size:14px; }
+}
