@@ -3003,3 +3003,43 @@ function idtUpdateStats(){
 })();
 
 }
+/* ================================
+   STABLE INIT ROOT – FINAL FIX
+   ================================ */
+
+(function(){
+
+  function safeCall(fnName){
+    if (typeof window[fnName] === "function") {
+      try {
+        window[fnName]();
+        console.log("✓", fnName, "başlatıldı");
+      } catch(e){
+        console.warn("⚠", fnName, "hata verdi:", e);
+      }
+    } else {
+      console.log("-", fnName, "bulunamadı (skip)");
+    }
+  }
+
+  function startApp(){
+    console.log("🚀 App Root Başlatılıyor");
+
+    safeCall("initGrafikler");
+    safeCall("initYogunluk");
+    safeCall("initKesisim");
+    safeCall("initFiguran");
+    safeCall("initSorgu");
+
+    safeCall("loadData");
+    safeCall("fetchData");
+
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startApp);
+  } else {
+    startApp();
+  }
+
+})();
