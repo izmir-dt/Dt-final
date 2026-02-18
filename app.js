@@ -1,19 +1,3 @@
-/* ===== GLOBAL DATA READY LOCK ===== */
-window.IDT_READY = false;
-window.IDT_READY_WAITERS = [];
-
-window.IDT_WAIT_DATA = function(){
-return new Promise(res=>{
-if(window.IDT_READY) res();
-else window.IDT_READY_WAITERS.push(res);
-});
-};
-
-window.IDT_SIGNAL_READY = function(){
-window.IDT_READY = true;
-window.IDT_READY_WAITERS.forEach(f=>f());
-window.IDT_READY_WAITERS=[];
-};
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -2735,47 +2719,4 @@ async function idtCopyToClipboard(text){
 
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
-const moreBtn = document.getElementById("moreBtn");
-const moreMenu = document.getElementById("moreMenu");
-
-if(moreBtn){
-  moreBtn.onclick = (e)=>{
-    e.stopPropagation();
-    moreMenu.style.display = moreMenu.style.display==="block"?"none":"block";
-  };
-
-  document.addEventListener("click", ()=>{
-    moreMenu.style.display="none";
-  });
-}
-/* ===== TOP MENU EXPAND ===== */
-document.addEventListener("click", e=>{
-const btn = e.target.closest(".moreToggle");
-if(!btn) return;
-
-const bar = document.querySelector(".idt-topbar2");
-bar.classList.toggle("open");
-});
-/* === ÜST MENÜ GENİŞLET === */
-(function(){
-const bar = document.querySelector(".idt-topbar2");
-if(!bar) return;
-
-document.addEventListener("click", function(e){
-const btn = e.target.closest(".moreToggle");
-if(!btn) return;
-
-```
-e.stopPropagation();
-bar.classList.toggle("open");
-```
-
-});
-
-document.addEventListener("click", function(e){
-if(!e.target.closest(".idt-topbar2")){
-bar.classList.remove("open");
-}
-});
-})();
 
