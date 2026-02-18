@@ -1,7 +1,3 @@
-/* IDT BOOT GUARD */
-window.__IDT_DATA_READY__=false;
-window.__IDT_START_HASH__=location.hash||"";
-history.replaceState(null,null,location.pathname);
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -1738,7 +1734,6 @@ function renderIntersection(){
 
 /* ---------- navigation ---------- */
 function setActiveTab(which){
- if(!window.__IDT_DATA_READY__) return;
   // Track active tab so we can safely re-render after data load
   try{ window.__idtActiveTab = which; }catch(_e){}
   const tabs=[["tabPanel","viewPanel"],["tabDistribution","viewDistribution"],["tabHeatmap","viewHeatmap"],["tabIntersection","viewIntersection"],["tabFiguran","viewFiguran"],["tabCharts","viewCharts"],["tabAssign","viewAssign"]];
@@ -2725,3 +2720,15 @@ async function idtCopyToClipboard(text){
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
 
+
+
+/* IDT TOPNAV DELEGATION FIX */
+document.addEventListener("click", function(e){
+  const btn=e.target.closest(".topNav2Btn");
+  if(!btn) return;
+  const target=btn.getAttribute("data-go");
+  if(!target) return;
+  try{
+    if(typeof setActiveTab==="function") setActiveTab("#"+target);
+  }catch(err){console.warn("nav fail",err);}
+});
