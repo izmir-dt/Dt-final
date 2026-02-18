@@ -2740,4 +2740,26 @@ if(!btn) return;
 const bar = document.querySelector(".idt-topbar2");
 bar.classList.toggle("open");
 });
+/* === ÜST MENÜ GENİŞLET === */
+(function(){
+const bar = document.querySelector(".idt-topbar2");
+if(!bar) return;
+
+document.addEventListener("click", function(e){
+const btn = e.target.closest(".moreToggle");
+if(!btn) return;
+
+```
+e.stopPropagation();
+bar.classList.toggle("open");
+```
+
+});
+
+document.addEventListener("click", function(e){
+if(!e.target.closest(".idt-topbar2")){
+bar.classList.remove("open");
+}
+});
+})();
 
