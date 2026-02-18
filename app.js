@@ -2732,4 +2732,12 @@ if(moreBtn){
     moreMenu.style.display="none";
   });
 }
+/* ===== TOP MENU EXPAND ===== */
+document.addEventListener("click", e=>{
+const btn = e.target.closest(".moreToggle");
+if(!btn) return;
+
+const bar = document.querySelector(".idt-topbar2");
+bar.classList.toggle("open");
+});
 
