@@ -120,7 +120,6 @@ if (window.__IDT_FETCH_GUARD__) {
     console.warn("IDT: second app.js init blocked");
    if (window.__IDT_INIT__) {
   console.warn("duplicate init prevented");
-  return;
 }
 window.__IDT_INIT__ = true;
 
