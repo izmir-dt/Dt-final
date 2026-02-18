@@ -2779,3 +2779,5 @@ bar.classList.remove("open");
 });
 })();
 
+
+window.addEventListener('load',()=>{try{const rows=document.querySelectorAll('tr').length;document.getElementById('cntRows')?.textContent=rows;const people=new Set([...document.querySelectorAll('td:nth-child(2)')].map(e=>e.textContent.trim()));document.getElementById('cntPeople')?.textContent=people.size;}catch(e){console.log(e)}});
