@@ -2776,3 +2776,12 @@ window.addEventListener("pagehide", () => {
 
   }catch(e){}
 });
+/* her hash değişiminde önce ekranı öldür */
+window.addEventListener("hashchange", () => {
+  __idtResetView();
+});
+
+/* ilk açılışta da çalış */
+window.addEventListener("DOMContentLoaded", () => {
+  __idtResetView();
+});
