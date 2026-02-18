@@ -1541,3 +1541,50 @@ html, body { overflow-x: hidden !important; }
 @media (min-width: 1500px){
   .tab{ font-size:14px; }
 }
+/* tek satır garanti */
+.idt-topbar2{
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  overflow:hidden;
+}
+
+/* buton dengesi */
+.topNav2Btn{
+  flex:0 0 auto;
+  white-space:nowrap;
+  padding:8px 10px;
+  font-size:13px;
+}
+
+/* açılır menü */
+.topNav2More{
+  position:relative;
+}
+
+.moreMenu{
+  position:absolute;
+  top:110%;
+  right:0;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:10px;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  padding:6px 0;
+  display:none;
+  min-width:180px;
+  z-index:999;
+}
+
+.moreMenu a{
+  display:block;
+  padding:8px 14px;
+  text-decoration:none;
+  color:#222;
+}
+
+.moreMenu a:hover{
+  background:#f2f2f2;
+}
