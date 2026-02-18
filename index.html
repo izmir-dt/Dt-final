@@ -2844,6 +2844,12 @@ body{
       <button class="btn glClose" id="glClose" type="button">Kapat</button>
     </div>
   </div>
+  <script>
+/* Chrome back-forward cache kapat */
+window.addEventListener("pageshow", e => {
+  if (e.persisted) location.reload();
+});
+</script>
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
