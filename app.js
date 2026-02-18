@@ -2779,34 +2779,3 @@ bar.classList.remove("open");
 });
 })();
 
-
-window.addEventListener('load',()=>{try{const rows=document.querySelectorAll('tr').length;document.getElementById('cntRows')?.textContent=rows;const people=new Set([...document.querySelectorAll('td:nth-child(2)')].map(e=>e.textContent.trim()));document.getElementById('cntPeople')?.textContent=people.size;}catch(e){console.log(e)}});
-/* ==== IDT SAFE DATA READY LISTENER ==== */
-/* veri çekmeye dokunmaz — sadece tablo dolunca tetiklenir */
-
-(function(){
-
-  function waitForRealData(){
-    const table = document.querySelector("table tbody");
-    if(!table) return requestAnimationFrame(waitForRealData);
-
-    const observer = new MutationObserver(() => {
-      const rowCount = table.querySelectorAll("tr").length;
-
-      if(rowCount > 3){   // veri gerçekten geldi
-        observer.disconnect();
-        document.dispatchEvent(new Event("IDT_DATA_READY"));
-      }
-    });
-
-    observer.observe(table, { childList:true, subtree:false });
-  }
-
-  // DOM hazır olunca izle
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", waitForRealData);
-  } else {
-    waitForRealData();
-  }
-
-})();
