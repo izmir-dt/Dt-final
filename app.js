@@ -1,7 +1,7 @@
 /* ===== IDT: Global fetch/XHR de-dupe + init guard ===== */
 
 /* prevent duplicate app.js initialization (if app.js accidentally loaded twice) */
-if (window.__IDT_FETCH_GUARD__) {
+if (window.__IDT_FETCH_GUARD__)
   console.warn("IDT: second app.js init blocked");
   throw new Error("duplicate init prevented");
 window.__IDT_FETCH_GUARD__ = true;
