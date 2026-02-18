@@ -3047,5 +3047,4 @@ function idtUpdateStats(){
   } else {
     startApp();
   }
-
 })();
