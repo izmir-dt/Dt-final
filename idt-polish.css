@@ -1503,3 +1503,33 @@ html, body { overflow-x: hidden !important; }
 }
 /* Görünür duruma geçince */
 .topNav2More[open] .moreMenu{ display:block !important; }
+/* ===== DESKTOP TOP MENU LOCK (ASLA ALT SATIR YOK) ===== */
+@media (min-width: 981px){
+
+  .nav{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    gap:6px !important;
+    padding-bottom:6px;
+  }
+
+  .nav::-webkit-scrollbar{
+    height:6px;
+  }
+
+  .nav::-webkit-scrollbar-thumb{
+    background:#c7b8a4;
+    border-radius:10px;
+  }
+
+  .tab{
+    flex:0 0 auto !important;
+    white-space:nowrap !important;
+    font-size:13px !important;
+    padding:8px 12px !important;
+  }
+
+}
