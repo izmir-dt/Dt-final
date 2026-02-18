@@ -2720,32 +2720,3 @@ async function idtCopyToClipboard(text){
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
 
-
-/* === v9: Operasyonel Sayaçlar (veri çekmeye dokunmadan) === */
-function idtUpdateStats(){
-  const pCount = (window.allDataRaw || []).length;
-  const fCount = (window.figuranDataRaw || []).length;
-  const pEl = document.getElementById("stat-total-personel");
-  const fEl = document.getElementById("stat-total-figuran");
-  if(pEl) pEl.textContent = String(pCount);
-  if(fEl) fEl.textContent = String(fCount);
-}
-
-// Auto-refresh when data arrives/changes (poller – safe)
-(function(){
-  let lastP = -1, lastF = -1;
-  function tick(){
-    const p = (window.allDataRaw || []).length;
-    const f = (window.figuranDataRaw || []).length;
-    if(p !== lastP || f !== lastF){
-      lastP = p; lastF = f;
-      try{ idtUpdateStats(); }catch(_e){}
-    }
-  }
-  window.addEventListener("DOMContentLoaded", ()=>{
-    tick();
-    // first 30s frequent
-    const t1 = setInterval(tick, 800);
-    setTimeout(()=>{ clearInterval(t1); setInterval(tick, 4000); }, 30000);
-  });
-})();
