@@ -1624,3 +1624,34 @@ width:1px;
 height:18px;
 background:rgba(0,0,0,.15);
 }
+.idt-topbar2{
+max-height:42px;
+overflow:hidden;
+transition:max-height .35s ease;
+}
+
+.idt-topbar2.open{
+max-height:220px;
+padding-bottom:6px;
+}
+
+/* tek üç nokta ikon */
+.moreToggle::before{
+content:"⋯";
+font-size:22px;
+font-weight:700;
+}
+
+/* ayraç çizgileri */
+.topNav2Btn{
+position:relative;
+}
+.topNav2Btn:not(:last-child)::after{
+content:"";
+position:absolute;
+right:-2px;
+top:8px;
+width:1px;
+height:18px;
+background:rgba(0,0,0,.15);
+}
