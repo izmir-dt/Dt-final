@@ -2754,3 +2754,15 @@ document.addEventListener("click", function(e){
 setTimeout(() => {
   window.__IDT_DATA_READY__ = true;
 }, 1500);
+/* ===== MEMORY HARD RESET (bfcache fix) ===== */
+window.addEventListener("pagehide", () => {
+  try{
+    for (let k in window) {
+      if (k.startsWith("__IDT_")) delete window[k];
+    }
+
+    if (window.__IDT_FETCH_CACHE__ && window.__IDT_FETCH_CACHE__.clear)
+      window.__IDT_FETCH_CACHE__.clear();
+
+  }catch(e){}
+});
