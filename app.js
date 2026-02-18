@@ -1,3 +1,4 @@
+(function(){
 /* ===== IDT: Global fetch/XHR de-dupe + init guard ===== */
 if (window.__IDT_FETCH_GUARD__) {
   console.warn("IDT: second app.js init blocked");
@@ -3049,3 +3050,4 @@ function idtUpdateStats(){
 
 })();
 }
+})();
