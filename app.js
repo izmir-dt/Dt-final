@@ -3049,5 +3049,3 @@ function idtUpdateStats(){
   }
 
 })();
-}
-})();
