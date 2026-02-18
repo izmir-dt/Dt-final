@@ -2719,4 +2719,17 @@ async function idtCopyToClipboard(text){
 
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
+const moreBtn = document.getElementById("moreBtn");
+const moreMenu = document.getElementById("moreMenu");
+
+if(moreBtn){
+  moreBtn.onclick = (e)=>{
+    e.stopPropagation();
+    moreMenu.style.display = moreMenu.style.display==="block"?"none":"block";
+  };
+
+  document.addEventListener("click", ()=>{
+    moreMenu.style.display="none";
+  });
+}
 
