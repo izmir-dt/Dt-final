@@ -3284,3 +3284,51 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   VIEW CACHE ENGINE
+   Build once, reuse forever
+   =============================== */
+
+(function(){
+
+  if(window.__idtViewCache) return;
+  window.__idtViewCache = true;
+
+  const builtViews = new Set();
+
+  function freezeView(view){
+    if(!view || builtViews.has(view.id)) return;
+    builtViews.add(view.id);
+    view.dataset.built = "1";
+    console.log("VIEW BUILT:",view.id);
+  }
+
+  function showView(view){
+    document.querySelectorAll('.view, section[id^="view"]').forEach(v=>{
+      if(v===view) v.style.display='';
+      else v.style.display='none';
+    });
+  }
+
+  const oldClick = HTMLElement.prototype.click;
+
+  HTMLElement.prototype.click = function(){
+    const targetTab = this.dataset?.tab || this.id || '';
+
+    const view = document.getElementById('view'+targetTab) ||
+                 document.getElementById('view'+targetTab.charAt(0).toUpperCase()+targetTab.slice(1));
+
+    if(view){
+      if(!builtViews.has(view.id)){
+        freezeView(view); // ilk kez kur
+      }
+      showView(view);     // sadece göster
+      return;
+    }
+
+    return oldClick.apply(this,arguments);
+  };
+
+})();
+</script>
