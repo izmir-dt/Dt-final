@@ -38,26 +38,6 @@
       if(e.key === 'Escape' && !root.classList.contains('hidden')) hide();
     });
   }
-    const show = (text) => {
-      if(text) msg.textContent = String(text);
-      root.classList.remove('hidden');
-      root.setAttribute('aria-hidden','false');
-      /* non-blocking loading */
-      document.body.style.overflow = '';
-      if(window.__IDT_LOADING_AUTOT){ clearTimeout(window.__IDT_LOADING_AUTOT); }
-      window.__IDT_LOADING_AUTOT = setTimeout(()=>{ try{ hide(); }catch(_e){} }, 1400);
-    };
-
-    window.IDTLoading = {
-      show: (text) => show(text || 'Lütfen bekleyin…'),
-      hide
-    };
-
-    close.addEventListener('click', hide);
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape' && !root.classList.contains('hidden')) hide();
-    });
-  }
 
   // Monkeypatch setStatus (non-invasive) to standardize "Yükleniyor" moments
   function patchSetStatus(){
@@ -73,6 +53,21 @@
             window.__IDT_LOADING_TIMER = setTimeout(()=>{
               try{ window.IDTLoading && window.IDTLoading.show(t.replace(/^⏳\s*/,'')); }catch(_e){}
             }, 450);
+          }
+        }else{
+          if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER = null; }
+          window.IDTLoading && window.IDTLoading.hide();
+        }
+      }catch(_e){}
+      return fn.call(this, text, tone);
+    }
+    wrapped.__idtPatched = true;
+    window.setStatus = wrapped;
+  }
+
+  // ---------- Help ----------
+  function show(el){ el.classList.remove('hidden'); }
+  function hide(el){ el.classList.add('hidden'); }
           }
         }else{
           if(window.__IDT_LOADING_TIMER){ clearTimeout(window.__IDT_LOADING_TIMER); window.__IDT_LOADING_TIMER = null; }
