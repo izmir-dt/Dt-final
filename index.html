@@ -3092,3 +3092,43 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   UNIVERSAL DOM SAFETY GUARD
+   Prevent null selector crashes
+   =============================== */
+
+(function(){
+
+  function createSafe(){
+    return new Proxy({},{
+      get(target,prop){
+        if(prop === 'addEventListener') return ()=>{};
+        if(prop === 'removeEventListener') return ()=>{};
+        if(prop === 'classList') return {add(){},remove(){},toggle(){},contains(){return false;}};
+        if(prop === 'style') return {};
+        if(prop === 'querySelector') return ()=>createSafe();
+        if(prop === 'querySelectorAll') return ()=>[];
+        return createSafe();
+      }
+    });
+  }
+
+  const oldQS = Document.prototype.querySelector;
+  Document.prototype.querySelector = function(sel){
+    return oldQS.call(this,sel) || createSafe();
+  };
+
+  const oldQSA = Document.prototype.querySelectorAll;
+  Document.prototype.querySelectorAll = function(sel){
+    const res = oldQSA.call(this,sel);
+    return res || [];
+  };
+
+  const oldGE = document.getElementById;
+  document.getElementById = function(id){
+    return oldGE.call(document,id) || createSafe();
+  };
+
+})();
+</script>
