@@ -1626,7 +1626,118 @@ body{
 
   <link rel="stylesheet" href="idt-polish.css">
   
+<style>
 
+/* ===== IDT PROFESSIONAL SKIN (SAFE MODE) ===== */
+
+:root{
+  --bg:#f4efe8;
+  --card:#ffffff;
+  --line:#e2d8cc;
+  --text:#1c1c1c;
+  --muted:#6f6a64;
+
+  --accent:#7b1f2a;      /* tiyatro bordo */
+  --accentSoft:#efe3e4;
+  --gold:#bfa15a;
+
+  --radius:14px;
+}
+
+/* Sayfa arka plan */
+body{
+  background:var(--bg) !important;
+  color:var(--text);
+}
+
+/* Üst bar */
+header{
+  background:#ffffff !important;
+  border-bottom:1px solid var(--line) !important;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+}
+
+/* Menü butonları */
+nav button{
+  border-radius:10px !important;
+  padding:8px 14px !important;
+  transition:.18s ease;
+}
+
+nav button:hover{
+  background:var(--accentSoft) !important;
+}
+
+nav button.active{
+  background:var(--accent) !important;
+  color:white !important;
+}
+
+/* Kartlar */
+.card, .panel, .box{
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--radius) !important;
+  box-shadow:0 10px 22px rgba(0,0,0,.06);
+}
+
+/* Tablolar */
+table{
+  border-collapse:separate !important;
+  border-spacing:0;
+  background:white;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+thead{
+  background:#faf6f2;
+}
+
+th{
+  font-weight:600 !important;
+  letter-spacing:.3px;
+}
+
+tr{
+  transition:background .15s ease;
+}
+
+tbody tr:hover{
+  background:#f6f1eb !important;
+}
+
+/* Butonlar */
+button{
+  border-radius:10px !important;
+}
+
+button.primary{
+  background:var(--accent) !important;
+  color:white !important;
+}
+
+button.success{
+  background:#1f7a4a !important;
+  color:white !important;
+}
+
+button.warn{
+  background:#b7791f !important;
+  color:white !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{height:10px;width:10px}
+::-webkit-scrollbar-thumb{
+  background:#d8cdc1;
+  border-radius:10px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background:#cbbcab;
+}
+
+</style>
 </head>
 <body>
   <div class="idt-shell">
