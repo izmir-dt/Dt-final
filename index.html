@@ -2871,3 +2871,84 @@ window.addEventListener("pageshow", e => {
 
 </body>
 </html>
+<script>
+/* ===============================
+   IDT RENDER SCHEDULER v1
+   Non-breaking performance layer
+   =============================== */
+
+(function(){
+
+  if (window.__idtRenderPatched) return;
+  window.__idtRenderPatched = true;
+
+  const queue = [];
+  let scheduled = false;
+
+  const idle = window.requestIdleCallback || function(cb){
+    return setTimeout(()=>cb({timeRemaining:()=>8}),1);
+  };
+
+  function flush(deadline){
+    scheduled = false;
+    let time = 8;
+
+    while(queue.length && time > 1){
+      const job = queue.shift();
+      job();
+      time = deadline?.timeRemaining ? deadline.timeRemaining() : 4;
+    }
+
+    if(queue.length) schedule();
+  }
+
+  function schedule(){
+    if(!scheduled){
+      scheduled = true;
+      idle(flush);
+    }
+  }
+
+  function enqueue(fn){
+    queue.push(fn);
+    schedule();
+  }
+
+  /* ---- innerHTML patch ---- */
+  const desc = Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+
+  Object.defineProperty(Element.prototype,'innerHTML',{
+    set(value){
+      const el = this;
+      enqueue(()=>desc.set.call(el,value));
+    },
+    get: desc.get
+  });
+
+  /* ---- appendChild patch ---- */
+  const _append = Element.prototype.appendChild;
+  Element.prototype.appendChild = function(node){
+    const el = this;
+    enqueue(()=>_append.call(el,node));
+    return node;
+  };
+
+  /* ---- insertAdjacentHTML patch ---- */
+  const _insert = Element.prototype.insertAdjacentHTML;
+  Element.prototype.insertAdjacentHTML = function(pos,html){
+    const el = this;
+    enqueue(()=>_insert.call(el,pos,html));
+  };
+
+  /* ---- large fragment optimization ---- */
+  const _createFrag = Document.prototype.createDocumentFragment;
+  Document.prototype.createDocumentFragment = function(){
+    const frag = _createFrag.call(this);
+    frag.__virtual = true;
+    return frag;
+  };
+
+  console.log("IDT Render Scheduler Active");
+
+})();
+</script>
