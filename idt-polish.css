@@ -1755,3 +1755,82 @@ background:rgba(0,0,0,.15);
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* =========================================================
+   ÜST MENÜ VE SEÇİM BARLARI İÇİN CANLILIK (LİVELİNESS) PAKETİ
+========================================================= */
+
+/* 1. Üst Menü Barı (Ana Navigasyon) */
+.idt-topbar2 {
+  background: linear-gradient(135deg, var(--card) 0%, #ffffff 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-bottom: 2px solid color-mix(in srgb, var(--accent2) 20%, transparent);
+  border-radius: 0 0 16px 16px;
+  padding: 8px 16px;
+  margin-bottom: 15px;
+}
+
+/* Üst Menü Butonları Tıklama/Hover Efektleri */
+.topNav2Btn {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 8px 16px;
+  color: var(--text);
+}
+
+.topNav2Btn:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  transform: translateY(-2px); /* Farenin geldiği buton hafifçe yukarı zıplar */
+}
+
+/* 2. Aktif Seçimler (Filtrelerin Toplandığı Kutu) */
+.activeFilters {
+  background: linear-gradient(to right, color-mix(in srgb, var(--accent) 4%, transparent), var(--card));
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+  border-left: 4px solid var(--accent); /* Sol tarafa şık bir vurgu çizgisi */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.activeFilters:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 3. Seçilen Öğeler (Etiketler / Chipler) - Sitenin Yıldızları! */
+.afChip {
+  background: linear-gradient(135deg, var(--accent), #9b2839); /* Prestijli Bordo Degrade */
+  color: #ffffff !important;
+  border: none;
+  box-shadow: 0 4px 10px rgba(122, 30, 44, 0.3); /* Etrafında hafif bordo bir ışık hüzmesi */
+  transition: all 0.25s ease;
+  font-weight: 500;
+  padding: 8px 14px;
+}
+
+/* Çip İçindeki Başlık Kısımları (Örn: "Oyun:") */
+.afChip b {
+  color: color-mix(in srgb, white 75%, transparent);
+  font-weight: 400;
+  margin-right: 4px;
+}
+
+/* Çip Kapatma (X) İkonu */
+.afChip .x {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+  font-size: 10px;
+}
+
+.afChip .x:hover {
+  background: #ffffff;
+  color: var(--accent);
+  transform: scale(1.15) rotate(90deg); /* Üzerine gelince döner ve büy
