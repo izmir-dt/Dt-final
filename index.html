@@ -3438,3 +3438,37 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   NAVIGATION GUARD
+   action butonlarını SPA'dan korur
+   =============================== */
+
+(function(){
+
+  const actionSelectors = [
+    '.excel-btn',
+    '.copy-btn',
+    '.manual-copy',
+    '.notify-btn',
+    '.clear-btn',
+    '[data-action]',
+    'button'
+  ];
+
+  function isAction(el){
+    return actionSelectors.some(sel => el.closest(sel));
+  }
+
+  document.addEventListener('click',e=>{
+    const el = e.target;
+
+    // gerçek sekme değilse view sistemi dokunmayacak
+    if(isAction(el)){
+      e.stopImmediatePropagation();
+    }
+
+  },true);
+
+})();
+</script>
