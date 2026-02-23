@@ -2960,6 +2960,38 @@ button.warn{
 window.addEventListener("pageshow", e => {
   if (e.persisted) location.reload();
 });
+    /* ===== INTERACTION FEEL ===== */
+
+/* bütün tıklanabilir şeylere his ver */
+button, .card, tr, nav button, .chip{
+  cursor:pointer;
+  transition:
+    transform .12s ease,
+    box-shadow .12s ease,
+    background .12s ease;
+}
+
+/* hover */
+button:hover, .card:hover, nav button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+/* basma efekti */
+button:active, .card:active{
+  transform:translateY(1px) scale(.98);
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+
+/* tablo satırı seçilmiş hissi */
+tbody tr:hover{
+  background:#f1ebe4 !important;
+}
+
+/* aktif satır (tıklanınca) */
+tbody tr:active{
+  background:#e7ded4 !important;
+}
 </script>
 </body>
 </html>
