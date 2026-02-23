@@ -3417,3 +3417,24 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   LIVE MODAL FIX (CRITICAL)
+   cached view'larda modal kırılmasını önler
+   =============================== */
+
+(function(){
+
+  window.getLiveModal = function(id){
+    let el = document.getElementById(id);
+
+    if(!el || !(el instanceof HTMLElement)){
+      // cache içinden gelmiş sahte node -> yeniden bul
+      el = document.querySelector(`#${id}`);
+    }
+
+    return el instanceof HTMLElement ? el : null;
+  };
+
+})();
+</script>
