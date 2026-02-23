@@ -1626,7 +1626,15 @@ body{
 
   <link rel="stylesheet" href="idt-polish.css">
   
-
+<style>
+/* ÜST BAR VE AÇILIR MENÜ KESİN ÇÖZÜMÜ */
+.idt-topbar2 { overflow: visible !important; max-height: none !important; z-index: 9999 !important; background: rgba(255, 255, 255, 0.95) !important; backdrop-filter: blur(10px) !important; border-radius: 16px !important; box-shadow: 0 4px 24px rgba(0,0,0,0.06) !important; }
+.topNav2More { position: relative !important; margin-left: auto !important; }
+.topNav2More .moreMenu { position: absolute !important; top: 100% !important; right: 0 !important; background: #ffffff !important; min-width: 220px !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; border: 1px solid #dccbb7 !important; display: none !important; z-index: 10000 !important; }
+.topNav2More:hover .moreMenu, .topNav2More[open] .moreMenu, .topNav2More.open .moreMenu { display: flex !important; flex-direction: column !important; }
+.topNav2More .moreMenu a, .topNav2More .moreMenu button { background: transparent !important; border: none !important; text-align: left !important; padding: 12px 18px !important; color: #16161a !important; font-size: 14px !important; cursor: pointer !important; }
+.topNav2More .moreMenu a:hover, .topNav2More .moreMenu button:hover { background: #fbf7f1 !important; color: #7a1e2c !important; }
+</style>
 </head>
 <body>
   <div class="idt-shell">
