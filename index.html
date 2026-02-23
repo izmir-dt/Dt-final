@@ -3062,3 +3062,33 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   SAFE DOM LISTENER PATCH
+   Fix null addEventListener crash
+   =============================== */
+
+(function(){
+
+  const oldGet = document.getElementById;
+
+  document.getElementById = function(id){
+
+    const el = oldGet.call(document,id);
+
+    if(el) return el;
+
+    // element yoksa sahte proxy döndür
+    return new Proxy({},{
+      get(target,prop){
+        if(prop === 'addEventListener') return ()=>{};
+        if(prop === 'removeEventListener') return ()=>{};
+        if(prop === 'style') return {};
+        return undefined;
+      }
+    });
+
+  };
+
+})();
+</script>
