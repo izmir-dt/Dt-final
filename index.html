@@ -2850,6 +2850,32 @@ window.addEventListener("pageshow", e => {
   if (e.persisted) location.reload();
 });
 </script>
+
+<style>
+/* ===== MODERN APP FEEL LAYER ===== */
+.card{transition:.18s ease;transform:translateZ(0);}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.12);}
+.card:active{transform:translateY(0) scale(.98);}
+.card.is-selected{outline:2px solid var(--accent);box-shadow:0 10px 26px rgba(0,0,0,.18);}
+.cards.has-selection .card:not(.is-selected){opacity:.35;}
+.view{opacity:0;transform:translateY(8px);transition:.22s ease;}
+.view.active{opacity:1;transform:none;}
+header{backdrop-filter:blur(12px);}
+button{transition:.15s ease;}
+button:active{transform:scale(.96);}
+</style>
+<script>
+document.addEventListener("click",e=>{
+  const card=e.target.closest(".card");
+  if(!card) return;
+  const wrap=card.closest(".cards");
+  if(!wrap) return;
+  wrap.classList.add("has-selection");
+  wrap.querySelectorAll(".card").forEach(c=>c.classList.remove("is-selected"));
+  card.classList.add("is-selected");
+});
+</script>
+
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
