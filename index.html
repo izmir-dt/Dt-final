@@ -3016,3 +3016,49 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   IDT DATA READY GUARD
+   Prevent partial data display
+   =============================== */
+
+(function(){
+
+  if(window.__idtDataGuard) return;
+  window.__idtDataGuard = true;
+
+  let lastSize = 0;
+  let stableCount = 0;
+  let ready = false;
+
+  function getDataSize(){
+    const rows = document.querySelectorAll('.list .item, .table tbody tr').length;
+    return rows;
+  }
+
+  function check(){
+
+    const size = getDataSize();
+
+    if(size === lastSize){
+      stableCount++;
+    }else{
+      stableCount = 0;
+    }
+
+    lastSize = size;
+
+    if(stableCount >= 5 && size > 0){
+      ready = true;
+      document.body.classList.add('data-ready');
+      console.log("DATA LOCKED");
+      return;
+    }
+
+    requestAnimationFrame(check);
+  }
+
+  check();
+
+})();
+</script>
