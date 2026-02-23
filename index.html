@@ -3388,3 +3388,32 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   INTERACTION SAFE GUARD
+   do not block copy / inputs
+   =============================== */
+
+(function(){
+
+  const interactive = ['BUTTON','INPUT','TEXTAREA','SELECT','A'];
+
+  const oldAnimate = Element.prototype.animate;
+
+  Element.prototype.animate = function(){
+
+    if(interactive.includes(this.tagName)){
+      this.style.pointerEvents='';
+    }
+
+    return oldAnimate.apply(this,arguments);
+  };
+
+  document.addEventListener('animationstart',e=>{
+    if(interactive.includes(e.target.tagName)){
+      e.target.style.pointerEvents='';
+    }
+  },true);
+
+})();
+</script>
