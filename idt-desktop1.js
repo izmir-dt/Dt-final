@@ -2,7 +2,8 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-// ---------- Global Loading ----------
+
+  // ---------- Global Loading ----------
   function setupLoading(){
     const root = $('globalLoading');
     const close = $('glClose');
@@ -12,18 +13,16 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
     const hide = () => {
       root.classList.add('hidden');
       root.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
     };
     const show = (text) => {
       if(text) msg.textContent = String(text);
       root.classList.remove('hidden');
       root.setAttribute('aria-hidden','false');
-      
+      /* non-blocking loading */
+      document.body.style.overflow = '';
       if(window.__IDT_LOADING_AUTOT){ clearTimeout(window.__IDT_LOADING_AUTOT); }
-      window.__IDT_LOADING_AUTOT = setTimeout(() => { 
-        requestAnimationFrame(() => {
-          try { hide(); } catch(_e){} 
-        });
-      }, 1400);
+      window.__IDT_LOADING_AUTOT = setTimeout(()=>{ try{ hide(); }catch(_e){} }, 1400);
     };
 
     window.IDTLoading = {
@@ -36,6 +35,7 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
       if(e.key === 'Escape' && !root.classList.contains('hidden')) hide();
     });
   }
+
   // Monkeypatch setStatus (non-invasive) to standardize "Yükleniyor" moments
   function patchSetStatus(){
     const fn = window.setStatus;
