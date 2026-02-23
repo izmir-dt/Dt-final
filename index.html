@@ -2952,3 +2952,67 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   IDT VIRTUAL LIST ENGINE v1
+   Draw only visible items
+   =============================== */
+
+(function(){
+
+  if (window.__idtVirtualList) return;
+  window.__idtVirtualList = true;
+
+  const ITEM_HEIGHT = 64; // ortalama kart yüksekliği
+  const BUFFER = 6;
+
+  function virtualize(container){
+
+    if(!container || container.__virtualized) return;
+    container.__virtualized = true;
+
+    const children = Array.from(container.children);
+    if(children.length < 40) return; // küçük listede gerek yok
+
+    const spacerTop = document.createElement('div');
+    const spacerBottom = document.createElement('div');
+
+    container.innerHTML = '';
+    container.appendChild(spacerTop);
+    container.appendChild(spacerBottom);
+
+    const viewport = container.parentElement;
+
+    function render(){
+
+      const scrollTop = viewport.scrollTop;
+      const height = viewport.clientHeight;
+
+      const start = Math.max(0, Math.floor(scrollTop/ITEM_HEIGHT)-BUFFER);
+      const end = Math.min(children.length, Math.ceil((scrollTop+height)/ITEM_HEIGHT)+BUFFER);
+
+      spacerTop.style.height = (start*ITEM_HEIGHT)+'px';
+      spacerBottom.style.height = ((children.length-end)*ITEM_HEIGHT)+'px';
+
+      const fragment = document.createDocumentFragment();
+
+      for(let i=start;i<end;i++){
+        fragment.appendChild(children[i]);
+      }
+
+      container.replaceChildren(spacerTop,fragment,spacerBottom);
+    }
+
+    viewport.addEventListener('scroll',render,{passive:true});
+    render();
+  }
+
+  /* otomatik yakala */
+  const observer = new MutationObserver(()=>{
+    document.querySelectorAll('.list,.table tbody').forEach(virtualize);
+  });
+
+  observer.observe(document.body,{childList:true,subtree:true});
+
+})();
+</script>
