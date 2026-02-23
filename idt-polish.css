@@ -1670,3 +1670,88 @@ background:rgba(0,0,0,.15);
 .idt-counters div{display:flex;gap:6px;align-items:center}
 .idt-topbar2{white-space:nowrap;overflow:hidden}
 .topNav2Btn{border-right:1px solid #e5e5e5;padding-right:12px;margin-right:12px}
+/* =========================================================
+   SORGULAMA & KARŞILAŞTIRMA TABLOLARI İÇİN MODERN GÖRÜNÜM
+========================================================= */
+
+/* Tabloyu saran ana yapı ve gölgelendirme */
+#ccList table {
+  width: 100%;
+  border-collapse: separate; 
+  border-spacing: 0;
+  background: var(--card, #fff);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06); /* Yumuşak bir 3D gölge */
+  margin-top: 15px;
+  border: 1px solid var(--line);
+}
+
+/* Tablo Başlıkları (Sitenin Bordo/Kırmızı temasına uygun) */
+#ccList th {
+  background: var(--accent, #7a1e2c); /* Bordo tonu */
+  color: #ffffff;
+  padding: 16px;
+  font-weight: 600;
+  text-align: left;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 3px solid var(--accent2, #c07a2a); /* Altın rengi ince çizgi */
+}
+
+/* Tablo Satırları ve Hücreleri */
+#ccList td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line, #e0e0e0);
+  color: var(--text, #333);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+/* Tıklanabilir hissi veren Hover (Üzerine gelme) efekti */
+#ccList tbody tr {
+  cursor: pointer;
+  background: transparent;
+}
+
+/* Farenin geldiği satır hafifçe altın/krem rengi parlar */
+#ccList tbody tr:hover td {
+  background-color: color-mix(in srgb, var(--accent2) 10%, transparent);
+  transform: scale(1.002);
+}
+
+/* Son satırın altındaki gereksiz çizgiyi kaldır */
+#ccList tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== BOŞ DURUM (HENÜZ OYUN SEÇİLMEDİĞİNDE) EKRANI ===== */
+#ccList .empty {
+  background: color-mix(in srgb, var(--card) 50%, transparent);
+  border: 2px dashed var(--line);
+  border-radius: 16px;
+  padding: 50px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Boş duruma tatlı bir ikon ekleyelim */
+#ccList .empty::before {
+  content: "🎭"; /* Tiyatro ikonu */
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
