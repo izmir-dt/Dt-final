@@ -3332,3 +3332,59 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   SMOOTH VIEW TRANSITIONS
+   Perceived performance layer
+   =============================== */
+
+(function(){
+
+  if(window.__idtSmooth) return;
+  window.__idtSmooth = true;
+
+  const DURATION = 180;
+
+  function fadeOut(el){
+    el.style.pointerEvents='none';
+    el.animate(
+      [{opacity:1,transform:'translateY(0px)'},
+       {opacity:0,transform:'translateY(6px)'}],
+      {duration:DURATION,easing:'ease',fill:'forwards'}
+    );
+  }
+
+  function fadeIn(el){
+    el.style.pointerEvents='';
+    el.animate(
+      [{opacity:0,transform:'translateY(6px)'},
+       {opacity:1,transform:'translateY(0px)'}],
+      {duration:DURATION,easing:'ease',fill:'forwards'}
+    );
+  }
+
+  const oldShow = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function(name,value){
+
+    if(name==='style' && value?.includes('display:none')){
+      fadeOut(this);
+    }
+
+    return oldShow.apply(this,arguments);
+  };
+
+  const observer = new MutationObserver(muts=>{
+    muts.forEach(m=>{
+      if(m.type==='attributes' && m.attributeName==='style'){
+        const el=m.target;
+        if(getComputedStyle(el).display!=='none'){
+          fadeIn(el);
+        }
+      }
+    });
+  });
+
+  observer.observe(document.body,{attributes:true,subtree:true});
+
+})();
+</script>
