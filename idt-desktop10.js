@@ -1,3 +1,4 @@
+if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); } else { window.__idt_desktop1_inited = true; }
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
@@ -12,7 +13,6 @@
     const hide = () => {
       root.classList.add('hidden');
       root.setAttribute('aria-hidden','true');
-      // body.style.overflow = '' ataması iptal edildi, CSS devralıyor.
     };
     const show = (text) => {
       if(text) msg.textContent = String(text);
@@ -20,7 +20,6 @@
       root.setAttribute('aria-hidden','false');
       
       if(window.__IDT_LOADING_AUTOT){ clearTimeout(window.__IDT_LOADING_AUTOT); }
-      // Takılmayı önlemek için requestAnimationFrame ile asenkron kapatma
       window.__IDT_LOADING_AUTOT = setTimeout(() => { 
         requestAnimationFrame(() => {
           try { hide(); } catch(_e){} 
@@ -38,7 +37,6 @@
       if(e.key === 'Escape' && !root.classList.contains('hidden')) hide();
     });
   }
-
   // Monkeypatch setStatus (non-invasive) to standardize "Yükleniyor" moments
   function patchSetStatus(){
     const fn = window.setStatus;
