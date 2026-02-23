@@ -2878,7 +2878,6 @@ document.addEventListener("click",e=>{
 <!-- ===== KATALOG GÖRÜNÜMÜ ===== -->
 <style>
 /* SADECE GÖREV LİSTESİNDE AKTİF */
-#assignFilterTable{opacity:0;height:0;pointer-events:none;position:absolute}
 
 /* katalog */
 .catalog-wrap{display:flex;flex-direction:column;gap:26px;margin-top:14px}
@@ -2953,10 +2952,7 @@ function buildCatalog(){
 /* tablo güncellenince */
 const target=document.getElementById("assignFilterTbody");
 if(target){
-  new MutationObserver(buildCatalog).observe(target,{childList:true});
-}
 
-window.addEventListener("click",()=>setTimeout(buildCatalog,120));
 </script>
 </body>
 </html>
