@@ -1929,7 +1929,26 @@ els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications
 const renderListDebounced = debounce(()=>renderList({preserveScroll:true}), 120);
 
 els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList({preserveScroll:false}); });
-els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderListDebounced(); });
+// Arama için Akıllı Gecikme (Debounce) Mekanizması
+let _searchTimeout = null;
+els.q.addEventListener("input", (e) => {
+  clearTimeout(_searchTimeout);
+  
+  _searchTimeout = setTimeout(() => {
+    let q = (e.target.value || "").trim();
+    if (q) {
+      els.qClear.style.display = "block";
+      if (typeof window.renderList === "function") {
+         window.renderList({ preserveScroll: false });
+      }
+    } else {
+      els.qClear.style.display = "none";
+      if (typeof window.renderList === "function") {
+         window.renderList({ preserveScroll: false });
+      }
+    }
+  }, 250); // 250ms gecikme ile tarayıcıyı rahatlatır
+});
 els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList({preserveScroll:true}); });
 els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList({preserveScroll:false}); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
