@@ -3228,3 +3228,59 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   KPI FINAL LOCK
+   Prevent counters from re-growing
+   =============================== */
+
+(function(){
+
+  if(window.__idtKpiLock) return;
+  window.__idtKpiLock = true;
+
+  const ids = ['kpiPlays','kpiPeople','kpiRows','kpiFiguran'];
+
+  const finalValues = {};
+  let stableTicks = 0;
+
+  function read(){
+    return ids.map(id=>{
+      const el=document.getElementById(id);
+      return el ? el.textContent.trim() : '';
+    }).join('|');
+  }
+
+  let last = read();
+
+  setInterval(()=>{
+
+    const now = read();
+
+    if(now === last){
+      stableTicks++;
+    }else{
+      stableTicks = 0;
+    }
+
+    last = now;
+
+    if(stableTicks === 5){
+      ids.forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) finalValues[id]=el.textContent;
+      });
+      console.log("KPI LOCKED",finalValues);
+    }
+
+    if(stableTicks > 5){
+      ids.forEach(id=>{
+        const el=document.getElementById(id);
+        if(el && finalValues[id]) el.textContent = finalValues[id];
+      });
+    }
+
+  },600);
+
+})();
+</script>
