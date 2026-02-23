@@ -2,8 +2,7 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
 (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
-
-  // ---------- Global Loading ----------
+ // ---------- Global Loading ----------
   function setupLoading(){
     const root = $('globalLoading');
     const close = $('glClose');
@@ -13,7 +12,32 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
     const hide = () => {
       root.classList.add('hidden');
       root.setAttribute('aria-hidden','true');
-      document.body.style.overflow = '';
+      // body.style.overflow = '' ataması iptal edildi, CSS devralıyor.
+    };
+    const show = (text) => {
+      if(text) msg.textContent = String(text);
+      root.classList.remove('hidden');
+      root.setAttribute('aria-hidden','false');
+      
+      if(window.__IDT_LOADING_AUTOT){ clearTimeout(window.__IDT_LOADING_AUTOT); }
+      // Takılmayı önlemek için requestAnimationFrame ile asenkron kapatma
+      window.__IDT_LOADING_AUTOT = setTimeout(() => { 
+        requestAnimationFrame(() => {
+          try { hide(); } catch(_e){} 
+        });
+      }, 1400);
+    };
+
+    window.IDTLoading = {
+      show: (text) => show(text || 'Lütfen bekleyin…'),
+      hide
+    };
+
+    close.addEventListener('click', hide);
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && !root.classList.contains('hidden')) hide();
+    });
+  }
     };
     const show = (text) => {
       if(text) msg.textContent = String(text);
