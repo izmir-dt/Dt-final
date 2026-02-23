@@ -2992,6 +2992,33 @@ tbody tr:hover{
 tbody tr:active{
   background:#e7ded4 !important;
 }
+/* ===== TABLE READABILITY ===== */
+
+td, th{
+  padding:12px 14px !important;
+}
+
+/* zebra */
+tbody tr:nth-child(even){
+  background:#fcfaf8;
+}
+
+/* kolon ayrımı */
+td+td, th+th{
+  border-left:1px solid #eee6dc;
+}
+
+/* başlık daha net */
+thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+
+/* isim kolonu vurgulu */
+td:first-child{
+  font-weight:600;
+}    
 </script>
 </body>
 </html>
