@@ -3132,3 +3132,46 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   REAL DATA READY DETECTOR
+   Wait for network + DOM settle
+   =============================== */
+
+(function(){
+
+  if(window.__idtRealReady) return;
+  window.__idtRealReady = true;
+
+  let lastMut = Date.now();
+  let ready = false;
+
+  const obs = new MutationObserver(()=>{
+    lastMut = Date.now();
+  });
+
+  obs.observe(document.body,{childList:true,subtree:true});
+
+  async function check(){
+
+    const netIdle = performance.getEntriesByType("resource")
+      .filter(e=>e.initiatorType==="fetch" || e.initiatorType==="xmlhttprequest")
+      .every(e=>performance.now()-e.responseEnd > 800);
+
+    const domIdle = Date.now()-lastMut > 700;
+
+    if(netIdle && domIdle && !ready){
+      ready = true;
+      document.body.classList.add("idt-ready");
+      console.log("REAL DATA READY");
+      window.dispatchEvent(new Event("idt:data-ready"));
+      return;
+    }
+
+    requestAnimationFrame(check);
+  }
+
+  check();
+
+})();
+</script>
