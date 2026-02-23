@@ -2876,22 +2876,27 @@ document.addEventListener("click",e=>{
 });
 </script>
 <!-- ===== KATALOG GÖRÜNÜMÜ ===== -->
-
 <style>
+/* SADECE GÖREV LİSTESİNDE AKTİF */
+#assignFilterTable{opacity:0;height:0;pointer-events:none;position:absolute}
+
+/* katalog */
 .catalog-wrap{display:flex;flex-direction:column;gap:26px;margin-top:14px}
-.catalog-play{background:var(--card);border-radius:18px;padding:18px 20px 16px;box-shadow:0 10px 30px rgba(0,0,0,.08);border:1px solid var(--line)}
-.catalog-title{font-size:20px;font-weight:700;letter-spacing:.3px;margin-bottom:6px}
+.catalog-play{background:var(--card);border-radius:18px;padding:18px 20px 16px;box-shadow:0 6px 18px rgba(0,0,0,.08);border:1px solid var(--line)}
+.catalog-title{font-size:20px;font-weight:700;margin-bottom:6px}
 .catalog-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
 .catalog-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px 18px}
-.role{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
-.role:last-child{border-bottom:none}
-.role-badge{font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(122,30,44,.12);color:#7a1e2c;white-space:nowrap;margin-top:2px}
+.role{display:flex;gap:10px;padding:4px 0}
+.role-badge{font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(122,30,44,.12);color:#7a1e2c}
 .role-name{font-size:14px}
-table.tbl{display:none !important;}
 </style>
 
 <script>
 function buildCatalog(){
+
+  /* sadece filtre modundaysa çalış */
+  if(!document.getElementById("assignPaneFilter")?.offsetParent) return;
+
   const table=document.querySelector("#assignFilterTable tbody");
   if(!table) return;
 
@@ -2909,7 +2914,7 @@ function buildCatalog(){
     const role=td[2].innerText.trim();
     const person=td[3].innerText.trim();
 
-    if(!play || play==="Filtre seçerek başlayabilirsin.") return;
+    if(!play || play.includes("Filtre")) return;
 
     if(!data[play]) data[play]={cat,roles:[]};
     data[play].roles.push({role,person});
@@ -2919,8 +2924,7 @@ function buildCatalog(){
   if(!wrap){
     wrap=document.createElement("div");
     wrap.id="catalogWrap";
-    wrap.className="catalog-wrap";
-    table.parentElement.appendChild(wrap);
+    document.querySelector("#assignPaneFilter .toolGrid").appendChild(wrap);
   }
 
   wrap.innerHTML="";
@@ -2946,12 +2950,13 @@ function buildCatalog(){
   });
 }
 
-const observer=new MutationObserver(buildCatalog);
-window.addEventListener("load",()=>{
-  const t=document.querySelector("#assignFilterTbody");
-  if(t) observer.observe(t,{childList:true,subtree:true});
-  buildCatalog();
-});
+/* tablo güncellenince */
+const target=document.getElementById("assignFilterTbody");
+if(target){
+  new MutationObserver(buildCatalog).observe(target,{childList:true});
+}
+
+window.addEventListener("click",()=>setTimeout(buildCatalog,120));
 </script>
 </body>
 </html>
