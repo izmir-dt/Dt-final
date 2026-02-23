@@ -3175,3 +3175,56 @@ window.addEventListener("pageshow", e => {
 
 })();
 </script>
+<script>
+/* ===============================
+   FINAL COMPUTE GATE
+   Prevent partial calculations
+   =============================== */
+
+(function(){
+
+  if(window.__idtComputeGate) return;
+  window.__idtComputeGate = true;
+
+  let timer = null;
+  let pending = new Set();
+
+  function gate(fn,name){
+
+    return function(...args){
+
+      pending.add({fn,args,name});
+
+      clearTimeout(timer);
+
+      timer = setTimeout(()=>{
+        const lastCalls = {};
+        pending.forEach(c=> lastCalls[c.name]=c);
+        pending.clear();
+
+        Object.values(lastCalls).forEach(c=>{
+          try{ c.fn.apply(this,c.args); }
+          catch(e){ console.warn("gate skip",c.name); }
+        });
+
+      }, 500);
+
+    }
+
+  }
+
+  /* wrap global builders */
+  [
+    "buildPanel",
+    "buildStats",
+    "buildCharts",
+    "renderAll",
+    "updateCounts"
+  ].forEach(name=>{
+    if(typeof window[name]==="function"){
+      window[name]=gate(window[name],name);
+    }
+  });
+
+})();
+</script>
