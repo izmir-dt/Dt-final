@@ -36,7 +36,6 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
       if(e.key === 'Escape' && !root.classList.contains('hidden')) hide();
     });
   }
-
   // Monkeypatch setStatus (non-invasive) to standardize "Yükleniyor" moments
   function patchSetStatus(){
     const fn = window.setStatus;
