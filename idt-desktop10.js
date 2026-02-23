@@ -3,7 +3,7 @@ if (window.__idt_desktop1_inited) { console.warn('idt-desktop1: init skipped'); 
   'use strict';
   const $ = (id) => document.getElementById(id);
 
-  // ---------- Global Loading ----------
+ // ---------- Global Loading ----------
   function setupLoading(){
     const root = $('globalLoading');
     const close = $('glClose');
