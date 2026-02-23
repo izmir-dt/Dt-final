@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DT Yeni Panel (Lab v4)</title>
+<style>
+:root{--bg:#f1ece6;--card:#ffffff;--accent:#7a0f2b;--accent-soft:#ecd6c9;--text:#2a2a2a;--muted:#6f6f6f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;background:var(--bg);color:var(--text)}
+header{background:var(--card);padding:14px 22px;border-bottom:1px solid #ddd;display:flex;align-items:center}
+header .logo{font-weight:700;color:var(--accent)}
+.container{padding:22px;max-width:1200px;margin:auto}
+.hero{background:linear-gradient(135deg,var(--accent),#3b0917);color:white;padding:22px;border-radius:18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:18px}
+.card{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.meta{color:var(--muted);font-size:13px}
+button{margin-top:10px;padding:8px 14px;border:0;border-radius:10px;background:white;color:var(--accent);cursor:pointer;font-weight:600}
+</style>
+</head>
+<body>
+<header><div class="logo">İzmir Devlet Tiyatrosu</div></header>
+<div class="container">
+  <div class="hero">
+    <h1>Repertuvar</h1>
+    <div id="statusText">Hazır</div>
+    <button id="loadBtn">Veriyi Yükle</button>
+  </div>
+  <section id="repertuvarCards" class="cards"></section>
+</div>
+
+<script>
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
+
+function loadJSONP(){
+  return new Promise((resolve,reject)=>{
+    const cb="cb_"+Date.now();
+    const s=document.createElement("script");
+    window[cb]=d=>{delete window[cb];s.remove();resolve(d)};
+    s.src=ENDPOINT+(ENDPOINT.includes("?")?"&":"?")+"callback="+cb;
+    s.onerror=()=>{delete window[cb];s.remove();reject()};
+    document.body.appendChild(s);
+  });
+}
+
+async function loadPlays(){
+  const status=document.getElementById("statusText");
+  status.textContent="Yükleniyor...";
+  try{
+    const data=await loadJSONP();
+    if(!Array.isArray(data)) throw "format";
+    const map=new Map();
+    data.forEach(r=>{const n=r.Oyun||r.oyun||r.Play;if(n)map.set(n,(map.get(n)||0)+1)});
+    const box=document.getElementById("repertuvarCards");
+    box.innerHTML="";
+    map.forEach((c,n)=>{box.innerHTML+=`<div class='card'><h3>${n}</h3><div class='meta'>${c} kişi</div></div>`});
+    status.textContent=map.size+" oyun yüklendi";
+  }catch(e){status.textContent="Veri alınamadı"}
+}
+
+document.getElementById("loadBtn").onclick=loadPlays;
+console.assert(document.getElementById("loadBtn"),"buton yok");
+</script>
+</body>
+</html>
