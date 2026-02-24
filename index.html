@@ -2855,6 +2855,10 @@ window.addEventListener("pageshow", e => {
 <script src="idt-desktop10.js" defer></script>
 <script src="app.js" defer></script>
 <script src="topbar-more.js" defer></script>
-
+<script>
+window.addEventListener("dt-ready", ()=>{
+  console.log("UI motoru veriyi aldı", DT);
+});
+</script>
 </body>
 </html>
