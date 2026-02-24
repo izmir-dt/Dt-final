@@ -2150,7 +2150,32 @@ function renderKpis(){
   els.kpiRows.textContent = String(rawRows.length);
   els.kpiFiguran.textContent = String(figuran.length || 0);
 }
+/* ===== DT LOAD LOCK (CRITICAL FIX) ===== */
+let __dtLoadToken = 0;
+let __dtActiveLoad = 0;
 
+async function guardedLoad(executor){
+  const token = ++__dtLoadToken;
+  __dtActiveLoad = token;
+
+  try{
+    const result = await executor();
+
+    // başka load başladıysa bunu çöpe at
+    if(token !== __dtActiveLoad){
+      console.warn("DT: stale load ignored", token);
+      return null;
+    }
+
+    return result;
+  }catch(e){
+    if(token !== __dtActiveLoad){
+      console.warn("DT: stale error ignored", token);
+      return null;
+    }
+    throw e;
+  }
+}
 /* ---------- main load ---------- */
 async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
