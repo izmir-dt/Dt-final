@@ -2403,6 +2403,18 @@ body{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+  // --- VERI TAM GELMEDEN UI BASLAMASIN ---
+let __dtDataReady = false;
+
+const __dtWaitData = setInterval(()=>{
+  if(window.__DATA__ && Array.isArray(window.__DATA__) && window.__DATA__.length>5){
+    clearInterval(__dtWaitData);
+    if(!__dtDataReady){
+      __dtDataReady = true;
+      init();   // gerçek başlangıç
+    }
+  }
+},120);
 })();
 </script>
 
