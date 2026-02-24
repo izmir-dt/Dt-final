@@ -2152,43 +2152,41 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAutoasync function load(isAuto=false)
-
-  console.log("DT LOAD START");
-
-  let rawRows = [];
-
+async function load(isAuto=false){
+  if(!isAuto) setStatus("⏳ Yükleniyor…");
+  activeId=null; selectedItem=null;
   try{
+    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
+    if(!isAuto){
+      try{
+        const cached = localStorage.getItem("idt_cache_v1");
+        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
+        if(cached){
+          const ageMin = (Date.now()-cachedAt)/60000;
+          rawRows = JSON.parse(cached);
+          rows = expandRowsByPeople(rawRows);
+          plays = groupByPlay(rows);
+          people = groupByPerson(rows);
+          playsList = plays.map(p=>p.title);
 
-    setStatus('⏳ Veri yükleniyor...');
-
-    // SADECE GVIZ
-    rawRows = await tryLoadGviz();
-
-    if(!rawRows || !rawRows.length)
-      throw new Error("GViz boş veri döndürdü");
-
-    console.log("DT LOAD SUCCESS:", rawRows.length);
-
-  }catch(err){
-
-    console.error("DT LOAD FAIL:", err);
-
-    els.list.innerHTML = `
-      <div class="empty">
-        Veri çekilemedi.<br>
-        Sheet paylaşımı veya gid hatalı olabilir.
-      </div>`;
-
-    setStatus('⛔ Veri alınamadı', 'bad');
-    return;
-  }
-
-  // BURADAN SONRASI AYNI KALACAK
-  buildData(rawRows);
-  renderAll();
-  setStatus(`✔ ${rawRows.length} kayıt`, 'ok');
-}
+          // Desktop 1.0 kabuk eklentileri (Yoğunluk Matrisi vb.) için veri köprüsü
+          // Veri çekme bloğunu değiştirmeden sadece global erişim sağlıyoruz.
+          window.rawRows = rawRows;
+          window.rows = rows;
+          window.plays = plays;
+          window.people = people;
+          renderList();
+          renderDetails(null);
+          distribution = computeDistribution();
+          renderDistribution();
+          retiredSet = computeRetiredSetFromRaw();
+          figuran = computeFiguranFromRaw();
+          renderFiguran();
+          renderPlayOptions();
+          renderIntersection();
+          renderKpis();
+          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
+        }
       }catch(_){/* cache bozuksa görmezden gel */}
     }
 
@@ -2333,6 +2331,13 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }catch(e){ console.error(e); }
 });
 
+
+/* ===== UI HOTFIX: Config overrides (does not change CONFIG shape) ===== */
+try {
+  CONFIG.SPREADSHEET_ID = "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0";
+  CONFIG.API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
+  CONFIG.NOTIF_API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
+} catch (e) {
   console.warn("CONFIG override skipped:", e);
 }
 
@@ -2749,6 +2754,7 @@ async function idtCopyToClipboard(text){
     return false;
   }
 }
+
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
 
