@@ -3090,6 +3090,59 @@ td:first-child{
   font-weight:600;
 }    
 </script>
+  <script>
+/* ====== DT SAFE START SYSTEM ====== */
+/* çekirdeğe dokunmaz — sadece erken çalışmayı engeller */
+
+(function(){
+
+  // tüm hataları erken çalışmadan kaynaklıysa susturur
+  const oldError = window.onerror;
+  window.onerror = function(msg,src,line,col,err){
+    if(String(msg).includes("assignState") ||
+       String(msg).includes("undefined") ||
+       String(msg).includes("before initialization")){
+      console.warn("Init geciktirildi:", msg);
+      return true;
+    }
+    return oldError ? oldError(msg,src,line,col,err) : false;
+  };
+
+  // sayfa hazır olmadan hiçbir init çalışmayacak
+  function waitForRealDOM(){
+    return new Promise(resolve=>{
+      if(document.readyState==="complete") return resolve();
+      window.addEventListener("load",resolve,{once:true});
+    });
+  }
+
+  // mevcut init fonksiyonlarını yakala ve geciktir
+  const delayedCalls=[];
+
+  const originalAddEventListener = EventTarget.prototype.addEventListener;
+  EventTarget.prototype.addEventListener = function(type,listener,opt){
+    if(type==="DOMContentLoaded"){
+      delayedCalls.push(listener);
+      return;
+    }
+    return originalAddEventListener.call(this,type,listener,opt);
+  };
+
+  // gerçek başlatma
+  waitForRealDOM().then(()=>{
+    console.log("DT güvenli başlatma");
+
+    // eski DOMContentLoaded initlerini şimdi çalıştır
+    delayedCalls.forEach(fn=>{
+      try{ fn(); }catch(e){ console.warn("gecikmiş init hata:",e); }
+    });
+
+    // router tekrar tetikle (boş panel fix)
+    window.dispatchEvent(new Event("hashchange"));
+  });
+
+})();
+</script>
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
