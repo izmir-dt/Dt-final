@@ -30,6 +30,7 @@ console.error("CORE FAILED", err);
 }
 
 function parseCSV(csv){
+csv = csv.replace(/^\uFEFF/, ""); // BOM temizle
 const rows = csv.split("\n").map(r=>r.split(","));
 const header = rows.shift();
 
