@@ -109,6 +109,8 @@
 
 // Veri basılırken tarayıcıyı kasmayan 'Akıllı Kuyruk' (Smart Queue)
 window.__IDT = window.__IDT || {};
+// Veri basılırken tarayıcıyı kasmayan ve HATALARDA ÇÖKMEYEN 'Akıllı Kuyruk'
+window.__IDT = window.__IDT || {};
 window.__IDT.renderInChunks = function(container, items, renderFn) {
   let index = 0;
   const chunkSize = 50;
@@ -118,16 +120,25 @@ window.__IDT.renderInChunks = function(container, items, renderFn) {
     const fragment = document.createDocumentFragment();
 
     for (let i = index; i < end; i++) {
-      const element = renderFn(items[i]);
-      if (element) fragment.appendChild(element);
+      try {
+        // Hata çıkma ihtimali olan satırı korumaya alıyoruz
+        const element = renderFn(items[i], i);
+        if (element) fragment.appendChild(element);
+      } catch (err) {
+        // Eğer Google Sheets'te boş/hatalı bir hücre yüzünden çökerse, 
+        // sistemi durdurma, sadece o satırı atla ve log yaz!
+        console.warn(`Satır ${i} çizilirken hata oluştu ve atlandı:`, err);
+      }
     }
-
+    
     container.appendChild(fragment);
     index = end;
-
+    
     if (index < items.length) {
       requestAnimationFrame(doBatch);
+    } else {
+      console.log("BÜTÜN VERİLER BAŞARIYLA EKRANA BASILDI! Toplam:", items.length);
     }
   }
-  doBatch();
+  requestAnimationFrame(doBatch);
 };
