@@ -1,116 +1,56 @@
-/* =========================
-DT NEW CORE ENGINE v2 (STABLE)
-Gerçek CSV parser + stabil veri
-========================= */
 
-const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStIO74mPPf_rhjRa-K8pk4ZCA-lCVAaFGg4ZVnE6DxbEwIGXjpICy8uAIa5hhAmyHq6Psyy-wqHUsL/pub?output=csv";
+const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStIO74mPPf_rhjRa-K8pk4ZCA-lCVAaFGg4ZVnE6DxbEwIGXjpICy8uAIa5hhAmyHq6Psyy-wqHUsL/pub?gid=1233566992&single=true&output=csv";
 
-let RAW = [];
-let PLAYS = {};
-let PEOPLE = {};
+function parseCSV(text){
+  const rows=[];
+  let cur='',row=[],q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i],n=text[i+1];
+    if(c=='"' && q && n=='"'){cur+='"';i++;continue;}
+    if(c=='"'){q=!q;continue;}
+    if(c==',' && !q){row.push(cur);cur='';continue;}
+    if((c=='\n'||c=='\r') && !q){
+      if(cur||row.length){row.push(cur);rows.push(row);}
+      cur='';row=[];continue;
+    }
+    cur+=c;
+  }
+  return rows.slice(1).map(r=>({
+    oyun:r[0]?.trim(),
+    kategori:r[1]?.trim(),
+    gorev:r[2]?.trim(),
+    kisi:r[3]?.trim()
+  })).filter(x=>x.oyun&&x.kisi);
+}
 
 async function boot(){
+  const status=document.getElementById('status');
   try{
-    console.log("CORE: starting");
-
-    const res = await fetch(DATA_URL + "&t=" + Date.now());
-    const text = await res.text();
-
-    RAW = parseCSV(text);
-    buildIndex();
-
-    window.dispatchEvent(new Event("dt-ready"));
-    console.log("CORE: ready", RAW.length);
-
-  }catch(err){
-    console.error("CORE FAILED", err);
+    const res=await fetch(DATA_URL+"#"+Date.now(),{cache:"no-store"});
+    const text=await res.text();
+    const data=parseCSV(text);
+    status.textContent="Kayıt: "+data.length;
+    render(data);
+  }catch(e){
+    status.textContent="Veri alınamadı";
+    console.error(e);
   }
 }
 
-
-/* ======================================
-GERÇEK CSV PARSER (Google Sheets uyumlu)
-virgül içeren isimleri bozmaz
-====================================== */
-function parseCSV(text) {
-
-  const rows = [];
-  let row = [];
-  let value = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-
-    const c = text[i];
-
-    if (c === '"') {
-      if (insideQuotes && text[i + 1] === '"') {
-        value += '"';
-        i++;
-      } else {
-        insideQuotes = !insideQuotes;
-      }
-      continue;
-    }
-
-    if (c === ',' && !insideQuotes) {
-      row.push(value.trim());
-      value = "";
-      continue;
-    }
-
-    if ((c === '\n' || c === '\r') && !insideQuotes) {
-      if (value || row.length) {
-        row.push(value.trim());
-        rows.push(row);
-        row = [];
-        value = "";
-      }
-      continue;
-    }
-
-    value += c;
-  }
-
-  if (value || row.length) {
-    row.push(value.trim());
-    rows.push(row);
-  }
-
-  rows.shift(); // header sil
-
-  return rows
-    .filter(r => r.length >= 4)
-    .map(r => ({
-      oyun: r[0],
-      kategori: r[1],
-      gorev: r[2],
-      kisi: r[3]
-    }));
-}
-
-
-/* ======================================
-INDEX OLUŞTURMA
-====================================== */
-function buildIndex(){
-
-  PLAYS = {};
-  PEOPLE = {};
-
-  RAW.forEach(r=>{
-
-    if(!r.oyun || !r.kisi) return;
-
-    if(!PLAYS[r.oyun]) PLAYS[r.oyun]=[];
-    PLAYS[r.oyun].push(r);
-
-    if(!PEOPLE[r.kisi]) PEOPLE[r.kisi]=[];
-    PEOPLE[r.kisi].push(r);
-
+function render(data){
+  const map={};
+  data.forEach(r=>{
+    if(!map[r.oyun]) map[r.oyun]=[];
+    map[r.oyun].push(r);
   });
-
-  window.DT = { RAW, PLAYS, PEOPLE };
+  const box=document.getElementById('plays');
+  box.innerHTML="";
+  Object.keys(map).sort().forEach(play=>{
+    const div=document.createElement('div');
+    div.className="card";
+    div.innerHTML="<h3>"+play+"</h3><div class='small'>"+map[play].length+" kişi</div>";
+    box.appendChild(div);
+  });
 }
 
 boot();
