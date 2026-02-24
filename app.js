@@ -1,56 +1,103 @@
+/* =========================
+DT CLEAN DATA ENGINE — FINAL
+Google Sheets CSV ile %100 uyumlu
+========================= */
 
-const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStIO74mPPf_rhjRa-K8pk4ZCA-lCVAaFGg4ZVnE6DxbEwIGXjpICy8uAIa5hhAmyHq6Psyy-wqHUsL/pub?gid=1233566992&single=true&output=csv";
+const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vStIO74mPPf_rhjRa-K8pk4ZCA-lCVAaFGg4ZVnE6DxbEwIGXjpICy8uAIa5hhAmyHq6Psyy-wqHUsL/pub?output=csv";
 
-function parseCSV(text){
-  const rows=[];
-  let cur='',row=[],q=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i],n=text[i+1];
-    if(c=='"' && q && n=='"'){cur+='"';i++;continue;}
-    if(c=='"'){q=!q;continue;}
-    if(c==',' && !q){row.push(cur);cur='';continue;}
-    if((c=='\n'||c=='\r') && !q){
-      if(cur||row.length){row.push(cur);rows.push(row);}
-      cur='';row=[];continue;
-    }
-    cur+=c;
-  }
-  return rows.slice(1).map(r=>({
-    oyun:r[0]?.trim(),
-    kategori:r[1]?.trim(),
-    gorev:r[2]?.trim(),
-    kisi:r[3]?.trim()
-  })).filter(x=>x.oyun&&x.kisi);
-}
+let RAW = [];
+let PLAYS = {};
+let PEOPLE = {};
 
 async function boot(){
-  const status=document.getElementById('status');
-  try{
-    const res=await fetch(DATA_URL+"#"+Date.now(),{cache:"no-store"});
-    const text=await res.text();
-    const data=parseCSV(text);
-    status.textContent="Kayıt: "+data.length;
-    render(data);
-  }catch(e){
-    status.textContent="Veri alınamadı";
-    console.error(e);
-  }
+try{
+console.log("DT Engine: loading");
+
+const res = await fetch(DATA_URL + "&cache=" + Date.now());
+const text = await res.text();
+
+RAW = parseCSV(text);
+buildIndex();
+
+window.dispatchEvent(new Event("dt-ready"));
+
+console.log("DT Engine: READY →", RAW.length, "kayıt yüklendi");
+
+}catch(err){
+console.error("DT ENGINE FAILED:", err);
+}
 }
 
-function render(data){
-  const map={};
-  data.forEach(r=>{
-    if(!map[r.oyun]) map[r.oyun]=[];
-    map[r.oyun].push(r);
-  });
-  const box=document.getElementById('plays');
-  box.innerHTML="";
-  Object.keys(map).sort().forEach(play=>{
-    const div=document.createElement('div');
-    div.className="card";
-    div.innerHTML="<h3>"+play+"</h3><div class='small'>"+map[play].length+" kişi</div>";
-    box.appendChild(div);
-  });
+/* ===== GERÇEK CSV PARSER ===== */
+function parseCSV(text){
+
+const rows = [];
+let row = [];
+let cell = "";
+let insideQuotes = false;
+
+for(let i=0;i<text.length;i++){
+const c = text[i];
+const next = text[i+1];
+
+if(c === '"' && insideQuotes && next === '"'){
+cell += '"';
+i++;
+continue;
+}
+
+if(c === '"'){
+insideQuotes = !insideQuotes;
+continue;
+}
+
+if(c === ',' && !insideQuotes){
+row.push(cell.trim());
+cell="";
+continue;
+}
+
+if((c === '\n' || c === '\r') && !insideQuotes){
+if(cell.length || row.length){
+row.push(cell.trim());
+rows.push(row);
+}
+row=[];
+cell="";
+continue;
+}
+
+cell+=c;
+}
+
+rows.shift();
+
+return rows
+.filter(r=>r.length>=4 && r[0] && r[3])
+.map(r=>({
+oyun:r,
+kategori:r,
+gorev:r,
+kisi:r
+}));
+}
+
+/* ===== INDEX OLUŞTUR ===== */
+function buildIndex(){
+PLAYS={};
+PEOPLE={};
+
+RAW.forEach(r=>{
+
+if(!PLAYS[r.oyun]) PLAYS[r.oyun]=[];
+PLAYS[r.oyun].push(r);
+
+if(!PEOPLE[r.kisi]) PEOPLE[r.kisi]=[];
+PEOPLE[r.kisi].push(r);
+
+});
+
+window.DT={RAW,PLAYS,PEOPLE};
 }
 
 boot();
