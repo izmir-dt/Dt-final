@@ -43,7 +43,28 @@ header{
 }
 </style>
 </head>
+<!-- ===== DT APP BAR ===== -->
+<header id="appbar">
+  <div class="appbar-left">
+    <span id="sysStatus" class="dot loading"></span>
+    <span id="sysText">Veri bekleniyor…</span>
+    <span id="sysCount"></span>
+  </div>
 
+  <nav class="appbar-tabs">
+    <button data-tab="plays" class="tab active">AKTİF OYUN</button>
+    <button data-tab="people" class="tab">TÜM PERSONEL</button>
+    <button data-tab="query" class="tab">SORGU</button>
+    <button data-tab="conflict" class="tab">ÇAKIŞMALAR</button>
+  </nav>
+
+  <div class="appbar-tools">
+    <button id="refreshBtn">⟳</button>
+    <button id="notifBtn">🔔<span id="notifBadge">0</span></button>
+    <button id="excelBtn">📊</button>
+    <button id="settingsBtn">⚙</button>
+  </div>
+</header>
 <body>
 
 <header>🎭 Repertuvar Kişi Takip</header>
