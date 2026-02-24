@@ -2152,41 +2152,43 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAuto=false){
-  if(!isAuto) setStatus("⏳ Yükleniyor…");
-  activeId=null; selectedItem=null;
-  try{
-    // 🚀 Hızlı açılış: varsa cache'ten anında çiz (arkada güncelle)
-    if(!isAuto){
-      try{
-        const cached = localStorage.getItem("idt_cache_v1");
-        const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
-        if(cached){
-          const ageMin = (Date.now()-cachedAt)/60000;
-          rawRows = JSON.parse(cached);
-          rows = expandRowsByPeople(rawRows);
-          plays = groupByPlay(rows);
-          people = groupByPerson(rows);
-          playsList = plays.map(p=>p.title);
+async function load(isAutoasync function load(isAuto=false){
 
-          // Desktop 1.0 kabuk eklentileri (Yoğunluk Matrisi vb.) için veri köprüsü
-          // Veri çekme bloğunu değiştirmeden sadece global erişim sağlıyoruz.
-          window.rawRows = rawRows;
-          window.rows = rows;
-          window.plays = plays;
-          window.people = people;
-          renderList();
-          renderDetails(null);
-          distribution = computeDistribution();
-          renderDistribution();
-          retiredSet = computeRetiredSetFromRaw();
-          figuran = computeFiguranFromRaw();
-          renderFiguran();
-          renderPlayOptions();
-          renderIntersection();
-          renderKpis();
-          setStatus(`⏳ Güncelleniyor… (cache${ageMin?` • ${Math.round(ageMin)}dk`:""})`);
-        }
+  console.log("DT LOAD START");
+
+  let rawRows = [];
+
+  try{
+
+    setStatus('⏳ Veri yükleniyor...');
+
+    // SADECE GVIZ
+    rawRows = await tryLoadGviz();
+
+    if(!rawRows || !rawRows.length)
+      throw new Error("GViz boş veri döndürdü");
+
+    console.log("DT LOAD SUCCESS:", rawRows.length);
+
+  }catch(err){
+
+    console.error("DT LOAD FAIL:", err);
+
+    els.list.innerHTML = `
+      <div class="empty">
+        Veri çekilemedi.<br>
+        Sheet paylaşımı veya gid hatalı olabilir.
+      </div>`;
+
+    setStatus('⛔ Veri alınamadı', 'bad');
+    return;
+  }
+
+  // BURADAN SONRASI AYNI KALACAK
+  buildData(rawRows);
+  renderAll();
+  setStatus(`✔ ${rawRows.length} kayıt`, 'ok');
+}
       }catch(_){/* cache bozuksa görmezden gel */}
     }
 
