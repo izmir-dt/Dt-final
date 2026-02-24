@@ -2221,6 +2221,7 @@ body{
     const dst=document.getElementById('statusMirror');
     if(s && dst) dst.textContent = s.textContent || '●';
   };
+  setInterval(syncStatus, 500); syncStatus();
 
   // Mirror counts into sidebar
   const syncCounts = ()=>{
@@ -2239,6 +2240,7 @@ body{
     set('sideRowsCount', rows);
     set('sideFigCount', fig);
   };
+  setInterval(syncCounts, 700); syncCounts();
 
   // Badge mirror
   const syncBadge = ()=>{
@@ -2249,6 +2251,7 @@ body{
     if(v && v!=='0'){ b.textContent=v; b.style.display='inline-flex'; }
     else{ b.style.display='none'; }
   };
+  setInterval(syncBadge, 700); syncBadge();
 })();</script>
 
 <script>
@@ -2278,30 +2281,7 @@ body{
   }, 5000);
 })();
 </script>
-/* ==== DT STABLE DATA LOCK ==== */
-(function(){
-let lastLen = 0;
 
-
-
-
-  lastLen = len;
-
-  // veri 2 tur değişmediyse tamamdır
-
-    // tüm hesapları tekrar kur
-      console.log("DT: Stable data detected → rebuild");
-    }
-    else if(window.processData){
-      console.log("DT: Stable data detected → process");
-    }
-    else{
-      console.log("DT: Stable data detected → reload UI");
-      location.hash = "#ready";
-    }
-  }
-},250);
-})();
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 
 <script>
@@ -2423,16 +2403,6 @@ let lastLen = 0;
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
-  // --- VERI TAM GELMEDEN UI BASLAMASIN ---
-let __dtDataReady = false;
-
-    clearInterval(__dtWaitData);
-    if(!__dtDataReady){
-      __dtDataReady = true;
-      init();   // gerçek başlangıç
-    }
-  }
-},120);
 })();
 </script>
 
@@ -2880,26 +2850,6 @@ window.addEventListener("pageshow", e => {
   if (e.persisted) location.reload();
 });
 </script>
-
-<script>
-// FORCE SINGLE BOOT
-(function(){
-function safeStart(){
-  try{
-    if(window.startApp) return startApp();
-    if(window.init) return init();
-    if(window.boot) return boot();
-    if(window.rebuildAll) return rebuildAll();
-    if(window.processData && window.__DATA__) return processData(window.__DATA__);
-    console.log("DT: manual boot attempted");
-  }catch(e){console.error("DT boot error:",e);}
-}
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",safeStart,{once:true});
-}else safeStart();
-})();
-</script>
-
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
@@ -2907,101 +2857,9 @@ if(document.readyState==="loading"){
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
   <script src="topbar-more.js" defer></script>
-<script>
-/* ===== DT DATA STABILIZER ===== */
-(function(){
-
-let lastCount = 0;
-
-
-
-  // 3 ardışık aynı uzunluk = veri tamam
-}
-
-const originalProcess = window.processData;
-if(!originalProcess) return;
-
-window.processData = function(rows){
-
-    return;
-  }
-
-  return originalProcess.apply(this, arguments);
-};
-
-})();
-</script>
-
-<script>
-// FORCE SINGLE BOOT
-(function(){
-function safeStart(){
-  try{
-    if(window.startApp) return startApp();
-    if(window.init) return init();
-    if(window.boot) return boot();
-    if(window.rebuildAll) return rebuildAll();
-    if(window.processData && window.__DATA__) return processData(window.__DATA__);
-    console.log("DT: manual boot attempted");
-  }catch(e){console.error("DT boot error:",e);}
-}
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",safeStart,{once:true});
-}else safeStart();
-})();
-</script>
-
 </body>
 </html>
 
 
-
-<script>
-// FORCE SINGLE BOOT
-(function(){
-function safeStart(){
-  try{
-    if(window.startApp) return startApp();
-    if(window.init) return init();
-    if(window.boot) return boot();
-    if(window.rebuildAll) return rebuildAll();
-    if(window.processData && window.__DATA__) return processData(window.__DATA__);
-    console.log("DT: manual boot attempted");
-  }catch(e){console.error("DT boot error:",e);}
-}
-if(document.readyState==="loading"){
-  document.addEventListener("DOMContentLoaded",safeStart,{once:true});
-}else safeStart();
-})();
-</script>
-
 </body>
 </html>
-/* ==== DT HARD RENDER LOCK ==== */
-(function(){
-
-
-function lock(fnName){
-  const fn = window[fnName];
-  if(typeof fn !== "function") return;
-
-  window[fnName] = function(...args){
-    if(rendered){
-      console.log("Blocked second render:", fnName);
-      return;
-    }
-    console.log("First render allowed:", fnName);
-    return fn.apply(this,args);
-  }
-}
-
-// sistemde kullanılan olası render fonksiyonları
-[
- 'processData',
- 'buildUI',
- 'initUI',
- 'renderAll',
- 'loadPlays'
-].forEach(lock);
-
-})();
