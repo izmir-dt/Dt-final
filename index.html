@@ -2283,14 +2283,41 @@ body{
 </script>
 /* ==== DT STABLE DATA LOCK ==== */
 (function(){
-let  = 0;
-let  = 0;
+let lastLen = 0;
+let stableCount = 0;
 
+const waitStable = setInterval(()=>{
+  if(!window.__DATA__) return;
 
+  const len = window.__DATA__.length;
+
+  if(len === lastLen) stableCount++;
+  else stableCount = 0;
+
+  lastLen = len;
+
+  // veri 2 tur değişmediyse tamamdır
+  if(stableCount >= 2 && len > 20){
+    clearInterval(waitStable);
+
+    // tüm hesapları tekrar kur
+    if(window.rebuildAll){
+      console.log("DT: Stable data detected → rebuild");
+      window.rebuildAll();
+    }
+    else if(window.processData){
+      console.log("DT: Stable data detected → process");
+      window.processData(window.__DATA__);
+    }
+    else{
+      console.log("DT: Stable data detected → reload UI");
+      location.hash = "#ready";
+    }
+  }
+},250);
 })();
-</script>
-
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
+
 <script>
 /* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
 (function(){
@@ -2413,7 +2440,15 @@ let  = 0;
   // --- VERI TAM GELMEDEN UI BASLAMASIN ---
 let __dtDataReady = false;
 
-
+const __dtWaitData = setInterval(()=>{
+  if(window.__DATA__ && Array.isArray(window.__DATA__) && window.__DATA__.length>5){
+    clearInterval(__dtWaitData);
+    if(!__dtDataReady){
+      __dtDataReady = true;
+      init();   // gerçek başlangıç
+    }
+  }
+},120);
 })();
 </script>
 
@@ -2861,19 +2896,6 @@ window.addEventListener("pageshow", e => {
   if (e.persisted) location.reload();
 });
 </script>
-
-<script>
-(function(){
-  const boot=setInterval(()=>{
-    if(window.__REAL_DATA_READY__){
-      console.log("DT: REAL DATA READY → UI START");
-      document.body.classList.add("ready");
-      clearInterval(boot);
-    }
-  },120);
-})();
-</script>
-
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
@@ -2886,15 +2908,15 @@ window.addEventListener("pageshow", e => {
 (function(){
 
 let lastCount = 0;
-let  = 0;
+let stableCount = 0;
 let stableTimer = null;
 
+function isDataReady(rows){ return rows && rows.length>0; }
 
-
-  ++;
+  stableCount++;
 
   // 3 ardışık aynı uzunluk = veri tamam
-  return  >= 1;
+  return stableCount >= 1;
 }
 
 const originalProcess = window.processData;
@@ -2913,35 +2935,9 @@ window.processData = function(rows){
 
 })();
 </script>
-
-<script>
-(function(){
-  const boot=setInterval(()=>{
-    if(window.__REAL_DATA_READY__){
-      console.log("DT: REAL DATA READY → UI START");
-      document.body.classList.add("ready");
-      clearInterval(boot);
-    }
-  },120);
-})();
-</script>
-
 </body>
 </html>
 
-
-
-<script>
-(function(){
-  const boot=setInterval(()=>{
-    if(window.__REAL_DATA_READY__){
-      console.log("DT: REAL DATA READY → UI START");
-      document.body.classList.add("ready");
-      clearInterval(boot);
-    }
-  },120);
-})();
-</script>
 
 </body>
 </html>
@@ -2976,6 +2972,3 @@ function lock(fnName){
 ].forEach(lock);
 
 })();
-</script>
-</body>
-</html>
