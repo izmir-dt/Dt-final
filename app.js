@@ -5,40 +5,14 @@
     console.warn("IDT blocked duplicate start");
     return;
   }
-/* ===== IDT GLOBAL DATA SINGLETON ===== */
-(function(){
 
-  const cache = new Map();
-  const originalFetch = window.fetch;
-
-  window.fetch = function(url, options){
-
-    if (typeof url === "string" && url.includes("script.google.com")) {
-
-      if (cache.has(url)) {
-        return cache.get(url).then(r => r.clone());
-      }
-
-      const p = originalFetch(url, options).then(r => {
-        cache.set(url, Promise.resolve(r.clone()));
-        return r.clone();
-      });
-
-      cache.set(url, p);
-      return p;
-    }
-
-    return originalFetch(url, options);
-  };
-
-})();
 
   window.__IDT_APP_STARTED__ = true;
 
 })();
 const CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
-  API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
+  API_BASE: "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
   SHEET_FIGURAN: "FİGÜRAN LİSTESİ",
   // Bildirimler için en stabil kaynak: Apps Script'in otomatik oluşturduğu LOG sayfası
