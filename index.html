@@ -89,7 +89,7 @@ const GID = "0";
 /* --- TEK VE DOĞRUDAN VERİ ÇEKME --- */
 async function load(){
   const url =
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:json&gid=GID
 
   const res = await fetch(url);
   const txt = await res.text();
