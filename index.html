@@ -2809,73 +2809,37 @@ window.addEventListener("pageshow", e => {
   <script src="idt-performance.js" defer></script>
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
-  <script src="topbar-more.js" defer></script>
-<script>
-/* ===== DT DATA STABILIZER ===== */
+ <script>
+/* ===== 1. DT DATA STABILIZER (DÜZELTİLDİ - BEKLEME KALDIRILDI) ===== */
 (function(){
+  const originalProcess = window.processData;
+  if(!originalProcess) return;
 
-let lastCount = 0;
-let stableCount = 0;
-let stableTimer = null;
+  window.processData = function(rows){
+    // Veri varsa direkt geçir!
+    if(!rows || rows.length === 0) return;
+    
+    console.log("Veri geldi — UI kuruluyor:", rows.length);
+    return originalProcess.apply(this, arguments);
+  };
+})();
 
-function isDataReady(rows){ return rows && rows.length>0; }
+/* ==== 2. DT HARD RENDER LOCK (DÜZELTİLDİ - KİLİT KIRILDI) ==== */
+(function(){
+  function lock(fnName){
+    const fn = window[fnName];
+    if(typeof fn !== "function") return;
 
-  stableCount+=1;
-
-  // 3 ardışık aynı uzunluk = veri tamam
-  return stableCount>=1;
-}
-
-const originalProcess = window.processData;
-if(!originalProcess) return;
-
-window.processData = function(rows){
-
-  if(!isDataReady(rows)){
-    console.log("Veri henüz stabil değil:", rows.length);
-    return;
+    window[fnName] = function(...args){
+      console.log("Render engeli kaldırıldı, güncelleniyor:", fnName);
+      return fn.apply(this, args);
+    };
   }
 
-  console.log("Veri stabil — UI kuruluyor:", rows.length);
-  return originalProcess.apply(this, arguments);
-};
-
+  // Fonksiyon kilitleri tamamen açıldı
+  if(window.processData) lock("processData");
+  if(window.renderTable) lock("renderTable");
 })();
 </script>
 </body>
 </html>
-
-
-</body>
-</html>
-/* ==== DT HARD RENDER LOCK ==== */
-(function(){
-
-let rendered = false;
-
-function lock(fnName){
-  const fn = window[fnName];
-  if(typeof fn !== "function") return;
-
-  window[fnName] = function(...args){
-    if(rendered){
-      console.log("Blocked second render:", fnName);
-      return;
-    }
-    rendered = true;
-    console.log("First render allowed:", fnName);
-    return fn.apply(this,args);
-  }
-}
-
-// sistemde kullanılan olası render fonksiyonları
-[
- 'processData',
- 'buildUI',
- 'rebuildAll',
- 'initUI',
- 'renderAll',
- 'loadPlays'
-].forEach(lock);
-
-})();
