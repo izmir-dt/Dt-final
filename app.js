@@ -2152,7 +2152,7 @@ function renderKpis(){
 }
 
 /* ---------- main load ---------- */
-async function load(isAutoasync function load(isAuto=false){
+async function load(isAutoasync function load(isAuto=false)
 
   console.log("DT LOAD START");
 
@@ -2749,7 +2749,6 @@ async function idtCopyToClipboard(text){
     return false;
   }
 }
-
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
 
