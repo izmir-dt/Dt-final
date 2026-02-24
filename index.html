@@ -2281,7 +2281,41 @@ body{
   }, 5000);
 })();
 </script>
+/* ==== DT STABLE DATA LOCK ==== */
+(function(){
+let lastLen = 0;
+let stableCount = 0;
 
+const waitStable = setInterval(()=>{
+  if(!window.__DATA__) return;
+
+  const len = window.__DATA__.length;
+
+  if(len === lastLen) stableCount++;
+  else stableCount = 0;
+
+  lastLen = len;
+
+  // veri 2 tur değişmediyse tamamdır
+  if(stableCount >= 2 && len > 20){
+    clearInterval(waitStable);
+
+    // tüm hesapları tekrar kur
+    if(window.rebuildAll){
+      console.log("DT: Stable data detected → rebuild");
+      window.rebuildAll();
+    }
+    else if(window.processData){
+      console.log("DT: Stable data detected → process");
+      window.processData(window.__DATA__);
+    }
+    else{
+      console.log("DT: Stable data detected → reload UI");
+      location.hash = "#ready";
+    }
+  }
+},250);
+})();
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 
 <script>
