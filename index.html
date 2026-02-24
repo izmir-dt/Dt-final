@@ -2297,7 +2297,7 @@ const waitStable = setInterval(()=>{
   lastLen = len;
 
   // veri 2 tur değişmediyse tamamdır
-  if(stableCount >= 2 && len > 20){
+  if(stableCount >= 6){
     clearInterval(waitStable);
 
     // tüm hesapları tekrar kur
