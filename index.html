@@ -125,3 +125,13 @@ header{
 <script src="app.js"></script>
 </body>
 </html>
+<script>
+onDataReady(function(rows){
+  console.log("DT UI starting with", rows.length, "rows");
+
+  if(window.initPanel) initPanel(rows);
+  if(window.initCharts) initCharts(rows);
+  if(window.initFiguran) initFiguran(rows);
+  if(window.initCompare) initCompare(rows);
+});
+</script>
