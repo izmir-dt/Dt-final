@@ -2150,32 +2150,7 @@ function renderKpis(){
   els.kpiRows.textContent = String(rawRows.length);
   els.kpiFiguran.textContent = String(figuran.length || 0);
 }
-/* ===== DT LOAD LOCK (CRITICAL FIX) ===== */
-let __dtLoadToken = 0;
-let __dtActiveLoad = 0;
 
-async function guardedLoad(executor){
-  const token = ++__dtLoadToken;
-  __dtActiveLoad = token;
-
-  try{
-    const result = await executor();
-
-    // başka load başladıysa bunu çöpe at
-    if(token !== __dtActiveLoad){
-      console.warn("DT: stale load ignored", token);
-      return null;
-    }
-
-    return result;
-  }catch(e){
-    if(token !== __dtActiveLoad){
-      console.warn("DT: stale error ignored", token);
-      return null;
-    }
-    throw e;
-  }
-}
 /* ---------- main load ---------- */
 async function load(isAuto=false){
   if(!isAuto) setStatus("⏳ Yükleniyor…");
@@ -2215,10 +2190,16 @@ async function load(isAuto=false){
       }catch(_){/* cache bozuksa görmezden gel */}
     }
 
-    try{ rawRows = await tryLoadApiJsonp(); }
-    catch(e1){
-      try{ rawRows = await tryLoadGviz(); }
-      catch(e2){ rawRows = await tryLoadCsv(); }
+    console.log('>>> load() başladı');
+    try{
+      console.log('>>> tryLoadGviz() deneniyor...');
+      rawRows = await tryLoadGviz();
+      console.log('>>> Veri başarıyla çekildi. Satır sayısı:', rawRows.length);
+    }catch(err){
+      console.error('>>> GViz veri çekilemedi!', err);
+      els.list.innerHTML = `<div class="empty">GViz ile veri çekilemedi. Sheet paylaşımı veya GID hatalı olabilir.</div>`;
+      setStatus('⛔ Veri çekilemedi','bad');
+      return;
     }
 
     // Cache (bir sonraki açılışta hızlı render için)
