@@ -2909,3 +2909,34 @@ window.addEventListener("pageshow", e => {
 
 </body>
 </html>
+/* ==== DT HARD RENDER LOCK ==== */
+(function(){
+
+let rendered = false;
+
+function lock(fnName){
+  const fn = window[fnName];
+  if(typeof fn !== "function") return;
+
+  window[fnName] = function(...args){
+    if(rendered){
+      console.log("Blocked second render:", fnName);
+      return;
+    }
+    rendered = true;
+    console.log("First render allowed:", fnName);
+    return fn.apply(this,args);
+  }
+}
+
+// sistemde kullanılan olası render fonksiyonları
+[
+ 'processData',
+ 'buildUI',
+ 'rebuildAll',
+ 'initUI',
+ 'renderAll',
+ 'loadPlays'
+].forEach(lock);
+
+})();
