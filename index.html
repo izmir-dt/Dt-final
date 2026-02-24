@@ -1,156 +1,55 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IDT • Repertuvar</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İDT Repertuvar</title>
 
 <style>
 body{
-  font-family:system-ui;
-  background:#efe7dc;
+  font-family: system-ui, Arial;
+  background:#f4efe9;
   margin:0;
 }
 
 header{
-  background:#7a2e2e;
+  background:#7b2d2d;
   color:white;
-  padding:14px 18px;
+  padding:14px 20px;
   font-weight:600;
-  letter-spacing:.5px;
 }
 
 #status{
-  font-size:13px;
-  opacity:.85;
+  padding:12px 20px;
+  color:#555;
 }
 
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-}
-
-.play{
+.card{
   background:white;
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:14px;
-  box-shadow:0 3px 10px rgba(0,0,0,.06);
-  cursor:pointer;
-  transition:.18s;
+  margin:10px 16px;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
 }
-.play:hover{ transform:translateY(-2px) }
 
 .title{
   font-weight:700;
-  font-size:18px;
+  margin-bottom:6px;
 }
 
-.count{
-  font-size:13px;
+.meta{
   color:#777;
-  margin-top:4px;
-}
-
-.people{
-  margin-top:10px;
-  display:none;
-}
-
-.person{
-  padding:6px 0;
-  border-bottom:1px dashed #ddd;
   font-size:14px;
-}
-
-.badge{
-  background:#f4eee7;
-  padding:2px 8px;
-  border-radius:8px;
-  margin-left:6px;
-  font-size:12px;
 }
 </style>
 </head>
+
 <body>
 
-<header>
-  Repertuvar Kişi Takip
-  <div id="status">yükleniyor...</div>
-</header>
+<header>🎭 Repertuvar Kişi Takip</header>
+<div id="status">Veri yükleniyor...</div>
+<div id="list"></div>
 
-<div class="container" id="app"></div>
-
-<script>
-const SHEET_ID = "1AbCDeFgHIJKlmNOPqRstUVwxyz1234567890";
-const GID = "0";
-
-/* --- TEK VE DOĞRUDAN VERİ ÇEKME --- */
-async function load(){
-  const url =
-https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec
-
-  const res = await fetch(url);
-  const txt = await res.text();
-  const json = JSON.parse(txt.substring(47).slice(0,-2));
-
-  const rows = json.table.rows.map(r=>r.c.map(c=>c?c.v:""));
-
-  document.getElementById("status").textContent="hazır";
-  render(rows);
-}
-
-/* --- SADE MOTOR --- */
-function render(rows){
-  const app = document.getElementById("app");
-
-  const map={};
-
-  rows.slice(1).forEach(r=>{
-    const play=r[0];
-    const role=r[1];
-    const person=r[2];
-
-    if(!map[play]) map[play]=[];
-    map[play].push({role,person});
-  });
-
-  Object.keys(map).sort().forEach(play=>{
-    const div=document.createElement("div");
-    div.className="play";
-
-    const title=document.createElement("div");
-    title.className="title";
-    title.textContent=play;
-
-    const count=document.createElement("div");
-    count.className="count";
-    count.textContent=map[play].length+" kişi";
-
-    const people=document.createElement("div");
-    people.className="people";
-
-    map[play].sort((a,b)=>a.person.localeCompare(b.person,"tr"))
-    .forEach(p=>{
-      const line=document.createElement("div");
-      line.className="person";
-      line.innerHTML=p.person+" <span class='badge'>"+p.role+"</span>";
-      people.appendChild(line);
-    });
-
-    div.onclick=()=>people.style.display=
-      people.style.display==="block"?"none":"block";
-
-    div.appendChild(title);
-    div.appendChild(count);
-    div.appendChild(people);
-    app.appendChild(div);
-  });
-}
-
-load();
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>
