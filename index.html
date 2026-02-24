@@ -2286,100 +2286,7 @@ body{
 let lastLen = 0;
 let stableCount = 0;
 
-const waitStable = setInterval(()=>{
-  if(!window.__DATA__) return;
 
-  const len = window.__DATA__.length;
-
-  if(len === lastLen) stableCount++;
-  else stableCount = 0;
-
-  lastLen = len;
-
-  // veri 2 tur değişmediyse tamamdır
-  if(stableCount >= 2 && len > 20){
-    clearInterval(waitStable);
-
-    // tüm hesapları tekrar kur
-    if(window.rebuildAll){
-      console.log("DT: Stable data detected → rebuild");
-      window.rebuildAll();
-    }
-    else if(window.processData){
-      console.log("DT: Stable data detected → process");
-      window.processData(window.__DATA__);
-    }
-    else{
-      console.log("DT: Stable data detected → reload UI");
-      location.hash = "#ready";
-    }
-  }
-},250);
-})();
-<!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
-
-<script>
-/* v6.3 UI patch: scope switching + distribution copy (no data fetch changes) */
-(function(){
-  const byId = (id)=>document.getElementById(id);
-  const setBodyScope = (name)=>{
-    document.body.classList.remove('scope-person');
-    if(name==='person') document.body.classList.add('scope-person');
-  };
-
-  const setScopeValue = (val)=>{
-    const s = byId('qScope'); if(!s) return;
-    const opts = Array.from(s.options||[]);
-    const hit = opts.find(o => (o.value||'')===val) || opts.find(o => (o.textContent||'').toLowerCase().includes(val));
-    if(hit){ s.value = hit.value; s.dispatchEvent(new Event('change',{bubbles:true})); }
-  };
-
-  const clearQ = ()=>{
-    const q = byId('q'); if(!q) return;
-    q.value = '';
-    q.dispatchEvent(new Event('input',{bubbles:true}));
-  };
-
-  function bindSide(id, scopeVal, bodyScope){
-    const el = byId(id);
-    if(!el) return;
-    el.addEventListener('click', ()=>{
-      // ensure panel view
-      const t = byId('tabPanel'); if(t) t.click();
-      clearQ();
-      setScopeValue(scopeVal);
-      setBodyScope(bodyScope);
-    }, true);
-  }
-
-  // match existing option values in HTML: all / play / person
-  bindSide('sidePlays',  'play',   'play');
-  bindSide('sidePeople', 'person', 'person');
-  // "rows" mode is still handled by KPI click in app; we keep scope as 'all' so it doesn't look wrong
-  bindSide('sideRows',   'all',    'rows');
-
-  // Distribution copy
-  const btn = byId('distCopyBtn');
-  if(btn){
-    btn.addEventListener('click', async ()=>{
-      const box = byId('distributionBox');
-      if(!box){ alert('Dağılım listesi bulunamadı.'); return; }
-      const text = (box.innerText || box.textContent || '').trim();
-      if(!text){ alert('Kopyalanacak veri yok. Önce arama ile filtrele.'); return; }
-      try{
-        await navigator.clipboard.writeText(text);
-        btn.textContent = '✅ Kopyalandı';
-        setTimeout(()=>btn.textContent='📋 Excel’e Kopyala', 900);
-      }catch(e){
-        // fallback
-        const ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta);
-        ta.select(); document.execCommand('copy');
-        document.body.removeChild(ta);
-        btn.textContent = '✅ Kopyalandı';
-        setTimeout(()=>btn.textContent='📋 Excel’e Kopyala', 900);
-      }
-    });
   }
 })();
 </script>
@@ -2913,10 +2820,10 @@ let stableTimer = null;
 
 function isDataReady(rows){ return rows && rows.length>0; }
 
-  stableCount++;
+  stableCount+=1;
 
   // 3 ardışık aynı uzunluk = veri tamam
-  return stableCount >= 1;
+  return stableCount>=1;
 }
 
 const originalProcess = window.processData;
