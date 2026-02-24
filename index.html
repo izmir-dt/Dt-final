@@ -2903,6 +2903,45 @@ window.addEventListener("pageshow", e => {
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
   <script src="topbar-more.js" defer></script>
+<script>
+/* ===== DT DATA STABILIZER ===== */
+(function(){
+
+let lastCount = 0;
+let stableCount = 0;
+let stableTimer = null;
+
+function isDataReady(rows){
+  const count = rows?.length || 0;
+
+  if(count !== lastCount){
+    lastCount = count;
+    stableCount = 0;
+    return false;
+  }
+
+  stableCount++;
+
+  // 3 ardışık aynı uzunluk = veri tamam
+  return stableCount >= 3;
+}
+
+const originalProcess = window.processData;
+if(!originalProcess) return;
+
+window.processData = function(rows){
+
+  if(!isDataReady(rows)){
+    console.log("Veri henüz stabil değil:", rows.length);
+    return;
+  }
+
+  console.log("Veri stabil — UI kuruluyor:", rows.length);
+  return originalProcess.apply(this, arguments);
+};
+
+})();
+</script>
 </body>
 </html>
 
