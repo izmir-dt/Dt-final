@@ -2333,13 +2333,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }catch(e){ console.error(e); }
 });
 
-
-/* ===== UI HOTFIX: Config overrides (does not change CONFIG shape) ===== */
-try {
-  CONFIG.SPREADSHEET_ID = "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0";
-  CONFIG.API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
-  CONFIG.NOTIF_API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
-} catch (e) {
   console.warn("CONFIG override skipped:", e);
 }
 
