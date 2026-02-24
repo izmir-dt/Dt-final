@@ -2766,11 +2766,214 @@ let __dtDataReady = false;
 })();
 </script>
 
+<script>
+/* ===== v6.9 sidebar mode mapping (priority) ===== */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  function clickHidden(id){ var el=$(id); if(el) el.click(); }
+  function clearQ(){
+    var q = $('q') || $('searchInput') || $('distQ');
+    if(q){ q.value=''; q.dispatchEvent(new Event('input',{bubbles:true})); }
+  }
+  function setScopeLike(txt){
+    var s = $('qScope'); 
+    if(!s) return;
+    var t = (txt||'').toLowerCase();
+    var opts = Array.from(s.options||[]);
+    var hit = opts.find(function(o){
+      var v=(o.value||'').toLowerCase(), tt=(o.textContent||'').toLowerCase();
+      return v===t || tt===t || tt.indexOf(t)!==-1;
+    });
+    if(hit){ s.value = hit.value; s.dispatchEvent(new Event('change',{bubbles:true})); }
+  }
+  function activateSidebar(btn){
+    document.querySelectorAll('.idt-item').forEach(function(x){ x.classList.remove('active'); });
+    if(btn) btn.classList.add('active');
+  }
 
+  // IDs used in our sidebar build
+  var plays = $('sidePlays');      // Aktif Oyun
+  var people = $('sidePeople');    // Toplam Personel
+  var rows = $('sideRows');        // Görev Ataması
+  var dist = $('sideDistribution'); // Oyunlara Göre Dağılım
+
+  // 1) Aktif Oyun -> Panel + scope OYUN (not Kişi)
+  if(plays) plays.addEventListener('click', function(){
+    activateSidebar(plays);
+    clickHidden('tabPanel');
+    // give UI a tick before scope change so list rerenders correctly
+    setTimeout(function(){ clearQ(); setScopeLike('oyun'); }, 0);
+  });
+
+  // 2) Toplam Personel -> Panel + scope KİŞİ
+  if(people) people.addEventListener('click', function(){
+    activateSidebar(people);
+    clickHidden('tabPanel');
+    setTimeout(function(){ clearQ(); setScopeLike('kişi'); }, 0);
+  });
+
+  // 3) Görev Ataması -> Panel + scope GÖREV (different from dağılım)
+  if(rows) rows.addEventListener('click', function(){
+    activateSidebar(rows);
+    // Görev Ataması artık ayrı bir araç ekranı (Panel değil)
+    if($('tabAssign')) clickHidden('tabAssign');
+    else if(window.setActiveTab) window.setActiveTab('Assign');
+  });
+
+  // 4) Oyunlara Göre Dağılım -> dedicated distribution view
+  if(dist) dist.addEventListener('click', function(){
+    activateSidebar(dist);
+    if($('tabDistribution')) clickHidden('tabDistribution');
+    else if($('tabAnalysis')) clickHidden('tabAnalysis');
+    // distribution view has its own search; don't touch qScope here
+  });
+})();
 </script>
+
+<!-- Yardım (tamamen Türkçe) -->
+<button class="helpFab" id="helpBtn" type="button" aria-label="Yardım">?</button>
+<div class="helpOverlay hidden" id="helpOverlay" aria-hidden="true"></div>
+<div class="helpModal hidden" id="helpModal" role="dialog" aria-label="Yardım">
+  <div class="helpHd">
+    <b>Yardım</b>
+    <button class="btn" id="helpClose" type="button">✕</button>
+  </div>
+  <div class="helpBd">
+    <div class="helpBlock">
+      <div class="helpT">Hızlı başlangıç</div>
+      <ol class="helpList">
+        <li><b>Panel</b> sekmesinde oyun veya kişi seç.</li>
+        <li>Detaylar sağ tarafta açılır.</li>
+        <li>Excel’e aktarmak için <b>Tab ile Kopyala</b> butonunu kullan.</li>
+      </ol>
+    </div>
+    <div class="helpBlock">
+      <div class="helpT">Aktif Seçimler</div>
+      <div class="helpP">Seçtiğin oyun/kişi/filtreler üstte etiket olarak görünür. Etiketin yanındaki ✕ ile kaldırabilirsin.</div>
+    </div>
+    <div class="helpBlock">
+      <div class="helpT">Grafikler</div>
+      <div class="helpP">Grafikte bir dilime/çubuğa tıklayınca ilgili liste açılır.</div>
+    </div>
+    <div class="helpBlock">
+      <div class="helpT">Kesişim Analizi</div>
+      <div class="helpP">İki oyun seçerek ortak personeli ve görevlerini görürsün.</div>
+    </div>
+  </div>
+</div>
+
+  <!-- YÜKLENİYOR -->
+  <div id="globalLoading" class="hidden" aria-hidden="true">
+    <div class="glBack"></div>
+    <div class="glCard" role="dialog" aria-modal="true" aria-labelledby="glTitle">
+      <div id="glTitle" class="glTitle">Veriler hazırlanıyor…</div>
+      <div class="glRow">
+        <span class="spinnerSm"></span>
+        <div class="glMsg" id="glMsg">Lütfen bekleyin…</div>
+      </div>
+      <button class="btn glClose" id="glClose" type="button">Kapat</button>
+    </div>
+  </div>
+  <script>
+/* Chrome back-forward cache kapat */
+window.addEventListener("pageshow", e => {
+  if (e.persisted) location.reload();
+});
+</script>
+
+<script>
+// FORCE SINGLE BOOT
+(function(){
+function safeStart(){
+  try{
+    if(window.startApp) return startApp();
+    if(window.init) return init();
+    if(window.boot) return boot();
+    if(window.rebuildAll) return rebuildAll();
+    if(window.processData && window.__DATA__) return processData(window.__DATA__);
+    console.log("DT: manual boot attempted");
+  }catch(e){console.error("DT boot error:",e);}
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",safeStart,{once:true});
+}else safeStart();
+})();
+</script>
+
+</body>
+</html>
+   <!-- scripts: keep only one app.js + helpers (defer) -->
+  <script src="idt-performance.js" defer></script>
+  <script src="idt-desktop10.js" defer></script>
+  <script src="app.js" defer></script>
+  <script src="topbar-more.js" defer></script>
+<script>
+/* ===== DT DATA STABILIZER ===== */
+(function(){
+
+let lastCount = 0;
+
+
+
+  // 3 ardışık aynı uzunluk = veri tamam
+}
+
+const originalProcess = window.processData;
+if(!originalProcess) return;
+
+window.processData = function(rows){
+
+    return;
+  }
+
+  return originalProcess.apply(this, arguments);
+};
+
+})();
+</script>
+
+<script>
+// FORCE SINGLE BOOT
+(function(){
+function safeStart(){
+  try{
+    if(window.startApp) return startApp();
+    if(window.init) return init();
+    if(window.boot) return boot();
+    if(window.rebuildAll) return rebuildAll();
+    if(window.processData && window.__DATA__) return processData(window.__DATA__);
+    console.log("DT: manual boot attempted");
+  }catch(e){console.error("DT boot error:",e);}
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",safeStart,{once:true});
+}else safeStart();
+})();
+</script>
+
 </body>
 </html>
 
+
+
+<script>
+// FORCE SINGLE BOOT
+(function(){
+function safeStart(){
+  try{
+    if(window.startApp) return startApp();
+    if(window.init) return init();
+    if(window.boot) return boot();
+    if(window.rebuildAll) return rebuildAll();
+    if(window.processData && window.__DATA__) return processData(window.__DATA__);
+    console.log("DT: manual boot attempted");
+  }catch(e){console.error("DT boot error:",e);}
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",safeStart,{once:true});
+}else safeStart();
+})();
+</script>
 
 </body>
 </html>
