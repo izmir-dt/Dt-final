@@ -4,7 +4,10 @@ const originalFetch = window.fetch;
 window.fetch = function(url, options){
 
   if (typeof url === "string" && url.includes("script.google.com")) {
-
+// URL'den gerçek veri kaynağını çıkar
+let key = url;
+const m = url.match(/sheet=([^&]+)/);
+if(m) key = "sheet:" + decodeURIComponent(m[1]);
     if (cache.has(url)) {
       return cache.get(url).then(r => r.clone());
     }
