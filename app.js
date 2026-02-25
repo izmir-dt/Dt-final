@@ -1,8 +1,3 @@
-/* =====================================================
-İDT VERİ KORUMA KATMANI — OVERWRITE ENGELLEYİCİ
-App.js nereye yazarsa yazsın veri düşmez
-===================================================== */
-
 (function(){
 
 const SAFE = {
