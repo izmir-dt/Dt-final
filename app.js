@@ -1267,7 +1267,7 @@ function renderMobileChartList(items){
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
-      const title = `${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
+      const title = ${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
     });
   });
@@ -2077,109 +2077,96 @@ async function load(isAuto=false) {
   activeId=null; selectedItem=null;
   
   try {
-    try {
-      const cached = localStorage.getItem("idt_cache_v1");
-      const cachedAt = Number(localStorage.getItem("idt_cache_v1_at")||0);
-      if(cached) {
-        const ageMin = (Date.now()-cachedAt)/60000;
-        rawRows = JSON.parse(cached);
-        processData(rawRows);
-        setStatus(`⏳ Güncelleniyor… (cache ${Math.round(ageMin)}dk)`);
-      }
-    } catch(_) {}
-
     let newRows = null;
     const errors = [];
     
+    // ÖNCE CANLI VERİYİ ÇEK
     try {
       newRows = await tryLoadApiJsonp();
       console.log("✅ API'den veri alındı:", newRows.length);
-      window.__lastSource = 'API';
     } catch(e1) {
       errors.push(`API: ${e1.message}`);
       
       try {
         newRows = await tryLoadGviz();
         console.log("✅ GViz'den veri alındı:", newRows.length);
-        window.__lastSource = 'GViz';
       } catch(e2) {
         errors.push(`GViz: ${e2.message}`);
         
         try {
           newRows = await tryLoadCsv();
           console.log("✅ CSV'den veri alındı:", newRows.length);
-          window.__lastSource = 'CSV';
         } catch(e3) {
           errors.push(`CSV: ${e3.message}`);
-          throw new Error(`Tüm veri kaynakları başarısız:\n${errors.join('\n')}`);
         }
       }
     }
 
-    if(!newRows || !Array.isArray(newRows) || newRows.length === 0) {
-      throw new Error("Veri boş veya geçersiz format");
+    // EĞER CANLI VERİ VARSA KULLAN
+    if(newRows && Array.isArray(newRows) && newRows.length > 0) {
+      const validRows = newRows.filter(r => 
+        r.play && r.play.toString().trim() && 
+        r.person && r.person.toString().trim()
+      );
+      
+      if(validRows.length > 0) {
+        rawRows = validRows;
+        
+        // Cache'i güncelle
+        try {
+          localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
+          localStorage.setItem("idt_cache_v1_at", String(Date.now()));
+        } catch(_) {}
+
+        processData(rawRows);
+
+        const when = new Date().toLocaleTimeString("tr-TR", {
+          hour: "2-digit", 
+          minute: "2-digit",
+          second: "2-digit"
+        });
+        setStatus(`✅ Hazır • ${rawRows.length} satır • ${when}`, "ok");
+        
+        loadNotifications().catch(e => console.warn("Bildirim yüklenemedi:", e));
+        return;
+      }
     }
 
-    const validRows = newRows.filter(r => 
-      r.play && r.play.toString().trim() && 
-      r.person && r.person.toString().trim()
-    );
-    
-    if(validRows.length === 0) {
-      throw new Error("Hiç geçerli satır bulunamadı (oyun adı veya kişi eksik)");
-    }
-    
-    if(validRows.length < newRows.length * 0.7) {
-      console.warn(`Uyarı: Verilerin %${Math.round((1-validRows.length/newRows.length)*100)}'i geçersiz`);
+    // CANLI VERİ YOKSA CACHE'E DÖN
+    const cached = localStorage.getItem("idt_cache_v1");
+    if(cached) {
+      rawRows = JSON.parse(cached);
+      processData(rawRows);
+      setStatus(`📦 Cache kullanılıyor (canlı veri alınamadı)`, "warn");
+      return;
     }
 
-    rawRows = validRows;
-    
-    try {
-      localStorage.setItem("idt_cache_v1", JSON.stringify(rawRows));
-      localStorage.setItem("idt_cache_v1_at", String(Date.now()));
-    } catch(_) {}
-
-    processData(rawRows);
-
-    const when = new Date().toLocaleTimeString("tr-TR", {
-      hour: "2-digit", 
-      minute: "2-digit",
-      second: "2-digit"
-    });
-    setStatus(`✅ Hazır • ${rawRows.length} satır • ${when}`, "ok");
-    
-    loadNotifications().catch(e => console.warn("Bildirim yüklenemedi:", e));
+    // HİÇ VERİ YOKSA HATA GÖSTER
+    throw new Error("Veri kaynağına erişilemedi");
 
   } catch(err) {
     console.error("❌ KRİTİK HATA:", err);
     
-    if(rawRows && rawRows.length > 0) {
-      setStatus(`⚠️ Güncelleme başarısız, cache kullanılıyor • ${new Date().toLocaleTimeString()}`, "warn");
-      processData(rawRows);
-    } else {
-      const errorMsg = err.message || String(err);
-      setStatus("⛔ Veri çekilemedi", "bad");
-      
-      const errorHtml = `
-        <div class="empty" style="text-align:left;white-space:pre-wrap;padding:20px">
-          <b style="color:var(--bad)">❌ Veri çekilemedi</b><br><br>
-          <b>Hata:</b> ${escapeHtml(errorMsg)}<br><br>
-          <b>Çözüm:</b><br>
-          1. Google Sheets paylaşımını kontrol edin<br>
-          2. "Bağlantıya sahip herkes: Görüntüleyebilir" olmalı<br>
-          3. Sayfayı yenileyin (Ctrl+F5)<br>
-          4. VPN/proxy kapatın<br><br>
-          <button class="btn primary" onclick="location.reload()">🔄 Tekrar Dene</button>
-        </div>
-      `;
-      
-      els.list.innerHTML = errorHtml;
-      els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
-      els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-      els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-      els.intersectionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
-    }
+    const errorMsg = err.message || String(err);
+    setStatus("⛔ Veri çekilemedi", "bad");
+    
+    const errorHtml = `
+      <div class="empty" style="text-align:left;white-space:pre-wrap;padding:20px">
+        <b style="color:var(--bad)">❌ Veri çekilemedi</b><br><br>
+        <b>Hata:</b> ${escapeHtml(errorMsg)}<br><br>
+        <b>Çözüm:</b><br>
+        1. Google Sheets paylaşımını kontrol edin<br>
+        2. "Bağlantıya sahip herkes: Görüntüleyebilir" olmalı<br>
+        3. Sayfayı yenileyin (Ctrl+F5)<br><br>
+        <button class="btn primary" onclick="location.reload()">🔄 Tekrar Dene</button>
+      </div>
+    `;
+    
+    els.list.innerHTML = errorHtml;
+    els.details.innerHTML = `<div class="empty">Önce veri gelsin 🙂</div>`;
+    els.distributionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+    els.figuranBox.innerHTML = `<div class="empty">Veri yok.</div>`;
+    els.intersectionBox.innerHTML = `<div class="empty">Veri yok.</div>`;
   }
 }
 
