@@ -1,3 +1,5 @@
+/* RESPONSE ORDER LOCK */
+let __lastResponseId = 0;
 /* SMART SHEET CACHE — eksik veri fix */
 (function(){
 
@@ -31,10 +33,18 @@ window.fetch = async function(url,opt){
     return sheetCache.get(key).then(r=>r.clone());
   }
 
-  const p = realFetch(url,opt).then(r=>{
-    sheetCache.set(key, Promise.resolve(r.clone()));
-    return r.clone();
-  });
+ const requestId = ++__lastResponseId;
+
+const p = realFetch(url,opt).then(async r=>{
+
+  // Eğer bu cevap eskiyse çöpe at
+  if(requestId !== __lastResponseId){
+    return new Response("{}", {headers:{'Content-Type':'application/json'}});
+  }
+
+  sheetCache.set(key, Promise.resolve(r.clone()));
+  return r.clone();
+});
 
   sheetCache.set(key,p);
   return p;
