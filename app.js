@@ -1,18 +1,3 @@
-
-/* ===== DATA GUARD — KÜÇÜK VERİ RENDER ENGELLEYİCİ ===== */
-let __MAX_GAME_COUNT__ = 0;
-function guardRender(list){
-  if(!Array.isArray(list)) return true;
-  if(list.length < __MAX_GAME_COUNT__){
-    console.log("⛔ eski/eksik veri render engellendi", list.length);
-    return false;
-  }
-  if(list.length > __MAX_GAME_COUNT__){
-    __MAX_GAME_COUNT__ = list.length;
-  }
-  return true;
-}
-
 /* ---------------- STORE overwrite yakala ---------------- */
 let _store = window.store;
 
