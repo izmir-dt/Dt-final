@@ -204,51 +204,6 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       color:var(--tabActiveText);
     }
 
-/* kartlar */
-.card, .panel{
-  background:linear-gradient(180deg,#161e28,#121820) !important;
-  border:1px solid #1f2a36 !important;
-  box-shadow:var(--shadow);
-}
-
-/* butonlar */
-.btn{
-  background:#151c24 !important;
-  border:1px solid #1f2a36 !important;
-  color:#e6edf3 !important;
-}
-.btn.primary{
-  background:var(--accent) !important;
-  border-color:var(--accent) !important;
-  color:#fff !important;
-}
-
-/* üst bar */
-header{
-  background:#0f141bdd !important;
-  backdrop-filter:blur(6px);
-}
-
-/* sekmeler */
-.tab{
-  background:#151c24 !important;
-  border:1px solid #1f2a36 !important;
-  color:#9aa7b3 !important;
-}
-.tab.active{
-  background:#1b2531 !important;
-  border-color:#3da9fc !important;
-  color:#fff !important;
-}
-/* genel zemin */
-body{
-  background: radial-gradient(circle at 20% 10%, #18202b 0%, #0f141b 60%);
-}
-/* listeler */
-.item:hover{
-  background:#1a2430 !important;
-  border-color:#3da9fc !important;
-}
     .card{
       background:var(--card);
       border:1px solid var(--line);
@@ -1489,6 +1444,86 @@ select{
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
+<style>
+/* ===== IDT Theme Shell (UI-only) ===== */
+:root{
+  --bg:#e9ded1; --card:#ffffff; --text:#16161a; --muted:#5a5560;
+  --accent:#7a1e2c; --accent2:#c07a2a; --ok:#18794e;
+  --line: rgba(16,24,40,.12);
+  --shadow:0 10px 30px rgba(24,16,8,.12);
+  --radius:18px;
+}
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow:hidden;
+}
+
+/* Shell layout */
+.idt-shell{ display:flex; height:100vh; }
+.idt-sidebar{
+  width:260px; flex-shrink:0;
+  background:#1a1a1a; color:#fff;
+  display:flex; flex-direction:column;
+  padding:20px;
+}
+.idt-logo{
+  color: var(--accent2);
+  font-weight:900;
+  font-size:1.05rem;
+  margin-bottom:22px;
+  padding:10px 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.idt-item{
+  display:flex; align-items:center; gap:12px;
+  padding:14px;
+  margin-bottom:8px;
+  border-radius:12px;
+  cursor:pointer;
+  color:#ddd;
+  border:1px solid transparent;
+  user-select:none;
+}
+.idt-item:hover{ background: rgba(255,255,255,.06); color:#fff; }
+.idt-item.active{ background: var(--accent); color:#fff; border-color: var(--accent2); }
+
+.idt-main{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.idt-topnav{
+  height:70px; background:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 22px;
+  border-bottom: 1px solid var(--line);
+}
+.idt-top-actions{ display:flex; gap:10px; align-items:center; }
+.idt-pill{
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:900;
+  font-size:12px;
+  cursor:pointer;
+  border:1px solid var(--line);
+  background:#f7f7f7;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.idt-pill.primary{ background: var(--accent); color:#fff; border-color: rgba(0,0,0,.08); }
+.idt-pill.ok{ background: var(--ok); color:#fff; border-color: rgba(0,0,0,.08); text-decoration:none; }
+.idt-badge{
+  background: var(--accent2);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  padding:2px 7px;
+  border-radius:999px;
+  margin-left:6px;
+  border:2px solid #fff;
+}
+
 /* Content area */
 .idt-content{ flex:1; overflow:auto; padding:22px; }
 
@@ -1586,6 +1621,199 @@ select{
   font-weight:700;
   white-space:nowrap;
 }
+
+</style>
+
+  <link rel="stylesheet" href="idt-polish.css">
+  
+
+</head>
+<body>
+  <div class="idt-shell">
+    <aside class="idt-sidebar" aria-label="Menü">
+      <div class="idt-side-head">
+      <div class="idt-mini-logo" aria-hidden="true"><img src="theater.png" alt="" /></div>
+        <div class="idt-head-txt">
+          <div class="h1">İDT Panel</div>
+          <div class="h2">Sanat Teknik Bürosu</div>
+        </div>
+      </div>
+
+      <div class="idt-item active" id="sidePlays"><span>🎭</span><b>Aktif Oyun</b><span class="idt-count" id="sidePlaysCount">-</span></div>
+      <div class="idt-item" id="sidePeople"><span>👥</span><b>Toplam Personel</b><span class="idt-count" id="sidePeopleCount">-</span></div>
+      <div class="idt-item" id="sideRows"><span>🧾</span><b>Sorgu & Karşılaştır</b><span class="idt-count" id="sideRowsCount">-</span></div>
+
+      <div class="idt-item" id="sideDist"><span>📊</span><b>Oyunlara Göre Dağılım</b></div>
+      <div class="idt-item" id="sideHeatmap"><span>🟫</span><b>Yoğunluk & Çakışma Merkezi</b></div>
+      <div class="idt-item" id="sideCharts"><span>📈</span><b>Grafikler</b></div>
+      <div class="idt-item" id="sideIntersect"><span>🧩</span><b>Kesişim Analizi</b></div>
+      <div class="idt-item" id="sideFiguran"><span>🎟️</span><b>Figüran/Emekli</b><span class="idt-count" id="sideFigCount">-</span></div>
+</aside>
+
+    <main class="idt-main">
+      <header class="idt-topnav">
+        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+        <div class="idt-top-actions">
+          <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
+          <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
+<a class="idt-pill ok" id="topSheet" href="javascript:void(0)">📊 Excel</a>
+        </div>
+      </header>
+
+<div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
+  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="masks"></span><span class="navTxt">AKTİF OYUN</span></button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="users"></span><span class="navTxt">TOPLAM PERSONEL</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="search"></span><span class="navTxt">SORGU & KARŞILAŞTIR</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="bars"></span><span class="navTxt">OYUN DAĞILIMI</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="shuffle"></span><span class="navTxt">YOĞUNLUK & ÇAKIŞMA</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="line"></span><span class="navTxt">GRAFİKLER</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="venn"></span><span class="navTxt">KESİŞİM</span></button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="navIcon" data-ico="ticket"></span><span class="navTxt">FİGÜRAN</span></button>
+
+  <!-- 3 nokta menüsü -->
+  <div class="topNav2More">
+    <button id="moreBtn" class="topNav2Btn"><span class="navIcon" data-ico="more"></span><span class="navTxt">⋯</span></button>
+    <div class="moreMenu" id="moreMenu">
+      <a href="#panel">Panel</a>
+      <a href="#matris">Yoğunluk & Çakışma</a>
+      <a href="#kesisim">Kesişim</a>
+    </div>
+  </div>
+</div>
+      <div class="idt-content">
+        
+<header>
+  <div class="top">
+    <div class="brand">
+      <div class="logo">IDT</div>
+      <div>
+        <h1><span class="brand-box"><span class="brand-main">İDT PANEL</span><span class="brand-divider">|</span><span class="brand-sub">SANAT TEKNİK BÜROSU</span></span></h1>
+        </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="themeBtn" title="Aydınlık/Karanlık">🌓 Tema</button>
+      <span id="status" class="pill">⏳ Yükleniyor…</span>
+      <button class="btn" id="reloadBtn">↻ Yenile</button>
+
+      <div class="menu">
+        <button class="btn" id="advBtn" title="Ek Araçlar">🧰 Ek Araçlar</button>
+        <div class="menuPanel hidden" id="advMenu" role="menu" aria-label="Ek Araçlar">
+          <div class="mi" id="advDist">📊 Dağılım <small>Oyunlara göre</small></div>
+          <div class="mi" id="advInter">🧩 Kesişim <small>2 oyun</small></div>
+        </div>
+      </div>
+
+      <div class="notif">
+        <button class="btn" id="notifBtn" title="Bildirimler (LOG)">
+          🔔 Bildirimler <span class="badge hidden" id="notifCount">0</span>
+        </button>
+        <div class="notifPanel hidden" id="notifPanel" role="dialog" aria-label="Bildirimler">
+          <div class="notifHd">
+            <div>
+              <b>Bildirimler</b>
+              <div class="small">Kaynak: BİLDİRİMLER (Google Sheets)</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <button class="btn" id="notifRefresh">↻</button>
+              <button class="btn" id="notifClose">✕</button>
+            </div>
+          </div>
+          <div class="notifBd" id="notifList">
+            <div class="empty">LOG okunuyor…</div>
+          </div>
+        </div>
+      </div>
+      <a class="btn primary" id="sheetBtn" href="#" target="_blank" rel="noreferrer">📄 Google Sheet’i Aç</a>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="tab active" id="tabPanel">Panel</button>
+    <button class="tab" id="tabDistribution">Oyunlara Göre Personel Dağılımı</button>
+    <button class="tab" id="tabHeatmap">Yoğunluk & Çakışma Merkezi</button>
+      <button id="tabAssign" class="tab-btn">📑 Görev Ataması</button>
+    <button class="tab" id="tabIntersection">Kesişim Analizi</button>
+    <button class="tab" id="tabFiguran">Figüranlar</button>
+    <button class="tab" id="tabCharts">Grafikler</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="dash">
+    <div class="dashTitle">ANA KONTROL PANELİ</div>
+<div class="kpis" id="kpis">
+    <div class="kpi soft1" data-go="Panel" data-mode="plays" role="button" tabindex="0" aria-label="Oyun listesine git"><div><div class="label">Aktif Oyun</div><div class="value" id="kpiPlays">-</div></div><div class="icon">🎭</div></div>
+    <div class="kpi soft2" data-go="Panel" data-mode="people" role="button" tabindex="0" aria-label="Kişi listesine git"><div><div class="label">Toplam Personel</div><div class="value" id="kpiPeople">-</div></div><div class="icon">👥</div></div>
+    <div class="kpi soft3" data-go="Panel" data-mode="rows" role="button" tabindex="0" aria-label="Panele git"><div><div class="label">Görev Ataması (Satır)</div><div class="value" id="kpiRows">-</div></div><div class="icon">🧾</div></div>
+    <div class="kpi soft4" data-go="Figuran" data-mode="figuran" role="button" tabindex="0" aria-label="Figüran listesine git"><div><div class="label">Figüran</div><div class="value" id="kpiFiguran">-</div></div><div class="icon">🎟️</div></div>
+  </div>
+
+  <div class="activeFilters hidden" id="activeFilters" aria-label="Aktif Seçimler">
+    <div class="afTitle">Aktif Seçimler</div>
+    <div class="afChips" id="afChips"></div>
+    <button class="btn afClear" id="afClear" type="button" title="Tüm seçimleri temizle">Temizle</button>
+  </div>
+
+  <!-- PANEL -->
+  <section id="viewPanel">
+    <div class="card">
+      <div class="hd">
+        <h2>Liste</h2>
+        <div class="filters">
+          <div class="input" title="Ara">
+            🔎 <input id="q" type="search" placeholder="Oyun / kişi / görev ara…" autocomplete="off"/>
+            <div class="qScopeBox"><select id="qScope" class="q-scope" title="Arama kapsamı">
+              <option value="all">Tümü</option>
+              <option value="play">Oyun</option>
+              <option value="person">Kişi</option>
+              <option value="role">Görev</option>
+            </select></div>
+            <button class="q-clear" id="qClear" title="Temizle">✕</button>
+          </div>
+<div class="seg" title="Görünüm">
+            <button id="btnPlays" class="active">🎭 Oyunlar</button>
+            <button id="btnPeople">👥 Kişiler</button>
+          </div>
+
+          <button class="btn" id="clearBtn">Temizle</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="grid">
+          <div class="idt-panel-left" data-idt-sticky="1" data-idt-panel="1">
+            <div class="list" id="list" data-idt-scroll="1"></div>
+            <div class="small" id="hint" style="margin-top:10px"></div>
+          </div>
+          <div class="card idt-sticky-panel" style="box-shadow:none" data-idt-sticky="1" data-idt-panel="1" data-idt-scroll="1">
+            <div class="hd" data-idt-panel-header="1">
+              <h2>Detay</h2>
+              <button class="btn" id="copyBtn">📋 Kopyala (Excel)</button>
+</div>
+            <div class="bd" id="details">
+              <div class="empty">Soldan bir oyun veya kişi seç.</div>
+            </div>
+</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section id="viewAssign" class="view" style="display:none">
+  <div class="card">
+    <div class="secHead">
+      <div>
+        <h2 class="h2">Sorgulama & Karşılaştırma</h2>
+        <div class="muted small">Sorgulama ve karşılaştırma aracı.</div>
+        <div class="muted small" id="assignRowCount" style="margin-top:4px;"></div>
+      </div>
+      <div class="toolbar">
+        <div class="seg" role="tablist" aria-label="Görev Ataması Modu">
+          <button id="assignModeFilter" class="segBtn active" role="tab" aria-selected="true">🔍 Filtrele & Listele</button>
+          <button id="assignModeCompare" class="segBtn" role="tab" aria-selected="false">🔄 Karşılaştır</button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODE: FILTER & LIST -->
     <div id="assignPaneFilter" class="assignPane">
       <div class="toolGrid">
@@ -2052,6 +2280,7 @@ select{
     }
   }, 5000);
 })();
+</script>
 /* ==== DT STABLE DATA LOCK ==== */
 (function(){
 let lastLen = 0;
@@ -2750,7 +2979,3 @@ function lock(fnName){
 ].forEach(lock);
 
 })();
-<script src="topbar_auto_clone.js"></script>
-</script>
-</body>
-</html>
