@@ -919,8 +919,6 @@ function applyFilters(list){
 
 /* ---------- UI render ---------- */
 function renderList(opts={}){
-  if(!guardRender(opts={})) return;
-
   const source = (activeMode==="plays") ? plays : people;
   const preserveScroll = (opts.preserveScroll !== undefined) ? !!opts.preserveScroll : true;
   const prevScrollTop = (preserveScroll && els.list) ? els.list.scrollTop : 0;
