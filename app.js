@@ -4,7 +4,7 @@ const SAFE = {
 butunOyunlar:null,
 figuran:null,
 bildirim:null
-};
+}
 
 /* ---------------- STORE overwrite yakala ---------------- */
 let _store = window.store;
