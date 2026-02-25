@@ -1,4 +1,4 @@
-/* IDT ULTRA STABİL VERİ KATMANI - FİNAL VERSİYON */
+/* IDT ULTRA STABİL VERİ KATMANI - FİNAL */
 (function(){
   if(window.__idt_stability_inited) return;
   window.__idt_stability_inited = true;
@@ -7,7 +7,7 @@
 
   const originalFetch = window.fetch;
   const activeFetches = new Map();
-  const CACHE_TTL = 5 * 60 * 1000; // 5 dakika
+  const CACHE_TTL = 5 * 60 * 1000;
 
   window.fetch = function(url, options) {
     const isGet = !options || !options.method || options.method.toUpperCase() === 'GET';
@@ -24,15 +24,18 @@
     if(isGet && isDataUrl) {
       const cached = activeFetches.get(key);
       if(cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-        console.log('📦 Cache kullanıldı:', url.substring(0, 60));
+        console.log('📦 Cache hit:', url.substring(0, 60));
         return cached.promise.then(r => r.clone());
       }
       
-      console.log('🌐 Fetch:', url.substring(0, 60));
+      console.log('🌐 Fetching:', url.substring(0, 60));
       
       const promise = originalFetch(url, options).then(res => {
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.clone();
+      }).catch(err => {
+        console.error('❌ Fetch error:', url.substring(0, 60), err);
+        throw err;
       });
       
       activeFetches.set(key, {
@@ -51,7 +54,6 @@
   };
 
   let lastDataHash = '';
-  let checkCount = 0;
   
   function checkDataConsistency() {
     if(!window.rawRows || !Array.isArray(window.rawRows)) return;
@@ -69,16 +71,9 @@
     }
     
     lastDataHash = currentHash;
-    checkCount++;
   }
   
   setInterval(checkDataConsistency, 3000);
-  
-  if(document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkDataConsistency);
-  } else {
-    checkDataConsistency();
-  }
   
   window.__idt_stability = {
     check: checkDataConsistency,
