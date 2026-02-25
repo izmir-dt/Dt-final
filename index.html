@@ -10,28 +10,52 @@
     <title>İzmir Devlet Tiyatrosu Müdürlüğü • Repertuvar Kişi Takip Sistemi</title>
   <style>
 
-:root{
-      --bg:#e9ded1;            /* premium warm ivory */
-      --card:#fbf7f1;
-      --text:#16161a;
-      --muted:#5a5560;
-      --line:#dccbb7;
-
-      --accent:#7a1e2c;        /* bordo */
-      --accent2:#c07a2a;       /* altın */
-      --ok:#18794e;
-      --warn:#b45309;
-      --bad:#b42318;
-      --shadow:0 10px 30px rgba(24,16,8,.12);
-      --radius:18px;
-      --radius2:14px;
-    }
+:root {
+  /* Modern & Profesyonel Tema (Aydınlık) */
+  --bg: #f4f7fb;           /* Çok açık buz mavisi arkaplan */
+  --card: #ffffff;          /* Saf beyaz kartlar */
+  --text: #1e293b;          /* Koyu lacivert metin (yüksek kontrast) */
+  --muted: #64748b;         /* Sessiz gri-mavi metin */
+  --line: #e2e8f0;          /* Çok açık gri çizgiler */
+  --accent: #0f3b5e;        /* Lacivert (Kurumsal vurgu) */
+  --accent2: #c07a2a;       /* Sıcak altın (Aksan) */
+  --good: #10b981;          /* Canlı yeşil (Başarı) */
+  --warn: #f59e0b;          /* Amber (Uyarı) */
+  --bad: #ef4444;           /* Parlak kırmızı (Hata) */
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --radius: 18px;
+  --radius2: 14px;
+  --chip: #f8fafc;
+  --soft1: #e0f2fe;
+  --soft2: #dcfce7;
+  --soft3: #fff3cd;
+  --soft4: #f1f5f9;
+}
+html[data-theme="dark"] {
+  /* Modern & Profesyonel Tema (Karanlık) */
+  --bg: #0b1120;           /* Çok koyu lacivert arkaplan */
+  --card: #1e293b;          /* Lacivert-gri kartlar */
+  --text: #f1f5f9;          /* Neredeyse beyaz metin */
+  --muted: #94a3b8;         /* Açık gri-mavi metin */
+  --line: #334155;          /* Orta gri çizgi */
+  --accent: #60a5fa;        /* Canlı mavi (Vurgu) */
+  --accent2: #fbbf24;       /* Parlak altın (Aksan) */
+  --good: #34d399;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
+  --chip: #1e293b;
+  --soft1: #1e3a5f;
+  --soft2: #14532d;
+  --soft3: #854d0e;
+  --soft4: #1e293b;
+}
 
 /* --- Alias tokens (compat) --- */
 :root{
   --r: var(--radius);
   --r2: var(--radius2);
-  --good: var(--ok);
+  --good: var(--good);
   --border: var(--line);
   --primary: var(--accent);
   --ink: var(--text);
@@ -1438,6 +1462,128 @@ select{
   color: var(--muted);
 }
 
+/* === PROFESYONEL TEMA EKLENTİLERİ === */
+
+/* 1. Daha Modern Font Kullanımı */
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 2. Kartlar ve Pencereler İçin Yumuşak Gölge ve Kenarlıklar */
+.card, .drawer, .modal, .notifPanel, .toolCard, .cmpCard, .dagilim-card {
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+}
+
+/* 3. Daha Okunabilir Tablolar */
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.75rem;
+  background-color: color-mix(in srgb, var(--card) 95%, var(--bg) 5%);
+}
+.table td {
+  font-size: 0.875rem;
+}
+.table tr:hover td {
+  background-color: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+/* 4. Butonlar İçin Daha Şık Tasarım */
+.btn, .idt-pill, .segBtn, .topNav2Btn {
+  border-radius: 9999px !important; /* Tam yuvarlak butonlar */
+  padding: 0.5rem 1rem !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+}
+.btn.primary, .idt-pill.primary {
+  background: var(--accent);
+  color: white;
+  border-color: transparent;
+}
+.btn.primary:hover, .idt-pill.primary:hover {
+  background: color-mix(in srgb, var(--accent) 80%, black);
+  transform: translateY(-1px);
+}
+
+/* 5. Arama Kutusu Modernizasyonu */
+.input {
+  border-radius: 9999px;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.input input {
+  font-size: 0.875rem;
+}
+.input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* 6. Chip ve Etiketler */
+.chip, .afChip, .tag {
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--chip);
+  border: 1px solid var(--line);
+}
+.afChip {
+  background: var(--accent);
+  color: white;
+  border-color: transparent;
+}
+.afChip b { color: rgba(255,255,255,0.9); }
+
+/* 7. Sidebar Modernizasyonu */
+.idt-sidebar {
+  background: linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--card) 95%, black) 100%);
+  border-right: 1px solid var(--line);
+}
+.idt-item {
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+.idt-item.active {
+  background: var(--accent);
+  color: white;
+}
+.idt-item.active .idt-count {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.idt-count {
+  background: color-mix(in srgb, var(--line) 30%, transparent);
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* === PROFESYONEL ANİMASYONLAR === */
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.view, .assignPane, .drawer {
+  animation: fadeIn 0.2s ease;
+}
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1447,8 +1593,8 @@ select{
 <style>
 /* ===== IDT Theme Shell (UI-only) ===== */
 :root{
-  --bg:#e9ded1; --card:#ffffff; --text:#16161a; --muted:#5a5560;
-  --accent:#7a1e2c; --accent2:#c07a2a; --ok:#18794e;
+  --bg:#f4f7fb; --card:#ffffff; --text:#1e293b; --muted:#64748b;
+  --accent:#0f3b5e; --accent2:#c07a2a; --good:#10b981;
   --line: rgba(16,24,40,.12);
   --shadow:0 10px 30px rgba(24,16,8,.12);
   --radius:18px;
@@ -1512,7 +1658,7 @@ body{
   gap:6px;
 }
 .idt-pill.primary{ background: var(--accent); color:#fff; border-color: rgba(0,0,0,.08); }
-.idt-pill.ok{ background: var(--ok); color:#fff; border-color: rgba(0,0,0,.08); text-decoration:none; }
+.idt-pill.ok{ background: var(--good); color:#fff; border-color: rgba(0,0,0,.08); text-decoration:none; }
 .idt-badge{
   background: var(--accent2);
   color:#fff;
@@ -1627,8 +1773,6 @@ body{
   <link rel="stylesheet" href="idt-polish.css">
   
 
-<script src="data-layer.js"></script>
-<script src="store.js"></script>
 </head>
 <body>
   <div class="idt-shell">
@@ -1654,7 +1798,7 @@ body{
 
     <main class="idt-main">
       <header class="idt-topnav">
-        <div id="statusMirror" style="font-weight:900; color: var(--ok);">●</div>
+        <div id="statusMirror" style="font-weight:900; color: var(--good);">●</div>
         <div class="idt-top-actions">
           <button class="idt-pill" id="topReload" type="button">🔄 Yenile</button>
           <button class="idt-pill primary" id="topNotif" type="button">🔔 Bildirimler <span class="idt-badge" id="topNotifBadge" style="display:none">0</span></button>
@@ -2283,7 +2427,41 @@ body{
   }, 5000);
 })();
 </script>
+/* ==== DT STABLE DATA LOCK ==== */
+(function(){
+let lastLen = 0;
+let stableCount = 0;
 
+const waitStable = setInterval(()=>{
+  if(!window.__DATA__) return;
+
+  const len = window.__DATA__.length;
+
+  if(len === lastLen) stableCount++;
+  else stableCount = 0;
+
+  lastLen = len;
+
+  // veri 2 tur değişmediyse tamamdır
+  if(stableCount >= 2 && len > 20){
+    clearInterval(waitStable);
+
+    // tüm hesapları tekrar kur
+    if(window.rebuildAll){
+      console.log("DT: Stable data detected → rebuild");
+      window.rebuildAll();
+    }
+    else if(window.processData){
+      console.log("DT: Stable data detected → process");
+      window.processData(window.__DATA__);
+    }
+    else{
+      console.log("DT: Stable data detected → reload UI");
+      location.hash = "#ready";
+    }
+  }
+},250);
+})();
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 
 <script>
@@ -2405,6 +2583,18 @@ body{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+  // --- VERI TAM GELMEDEN UI BASLAMASIN ---
+let __dtDataReady = false;
+
+const __dtWaitData = setInterval(()=>{
+  if(window.__DATA__ && Array.isArray(window.__DATA__) && window.__DATA__.length>5){
+    clearInterval(__dtWaitData);
+    if(!__dtDataReady){
+      __dtDataReady = true;
+      init();   // gerçek başlangıç
+    }
+  }
+},120);
 })();
 </script>
 
@@ -2852,8 +3042,6 @@ window.addEventListener("pageshow", e => {
   if (e.persisted) location.reload();
 });
 </script>
-<script src="module-sleep.js"></script>
-<script src="bootstrap-barrier.js"></script>\n<script src="master-client.js"></script>
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
@@ -2861,13 +3049,79 @@ window.addEventListener("pageshow", e => {
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
   <script src="topbar-more.js" defer></script>
-<script src="module-sleep.js"></script>
-<script src="bootstrap-barrier.js"></script>\n<script src="master-client.js"></script>
+<script>
+/* ===== DT DATA STABILIZER ===== */
+(function(){
+
+let lastCount = 0;
+let stableCount = 0;
+let stableTimer = null;
+
+function isDataReady(rows){
+  const count = rows?.length || 0;
+
+  if(count !== lastCount){
+    lastCount = count;
+    stableCount = 0;
+    return false;
+  }
+
+  stableCount++;
+
+  // 3 ardışık aynı uzunluk = veri tamam
+  return stableCount >= 3;
+}
+
+const originalProcess = window.processData;
+if(!originalProcess) return;
+
+window.processData = function(rows){
+
+  if(!isDataReady(rows)){
+    console.log("Veri henüz stabil değil:", rows.length);
+    return;
+  }
+
+  console.log("Veri stabil — UI kuruluyor:", rows.length);
+  return originalProcess.apply(this, arguments);
+};
+
+})();
+</script>
 </body>
 </html>
 
 
-<script src="module-sleep.js"></script>
-<script src="bootstrap-barrier.js"></script>\n<script src="master-client.js"></script>
 </body>
 </html>
+/* ==== DT HARD RENDER LOCK ==== */
+(function(){
+
+let rendered = false;
+
+function lock(fnName){
+  const fn = window[fnName];
+  if(typeof fn !== "function") return;
+
+  window[fnName] = function(...args){
+    if(rendered){
+      console.log("Blocked second render:", fnName);
+      return;
+    }
+    rendered = true;
+    console.log("First render allowed:", fnName);
+    return fn.apply(this,args);
+  }
+}
+
+// sistemde kullanılan olası render fonksiyonları
+[
+ 'processData',
+ 'buildUI',
+ 'rebuildAll',
+ 'initUI',
+ 'renderAll',
+ 'loadPlays'
+].forEach(lock);
+
+})();
