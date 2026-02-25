@@ -1,3 +1,35 @@
+/* =========================
+🔒 GLOBAL STORE KORUMA
+Veri artık overwrite OLAMAZ
+========================= */
+
+window.**SAFE_STORE** = window.**SAFE_STORE** || {
+butunOyunlar:null,
+figuran:null,
+bildirim:null,
+initialized:false
+};
+
+function mergeStore(part, payload){
+if(!payload) return;
+
+// boş veri gelirse ASLA ezme
+if(Array.isArray(payload) && payload.length === 0) return;
+
+window.**SAFE_STORE**[part] = payload;
+
+// ilk gerçek veri
+if(part === "butunOyunlar" && payload.length){
+window.**SAFE_STORE**.initialized = true;
+}
+
+// render sadece ana veri varsa
+if(window.**SAFE_STORE**.initialized){
+if(typeof renderApp === "function"){
+renderApp(window.**SAFE_STORE**);
+}
+}
+}
 /* ===== IDT HARD BOOT LOCK ===== */
 (function(){
 
