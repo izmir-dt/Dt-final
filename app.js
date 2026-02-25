@@ -2786,4 +2786,7 @@ async function idtCopyToClipboard(text){
 
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
-
+/* UI BAŞLANGICINI BEKLET */
+document.addEventListener("DOMContentLoaded", async () => {
+  await window.__BOOT_READY;
+});
