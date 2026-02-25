@@ -1813,7 +1813,137 @@ body{
         </div>
       </div>
     </div>
+/* ===============================
+   OPERATION CENTER THEME v1
+   =============================== */
 
+:root{
+  --bg:#0f141b;
+  --card:#151c24;
+  --line:#1f2a36;
+  --text:#e6edf3;
+  --muted:#8b98a5;
+
+  --accent:#ff3b3b;      /* aksiyon kırmızısı */
+  --accent2:#3da9fc;     /* seçim mavisi */
+  --ok:#22c55e;
+  --warn:#f59e0b;
+  --bad:#ef4444;
+
+  --shadow:0 10px 40px rgba(0,0,0,.55);
+}
+
+/* Genel arka plan */
+body{
+  background: radial-gradient(circle at 20% 10%, #18202b 0%, #0f141b 60%);
+  color:var(--text);
+}
+
+/* Kartlar */
+.card{
+  background:linear-gradient(180deg,#161e28,#121820);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+
+/* KPI’lar */
+.kpi{
+  background:linear-gradient(180deg,#1b2430,#141b24);
+  border:1px solid #202a36;
+}
+
+.kpi .value{
+  font-size:24px;
+  letter-spacing:.5px;
+}
+
+/* Üst menü */
+.idt-topnav{
+  background:rgba(15,20,27,.95);
+  border-bottom:1px solid #1f2a36;
+  backdrop-filter:blur(6px);
+}
+
+/* TopNav2 butonlar */
+.topNav2Btn{
+  background:#151c24;
+  border:1px solid #1f2a36;
+  color:#9aa7b3;
+  transition:.15s ease;
+}
+
+.topNav2Btn:hover{
+  background:#1b2531;
+  color:#fff;
+}
+
+.topNav2Btn.active{
+  background:linear-gradient(180deg,#1f2d3a,#16202b);
+  border-color:var(--accent2);
+  color:#fff;
+  box-shadow:0 0 0 1px var(--accent2);
+}
+
+/* Liste öğeleri */
+.item{
+  background:#141b24;
+  border:1px solid #1f2a36;
+  transition:.15s ease;
+}
+
+.item:hover{
+  background:#1a2430;
+  border-color:var(--accent2);
+}
+
+.item.selected{
+  border-color:var(--accent);
+  background:#1c222b;
+  box-shadow:0 0 0 1px var(--accent);
+}
+
+/* Detay panel */
+#details{
+  background:#121820;
+}
+
+#details .empty{
+  border:1px dashed #273444;
+  background:#151c24;
+  color:#8b98a5;
+}
+
+/* Butonlar */
+.btn{
+  background:#151c24;
+  border:1px solid #1f2a36;
+  color:#dbe5ee;
+}
+
+.btn.primary{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+
+.btn:hover{
+  filter:brightness(1.1);
+}
+
+/* Inputlar */
+.input input{
+  background:#10161d;
+  color:#e6edf3;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{
+  width:10px;
+}
+::-webkit-scrollbar-thumb{
+  background:#243141;
+  border-radius:999px;
+}
     <!-- MODE: FILTER & LIST -->
     <div id="assignPaneFilter" class="assignPane">
       <div class="toolGrid">
