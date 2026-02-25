@@ -1,3 +1,46 @@
+/* SMART SHEET CACHE — eksik veri fix */
+(function(){
+
+const realFetch = window.fetch;
+const sheetCache = new Map();
+
+function getKey(url){
+  if(typeof url !== "string") return url;
+
+  // sheet parametresi varsa onu kullan
+  const m = url.match(/[?&]sheet=([^&]+)/i);
+  if(m) return "sheet:" + decodeURIComponent(m[1]);
+
+  // GViz
+  if(url.includes("gviz/tq")){
+    const g = url.match(/\/d\/([^/]+)/);
+    if(g) return "gviz:" + g[1];
+  }
+
+  // apps script genel
+  if(url.includes("/exec")) return "exec";
+
+  return url;
+}
+
+window.fetch = async function(url,opt){
+
+  const key = getKey(url);
+
+  if(sheetCache.has(key)){
+    return sheetCache.get(key).then(r=>r.clone());
+  }
+
+  const p = realFetch(url,opt).then(r=>{
+    sheetCache.set(key, Promise.resolve(r.clone()));
+    return r.clone();
+  });
+
+  sheetCache.set(key,p);
+  return p;
+};
+
+})();
 const cache = new Map();
 const originalFetch = window.fetch;
 
