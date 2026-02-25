@@ -1,94 +1,3 @@
-/* ONE RENDER MODE */
-window.__DATA_RENDERED = false;
-/* RESPONSE ORDER LOCK */
-let __lastResponseId = 0;
-/* SMART SHEET CACHE — eksik veri fix */
-(function(){
-
-const realFetch = window.fetch;
-// veri zaten işlendi ise artık yeni veri alma
-if(window.__DATA_RENDERED){
-  return Promise.resolve(new Response("{}", {headers:{'Content-Type':'application/json'}}));
-}
-const sheetCache = new Map();
-
-function getKey(url){
-  if(typeof url !== "string") return url;
-
-  // sheet parametresi varsa onu kullan
-  const m = url.match(/[?&]sheet=([^&]+)/i);
-  if(m) return "sheet:" + decodeURIComponent(m[1]);
-
-  // GViz
-  if(url.includes("gviz/tq")){
-    const g = url.match(/\/d\/([^/]+)/);
-    if(g) return "gviz:" + g[1];
-  }
-
-  // apps script genel
-  if(url.includes("/exec")) return "exec";
-
-  return url;
-}
-
-window.fetch = async function(url,opt){
-
-  const key = getKey(url);
-
-  if(sheetCache.has(key)){
-    return sheetCache.get(key).then(r=>r.clone());
-  }
-
- const requestId = ++__lastResponseId;
-
-const p = realFetch(url,opt).then(async r=>{
-
-  // Eğer bu cevap eskiyse çöpe at
-  if(requestId !== __lastResponseId){
-    return new Response("{}", {headers:{'Content-Type':'application/json'}});
-  }
-
-  sheetCache.set(key, Promise.resolve(r.clone()));
-  return r.clone();
-});
-
-  sheetCache.set(key,p);
-  return p;
-};
-
-})();
-const cache = new Map();
-const originalFetch = window.fetch;
-
-window.fetch = function(url, options){
-
-  if (typeof url === "string" && url.includes("script.google.com")) {
-// URL'den gerçek veri kaynağını çıkar
-let key = url;
-const m = url.match(/sheet=([^&]+)/);
-if(m) key = "sheet:" + decodeURIComponent(m[1]);
-    if (cache.has(url)) {
-      return cache.get(url).then(r => r.clone());
-    }
-
-    const p = originalFetch(url, options).then(r => {
-
-  // ⭐ İLK GERÇEK VERİ GELDİĞİNDE SİTEYİ SERBEST BIRAK
-  if (window.__bootResolve) {
-    window.__bootResolve();
-    window.__bootResolve = null;
-  }
-
-  cache.set(url, Promise.resolve(r.clone()));
-  return r.clone();
-});
-
-    cache.set(url, p);
-    return p;
-  }
-
-  return originalFetch(url, options);
-};
 /* ===== IDT HARD BOOT LOCK ===== */
 (function(){
 
@@ -99,10 +8,15 @@ if(m) key = "sheet:" + decodeURIComponent(m[1]);
 /* ===== IDT GLOBAL DATA SINGLETON ===== */
 (function(){
 
+  let __DATA_RENDERED = false;
   const cache = new Map();
   const originalFetch = window.fetch;
 
   window.fetch = function(url, options){
+
+    if(__DATA_RENDERED){
+      return Promise.resolve(new Response("{}", {headers:{'Content-Type':'application/json'}}));
+    }
 
     if (typeof url === "string" && url.includes("script.google.com")) {
 
@@ -111,6 +25,7 @@ if(m) key = "sheet:" + decodeURIComponent(m[1]);
       }
 
       const p = originalFetch(url, options).then(r => {
+        __DATA_RENDERED = true;
         cache.set(url, Promise.resolve(r.clone()));
         return r.clone();
       });
@@ -2848,7 +2763,4 @@ async function idtCopyToClipboard(text){
 
 // Büyük metinlerde UI donmasın diye 1 tick nefes aldır
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
-/* UI BAŞLANGICINI BEKLET */
-document.addEventListener("DOMContentLoaded", async () => {
-  await window.__BOOT_READY;
-});
+
