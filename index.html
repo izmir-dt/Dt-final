@@ -3147,9 +3147,11 @@ if(location.search.includes('debug')) {
     if(l) l.textContent = `son: ${new Date().toLocaleTimeString()}`;
   }, 1000);
 }
-</script>
+<!-- ÖNCE performans ve stabilite -->
 <script src="idt-performance.js" defer></script>
-<script src="stability.js" defer></script>  <!-- YENİ -->
+<script src="stability.js" defer></script>
+
+<!-- SONRA uygulama mantığı -->
 <script src="idt-desktop10.js" defer></script>
 <script src="app.js" defer></script>
 <script src="topbar-more.js" defer></script>
