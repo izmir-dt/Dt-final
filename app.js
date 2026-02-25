@@ -1,3 +1,9 @@
+// TEK RENDER KİLİDİ
+if(window.__IDT_RENDER_DONE__){
+  console.warn("SECOND RENDER BLOCKED");
+} else {
+  window.__IDT_RENDER_DONE__ = true;
+}
 /* ===== IDT HARD BOOT LOCK ===== */
 (function(){
 
@@ -827,6 +833,8 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
+if(window.__IDT_ALREADY_RENDERED__) return;
+window.__IDT_ALREADY_RENDERED__ = true;
 function renderList(opts={}){
   const source = (activeMode==="plays") ? plays : people;
   const preserveScroll = (opts.preserveScroll !== undefined) ? !!opts.preserveScroll : true;
