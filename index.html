@@ -3125,3 +3125,26 @@ function lock(fnName){
 ].forEach(lock);
 
 })();
+<!-- DEBUG PANEL (sadece geliştirme için, production'da kaldır) -->
+<div id="debugPanel" style="position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,0.8);color:#0f0;padding:8px 12px;border-radius:8px;font-family:monospace;font-size:11px;z-index:99999;max-width:300px;display:none;">
+  <div>📊 <span id="debugCount">0</span> satır | 🔄 <span id="debugSource">-</span></div>
+  <div id="debugLast" style="color:#aaa;font-size:10px;"></div>
+</div>
+
+<script>
+// Debug panelini aktifleştir (URL'de ?debug varsa)
+if(location.search.includes('debug')) {
+  const dp = document.getElementById('debugPanel');
+  if(dp) dp.style.display = 'block';
+  
+  setInterval(() => {
+    const c = document.getElementById('debugCount');
+    const s = document.getElementById('debugSource');
+    const l = document.getElementById('debugLast');
+    
+    if(c) c.textContent = window.rawRows?.length || 0;
+    if(s) s.textContent = window.__lastSource || 'bilinmiyor';
+    if(l) l.textContent = `son: ${new Date().toLocaleTimeString()}`;
+  }, 1000);
+}
+</script>
