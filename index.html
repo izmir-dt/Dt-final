@@ -1627,6 +1627,8 @@ body{
   <link rel="stylesheet" href="idt-polish.css">
   
 
+<script src="data-layer.js"></script>
+<script src="store.js"></script>
 </head>
 <body>
   <div class="idt-shell">
@@ -2281,41 +2283,7 @@ body{
   }, 5000);
 })();
 </script>
-/* ==== DT STABLE DATA LOCK ==== */
-(function(){
-let lastLen = 0;
-let stableCount = 0;
 
-const waitStable = setInterval(()=>{
-  if(!window.__DATA__) return;
-
-  const len = window.__DATA__.length;
-
-  if(len === lastLen) stableCount++;
-  else stableCount = 0;
-
-  lastLen = len;
-
-  // veri 2 tur değişmediyse tamamdır
-  if(stableCount >= 2 && len > 20){
-    clearInterval(waitStable);
-
-    // tüm hesapları tekrar kur
-    if(window.rebuildAll){
-      console.log("DT: Stable data detected → rebuild");
-      window.rebuildAll();
-    }
-    else if(window.processData){
-      console.log("DT: Stable data detected → process");
-      window.processData(window.__DATA__);
-    }
-    else{
-      console.log("DT: Stable data detected → reload UI");
-      location.hash = "#ready";
-    }
-  }
-},250);
-})();
 <!-- Masaüstü 1.0 Kabuk (UI katmanı) -->
 
 <script>
@@ -2437,18 +2405,6 @@ const waitStable = setInterval(()=>{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
-  // --- VERI TAM GELMEDEN UI BASLAMASIN ---
-let __dtDataReady = false;
-
-const __dtWaitData = setInterval(()=>{
-  if(window.__DATA__ && Array.isArray(window.__DATA__) && window.__DATA__.length>5){
-    clearInterval(__dtWaitData);
-    if(!__dtDataReady){
-      __dtDataReady = true;
-      init();   // gerçek başlangıç
-    }
-  }
-},120);
 })();
 </script>
 
@@ -2896,6 +2852,8 @@ window.addEventListener("pageshow", e => {
   if (e.persisted) location.reload();
 });
 </script>
+<script src="module-sleep.js"></script>
+<script src="bootstrap-barrier.js"></script>\n<script src="master-client.js"></script>
 </body>
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
@@ -2903,79 +2861,13 @@ window.addEventListener("pageshow", e => {
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
   <script src="topbar-more.js" defer></script>
-<script>
-/* ===== DT DATA STABILIZER ===== */
-(function(){
-
-let lastCount = 0;
-let stableCount = 0;
-let stableTimer = null;
-
-function isDataReady(rows){
-  const count = rows?.length || 0;
-
-  if(count !== lastCount){
-    lastCount = count;
-    stableCount = 0;
-    return false;
-  }
-
-  stableCount++;
-
-  // 3 ardışık aynı uzunluk = veri tamam
-  return stableCount >= 3;
-}
-
-const originalProcess = window.processData;
-if(!originalProcess) return;
-
-window.processData = function(rows){
-
-  if(!isDataReady(rows)){
-    console.log("Veri henüz stabil değil:", rows.length);
-    return;
-  }
-
-  console.log("Veri stabil — UI kuruluyor:", rows.length);
-  return originalProcess.apply(this, arguments);
-};
-
-})();
-</script>
+<script src="module-sleep.js"></script>
+<script src="bootstrap-barrier.js"></script>\n<script src="master-client.js"></script>
 </body>
 </html>
 
 
+<script src="module-sleep.js"></script>
+<script src="bootstrap-barrier.js"></script>\n<script src="master-client.js"></script>
 </body>
 </html>
-/* ==== DT HARD RENDER LOCK ==== */
-(function(){
-
-let rendered = false;
-
-function lock(fnName){
-  const fn = window[fnName];
-  if(typeof fn !== "function") return;
-
-  window[fnName] = function(...args){
-    if(rendered){
-      console.log("Blocked second render:", fnName);
-      return;
-    }
-    rendered = true;
-    console.log("First render allowed:", fnName);
-    return fn.apply(this,args);
-  }
-}
-
-// sistemde kullanılan olası render fonksiyonları
-[
- 'processData',
- 'buildUI',
- 'rebuildAll',
- 'initUI',
- 'renderAll',
- 'loadPlays'
-].forEach(lock);
-
-})();
