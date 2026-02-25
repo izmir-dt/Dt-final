@@ -36,6 +36,8 @@
   window.__IDT_APP_STARTED__ = true;
 
 })();
+
+// CONFIG tek tanım - düzeltildi
 window.CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
@@ -178,7 +180,7 @@ const els = {
   kpiRows: el("kpiRows"),
   kpiFiguran: el("kpiFiguran"),
 };
-els.sheetBtn.href = CONFIG.sheetUrl();
+els.sheetBtn.href = window.CONFIG.sheetUrl();
 
 if(els.chartMain){
   els.chartMain.addEventListener('click', onChartCanvasClick);
@@ -432,8 +434,8 @@ function jsonp(url, timeoutMs=20000){
 }
 
 async function tryLoadApiJsonp(){
-  if(!CONFIG.API_BASE) throw new Error("API_BASE tanımlı değil");
-  const url = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_MAIN)}`;
+  if(!window.CONFIG.API_BASE) throw new Error("API_BASE tanımlı değil");
+  const url = `${window.CONFIG.API_BASE}?sheet=${encodeURIComponent(window.CONFIG.SHEET_MAIN)}`;
   const data = await jsonp(url);
   if(!data || data.ok !== true || !Array.isArray(data.rows)) throw new Error("API veri formatı beklenmedik");
   return data.rows.map(r=>({
@@ -445,13 +447,13 @@ async function tryLoadApiJsonp(){
 }
 
 async function tryLoadGviz(){
-  const res = await fetch(CONFIG.gvizUrl(), {cache:"no-store"});
+  const res = await fetch(window.CONFIG.gvizUrl(), {cache:"no-store"});
   if(!res.ok) throw new Error(`GViz indirilemedi (${res.status}).`);
   const txt = await res.text();
   return buildFromGviz(parseGviz(txt));
 }
 async function tryLoadCsv(){
-  const res = await fetch(CONFIG.csvUrl(), {cache:"no-store"});
+  const res = await fetch(window.CONFIG.csvUrl(), {cache:"no-store"});
   if(!res.ok) throw new Error(`CSV indirilemedi (${res.status}).`);
   const csv = await res.text();
   return buildFromCsv(csvToRows(csv));
@@ -591,8 +593,8 @@ if(els.notifCount){
   if(!els.notifPanel) return;
 
   try{
-    const sheetName = CONFIG.NOTIF_SHEET_NAME || "BİLDİRİMLER";
-    const gvizUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json&_=${Date.now()}`;
+    const sheetName = window.CONFIG.NOTIF_SHEET_NAME || "BİLDİRİMLER";
+    const gvizUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(window.CONFIG.SPREADSHEET_ID)}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json&_=${Date.now()}`;
 
     const res = await fetch(gvizUrl, { cache: "no-store" });
     const txt = await res.text();
@@ -1267,7 +1269,7 @@ function renderMobileChartList(items){
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
-     const title = `${chartMode === "roles" ? "Görev" : "Kategori"}: ${key}`;
+      const title = `${chartMode === "roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
     });
   });
@@ -2231,15 +2233,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     fix("2. Oyun",2);
   }catch(e){ console.error(e); }
 });
-
-
-try {
-  CONFIG.SPREADSHEET_ID = "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0";
-  CONFIG.API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
-  CONFIG.NOTIF_API_BASE = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
-} catch (e) {
-  console.warn("CONFIG override skipped:", e);
-}
 
 const assignState = {
   inited: false,
