@@ -17,13 +17,6 @@ if(window.__IDT_RENDER_DONE__){
   let __DATA_RENDERED = false;
   const cache = new Map();
   const originalFetch = window.fetch;
-
-  window.fetch = function(url, options){
-
-    if(__DATA_RENDERED){
-      return Promise.resolve(new Response("{}", {headers:{'Content-Type':'application/json'}}));
-    }
-
     if (typeof url === "string" && url.includes("script.google.com")) {
 
       if (cache.has(url)) {
