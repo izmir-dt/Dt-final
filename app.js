@@ -1,3 +1,81 @@
+/* =====================================================
+İDT VERİ KORUMA KATMANI — OVERWRITE ENGELLEYİCİ
+App.js nereye yazarsa yazsın veri düşmez
+===================================================== */
+
+(function(){
+
+const SAFE = {
+butunOyunlar:null,
+figuran:null,
+bildirim:null
+};
+
+/* ---------------- STORE overwrite yakala ---------------- */
+let _store = window.store;
+
+Object.defineProperty(window, "store", {
+get(){ return _store; },
+set(v){
+
+```
+if(!v) return;
+
+// ana veri varsa ve yeni gelen daha küçükse iptal et
+if(_store && _store.butunOyunlar && v.butunOyunlar){
+  if(v.butunOyunlar.length < _store.butunOyunlar.length){
+    console.warn("⛔ Eksik veri overwrite engellendi");
+    return;
+  }
+}
+
+_store = v;
+```
+
+}
+});
+
+/* ---------------- FETCH yakala ---------------- */
+const origFetch = window.fetch;
+
+window.fetch = async function(...args){
+const res = await origFetch(...args);
+
+try{
+const clone = res.clone();
+const txt = await clone.text();
+
+```
+if(txt.includes("BÜTÜN OYUNLAR")){
+  SAFE.butunOyunlar = txt;
+}
+if(txt.includes("FİGÜRAN")){
+  SAFE.figuran = txt;
+}
+if(txt.includes("BİLDİRİMLER")){
+  SAFE.bildirim = txt;
+}
+```
+
+}catch(e){}
+
+return res;
+};
+
+/* ---------------- render spam engelle ---------------- */
+let lastRender = 0;
+const RENDER_GAP = 800;
+
+const origRAF = window.requestAnimationFrame;
+window.requestAnimationFrame = function(fn){
+const now = performance.now();
+if(now - lastRender < RENDER_GAP) return;
+lastRender = now;
+return origRAF(fn);
+};
+
+})();
+
 /* =========================
 🔒 GLOBAL STORE KORUMA
 Veri artık overwrite OLAMAZ
