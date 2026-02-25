@@ -203,30 +203,6 @@ body{margin:0;font-family: Arial, system-ui, -apple-system, "Segoe UI", Roboto, 
       background:var(--tabActiveBg);
       color:var(--tabActiveText);
     }
-/* ===================================================
-   OPERATION CENTER OVERRIDE (GERÇEK TEMA)
-   =================================================== */
-
-:root{
-  --bg:#0f141b;
-  --card:#151c24;
-  --text:#e6edf3;
-  --muted:#8b98a5;
-  --line:#1f2a36;
-
-  --accent:#ff3b3b;
-  --accent2:#3da9fc;
-  --ok:#22c55e;
-  --warn:#f59e0b;
-  --bad:#ef4444;
-
-  --shadow:0 10px 40px rgba(0,0,0,.55);
-}
-
-/* genel zemin */
-body{
-  background: radial-gradient(circle at 20% 10%, #18202b 0%, #0f141b 60%);
-}
 
 /* kartlar */
 .card, .panel{
@@ -264,7 +240,30 @@ header{
   border-color:#3da9fc !important;
   color:#fff !important;
 }
+/* ===================================================
+   OPERATION CENTER OVERRIDE (GERÇEK TEMA)
+   =================================================== */
 
+:root{
+  --bg:#0f141b;
+  --card:#151c24;
+  --text:#e6edf3;
+  --muted:#8b98a5;
+  --line:#1f2a36;
+
+  --accent:#ff3b3b;
+  --accent2:#3da9fc;
+  --ok:#22c55e;
+  --warn:#f59e0b;
+  --bad:#ef4444;
+
+  --shadow:0 10px 40px rgba(0,0,0,.55);
+}
+
+/* genel zemin */
+body{
+  background: radial-gradient(circle at 20% 10%, #18202b 0%, #0f141b 60%);
+}
 /* listeler */
 .item:hover{
   background:#1a2430 !important;
