@@ -11,44 +11,40 @@
   <style>
 
 :root {
-  /* Modern & Profesyonel Tema (Aydınlık) */
-  --bg: #f4f7fb;           /* Çok açık buz mavisi arkaplan */
+  /* PROFESYONEL SOFT TEMA - Göz yormayan, kurumsal */
+  --bg: #f5f7fa;           /* Yumuşak gri-mavi arkaplan */
   --card: #ffffff;          /* Saf beyaz kartlar */
-  --text: #1e293b;          /* Koyu lacivert metin (yüksek kontrast) */
-  --muted: #64748b;         /* Sessiz gri-mavi metin */
+  --text: #1e2b3c;          /* Koyu lacivert metin */
+  --muted: #5e6f88;         /* Sessiz mavi-gri */
   --line: #e2e8f0;          /* Çok açık gri çizgiler */
-  --accent: #0f3b5e;        /* Lacivert (Kurumsal vurgu) */
-  --accent2: #c07a2a;       /* Sıcak altın (Aksan) */
-  --good: #10b981;          /* Canlı yeşil (Başarı) */
-  --warn: #f59e0b;          /* Amber (Uyarı) */
-  --bad: #ef4444;           /* Parlak kırmızı (Hata) */
-  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-  --radius: 18px;
-  --radius2: 14px;
-  --chip: #f8fafc;
-  --soft1: #e0f2fe;
-  --soft2: #dcfce7;
-  --soft3: #fff3cd;
-  --soft4: #f1f5f9;
+  --accent: #2563eb;        /* Canlı mavi (vurgu) */
+  --accent2: #7c3aed;       /* Mor (ikincil vurgu) */
+  --good: #059669;          /* Yumuşak yeşil */
+  --warn: #d97706;          /* Yumuşak turuncu */
+  --bad: #dc2626;           /* Yumuşak kırmızı */
+  
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --radius: 16px;
+  --radius2: 12px;
+  --chip: #f1f5f9;
 }
 html[data-theme="dark"] {
-  /* Modern & Profesyonel Tema (Karanlık) */
-  --bg: #0b1120;           /* Çok koyu lacivert arkaplan */
-  --card: #1e293b;          /* Lacivert-gri kartlar */
-  --text: #f1f5f9;          /* Neredeyse beyaz metin */
-  --muted: #94a3b8;         /* Açık gri-mavi metin */
-  --line: #334155;          /* Orta gri çizgi */
-  --accent: #60a5fa;        /* Canlı mavi (Vurgu) */
-  --accent2: #fbbf24;       /* Parlak altın (Aksan) */
-  --good: #34d399;
-  --warn: #fbbf24;
-  --bad: #f87171;
-  --shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
-  --chip: #1e293b;
-  --soft1: #1e3a5f;
-  --soft2: #14532d;
-  --soft3: #854d0e;
-  --soft4: #1e293b;
+  /* PROFESYONEL SOFT TEMA - Karanlık mod */
+  --bg: #0b1423;           /* Koyu lacivert arkaplan */
+  --card: #1a2639;          /* Lacivert-gri kartlar */
+  --text: #e9edf5;          /* Açık gri metin */
+  --muted: #94a3b8;         /* Gri-mavi metin */
+  --line: #2d3748;          /* Koyu gri çizgi */
+  --accent: #3b82f6;        /* Canlı mavi (vurgu) */
+  --accent2: #8b5cf6;       /* Mor (ikincil vurgu) */
+  --good: #10b981;
+  --warn: #f59e0b;
+  --bad: #ef4444;
+  
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.3);
+  --chip: #1f2a3f;
 }
 
 /* --- Alias tokens (compat) --- */
@@ -66,28 +62,6 @@ html[data-theme="dark"]{
   --primary: var(--accent);
   --ink: var(--text);
 }
-html[data-theme="dark"]{
-      --bg:#0b1020;
-      --card:#0f172a;
-      --text:#f1f5f9;
-      --muted:#cbd5e1;
-      --line:#1f2a44;
-
-      --accent:#60a5fa;
-      --accent2:#93c5fd;
-
-      --shadow: 0 18px 44px rgba(0,0,0,.55);
-      --chip:#111827;
-
-      --soft1:rgba(96,165,250,.14);
-      --soft2:rgba(34,197,94,.14);
-      --soft3:rgba(245,158,11,.14);
-      --soft4:rgba(236,72,153,.14);
-
-      --tabActiveBg: rgba(148,163,184,.12);
-      --tabActiveBorder: rgba(148,163,184,.25);
-      --tabActiveText: #f1f5f9;
-    }
 
     *{box-sizing:border-box}
     html{color-scheme: light;}
@@ -1475,129 +1449,231 @@ body {
 
 /* 2. Kartlar ve Pencereler İçin Yumuşak Gölge ve Kenarlıklar */
 .card, .drawer, .modal, .notifPanel, .toolCard, .cmpCard, .dagilim-card {
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  transition: box-shadow 0.2s ease;
-}
-.card:hover {
-  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
-}
-
-/* 3. Daha Okunabilir Tablolar */
-.table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-size: 0.75rem;
-  background-color: color-mix(in srgb, var(--card) 95%, var(--bg) 5%);
-}
-.table td {
-  font-size: 0.875rem;
-}
-.table tr:hover td {
-  background-color: color-mix(in srgb, var(--accent) 5%, transparent);
+  border: none !important;
+  background: var(--card) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--shadow) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
 }
 
-/* 4. Butonlar İçin Daha Şık Tasarım */
-.btn, .idt-pill, .segBtn, .topNav2Btn {
-  border-radius: 9999px !important; /* Tam yuvarlak butonlar */
-  padding: 0.5rem 1rem !important;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: all 0.15s ease;
+.card:hover, .toolCard:hover {
+  box-shadow: var(--shadow-hover) !important;
 }
+
+/* Kart başlıkları */
+.card .hd {
+  padding: 18px 20px !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: transparent !important;
+}
+
+.card .hd h2 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  color: var(--text) !important;
+}
+
+/* Liste öğeleri */
+.item {
+  border: 1px solid transparent !important;
+  background: var(--card) !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+  transition: all 0.15s ease !important;
+}
+
+.item:hover {
+  border-color: var(--line) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  transform: translateY(-1px) !important;
+}
+
+html[data-theme="dark"] .item:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.item .name {
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.item .meta {
+  font-size: 12px !important;
+  opacity: 0.7 !important;
+}
+
+/* Chip'ler daha soft */
+.chip {
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  background: var(--chip) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--text) !important;
+}
+
+/* === PROFESYONEL BUTONLAR === */
+.btn, .idt-pill {
+  border: 1px solid var(--line) !important;
+  background: transparent !important;
+  border-radius: 12px !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text) !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn:hover, .idt-pill:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: var(--muted) !important;
+  transform: translateY(-1px) !important;
+}
+
+html[data-theme="dark"] .btn:hover,
+html[data-theme="dark"] .idt-pill:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
 .btn.primary, .idt-pill.primary {
-  background: var(--accent);
-  color: white;
-  border-color: transparent;
+  background: var(--accent) !important;
+  border-color: transparent !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.15) !important;
 }
+
 .btn.primary:hover, .idt-pill.primary:hover {
-  background: color-mix(in srgb, var(--accent) 80%, black);
-  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 90%, black) !important;
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2) !important;
 }
 
-/* 5. Arama Kutusu Modernizasyonu */
-.input {
-  border-radius: 9999px;
-  padding: 0.5rem 0.5rem 0.5rem 1rem;
-  background: var(--card);
-  border: 1px solid var(--line);
-}
-.input input {
-  font-size: 0.875rem;
-}
-.input:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
-}
-
-/* 6. Chip ve Etiketler */
-.chip, .afChip, .tag {
-  border-radius: 9999px;
-  font-weight: 500;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  background: var(--chip);
-  border: 1px solid var(--line);
-}
-.afChip {
-  background: var(--accent);
-  color: white;
-  border-color: transparent;
-}
-.afChip b { color: rgba(255,255,255,0.9); }
-
-/* 7. Sidebar Modernizasyonu */
-.idt-sidebar {
-  background: linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--card) 95%, black) 100%);
-  border-right: 1px solid var(--line);
-}
-.idt-item {
-  border-radius: 12px;
-  margin-bottom: 4px;
-}
-.idt-item.active {
-  background: var(--accent);
-  color: white;
-}
-.idt-item.active .idt-count {
-  background: rgba(255,255,255,0.2);
-  color: white;
-}
-.idt-count {
-  background: color-mix(in srgb, var(--line) 30%, transparent);
-  border-radius: 9999px;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
+/* === PROFESYONEL ÜST BAR === */
+.idt-topbar2 {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 12px 24px !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  width: 100% !important;
+  margin: 0 !important;
 }
 
-/* === PROFESYONEL ANİMASYONLAR === */
-.fade-in {
-  animation: fadeIn 0.3s ease;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+html[data-theme="dark"] .idt-topbar2 {
+  background: rgba(26, 38, 57, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-.view, .assignPane, .drawer {
-  animation: fadeIn 0.2s ease;
+/* Üst bar butonları */
+.idt-topbar2 .topNav2Btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 9999px !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.01em !important;
+  color: var(--muted) !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
 }
+
+.idt-topbar2 .topNav2Btn:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text) !important;
+  transform: translateY(-1px) !important;
+}
+
+html[data-theme="dark"] .idt-topbar2 .topNav2Btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: white !important;
+}
+
+.idt-topbar2 .topNav2Btn.is-active {
+  background: var(--accent) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* İkonlar için */
+.idt-topbar2 .navIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.8;
+}
+
+.idt-topbar2 .topNav2Btn.is-active .navIcon {
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
+
+/* DAHA FAZLA menüsü */
+.topNav2More {
+  position: relative !important;
+}
+
+.topNav2More .moreMenu {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.15) !important;
+  min-width: 200px !important;
+  padding: 8px !important;
+  z-index: 1000 !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.topNav2More .moreMenu a {
+  display: block !important;
+  padding: 10px 16px !important;
+  border-radius: 12px !important;
+  color: var(--text) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.1s ease !important;
+}
+
+.topNav2More .moreMenu a:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="dark"] .topNav2More .moreMenu a:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 
 <style>
 /* ===== IDT Theme Shell (UI-only) ===== */
 :root{
-  --bg:#f4f7fb; --card:#ffffff; --text:#1e293b; --muted:#64748b;
-  --accent:#0f3b5e; --accent2:#c07a2a; --good:#10b981;
+  --bg:#f5f7fa; --card:#ffffff; --text:#1e2b3c; --muted:#5e6f88;
+  --accent:#2563eb; --accent2:#7c3aed; --good:#059669;
   --line: rgba(16,24,40,.12);
-  --shadow:0 10px 30px rgba(24,16,8,.12);
-  --radius:18px;
+  --shadow:0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --radius:16px;
 }
 html,body{ height:100%; }
 body{
@@ -3046,6 +3122,7 @@ window.addEventListener("pageshow", e => {
 </html>
    <!-- scripts: keep only one app.js + helpers (defer) -->
   <script src="idt-performance.js" defer></script>
+  <script src="stability.js" defer></script>
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
   <script src="topbar-more.js" defer></script>
@@ -3125,33 +3202,3 @@ function lock(fnName){
 ].forEach(lock);
 
 })();
-<!-- DEBUG PANEL (sadece geliştirme için, production'da kaldır) -->
-<div id="debugPanel" style="position:fixed;bottom:10px;left:10px;background:rgba(0,0,0,0.8);color:#0f0;padding:8px 12px;border-radius:8px;font-family:monospace;font-size:11px;z-index:99999;max-width:300px;display:none;">
-  <div>📊 <span id="debugCount">0</span> satır | 🔄 <span id="debugSource">-</span></div>
-  <div id="debugLast" style="color:#aaa;font-size:10px;"></div>
-</div>
-
-<script>
-// Debug panelini aktifleştir (URL'de ?debug varsa)
-if(location.search.includes('debug')) {
-  const dp = document.getElementById('debugPanel');
-  if(dp) dp.style.display = 'block';
-  
-  setInterval(() => {
-    const c = document.getElementById('debugCount');
-    const s = document.getElementById('debugSource');
-    const l = document.getElementById('debugLast');
-    
-    if(c) c.textContent = window.rawRows?.length || 0;
-    if(s) s.textContent = window.__lastSource || 'bilinmiyor';
-    if(l) l.textContent = `son: ${new Date().toLocaleTimeString()}`;
-  }, 1000);
-}
-<!-- ÖNCE performans ve stabilite -->
-<script src="idt-performance.js" defer></script>
-<script src="stability.js" defer></script>
-
-<!-- SONRA uygulama mantığı (SADECE 1 KEZ) -->
-<script src="idt-desktop10.js" defer></script>
-<script src="app.js" defer></script>  <!-- SADECE 1 TANE OLMALI -->
-<script src="topbar-more.js" defer></script>
