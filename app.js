@@ -1,7 +1,6 @@
 /* =========================
-DT FINAL STABLE LOADER
-Only Apps Script JSON endpoint
-No fallbacks, no retry loops
+DT STABLE CORE ENGINE (NO TIMEOUT FAIL)
+Google Apps Script cold-start tolerant loader
 ========================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbxkmxnDtSlfXa008qh_cS2dneTVweaQtMVTIUmOWR1PkAWlHX2EQkd86HwN5X9vZrCp/exec";
@@ -10,69 +9,85 @@ let RAW = [];
 let PLAYS = {};
 let PEOPLE = {};
 
-// ---- small safe fetch (timeout but NO retry spam) ----
-async function fetchJSON(url, timeout = 15000) {
-  const ctrl = new AbortController();
-  const id = setTimeout(() => ctrl.abort(), timeout);
-  try {
-    const res = await fetch(url + "?t=" + Date.now(), {
-      method: "GET",
-      cache: "no-store",
-      signal: ctrl.signal
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return await res.json();
-  } finally {
-    clearTimeout(id);
+const statusEl = document.getElementById("status") || { innerText:"" };
+function setStatus(msg){
+  if(statusEl) statusEl.innerText = msg;
+  console.log("STATUS:",msg);
+}
+
+/* -------------------------
+   WAIT HELPERS
+------------------------- */
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+
+async function progressiveMessageTimer(){
+  await wait(4000); setStatus("Sunucu hazırlanıyor…");
+  await wait(4000); setStatus("Google uyanıyor…");
+  await wait(7000); setStatus("Veri büyük, yükleniyor…");
+}
+
+/* -------------------------
+   SAFE FETCH (NO CANCEL)
+------------------------- */
+async function fetchData(){
+  const timer = progressiveMessageTimer();
+
+  while(true){
+    try{
+      const res = await fetch(API_URL + "?t=" + Date.now(),{cache:"no-store"});
+      if(!res.ok) throw new Error("HTTP "+res.status);
+
+      const data = await res.json();
+      return data;
+    }
+    catch(err){
+      console.warn("Fetch retry",err);
+      setStatus("Bağlantı kuruluyor… tekrar deneniyor");
+      await wait(2500);
+    }
   }
 }
 
-// ---- index builder ----
-function buildIndex() {
+/* -------------------------
+   INDEX BUILD
+------------------------- */
+function buildIndex(rows){
   PLAYS = {};
   PEOPLE = {};
 
-  for (const r of RAW) {
-    if (!r || !r.oyun || !r.kisi) continue;
+  rows.forEach(r=>{
+    if(!r.oyun || !r.kisi) return;
 
-    if (!PLAYS[r.oyun]) PLAYS[r.oyun] = [];
+    if(!PLAYS[r.oyun]) PLAYS[r.oyun]=[];
     PLAYS[r.oyun].push(r);
 
-    if (!PEOPLE[r.kisi]) PEOPLE[r.kisi] = [];
+    if(!PEOPLE[r.kisi]) PEOPLE[r.kisi]=[];
     PEOPLE[r.kisi].push(r);
-  }
+  });
 
-  window.DT = { RAW, PLAYS, PEOPLE };
+  window.DT = { RAW:rows, PLAYS, PEOPLE };
 }
 
-// ---- main boot ----
-async function boot() {
-  console.log("DT: loading from Apps Script...");
-  try {
-    const data = await fetchJSON(API_URL);
+/* -------------------------
+   BOOT
+------------------------- */
+async function boot(){
+  try{
+    setStatus("Veriler alınıyor…");
 
-    if (!Array.isArray(data) || data.length === 0)
-      throw new Error("Empty dataset returned");
+    const json = await fetchData();
 
-    RAW = data.map(r => ({
-      oyun: String(r.oyun || r.Oyun || "").trim(),
-      kategori: String(r.kategori || r.Kategori || "").trim(),
-      gorev: String(r.gorev || r.Görev || r.Gorev || "").trim(),
-      kisi: String(r.kisi || r.Kişi || r.Kisi || "").trim()
-    })).filter(r => r.oyun && r.kisi);
+    RAW = Array.isArray(json)?json:json.data||[];
 
-    buildIndex();
+    buildIndex(RAW);
 
-    console.log("DT READY:", RAW.length, "records");
+    setStatus("Hazır");
     window.dispatchEvent(new Event("dt-ready"));
+    console.log("DATA READY",RAW.length);
 
-  } catch (err) {
-    console.error("DT LOAD FAILED", err);
-    document.body.innerHTML = `
-      <div style="font-family:sans-serif;text-align:center;margin-top:80px">
-        <h2>Veriler yüklenemedi</h2>
-        <p>Sunucu geç cevap veriyor. Lütfen sayfayı yenileyin.</p>
-      </div>`;
+  }catch(err){
+    console.error("UNEXPECTED FAIL",err);
+    setStatus("Beklenmeyen hata oluştu");
   }
 }
 
