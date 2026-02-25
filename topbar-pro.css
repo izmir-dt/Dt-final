@@ -1,0 +1,12 @@
+
+/* Professional topbar patch */
+header{transition:all .25s ease}
+header.pro-shrink .top{padding:6px 16px}
+header .top{gap:20px}
+header .brand h1{font-weight:700}
+header nav a, header .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+header nav a.active, header .chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(max-width:768px){
+  header nav{display:none}
+  header.mobile-open nav{display:flex;flex-direction:column;width:100%;padding:10px 0}
+}
