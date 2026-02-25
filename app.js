@@ -1267,7 +1267,7 @@ function renderMobileChartList(items){
       const key = elm.getAttribute("data-key");
       if(!key || key==="Diğer") return;
       const people = buildPeopleListForKey(key);
-      const title = ${chartMode==="roles" ? "Görev" : "Kategori"}: ${key}`;
+     const title = `${chartMode === "roles" ? "Görev" : "Kategori"}: ${key}`;
       openMobilePeopleModal(title, `${people.length} kişi`, people);
     });
   });
