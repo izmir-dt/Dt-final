@@ -1489,69 +1489,6 @@ select{
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-<style>
-/* Shell layout */
-.idt-shell{ display:flex; height:100vh; }
-.idt-sidebar{
-  width:260px; flex-shrink:0;
-  background:#1a1a1a; color:#fff;
-  display:flex; flex-direction:column;
-  padding:20px;
-}
-.idt-logo{
-  color: var(--accent2);
-  font-weight:900;
-  font-size:1.05rem;
-  margin-bottom:22px;
-  padding:10px 10px 16px;
-  border-bottom: 1px solid rgba(255,255,255,.12);
-}
-.idt-item{
-  display:flex; align-items:center; gap:12px;
-  padding:14px;
-  margin-bottom:8px;
-  border-radius:12px;
-  cursor:pointer;
-  color:#ddd;
-  border:1px solid transparent;
-  user-select:none;
-}
-.idt-item:hover{ background: rgba(255,255,255,.06); color:#fff; }
-.idt-item.active{ background: var(--accent); color:#fff; border-color: var(--accent2); }
-
-.idt-main{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.idt-topnav{
-  height:70px; background:#fff;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 22px;
-  border-bottom: 1px solid var(--line);
-}
-.idt-top-actions{ display:flex; gap:10px; align-items:center; }
-.idt-pill{
-  padding:10px 14px;
-  border-radius:12px;
-  font-weight:900;
-  font-size:12px;
-  cursor:pointer;
-  border:1px solid var(--line);
-  background:#f7f7f7;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-.idt-pill.primary{ background: var(--accent); color:#fff; border-color: rgba(0,0,0,.08); }
-.idt-pill.ok{ background: var(--ok); color:#fff; border-color: rgba(0,0,0,.08); text-decoration:none; }
-.idt-badge{
-  background: var(--accent2);
-  color:#fff;
-  font-size:10px;
-  font-weight:900;
-  padding:2px 7px;
-  border-radius:999px;
-  margin-left:6px;
-  border:2px solid #fff;
-}
-
 /* Content area */
 .idt-content{ flex:1; overflow:auto; padding:22px; }
 
