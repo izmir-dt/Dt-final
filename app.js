@@ -1,3 +1,5 @@
+/* ONE RENDER MODE */
+window.__DATA_RENDERED = false;
 /* RESPONSE ORDER LOCK */
 let __lastResponseId = 0;
 /* SMART SHEET CACHE — eksik veri fix */
