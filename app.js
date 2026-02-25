@@ -12,31 +12,7 @@ if(window.__IDT_RENDER_DONE__){
     return;
   }
 /* ===== IDT GLOBAL DATA SINGLETON ===== */
-(function(){
-
-  let __DATA_RENDERED = false;
-  const cache = new Map();
-  const originalFetch = window.fetch;
-    if (typeof url === "string" && url.includes("script.google.com")) {
-
-      if (cache.has(url)) {
-        return cache.get(url).then(r => r.clone());
-      }
-
-      const p = originalFetch(url, options).then(r => {
-        __DATA_RENDERED = true;
-        cache.set(url, Promise.resolve(r.clone()));
-        return r.clone();
-      });
-
-      cache.set(url, p);
-      return p;
-    }
-
-    return originalFetch(url, options);
-  };
-
-})();
+/* fetch override removed: caused partial data */
 
   window.__IDT_APP_STARTED__ = true;
 
