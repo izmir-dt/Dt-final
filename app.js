@@ -6,6 +6,10 @@ let __lastResponseId = 0;
 (function(){
 
 const realFetch = window.fetch;
+// veri zaten işlendi ise artık yeni veri alma
+if(window.__DATA_RENDERED){
+  return Promise.resolve(new Response("{}", {headers:{'Content-Type':'application/json'}}));
+}
 const sheetCache = new Map();
 
 function getKey(url){
