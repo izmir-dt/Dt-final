@@ -1,21 +1,24 @@
-/* IDT ULTRA STABİL VERİ KATMANI */
+/* IDT ULTRA STABİL VERİ KATMANI - FİNAL VERSİYON */
 (function(){
   if(window.__idt_stability_inited) return;
   window.__idt_stability_inited = true;
 
+  console.log("🛡️ Stability module active");
+
   const originalFetch = window.fetch;
   const activeFetches = new Map();
-  const CACHE_TTL = 5 * 60 * 1000;
+  const CACHE_TTL = 5 * 60 * 1000; // 5 dakika
 
   window.fetch = function(url, options) {
     const isGet = !options || !options.method || options.method.toUpperCase() === 'GET';
     const key = String(url);
     
     const isDataUrl = url.includes('script.google.com') || 
-                      url.includes('google.com') ||
+                      url.includes('docs.google.com') ||
+                      url.includes('googleapis.com') ||
                       (window.CONFIG && (
-                        url.includes(CONFIG?.API_BASE || '') ||
-                        url.includes(CONFIG?.SPREADSHEET_ID || '')
+                        (CONFIG.API_BASE && url.includes(CONFIG.API_BASE)) ||
+                        (CONFIG.SPREADSHEET_ID && url.includes(CONFIG.SPREADSHEET_ID))
                       ));
     
     if(isGet && isDataUrl) {
@@ -24,6 +27,8 @@
         console.log('📦 Cache kullanıldı:', url.substring(0, 60));
         return cached.promise.then(r => r.clone());
       }
+      
+      console.log('🌐 Fetch:', url.substring(0, 60));
       
       const promise = originalFetch(url, options).then(res => {
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -46,22 +51,38 @@
   };
 
   let lastDataHash = '';
+  let checkCount = 0;
   
-  window.__idt_monitor = setInterval(() => {
+  function checkDataConsistency() {
     if(!window.rawRows || !Array.isArray(window.rawRows)) return;
+    if(window.rawRows.length === 0) return;
     
     const currentHash = JSON.stringify(window.rawRows.map(r => 
-      `${r.play}|${r.person}|${r.role}|${r.category}`
+      `${r.play || ''}|${r.person || ''}|${r.role || ''}|${r.category || ''}`
     ).sort().join('||'));
     
     if(lastDataHash && lastDataHash !== currentHash) {
-      console.warn('⚠️ Veri değişti, UI yenileniyor...');
+      console.log('⚠️ Veri değişti, UI yenileniyor...');
       if(typeof window.processData === 'function') {
         window.processData(window.rawRows);
       }
     }
     
     lastDataHash = currentHash;
-  }, 2000);
+    checkCount++;
+  }
+  
+  setInterval(checkDataConsistency, 3000);
+  
+  if(document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkDataConsistency);
+  } else {
+    checkDataConsistency();
+  }
+  
+  window.__idt_stability = {
+    check: checkDataConsistency,
+    cacheSize: () => activeFetches.size
+  };
   
 })();
