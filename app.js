@@ -1,9 +1,3 @@
-// TEK RENDER KİLİDİ
-if(window.__IDT_RENDER_DONE__){
-  console.warn("SECOND RENDER BLOCKED");
-} else {
-  window.__IDT_RENDER_DONE__ = true;
-}
 /* ===== IDT HARD BOOT LOCK ===== */
 (function(){
 
@@ -12,7 +6,32 @@ if(window.__IDT_RENDER_DONE__){
     return;
   }
 /* ===== IDT GLOBAL DATA SINGLETON ===== */
-/* fetch override removed: caused partial data */
+(function(){
+
+  const cache = new Map();
+  const originalFetch = window.fetch;
+
+  window.fetch = function(url, options){
+
+    if (typeof url === "string" && url.includes("script.google.com")) {
+
+      if (cache.has(url)) {
+        return cache.get(url).then(r => r.clone());
+      }
+
+      const p = originalFetch(url, options).then(r => {
+        cache.set(url, Promise.resolve(r.clone()));
+        return r.clone();
+      });
+
+      cache.set(url, p);
+      return p;
+    }
+
+    return originalFetch(url, options);
+  };
+
+})();
 
   window.__IDT_APP_STARTED__ = true;
 
@@ -802,8 +821,6 @@ function applyFilters(list){
 }
 
 /* ---------- UI render ---------- */
-if(window.__IDT_ALREADY_RENDERED__) return;
-window.__IDT_ALREADY_RENDERED__ = true;
 function renderList(opts={}){
   const source = (activeMode==="plays") ? plays : people;
   const preserveScroll = (opts.preserveScroll !== undefined) ? !!opts.preserveScroll : true;
@@ -1912,7 +1929,26 @@ els.notifRefresh && els.notifRefresh.addEventListener("click", loadNotifications
 const renderListDebounced = debounce(()=>renderList({preserveScroll:true}), 120);
 
 els.clearBtn.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList({preserveScroll:false}); });
-els.q.addEventListener("input", ()=>{ localStorage.setItem("idt_q", els.q.value||""); renderListDebounced(); });
+// Arama için Akıllı Gecikme (Debounce) Mekanizması
+let _searchTimeout = null;
+els.q.addEventListener("input", (e) => {
+  clearTimeout(_searchTimeout);
+  
+  _searchTimeout = setTimeout(() => {
+    let q = (e.target.value || "").trim();
+    if (q) {
+      els.qClear.style.display = "block";
+      if (typeof window.renderList === "function") {
+         window.renderList({ preserveScroll: false });
+      }
+    } else {
+      els.qClear.style.display = "none";
+      if (typeof window.renderList === "function") {
+         window.renderList({ preserveScroll: false });
+      }
+    }
+  }, 250); // 250ms gecikme ile tarayıcıyı rahatlatır
+});
 els.qScope && els.qScope.addEventListener("change", ()=>{ localStorage.setItem("idt_qscope", els.qScope.value); renderList({preserveScroll:true}); });
 els.qClear && els.qClear.addEventListener("click", ()=>{ els.q.value=""; localStorage.setItem("idt_q",""); renderList({preserveScroll:false}); els.q.focus(); });
 els.btnPlays.addEventListener("click", ()=>{
