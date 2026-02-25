@@ -36,7 +36,7 @@
   window.__IDT_APP_STARTED__ = true;
 
 })();
-var CONFIG = {
+window.CONFIG = {
   SPREADSHEET_ID: "1sIzswZnMkyRPJejAsE_ylSKzAF0RmFiACP4jYtz-AE0",
   API_BASE: "https://script.google.com/macros/s/AKfycbz-Td3cnbMkGRVW4kFXvlvD58O6yygQ-U2aJ7vHSkxAFrAsR5j7QhMFt0xrGg4gZQLb/exec",
   SHEET_MAIN: "BÜTÜN OYUNLAR",
