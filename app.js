@@ -1,3 +1,32 @@
+const cache = new Map();
+const originalFetch = window.fetch;
+
+window.fetch = function(url, options){
+
+  if (typeof url === "string" && url.includes("script.google.com")) {
+
+    if (cache.has(url)) {
+      return cache.get(url).then(r => r.clone());
+    }
+
+    const p = originalFetch(url, options).then(r => {
+
+  // ⭐ İLK GERÇEK VERİ GELDİĞİNDE SİTEYİ SERBEST BIRAK
+  if (window.__bootResolve) {
+    window.__bootResolve();
+    window.__bootResolve = null;
+  }
+
+  cache.set(url, Promise.resolve(r.clone()));
+  return r.clone();
+});
+
+    cache.set(url, p);
+    return p;
+  }
+
+  return originalFetch(url, options);
+};
 /* ===== IDT HARD BOOT LOCK ===== */
 (function(){
 
