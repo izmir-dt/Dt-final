@@ -17,8 +17,8 @@
                       url.includes('docs.google.com') ||
                       url.includes('googleapis.com') ||
                       (window.CONFIG && (
-                        (CONFIG.API_BASE && url.includes(CONFIG.API_BASE)) ||
-                        (CONFIG.SPREADSHEET_ID && url.includes(CONFIG.SPREADSHEET_ID))
+                        (window.CONFIG.API_BASE && url.includes(window.CONFIG.API_BASE)) ||
+                        (window.CONFIG.SPREADSHEET_ID && url.includes(window.CONFIG.SPREADSHEET_ID))
                       ));
     
     if(isGet && isDataUrl) {
