@@ -11,40 +11,51 @@
   <style>
 
 :root {
-  /* PROFESYONEL SOFT TEMA - Göz yormayan, kurumsal */
-  --bg: #f5f7fa;           /* Yumuşak gri-mavi arkaplan */
-  --card: #ffffff;          /* Saf beyaz kartlar */
-  --text: #1e2b3c;          /* Koyu lacivert metin */
-  --muted: #5e6f88;         /* Sessiz mavi-gri */
-  --line: #e2e8f0;          /* Çok açık gri çizgiler */
-  --accent: #2563eb;        /* Canlı mavi (vurgu) */
-  --accent2: #7c3aed;       /* Mor (ikincil vurgu) */
-  --good: #059669;          /* Yumuşak yeşil */
-  --warn: #d97706;          /* Yumuşak turuncu */
-  --bad: #dc2626;           /* Yumuşak kırmızı */
+  /* PROFESYONEL KOYU TEMA - Kurumsal, göz yormayan */
+  --bg: #0f172a;           /* Koyu lacivert arkaplan */
+  --card: #1e293b;          /* Lacivert-gri kartlar */
+  --text: #f1f5f9;          /* Açık gri metin */
+  --muted: #94a3b8;         /* Gri-mavi ikincil metin */
+  --line: #334155;          /* Koyu gri çizgiler */
+  --accent: #3b82f6;        /* Canlı mavi (vurgu) */
+  --accent2: #f59e0b;       /* Altın sarısı (ikincil vurgu) */
+  --good: #10b981;          /* Zümrüt yeşili */
+  --warn: #f97316;          /* Turuncu */
+  --bad: #ef4444;           /* Kırmızı */
+  
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.4);
+  --radius: 16px;
+  --radius2: 12px;
+  --chip: #2d3a4f;
+  
+  /* Soft renkler (gradyanlar için) */
+  --soft1: #1e3a5f;
+  --soft2: #1e4620;
+  --soft3: #5f2e1e;
+  --soft4: #3b2e4a;
+}
+html[data-theme="light"] {
+  /* AÇIK TEMA - Profesyonel ve soft */
+  --bg: #f1f5f9;           /* Çok açık gri-mavi arkaplan */
+  --card: #ffffff;          /* Beyaz kartlar */
+  --text: #1e293b;          /* Koyu lacivert metin */
+  --muted: #64748b;         /* Gri-mavi ikincil metin */
+  --line: #e2e8f0;          /* Açık gri çizgiler */
+  --accent: #2563eb;        /* Canlı mavi */
+  --accent2: #d97706;       /* Altın sarısı */
+  --good: #059669;          /* Yeşil */
+  --warn: #d97706;          /* Turuncu */
+  --bad: #dc2626;           /* Kırmızı */
   
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
   --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-  --radius: 16px;
-  --radius2: 12px;
   --chip: #f1f5f9;
-}
-html[data-theme="dark"] {
-  /* PROFESYONEL SOFT TEMA - Karanlık mod */
-  --bg: #0b1423;           /* Koyu lacivert arkaplan */
-  --card: #1a2639;          /* Lacivert-gri kartlar */
-  --text: #e9edf5;          /* Açık gri metin */
-  --muted: #94a3b8;         /* Gri-mavi metin */
-  --line: #2d3748;          /* Koyu gri çizgi */
-  --accent: #3b82f6;        /* Canlı mavi (vurgu) */
-  --accent2: #8b5cf6;       /* Mor (ikincil vurgu) */
-  --good: #10b981;
-  --warn: #f59e0b;
-  --bad: #ef4444;
   
-  --shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.3);
-  --chip: #1f2a3f;
+  --soft1: #dbeafe;
+  --soft2: #d1fae5;
+  --soft3: #ffedd5;
+  --soft4: #ede9fe;
 }
 
 /* --- Alias tokens (compat) --- */
@@ -1660,6 +1671,100 @@ html[data-theme="dark"] .topNav2More .moreMenu a:hover {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* === YOĞUNLUK & ÇAKIŞMA TABLOSU - PROFESYONEL === */
+.cc-personel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cc-personel-table th {
+  text-align: left;
+  padding: 14px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 11px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.cc-personel-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.cc-personel-table tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cc-personel-table tr:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+html[data-theme="light"] .cc-personel-table tr:hover {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent2);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+html[data-theme="light"] .category-badge {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+html[data-theme="light"] .role-badge {
+  background: rgba(217, 119, 6, 0.1);
+}
+
+.cc-personel-table td:last-child {
+  font-weight: 500;
+}
+
+/* En yoğun oyun kartları */
+.cc-game {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+.cc-game:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.cc-game .t {
+  font-weight: 600 !important;
+  color: var(--text) !important;
+}
+
+.cc-game .bar i {
+  background: linear-gradient(90deg, var(--accent), var(--accent2)) !important;
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1669,10 +1774,10 @@ html[data-theme="dark"] .topNav2More .moreMenu a:hover {
 <style>
 /* ===== IDT Theme Shell (UI-only) ===== */
 :root{
-  --bg:#f5f7fa; --card:#ffffff; --text:#1e2b3c; --muted:#5e6f88;
-  --accent:#2563eb; --accent2:#7c3aed; --good:#059669;
-  --line: rgba(16,24,40,.12);
-  --shadow:0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
+  --accent:#3b82f6; --accent2:#f59e0b; --good:#10b981;
+  --line: rgba(255,255,255,.12);
+  --shadow:0 8px 20px rgba(0,0,0,0.3);
   --radius:16px;
 }
 html,body{ height:100%; }
