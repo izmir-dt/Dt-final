@@ -1561,114 +1561,94 @@ html[data-theme="dark"] .idt-pill:hover {
   box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2) !important;
 }
 
-/* === PROFESYONEL ÜST BAR === */
+/* === PROFESYONEL ÜST BAR - GÜÇLENDİRİLMİŞ === */
 .idt-topbar2 {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
-  padding: 12px 24px !important;
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) !important;
+  gap: 6px !important;
+  padding: 10px 16px !important;
+  background: var(--card) !important;
+  border-bottom: 2px solid var(--accent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 100 !important;
   width: 100% !important;
   margin: 0 !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
-html[data-theme="dark"] .idt-topbar2 {
-  background: rgba(26, 38, 57, 0.85) !important;
-  backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+.idt-topbar2::-webkit-scrollbar {
+  display: none !important;
 }
 
-/* Üst bar butonları */
+/* Üst bar butonları - GÜÇLÜ GÖRÜNÜM */
 .idt-topbar2 .topNav2Btn {
   background: transparent !important;
   border: none !important;
-  padding: 8px 16px !important;
-  border-radius: 9999px !important;
-  font-weight: 500 !important;
-  font-size: 13px !important;
-  letter-spacing: 0.01em !important;
+  padding: 10px 18px !important;
+  border-radius: 40px !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0.02em !important;
   color: var(--muted) !important;
   transition: all 0.2s ease !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
   white-space: nowrap !important;
+  border: 1px solid transparent !important;
 }
 
 .idt-topbar2 .topNav2Btn:hover {
-  background: rgba(0, 0, 0, 0.04) !important;
-  color: var(--text) !important;
-  transform: translateY(-1px) !important;
-}
-
-html[data-theme="dark"] .idt-topbar2 .topNav2Btn:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: white !important;
+  background: rgba(59, 130, 246, 0.08) !important;
+  color: var(--accent) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  transform: translateY(-2px) !important;
 }
 
 .idt-topbar2 .topNav2Btn.is-active {
   background: var(--accent) !important;
   color: white !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2) !important;
-}
-
-/* İkonlar için */
-.idt-topbar2 .navIcon {
-  width: 16px;
-  height: 16px;
-  opacity: 0.8;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3) !important;
+  border-color: transparent !important;
 }
 
 .idt-topbar2 .topNav2Btn.is-active .navIcon {
+  filter: brightness(0) invert(1) !important;
+  opacity: 1 !important;
+}
+
+/* İkonlar daha belirgin */
+.idt-topbar2 .navIcon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.idt-topbar2 .topNav2Btn:hover .navIcon {
   opacity: 1;
-  filter: brightness(0) invert(1);
+  transform: scale(1.1);
 }
 
-/* DAHA FAZLA menüsü */
-.topNav2More {
-  position: relative !important;
+/* Responsive - taşma durumunda kaydırma */
+@media (max-width: 1200px) {
+  .idt-topbar2 {
+    justify-content: flex-start !important;
+    padding: 10px 12px !important;
+  }
 }
 
-.topNav2More .moreMenu {
-  position: absolute !important;
-  top: calc(100% + 8px) !important;
-  right: 0 !important;
-  background: var(--card) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.15) !important;
-  min-width: 200px !important;
-  padding: 8px !important;
-  z-index: 1000 !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-.topNav2More .moreMenu a {
-  display: block !important;
-  padding: 10px 16px !important;
-  border-radius: 12px !important;
-  color: var(--text) !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  text-decoration: none !important;
-  transition: all 0.1s ease !important;
-}
-
-.topNav2More .moreMenu a:hover {
-  background: rgba(0, 0, 0, 0.04) !important;
-}
-
-html[data-theme="dark"] .topNav2More .moreMenu a:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
+@media (max-width: 768px) {
+  .idt-topbar2 .topNav2Btn {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
 }
 
 /* === YOĞUNLUK & ÇAKIŞMA TABLOSU - PROFESYONEL === */
@@ -1988,24 +1968,38 @@ body{
       </header>
 
 <div class="idt-topbar2" role="navigation" aria-label="Üst Menü">
-  <button class="topNav2Btn" type="button" data-go="sidePlays"><span class="navIcon" data-ico="masks"></span><span class="navTxt">AKTİF OYUN</span></button>
-  <button class="topNav2Btn" type="button" data-go="sidePeople"><span class="navIcon" data-ico="users"></span><span class="navTxt">TOPLAM PERSONEL</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideRows"><span class="navIcon" data-ico="search"></span><span class="navTxt">SORGU & KARŞILAŞTIR</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideDist"><span class="navIcon" data-ico="bars"></span><span class="navTxt">OYUN DAĞILIMI</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideHeatmap"><span class="navIcon" data-ico="shuffle"></span><span class="navTxt">YOĞUNLUK & ÇAKIŞMA</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideCharts"><span class="navIcon" data-ico="line"></span><span class="navTxt">GRAFİKLER</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideIntersect"><span class="navIcon" data-ico="venn"></span><span class="navTxt">KESİŞİM</span></button>
-  <button class="topNav2Btn" type="button" data-go="sideFiguran"><span class="navIcon" data-ico="ticket"></span><span class="navTxt">FİGÜRAN</span></button>
-
-  <!-- 3 nokta menüsü -->
-  <div class="topNav2More">
-    <button id="moreBtn" class="topNav2Btn"><span class="navIcon" data-ico="more"></span><span class="navTxt">⋯</span></button>
-    <div class="moreMenu" id="moreMenu">
-      <a href="#panel">Panel</a>
-      <a href="#matris">Yoğunluk & Çakışma</a>
-      <a href="#kesisim">Kesişim</a>
-    </div>
-  </div>
+  <button class="topNav2Btn" type="button" data-go="sidePlays">
+    <span class="navIcon" data-ico="masks"></span>
+    <span class="navTxt">AKTİF OYUN</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sidePeople">
+    <span class="navIcon" data-ico="users"></span>
+    <span class="navTxt">TOPLAM PERSONEL</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sideRows">
+    <span class="navIcon" data-ico="search"></span>
+    <span class="navTxt">SORGU & KARŞILAŞTIR</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sideDist">
+    <span class="navIcon" data-ico="bars"></span>
+    <span class="navTxt">OYUN DAĞILIMI</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sideHeatmap">
+    <span class="navIcon" data-ico="shuffle"></span>
+    <span class="navTxt">YOĞUNLUK & ÇAKIŞMA</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sideCharts">
+    <span class="navIcon" data-ico="line"></span>
+    <span class="navTxt">GRAFİKLER</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sideIntersect">
+    <span class="navIcon" data-ico="venn"></span>
+    <span class="navTxt">KESİŞİM</span>
+  </button>
+  <button class="topNav2Btn" type="button" data-go="sideFiguran">
+    <span class="navIcon" data-ico="ticket"></span>
+    <span class="navTxt">FİGÜRAN</span>
+  </button>
 </div>
       <div class="idt-content">
         
@@ -3231,79 +3225,3 @@ window.addEventListener("pageshow", e => {
   <script src="idt-desktop10.js" defer></script>
   <script src="app.js" defer></script>
   <script src="topbar-more.js" defer></script>
-<script>
-/* ===== DT DATA STABILIZER ===== */
-(function(){
-
-let lastCount = 0;
-let stableCount = 0;
-let stableTimer = null;
-
-function isDataReady(rows){
-  const count = rows?.length || 0;
-
-  if(count !== lastCount){
-    lastCount = count;
-    stableCount = 0;
-    return false;
-  }
-
-  stableCount++;
-
-  // 3 ardışık aynı uzunluk = veri tamam
-  return stableCount >= 3;
-}
-
-const originalProcess = window.processData;
-if(!originalProcess) return;
-
-window.processData = function(rows){
-
-  if(!isDataReady(rows)){
-    console.log("Veri henüz stabil değil:", rows.length);
-    return;
-  }
-
-  console.log("Veri stabil — UI kuruluyor:", rows.length);
-  return originalProcess.apply(this, arguments);
-};
-
-})();
-</script>
-</body>
-</html>
-
-
-</body>
-</html>
-/* ==== DT HARD RENDER LOCK ==== */
-(function(){
-
-let rendered = false;
-
-function lock(fnName){
-  const fn = window[fnName];
-  if(typeof fn !== "function") return;
-
-  window[fnName] = function(...args){
-    if(rendered){
-      console.log("Blocked second render:", fnName);
-      return;
-    }
-    rendered = true;
-    console.log("First render allowed:", fnName);
-    return fn.apply(this,args);
-  }
-}
-
-// sistemde kullanılan olası render fonksiyonları
-[
- 'processData',
- 'buildUI',
- 'rebuildAll',
- 'initUI',
- 'renderAll',
- 'loadPlays'
-].forEach(lock);
-
-})();
