@@ -11,23 +11,29 @@
   <style>
 
 :root {
-  /* PROFESYONEL KOYU TEMA - Kurumsal, göz yormayan */
-  --bg: #0f172a;           /* Koyu lacivert arkaplan */
-  --card: #1e293b;          /* Lacivert-gri kartlar */
-  --text: #f1f5f9;          /* Açık gri metin */
-  --muted: #94a3b8;         /* Gri-mavi ikincil metin */
-  --line: #334155;          /* Koyu gri çizgiler */
-  --accent: #3b82f6;        /* Canlı mavi (vurgu) */
+  /* CANLI PROFESYONEL TEMA - Yüksek kontrast, canlı renkler */
+  --bg: #0a0e1a;           /* Çok koyu lacivert arkaplan */
+  --card: #1a2639;          /* Lacivert-gri kartlar */
+  --text: #ffffff;          /* Beyaz metin */
+  --muted: #a0afc0;         /* Açık gri-mavi ikincil metin */
+  --line: #2d3a4f;          /* Koyu gri çizgiler */
+  
+  --accent: #3b82f6;        /* Canlı mavi (birincil vurgu) */
+  --accent-light: #60a5fa;  /* Açık mavi */
   --accent2: #f59e0b;       /* Altın sarısı (ikincil vurgu) */
-  --good: #10b981;          /* Zümrüt yeşili */
+  --accent2-light: #fbbf24; /* Açık altın */
+  --accent3: #10b981;       /* Zümrüt yeşili (başarı) */
+  --accent4: #8b5cf6;       /* Mor (kategori vurgusu) */
+  
+  --good: #10b981;          /* Yeşil */
   --warn: #f97316;          /* Turuncu */
   --bad: #ef4444;           /* Kırmızı */
   
-  --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.4);
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.5);
   --radius: 16px;
   --radius2: 12px;
-  --chip: #2d3a4f;
+  --chip: #253141;
   
   /* Soft renkler (gradyanlar için) */
   --soft1: #1e3a5f;
@@ -36,21 +42,27 @@
   --soft4: #3b2e4a;
 }
 html[data-theme="light"] {
-  /* AÇIK TEMA - Profesyonel ve soft */
-  --bg: #f1f5f9;           /* Çok açık gri-mavi arkaplan */
+  /* AÇIK TEMA - Canlı ve profesyonel */
+  --bg: #f0f4fa;           /* Açık mavi-gri arkaplan */
   --card: #ffffff;          /* Beyaz kartlar */
-  --text: #1e293b;          /* Koyu lacivert metin */
-  --muted: #64748b;         /* Gri-mavi ikincil metin */
-  --line: #e2e8f0;          /* Açık gri çizgiler */
-  --accent: #2563eb;        /* Canlı mavi */
-  --accent2: #d97706;       /* Altın sarısı */
-  --good: #059669;          /* Yeşil */
-  --warn: #d97706;          /* Turuncu */
-  --bad: #dc2626;           /* Kırmızı */
+  --text: #1a2639;          /* Koyu lacivert metin */
+  --muted: #4b5e77;         /* Lacivert-gri ikincil metin */
+  --line: #d1d9e6;          /* Açık gri çizgiler */
   
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-  --chip: #f1f5f9;
+  --accent: #2563eb;        /* Canlı mavi */
+  --accent-light: #3b82f6;
+  --accent2: #d97706;       /* Altın sarısı */
+  --accent2-light: #f59e0b;
+  --accent3: #059669;       /* Yeşil */
+  --accent4: #7c3aed;       /* Mor */
+  
+  --good: #059669;
+  --warn: #d97706;
+  --bad: #dc2626;
+  
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --chip: #eef2f6;
   
   --soft1: #dbeafe;
   --soft2: #d1fae5;
@@ -1469,6 +1481,7 @@ body {
 
 .card:hover, .toolCard:hover {
   box-shadow: var(--shadow-hover) !important;
+  border-color: var(--accent) !important;
 }
 
 /* Kart başlıkları */
@@ -1482,12 +1495,12 @@ body {
   font-size: 15px !important;
   font-weight: 600 !important;
   letter-spacing: 0.01em !important;
-  color: var(--text) !important;
+  color: var(--accent-light) !important;
 }
 
 /* Liste öğeleri */
 .item {
-  border: 1px solid transparent !important;
+  border: 1px solid var(--line) !important;
   background: var(--card) !important;
   border-radius: 16px !important;
   padding: 14px !important;
@@ -1495,82 +1508,479 @@ body {
 }
 
 .item:hover {
-  border-color: var(--line) !important;
-  background: rgba(0, 0, 0, 0.02) !important;
-  transform: translateY(-1px) !important;
-}
-
-html[data-theme="dark"] .item:hover {
-  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: var(--accent) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
 }
 
 .item .name {
-  font-weight: 600 !important;
-  font-size: 14px !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  color: var(--text) !important;
 }
 
 .item .meta {
   font-size: 12px !important;
-  opacity: 0.7 !important;
+  color: var(--muted) !important;
 }
 
-/* Chip'ler daha soft */
+/* Chip'ler canlı renkler */
 .chip {
-  border-radius: 8px !important;
-  padding: 4px 10px !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  color: var(--accent-light) !important;
+  border-radius: 30px !important;
+  padding: 4px 12px !important;
   font-size: 11px !important;
-  font-weight: 500 !important;
-  background: var(--chip) !important;
-  border: 1px solid var(--line) !important;
-  color: var(--text) !important;
+  font-weight: 600 !important;
 }
 
-/* === PROFESYONEL BUTONLAR === */
-.btn, .idt-pill {
+.chip.warn {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: var(--accent2-light) !important;
+}
+
+.chip.good {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: var(--good) !important;
+}
+
+.chip.bad {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: var(--bad) !important;
+}
+
+/* Aktif Seçimler daha canlı */
+.afChip {
+  background: var(--accent) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+}
+
+.afChip .x {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.afChip .x:hover {
+  background: white !important;
+  color: var(--accent) !important;
+}
+
+/* KPI kartları */
+.kpi {
+  background: linear-gradient(135deg, var(--card), rgba(59, 130, 246, 0.1)) !important;
+  border-left: 5px solid var(--accent) !important;
+}
+
+.kpi .value {
+  color: var(--accent-light) !important;
+}
+
+/* === SORGULAMA & KARŞILAŞTIRMA - CANLI TEMA === */
+
+/* Başlık alanı */
+#viewAssign .secHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+}
+
+#viewAssign .h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-light);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Segment butonları (Filtrele & Listele / Karşılaştır) */
+#viewAssign .seg {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  padding: 4px;
+  gap: 4px;
+}
+
+#viewAssign .segBtn {
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#viewAssign .segBtn:hover {
+  color: var(--text);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+#viewAssign .segBtn.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Filtre kartları */
+.toolCard {
+  background: var(--card) !important;
   border: 1px solid var(--line) !important;
-  background: transparent !important;
-  border-radius: 12px !important;
-  padding: 10px 16px !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.2s ease !important;
+}
+
+.toolCard:hover {
+  box-shadow: var(--shadow-hover) !important;
+  border-color: var(--accent) !important;
+}
+
+.toolTitle {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--accent-light) !important;
+  margin-bottom: 4px !important;
+}
+
+.toolSub {
+  color: var(--muted) !important;
   font-size: 13px !important;
-  font-weight: 500 !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+/* Filtre satırları */
+.toolRow {
+  margin-bottom: 16px !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 16px !important;
+  padding: 12px !important;
+  border: 1px solid var(--line) !important;
+}
+
+.toolLabel {
+  font-weight: 600 !important;
+  color: var(--accent2-light) !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  margin-bottom: 8px !important;
+}
+
+/* Multi-select dropdown */
+.ms {
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden !important;
+}
+
+.msSum {
+  padding: 14px 16px !important;
+  background: rgba(59, 130, 246, 0.1) !important;
   color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+.msTxt {
+  color: var(--muted) !important;
+}
+
+.msBadge {
+  background: var(--accent) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  padding: 2px 10px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.msPanel {
+  padding: 16px !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-top: 1px solid var(--line) !important;
+}
+
+.msSearch {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 30px !important;
+  padding: 12px 16px !important;
+  color: var(--text) !important;
+  font-size: 13px !important;
+  margin-bottom: 12px !important;
+}
+
+.msSearch:focus {
+  border-color: var(--accent) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.msList {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  gap: 8px !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+.msItem {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  border-radius: 30px !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
   transition: all 0.15s ease !important;
 }
 
-.btn:hover, .idt-pill:hover {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border-color: var(--muted) !important;
-  transform: translateY(-1px) !important;
+.msItem:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: var(--accent) !important;
 }
 
-html[data-theme="dark"] .btn:hover,
-html[data-theme="dark"] .idt-pill:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+.msItem input[type="checkbox"] {
+  accent-color: var(--accent) !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
-.btn.primary, .idt-pill.primary {
-  background: var(--accent) !important;
-  border-color: transparent !important;
+.msItem span {
+  font-size: 13px !important;
+  color: var(--text) !important;
+}
+
+/* Temizle butonu */
+.msClear {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 30px !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.msClear:hover {
+  background: var(--bad) !important;
+  border-color: var(--bad) !important;
+  color: white !important;
+  transform: rotate(90deg) !important;
+}
+
+/* Excel butonları */
+.toolActions {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 20px !important;
+}
+
+.btnSoft {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light)) !important;
+  border: none !important;
+  border-radius: 40px !important;
+  padding: 12px 20px !important;
   color: white !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.15) !important;
+  font-size: 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
 }
 
-.btn.primary:hover, .idt-pill.primary:hover {
-  background: color-mix(in srgb, var(--accent) 90%, black) !important;
-  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2) !important;
+.btnSoft:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4) !important;
 }
 
-/* === PROFESYONEL ÜST BAR - GÜÇLENDİRİLMİŞ === */
+.btnGhost {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 40px !important;
+  padding: 12px 20px !important;
+  color: var(--muted) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.btnGhost:hover {
+  border-color: var(--bad) !important;
+  color: var(--bad) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Sonuç tablosu */
+#assignFilterTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+#assignFilterTable thead th {
+  background: var(--accent) !important;
+  color: white !important;
+  padding: 14px 16px !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+}
+
+#assignFilterTable tbody td {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--text) !important;
+}
+
+#assignFilterTable tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.asGroup td {
+  background: rgba(245, 158, 11, 0.15) !important;
+  font-weight: 700 !important;
+  color: var(--accent2) !important;
+}
+
+.asGroupBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.asGroupTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.asGroupCount {
+  background: var(--accent2);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 40px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.asItem td:first-child {
+  color: var(--muted) !important;
+  font-size: 11px !important;
+}
+
+/* Karşılaştırma kartları */
+.compareGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.cmpCard {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.cmpTitle {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--accent-light) !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 2px solid var(--accent) !important;
+}
+
+.cmpBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.cmpRow {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  transition: all 0.15s ease !important;
+}
+
+.cmpRow:hover {
+  border-color: var(--accent) !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+.cmpPlay {
+  font-weight: 700 !important;
+  color: var(--accent2) !important;
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+}
+
+.cmpRoles {
+  color: var(--text) !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+/* Boş durum mesajları */
+.emptyHint {
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  border: 1px dashed var(--line);
+}
+
+/* === PROFESYONEL ÜST BAR - CANLI TEMA === */
 .idt-topbar2 {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
-  padding: 10px 16px !important;
+  gap: 4px !important;
+  padding: 8px 16px !important;
   background: var(--card) !important;
   border-bottom: 2px solid var(--accent) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 100 !important;
@@ -1585,70 +1995,46 @@ html[data-theme="dark"] .idt-pill:hover {
   display: none !important;
 }
 
-/* Üst bar butonları - GÜÇLÜ GÖRÜNÜM */
 .idt-topbar2 .topNav2Btn {
   background: transparent !important;
   border: none !important;
-  padding: 10px 18px !important;
-  border-radius: 40px !important;
-  font-weight: 700 !important;
-  font-size: 13.5px !important;
-  letter-spacing: 0.02em !important;
+  padding: 10px 16px !important;
+  border-radius: 30px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.01em !important;
   color: var(--muted) !important;
   transition: all 0.2s ease !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   white-space: nowrap !important;
   border: 1px solid transparent !important;
 }
 
 .idt-topbar2 .topNav2Btn:hover {
-  background: rgba(59, 130, 246, 0.08) !important;
-  color: var(--accent) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: var(--accent-light) !important;
   border-color: rgba(59, 130, 246, 0.2) !important;
-  transform: translateY(-2px) !important;
+  transform: translateY(-1px) !important;
 }
 
 .idt-topbar2 .topNav2Btn.is-active {
   background: var(--accent) !important;
   color: white !important;
-  font-weight: 800 !important;
-  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3) !important;
   border-color: transparent !important;
 }
 
 .idt-topbar2 .topNav2Btn.is-active .navIcon {
   filter: brightness(0) invert(1) !important;
-  opacity: 1 !important;
 }
 
-/* İkonlar daha belirgin */
 .idt-topbar2 .navIcon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   opacity: 0.8;
-  transition: all 0.2s ease;
-}
-
-.idt-topbar2 .topNav2Btn:hover .navIcon {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-/* Responsive - taşma durumunda kaydırma */
-@media (max-width: 1200px) {
-  .idt-topbar2 {
-    justify-content: flex-start !important;
-    padding: 10px 12px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .idt-topbar2 .topNav2Btn {
-    padding: 8px 14px !important;
-    font-size: 12px !important;
-  }
 }
 
 /* === YOĞUNLUK & ÇAKIŞMA TABLOSU - PROFESYONEL === */
@@ -1661,18 +2047,18 @@ html[data-theme="dark"] .idt-pill:hover {
 .cc-personel-table th {
   text-align: left;
   padding: 14px 12px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   font-size: 11px;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
+  color: var(--accent-light);
+  border-bottom: 2px solid var(--accent);
 }
 
 .cc-personel-table td {
   padding: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--line);
   vertical-align: middle;
 }
 
@@ -1682,19 +2068,15 @@ html[data-theme="dark"] .idt-pill:hover {
 }
 
 .cc-personel-table tr:hover {
-  background: rgba(59, 130, 246, 0.1);
-}
-
-html[data-theme="light"] .cc-personel-table tr:hover {
-  background: rgba(37, 99, 235, 0.05);
+  background: rgba(59, 130, 246, 0.15);
 }
 
 .category-badge {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 20px;
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--accent);
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-light);
   font-size: 11px;
   font-weight: 600;
 }
@@ -1703,61 +2085,57 @@ html[data-theme="light"] .cc-personel-table tr:hover {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 20px;
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--accent2);
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--accent2-light);
   font-size: 11px;
   font-weight: 600;
 }
 
-html[data-theme="light"] .category-badge {
-  background: rgba(37, 99, 235, 0.1);
-}
-
-html[data-theme="light"] .role-badge {
-  background: rgba(217, 119, 6, 0.1);
-}
-
 .cc-personel-table td:last-child {
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* En yoğun oyun kartları */
 .cc-game {
   background: var(--card) !important;
   border: 1px solid var(--line) !important;
-  border-radius: 12px !important;
-  padding: 12px !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
   transition: all 0.2s ease !important;
 }
 
 .cc-game:hover {
   transform: translateY(-2px) !important;
   border-color: var(--accent) !important;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
 .cc-game .t {
-  font-weight: 600 !important;
-  color: var(--text) !important;
+  font-weight: 700 !important;
+  color: var(--accent-light) !important;
+  font-size: 14px !important;
 }
 
 .cc-game .bar i {
   background: linear-gradient(90deg, var(--accent), var(--accent2)) !important;
+  height: 6px !important;
+  border-radius: 10px !important;
 }
 
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 /* ===== IDT Theme Shell (UI-only) ===== */
 :root{
-  --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
+  --bg:#0a0e1a; --card:#1a2639; --text:#ffffff; --muted:#a0afc0;
   --accent:#3b82f6; --accent2:#f59e0b; --good:#10b981;
-  --line: rgba(255,255,255,.12);
-  --shadow:0 8px 20px rgba(0,0,0,0.3);
+  --line: #2d3a4f;
+  --shadow:0 8px 20px rgba(0,0,0,0.4);
   --radius:16px;
 }
 html,body{ height:100%; }
@@ -1773,9 +2151,10 @@ body{
 .idt-shell{ display:flex; height:100vh; }
 .idt-sidebar{
   width:260px; flex-shrink:0;
-  background:#1a1a1a; color:#fff;
+  background:#0f1422; color:#fff;
   display:flex; flex-direction:column;
   padding:20px;
+  border-right: 1px solid var(--line);
 }
 .idt-logo{
   color: var(--accent2);
@@ -1783,7 +2162,7 @@ body{
   font-size:1.05rem;
   margin-bottom:22px;
   padding:10px 10px 16px;
-  border-bottom: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid var(--line);
 }
 .idt-item{
   display:flex; align-items:center; gap:12px;
@@ -1791,16 +2170,17 @@ body{
   margin-bottom:8px;
   border-radius:12px;
   cursor:pointer;
-  color:#ddd;
+  color: var(--muted);
   border:1px solid transparent;
   user-select:none;
+  transition: all 0.15s ease;
 }
-.idt-item:hover{ background: rgba(255,255,255,.06); color:#fff; }
-.idt-item.active{ background: var(--accent); color:#fff; border-color: var(--accent2); }
+.idt-item:hover{ background: rgba(59, 130, 246, 0.1); color: var(--accent-light); }
+.idt-item.active{ background: var(--accent); color: white; border-color: var(--accent2); }
 
 .idt-main{ flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .idt-topnav{
-  height:70px; background:#fff;
+  height:70px; background: var(--card);
   display:flex; align-items:center; justify-content:space-between;
   padding:0 22px;
   border-bottom: 1px solid var(--line);
@@ -1808,63 +2188,64 @@ body{
 .idt-top-actions{ display:flex; gap:10px; align-items:center; }
 .idt-pill{
   padding:10px 14px;
-  border-radius:12px;
-  font-weight:900;
+  border-radius:30px;
+  font-weight:600;
   font-size:12px;
   cursor:pointer;
   border:1px solid var(--line);
-  background:#f7f7f7;
+  background:transparent;
   display:inline-flex;
   align-items:center;
   gap:6px;
+  color: var(--muted);
+  transition: all 0.15s ease;
 }
-.idt-pill.primary{ background: var(--accent); color:#fff; border-color: rgba(0,0,0,.08); }
-.idt-pill.ok{ background: var(--good); color:#fff; border-color: rgba(0,0,0,.08); text-decoration:none; }
+.idt-pill:hover{
+  border-color: var(--accent);
+  color: var(--accent-light);
+  background: rgba(59, 130, 246, 0.1);
+}
+.idt-pill.primary{ background: var(--accent); color: white; border-color: transparent; }
+.idt-pill.ok{ background: var(--good); color: white; border-color: transparent; }
 .idt-badge{
   background: var(--accent2);
-  color:#fff;
+  color: white;
   font-size:10px;
   font-weight:900;
   padding:2px 7px;
   border-radius:999px;
   margin-left:6px;
-  border:2px solid #fff;
 }
 
 /* Content area */
 .idt-content{ flex:1; overflow:auto; padding:22px; }
 
 /* ===== Map old app layout to this theme ===== */
-/* Hide old chrome that clashes, keep DOM for logic */
 #tabbar{ display:none !important; }
-/* Many old wrappers have their own padding; soften */
 .wrap{ max-width: 1240px !important; margin:0 auto !important; }
 
-/* KPI cards: use existing #kpis / .kpi if present */
 #kpis, .kpis{ gap:14px !important; }
 .kpi{
-  background:#fff !important;
+  background: linear-gradient(135deg, var(--card), rgba(59, 130, 246, 0.1)) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow) !important;
-  border-left: 5px solid var(--accent2) !important;
+  border-left: 5px solid var(--accent) !important;
 }
-.kpi .label{ color: var(--muted) !important; font-weight:900 !important; }
-.kpi .value{ color: var(--accent) !important; font-weight:900 !important; }
+.kpi .label{ color: var(--muted) !important; font-weight:600 !important; }
+.kpi .value{ color: var(--accent-light) !important; font-weight:800 !important; }
 
-/* Make dark panels light for readability */
 .drawer, #details, #drawerList, #drawerTitle, #drawerSub,
 #viewPanel, #viewCharts, #viewIntersection, #viewFiguran, #viewDistribution,
 .panel, .panel *{
   color: var(--text) !important;
 }
 .panel{
-  background:#fff !important;
+  background: var(--card) !important;
   border-radius: var(--radius) !important;
   box-shadow: var(--shadow) !important;
   border:1px solid var(--line) !important;
 }
 
-/* Notification panel: fixed drawer */
 #notifPanel{
   position: fixed !important;
   top: 78px !important;
@@ -1873,7 +2254,7 @@ body{
   max-height: 72vh !important;
   overflow:auto !important;
   z-index: 99999 !important;
-  background:#fff !important;
+  background: var(--card) !important;
   border:1px solid var(--line) !important;
   border-radius: 18px !important;
   box-shadow: var(--shadow) !important;
@@ -1897,7 +2278,6 @@ body{
   .idt-content{ padding:14px; }
 }
 
-/* --- PATCH: Dağılım tablosu daha kompakt + satır kısaltma --- */
 #viewDistribution .table td, #viewDistribution .table th{
   padding:8px 10px;
   vertical-align:middle;
@@ -1921,10 +2301,8 @@ body{
   -webkit-line-clamp:unset;
   overflow:visible;
 }
-
-/* --- PATCH: Figüran/Emekli isim hücresi ortala --- */
 #viewFiguran .table td:nth-child(2){
-  text-align:center;
+  text-align:left;
   font-weight:700;
   white-space:nowrap;
 }
