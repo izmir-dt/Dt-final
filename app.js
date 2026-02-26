@@ -219,7 +219,7 @@ function applyTheme(theme){
 (function initTheme(){
   const saved = localStorage.getItem("idt_theme");
   if(saved === "dark" || saved === "light") applyTheme(saved);
-  else applyTheme("light");
+  else applyTheme("dark"); // Varsayılan koyu tema
 })();
 
 (function initUiState(){
@@ -239,7 +239,7 @@ function applyTheme(theme){
 
 
 els.themeBtn.addEventListener("click", ()=>{
-  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  const cur = document.documentElement.getAttribute("data-theme") || "dark";
   applyTheme(cur === "dark" ? "light" : "dark");
   if(rows.length && els.viewCharts.style.display!=="none"){ drawChart(); }
 });
@@ -294,7 +294,7 @@ function normalizeHeader(h){ return (h||"").trim().toLowerCase().replace(/\s+/g,
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
 function currentTheme(){
-  return (document.documentElement.getAttribute("data-theme") || "light") === "dark" ? "dark" : "light";
+  return (document.documentElement.getAttribute("data-theme") || "dark") === "dark" ? "dark" : "light";
 }
 function makeUniqueColors(n){
   const N = Math.max(1, n|0);
@@ -2632,3 +2632,76 @@ async function idtCopyToClipboard(text){
 }
 
 function idtYield(){ return new Promise(res => setTimeout(res, 0)); }
+
+// Yoğunluk & Çakışma Detay Listesi - Düzeltilmiş Versiyon
+function renderDetailList(){
+  const list = $('ccList');
+  if(!list) return;
+  if(!centerSelectedPlay){
+    list.innerHTML = `<div class="empty">Bir oyun seçince burada liste oluşur.</div>`;
+    return;
+  }
+  const q = $('ccSearch') ? String($('ccSearch').value||'').trim() : '';
+  const figOnly = $('ccFigOnly') ? $('ccFigOnly').checked : false;
+
+  let rows = rowsForPlay(centerSelectedPlay);
+  if(figOnly) rows = rows.filter(isFiguranRow);
+  if(q){
+    const nq = norm(q);
+    rows = rows.filter(r => norm((r.person||'')+' '+(r.role||'')+' '+(r.category||'')).includes(nq));
+  }
+
+  rows.sort((a,b)=>{
+    const ca = String(a.category||'').localeCompare(String(b.category||''),'tr');
+    if(ca) return ca;
+    const ra = String(a.role||'').localeCompare(String(b.role||''),'tr');
+    if(ra) return ra;
+    return String(a.person||'').localeCompare(String(b.person||''),'tr');
+  });
+
+  let html = `<table class="cc-personel-table"><thead><tr>
+    <th style="width:26%">Kategori</th>
+    <th style="width:32%">Görev</th>
+    <th style="width:42%">Kişi</th>
+  </tr></thead><tbody>`;
+
+  for(const r of rows){
+    html += `<tr class="ccRow" data-person="${escapeHtml(r.person)}" data-play="${escapeHtml(centerSelectedPlay)}">
+      <td><span class="category-badge">${escapeHtml(r.category||'')}</span></td>
+      <td><span class="role-badge">${escapeHtml(r.role||'')}</span></td>
+      <td><strong>${escapeHtml(r.person||'')}</strong></td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  
+  if(rows.length === 0){
+    html = `<div class="empty">Bu oyunda ${figOnly ? 'figüran' : ''} kayıt bulunamadı.</div>`;
+  }
+  
+  list.innerHTML = html;
+
+  list.querySelectorAll('.ccRow').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const person = tr.getAttribute('data-person') || '';
+      const play = tr.getAttribute('data-play') || '';
+      setState({kisi:person, oyun:play});
+      try{ window.__idtHeatmapFocusPerson = person; }catch(_e){}
+      const tabPanel = $('tabPanel'); if(tabPanel) tabPanel.click();
+      try{
+        if(typeof window.renderList === 'function' && typeof window.renderDetails === 'function'){
+          if(window.activeMode !== 'plays' && $('btnPlays')) $('btnPlays').click();
+          const target = Array.isArray(window.plays) ? window.plays.find(x=>x.title===play) : null;
+          if(target){
+            window.activeId = target.id;
+            window.selectedItem = target;
+            window.renderList({preserveScroll:false});
+            window.renderDetails(target);
+          }
+        }
+      }catch(_e){}
+    });
+  });
+}
+
+// renderDetailList fonksiyonunu window'a ekle
+window.renderDetailList = renderDetailList;
